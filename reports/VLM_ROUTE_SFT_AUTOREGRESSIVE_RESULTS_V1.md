@@ -28,5 +28,5 @@
 
 - `vlm_route_sft_autoregressive_v1/best_seed0/summary.json`、120次原始request journal、逐场景预算和SHA索引；服务器同名 `runs/` 保存原预测NPZ。
 - `vlm_route_sft_analysis_v1/best_seed0/summary.json` 和两组逐场景检查。原生成summary SHA为 `76e4cceda1c802d87c357e8b3bd3b49c2d31a75321aad6aedadf5bd8066a31c4`。
-- `vlm_route_sft_figures_v1/` 保留全部24场景×2方法，XY投影不代替3D碰撞检查。后续版只调整版式，原始预测不变。
+- [全部场景图，第1页](vlm_route_sft_figures_v2/figures/all_dev_page_1.png)：`vlm_route_sft_figures_v2/` 含8页、全部24场景×2方法；root已逐页检查，16个图文件SHA匹配，两版48面板和输入SHA完全相同。v2只修正版式与同场景共享坐标轴，保留全部预测离群点；XY投影不代替3D碰撞检查。原v1不覆盖。
 - 原 `*.status.json` 中保存实测复现命令、release、PID、日志和exit。重新执行必须使用新output，不覆盖这次失败证据。推理脚本 `scripts.evaluate_vlm_route_sft`，独立分析 `scripts.analyze_vlm_route_sft`。

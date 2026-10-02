@@ -2,6 +2,8 @@
 
 ## Current checkpoint — 15:10 UTC
 
+15:22UTC measured addendum: grammar TRAIN8 completed exit0,8/8 strict format but0/8 target within3cm,mean endpoint57.372cm; GPU released and no DEV/K4 expansion. Twenty-four endpoint IK queries completed,48 exact restores; both orientations3/6 collision-aware versus6/6 ignore, additional configurations collide. No new route references. Ordinary auxiliary37tests and actual prefix108 initial-forward/48000-draw sampler audit passed fromaef3983; launcher55c2c4a is reviewed for the single1500-step run. Read its actual status before claiming completion. JOBS snapshot15:20:40 contains242 records (registry245), showing new84ee formal collector no longer running; only mechanical closure/exit may be inspected for locked roles.9-forward TRAIN SFT token diagnostic and six-configuration static collision comparison are under implementation, not launched. Full SFT plots v2 all48panels/source hashes unchanged; all8pages visually checked.
+
 This block supersedes the historical running statements below. Inspect actual job receipts before any restart.
 
 - Full same-checkpoint Qwen SFT generation and independent analysis completed from8356b09. Both independent4 and whole4 have zero TipValid/semantic success across all24 DEV instructions. Strict H24-format slots21/96 and5/96; request medians41.123/41.211s. All120 requests, failures, raw text, component timing and binary hashes are retained. Valid JSON with wrong horizons also has no endpoint within3cm; no parsing repair changes the main evaluation. Reports/VLM_ROUTE_SFT_AUTOREGRESSIVE_RESULTS_V1.md is authoritative.

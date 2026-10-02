@@ -2,8 +2,9 @@
 
 | 主张 | 状态 | 实际证据 | 边界 |
 |---|---|---|---|
-| 真实Qwen已完成直接路线集合SFT | 实测完成1500步 | VLM_ROUTE_SFT_TRAINING_RESULTS_V1；ba984，3750路线目标槽、1273081答案token，8adapter更新、DEV NLL .4367 | 同checkpoint独立/整集合自回归正在运行；NLL不是路线质量，reach事件恒open不证明交互 |
-| 扩充六任务TRAIN改善相同DEV的普通头 | 单种子开发证据 | observed_multitask_prefix60_v1：相同1500x32，12→48TRAIN父，DEV ADE17.12→12.94cm、endpoint24.50→19.70cm，10/12父ADE下降 | 同时增加已见variation/颜色；DEV仍held-out variation。泛化仍差，无语义/碰撞/执行认证，不是新机制 |
+| 真实Qwen已完成直接路线集合SFT | 训练和生成实测完成；当前质量失败 | 3750路线目标槽，8adapter更新；独立4/整集合4全24DEV TipValid与语义均0，格式21/96与5/96 | NLL .4367不是路线质量；有限训练曝光尚不足以否定SFT能力，不把当前失败称强基线 |
+| 扩充六任务TRAIN改善相同DEV的普通头 | 单种子开发证据 | 相同1500x32，12→48→96请求TRAIN父（最后95正参考），DEV ADE17.12→12.94→10.00cm、endpoint24.50→19.70→17.43cm | 同时增加variation/颜色；第三点8/12父改善、4变差，reach/slide末端>30cm，无语义/碰撞/执行认证，不是新机制 |
+| 语法约束能解决VLM路线空间错误 | 当前TRAIN诊断否证 | 固定8TRAIN K1全部格式通过、终点0/8在3cm内，平均57.37cm；0eeeecb实测 | 标准格式修复；不是DEV结果，也不是训练充分性证明。停止自动DEV扩展 |
 | 两排物理通道已提供超过K4有效类型 | 尚未支持 | v1 18/27通过、每目标侧向类3/1/1；v2 4/27通过且20规划失败 | v1/v2各自恢复严格通过，但跨版本初始关节不一致，不能归因引导点；未知类型不强行算不同 |
 | 历史集合回归优于现有两类扩散 | 已复核 | historical commit d0d97eb；multiseed_summary.json；audit_v2/historical_regressor_seed0_metrics.json | 固定三路、真几何/真终点、冻结CLIP；旧TEST/OOD已公开使用 |
 | 已构建可变路线类型和多障碍探针 | 已实现并验证 | multigate.py；audit_v2/multigate_v1.manifest.json；1152父场景7131正例 | 两墙平面通道结构、恒定z、固定语言；不是机器人观测任务 |

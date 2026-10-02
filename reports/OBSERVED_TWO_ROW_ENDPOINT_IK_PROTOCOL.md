@@ -1,6 +1,6 @@
 # 两排低柱：有限端点 IK 诊断预登记
 
-状态：只读证据、独立实现和本地测试已完成；未启动本诊断模拟器或额外 IK。原 v1/v2 路线及 v3 重建失败全部保留。新脚本 `scripts/diagnose_two_row_endpoint_ik.py` 与配置 `configs/observed_two_row_endpoint_ik_v1.json` 需要固定 source 后才能执行，不修改仍在运行的采集器。
+状态：以下保留执行前预登记。已由固定源完成唯一一次 24-query 诊断，竖直朝向没有收益，见 [实际结果](OBSERVED_TWO_ROW_ENDPOINT_IK_RESULTS.md)。原 v1/v2 路线及 v3 重建失败全部保留。脚本 `scripts/diagnose_two_row_endpoint_ik.py` 与配置 `configs/observed_two_row_endpoint_ik_v1.json` 未在运行期间修改，也未修改仍在运行的正式采集器。
 
 ## 已有日志缩小了问题范围
 
