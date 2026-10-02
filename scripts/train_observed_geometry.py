@@ -13,6 +13,7 @@ import torch
 from routeset.common import seed_all, sha256, write_json
 from routeset.observed_geometry import (backproject_rgbd, ObservedGeometryRouteHead,
                                        positive_endpoint_attention_loss)
+from routeset.observed_path_refinement import refinement_config,validate_refinement_resume
 from routeset.observed_route_head import load_observed_dataset
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
@@ -149,13 +150,16 @@ def batch_inputs(data, geometry, ids, device, language_ids=None):
 def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
              selection_metric='reference_ADE', evaluation_sources=None):
     model.eval()
-    predictions, events, anchors = [], [], []
+    predictions, events, anchors, drafts = [], [], [], []
     for start in range(0, len(ids), batch_size):
         xyz, opened, details = model(**batch_inputs(data, geometry, ids[start:start+batch_size], device))
         predictions.append(xyz.cpu().numpy())
         events.append(opened.cpu().numpy())
         anchors.append(details['anchor_xyz'].cpu().numpy())
+        if 'draft_paths' in details:
+            drafts.append(details['draft_paths'].cpu().numpy())
     predictions, events, anchors = map(np.concatenate, (predictions, events, anchors))
+    draft_array = np.concatenate(drafts) if drafts else None
     result, rows = observation_metrics(predictions, events, data, ids)
     # Strict semantic metrics retain the original identity and 3 cm criteria.
     # Anchor error uses recorded route endpoints only, never target coordinates.
@@ -187,11 +191,17 @@ def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
     if selection_metric == 'tip_unique_valid':
         add_tip_evaluation(result,rows,predictions,events,data,ids,evaluation_sources)
     result['selection_score'] = checkpoint_selection_score(result,selection_metric)
+    if draft_array is not None:
+        result['generation_budget'] = dict(final_candidates=int(predictions.shape[1]),
+            draft_complete_paths=int(predictions.shape[1]),updates=1,
+            total_complete_path_states=int(predictions.shape[1]*2),
+            candidate_filtering=False,description='K complete drafts plus K updated finals; no equal-path-state-budget claim versus one-pass K')
     if output is not None:
         output = Path(output)
         output.mkdir(parents=True, exist_ok=True)
+        extra = {} if draft_array is None else dict(draft_paths=draft_array)
         np.savez_compressed(output/'predictions.npz', paths=predictions, gripper_open=events,
-                            learned_surface_anchor=anchors, scene_ids=data['scene_ids'][ids], parent_ids=data['parent_ids'][ids])
+                            learned_surface_anchor=anchors, scene_ids=data['scene_ids'][ids], parent_ids=data['parent_ids'][ids],**extra)
         if len(eligible):
             np.savez_compressed(output/'paired_language_predictions.npz', paths=swapped_xyz, gripper_open=swapped_events,
                                 original_scene_ids=data['scene_ids'][ids[eligible]], language_source_ids=data['scene_ids'][switched[eligible]])
@@ -275,7 +285,7 @@ def train(args):
             evaluation_protocol=data['evaluation_protocol'], cache_config=data['cache_config'], geometry_preprocessing=geometry['metadata'])
         model = ObservedGeometryRouteHead(config['feature_dim'], args.horizon, args.candidates, args.width,
                                           args.depth, args.point_width, args.endpoint_residual_bound,
-                                          anchor_mode=args.anchor_mode).to(args.device)
+                                          anchor_mode=args.anchor_mode,**refinement_config(config)).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         rng, sampler = np.random.default_rng(args.seed), np.random.default_rng(args.seed+100000)
@@ -284,6 +294,7 @@ def train(args):
             checkpoint = torch.load(out/'last.pt', map_location=args.device, weights_only=False)
             validate_anchor_resume(config, checkpoint['config'])
             validate_selection_resume(config,checkpoint['config'])
+            validate_refinement_resume(config,checkpoint['config'])
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -371,6 +382,13 @@ def train(args):
                 last_prediction_sha256=sha256(out/'last_dev_model/predictions.npz'),
                 checkpoint_selection_protocol='dev_tip_unique_valid_v1',
                 checkpoint_selection_criterion='UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK')
+        if config.get('refinement_mode','none')!='none':
+            summary.update(generation_budget=metrics['generation_budget'],
+                complete_path_state_exposures=exposures*2,
+                refinement_parameters=sum(parameter.numel() for parameter in model.refiner.parameters()),
+                refinement_initialization='zero final update layer; initial predictions equal ordinary peak head',
+                refinement_scope='one observation-only draft update; endpoints and events unchanged within each request; local/global matched parameter control',
+                refinement_support_diagnostic_policy='posthoc from saved draft_paths and the exact pixel_stride observed RGB-D cloud: eligible-prefix counts, nearest observed-point distance, counts within sigma and 2*sigma, and actual update norm; no target/box/segmentation labels, no inferred free-space or safety certificate')
         write_json(out/'summary.json', summary)
         write_json(out/'status.json', dict(status='completed', step=args.steps, exit_code=0))
         print(json.dumps(summary), flush=True)
@@ -394,6 +412,10 @@ def main():
     parser.add_argument('--pooling', choices=('mean', 'last', 'both'), default='both')
     parser.add_argument('--geometry-pooling', choices=('spatial',), default='spatial')
     parser.add_argument('--anchor-mode', choices=('soft', 'straight_through_peak'), default='soft')
+    parser.add_argument('--refinement-mode',choices=('none','local','global'),default='none')
+    parser.add_argument('--refinement-sigma',type=float)
+    parser.add_argument('--refinement-prefix-fraction',type=float)
+    parser.add_argument('--refinement-bound',type=float)
     parser.add_argument('--selection-metric',dest='checkpoint_selection',choices=('reference_ADE','tip_unique_valid'),default='reference_ADE')
     parser.add_argument('--point-width', type=int, default=64)
     parser.add_argument('--pixel-stride', type=int, default=2)

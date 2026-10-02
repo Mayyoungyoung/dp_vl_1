@@ -102,7 +102,7 @@ class ObservedGeometryEncoder(nn.Module):
         self.log_attention_scale = nn.Parameter(torch.tensor(math.log(8.0)))
         self.fusion = nn.Sequential(nn.Linear(point_width * 3 + 3, width), nn.SiLU(), nn.Linear(width, width))
 
-    def forward(self, features, current, world_xyz, rgb, uv, depth, valid_mask):
+    def forward(self, features, current, world_xyz, rgb, uv, depth, valid_mask, return_point_features=False):
         if features.ndim != 2 or features.shape[-1] != self.feature_dim:
             raise ValueError('features must be [B,feature_dim]')
         batch = len(features)
@@ -137,7 +137,10 @@ class ObservedGeometryEncoder(nn.Module):
         attended = (weights[..., None] * point_features).sum(1)
         mean = (point_features * valid_mask[..., None]).sum(1) / valid_mask.sum(1, keepdim=True)
         context = self.fusion(torch.cat([attended, mean, query, anchor-current[:, :3]], dim=-1))
-        return {'context': context, 'anchor_xyz': anchor, 'attention': weights}
+        result = {'context': context, 'anchor_xyz': anchor, 'attention': weights}
+        if return_point_features:
+            result['point_features'] = point_features
+        return result
 
     def active_parameter_count(self):
         return sum(parameter.numel() for parameter in self.parameters())
@@ -152,7 +155,8 @@ class ObservedGeometryRouteHead(nn.Module):
     """
     def __init__(self, feature_dim, horizon=24, max_candidates=4, width=128,
                  depth=2, point_width=64, endpoint_residual_bound=.05,
-                 geometry_pooling='spatial', anchor_mode='soft'):
+                 geometry_pooling='spatial', anchor_mode='soft', refinement_mode='none',
+                 refinement_sigma=None, refinement_prefix_fraction=None, refinement_bound=None):
         super().__init__()
         from .observed_route_head import ObservedRouteHead
         if geometry_pooling != 'spatial':
@@ -162,12 +166,22 @@ class ObservedGeometryRouteHead(nn.Module):
         self.geometry = ObservedGeometryEncoder(feature_dim, width, point_width, anchor_mode=anchor_mode)
         self.head = ObservedRouteHead(feature_dim, horizon, max_candidates, width, depth)
         self.endpoint_residual_bound = endpoint_residual_bound
+        self.refiner = None
+        if refinement_mode != 'none':
+            from .observed_path_refinement import ObservedPathRefiner
+            self.refiner = ObservedPathRefiner(point_width,refinement_mode,refinement_sigma,
+                                               refinement_prefix_fraction,refinement_bound)
+        elif any(value is not None for value in (refinement_sigma,refinement_prefix_fraction,refinement_bound)):
+            raise ValueError('refinement settings require an enabled refinement mode')
 
     def forward(self, features, current, world_xyz, rgb, uv, depth, valid_mask, k=None):
         k = self.head.max_candidates if k is None else k
         if not 1 <= k <= self.head.max_candidates:
             raise ValueError('invalid candidate budget')
-        geometry = self.geometry(features, current, world_xyz, rgb, uv, depth, valid_mask)
+        if self.refiner is None:
+            geometry = self.geometry(features, current, world_xyz, rgb, uv, depth, valid_mask)
+        else:
+            geometry = self.geometry(features, current, world_xyz, rgb, uv, depth, valid_mask,return_point_features=True)
         context = self.head.feature_encoder(features) + self.head.state_encoder(current) + geometry['context']
         tokens = context[:, None] + self.head.queries[:k][None]
         for block in self.head.blocks:
@@ -181,6 +195,10 @@ class ObservedGeometryRouteHead(nn.Module):
         xyz = torch.cat([first, intermediate, endpoint], dim=2)
         first_open = current[:, None, None, 7].expand(-1, k, 1).clamp(0, 1)
         opened = torch.cat([first_open, prediction[..., 3].sigmoid()], dim=2)
+        if self.refiner is not None:
+            draft = xyz
+            xyz, refinement = self.refiner(draft,geometry.pop('point_features'),world_xyz,valid_mask,current)
+            geometry.update(refinement,draft_paths=draft)
         return xyz, opened, geometry
 
     def active_parameter_count(self):
