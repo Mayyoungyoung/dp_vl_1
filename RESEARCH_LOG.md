@@ -363,3 +363,13 @@ cosine和native100k结果已完整归档、实核并提交82c17d2。MAIN267保�
 extension288 source5c8f8e4f5cd478c793a0e0d9640005deaf700973已实测158tests通过、独立prepare成功并封存来源。root单独启动train32 fresh，session `20261002T231813Z_train32_624110`，SSH89814，CPU2/3、GPU隐藏。两coordinator PID624140/624142，child624144/624145；23:23:57快照前四parent job exit0，父004/005运行中。这是机械进度，不是成功场景/有效路线数。此阶段只32父864请求槽，后续不会自动采集。新DEV须全部256TRAIN机械闭合后另启并继续封存。
 
 恢复前先核实session/status、parent status与PID实际command；完成的stage和已发父绝不重采。确有中断且现有coordinator已退出时，同source恢复命令为 `bash /home/wzy/dpvlm/route_set_v1/research_v2/releases/5c8f8e4f5cd478c793a0e0d9640005deaf700973/scripts/launch_two_row_extension288_v1.sh 5c8f8e4f5cd478c793a0e0d9640005deaf700973 train32 resume`。只有前32全部闭合并读完整质量后，才独立执行train64。GPU1当前无研究训练占用；不重复运行probe。没有后台自主决策服务，当前活跃会话继续实施与分析。
+
+## 最新执行状态 — 2026-10-02 23:56 UTC
+
+本段覆盖历史 running 记录。no-direct12000 已完成，source1a3eef1、PID628749/628753于23:38:29UTC exit0；118项真实服务器测试全部通过。相同初始化共有张量、384000抽样链、1536000路径状态和48次选择核验通过，但删除549120参数是容量混杂。固定last TRAIN有效率91.93%高于原76.06%，DEV39.58%低于原43.06%；best52/144低原59/144，已分类类型求和31比30多1但已知参考覆盖更低。停止该结构扩展；全部保存池/12父图/失败和权重hash已归档，0额外forward分析。见 reports/observed_two_row_prefix76_no_direct_v1/NO_DIRECT_RESULTS.md。核心方法优势仍未成立。
+
+MAIN269，原267字段保留。JOBS快照为2026-10-02T23:52:09.965049+00:00，520条；registry更新实际状态。下一步仅固定两臂原best，各36次真实Qwen/K4，补齐12000模型在线成本；3文件已独立复核，本次冻结后单独tests/preflight/两臂，尚未在线运行，不搬用1500时延。
+
+extension288 source5c8f8e4的train32 fresh仍活跃（session20261002T231813Z_train32_624110，child624144/624145，CPU2/3）。23:54机械检查24/32闭合，不等于24成功场景，raw尚未全32分析。首批全部闭合后，从1a3eef1单独运行TRAIN32分析，读质量后再独立train64 resume。新DEV保持封存。composite108固定旧64TRAIN+新32TRAIN+旧12DEV导出实现已61本地测试和独立复核通过，尚未实际导出；旧225行原字节保留，失败父不替换。后续质量/缓存/同总12000曝光普通训练仍待实际数据门禁，不自动启动。
+
+恢复先检查上述PID的实际命令及status，禁止重复fresh或重采闭合父。所有服务器操作只使用不可变release。当前活跃会话继续执行；没有会话结束后自动分析/改代码服务。

@@ -1,5 +1,15 @@
 # State — 2026-10-02
 
+## 最新执行状态 — 2026-10-02 23:56 UTC
+
+本段覆盖历史 running 记录。no-direct12000 已完成，source1a3eef1、PID628749/628753于23:38:29UTC exit0；118项真实服务器测试全部通过。相同初始化共有张量、384000抽样链、1536000路径状态和48次选择核验通过，但删除549120参数是容量混杂。固定last TRAIN有效率91.93%高于原76.06%，DEV39.58%低于原43.06%；best52/144低原59/144，已分类类型求和31比30多1但已知参考覆盖更低。停止该结构扩展；全部保存池/12父图/失败和权重hash已归档，0额外forward分析。见 reports/observed_two_row_prefix76_no_direct_v1/NO_DIRECT_RESULTS.md。核心方法优势仍未成立。
+
+MAIN269，原267字段保留。JOBS快照为2026-10-02T23:52:09.965049+00:00，520条；registry更新实际状态。下一步仅固定两臂原best，各36次真实Qwen/K4，补齐12000模型在线成本；3文件已独立复核，本次冻结后单独tests/preflight/两臂，尚未在线运行，不搬用1500时延。
+
+extension288 source5c8f8e4的train32 fresh仍活跃（session20261002T231813Z_train32_624110，child624144/624145，CPU2/3）。23:54机械检查24/32闭合，不等于24成功场景，raw尚未全32分析。首批全部闭合后，从1a3eef1单独运行TRAIN32分析，读质量后再独立train64 resume。新DEV保持封存。composite108固定旧64TRAIN+新32TRAIN+旧12DEV导出实现已61本地测试和独立复核通过，尚未实际导出；旧225行原字节保留，失败父不替换。后续质量/缓存/同总12000曝光普通训练仍待实际数据门禁，不自动启动。
+
+恢复先检查上述PID的实际命令及status，禁止重复fresh或重采闭合父。所有服务器操作只使用不可变release。当前活跃会话继续执行；没有会话结束后自动分析/改代码服务。
+
 ## 当前执行与下一决策 — 2026-10-02 23:24 UTC
 
 本段覆盖下方历史running记录。MAIN267不变；JOBS497@23:23:57.395618UTC、registry随后按同快照同步。source905214e的TRAIN12诊断已经完成并归档：36 K4前向/0搜索/0更新，直接分支swap使净空45→33/48（14坏2好）；仅通道敏感性，不是DEV因果或方法质量。69条正参考完整grid通过0受到终点voxel与其它保守阻塞共同影响，不能推导模式不存在。[完整结果](reports/OBSERVED_TWO_ROW_ROUTE_CONDITIONING_RESULTS.md)。暂缓learned-field，下一唯一神经控制为去direct分支的普通头：相同constant12000曝光/共有init/抽样，geometry等剩余模块继续训练，参数量减少明确披露；尚未server训练。
