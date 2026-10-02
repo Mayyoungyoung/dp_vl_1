@@ -11,7 +11,8 @@ from PIL import Image
 import torch
 
 from routeset.common import seed_all, sha256, write_json
-from routeset.observed_geometry import backproject_rgbd, ObservedGeometryRouteHead
+from routeset.observed_geometry import (backproject_rgbd, ObservedGeometryRouteHead,
+                                       positive_endpoint_attention_loss)
 from routeset.observed_route_head import load_observed_dataset
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
@@ -208,6 +209,9 @@ def train(args):
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
                     raise ValueError('resume config mismatch: '+key)
+            for key, default in [('grounding_weight',0.),('grounding_sigma',.025)]:
+                if config[key] != checkpoint['config'].get(key,default):
+                    raise ValueError('resume config mismatch: '+key)
             model.load_state_dict(checkpoint['model']); optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler']); restore_rng(checkpoint['rng'], rng)
             sampler.bit_generator.state = checkpoint['sampler_state']
@@ -216,23 +220,34 @@ def train(args):
         write_json(out/'config.json', config)
         write_json(out/'source_hashes.json', dict(data['source_hashes'], **geometry['metadata']['source_hashes']))
         write_json(out/'status.json', dict(status='running', pid=os.getpid(), step=first_step))
-        started, losses = synchronized_time(args.device), []
+        started, losses, path_losses, grounding_losses = synchronized_time(args.device), [], [], []
         for step in range(first_step+1, args.steps+1):
             model.train()
             ids = sampler.choice(train_ids, args.batch_size, replace=True)
-            xyz, opened, _ = model(**batch_inputs(data, geometry, ids, args.device))
+            inputs = batch_inputs(data, geometry, ids, args.device)
+            xyz, opened, details = model(**inputs)
             target_xyz = torch.as_tensor(data['paths'][ids], device=args.device)
             target_events = torch.as_tensor(data['events'][ids], device=args.device)
             prediction = torch.cat([xyz[:, :, 1:], opened[:, :, 1:, None]*args.event_scale], dim=-1)
             target = torch.cat([target_xyz[:, :, 1:], target_events[:, :, 1:, None]*args.event_scale], dim=-1)
-            loss = positive_assignment_loss(prediction, target, data['path_mask'][ids], 'saturation', rng)
+            path_loss = positive_assignment_loss(prediction, target, data['path_mask'][ids], 'saturation', rng)
+            grounding_loss = xyz.new_zeros(())
+            if args.grounding_weight:
+                grounding_loss = positive_endpoint_attention_loss(details['attention'], inputs['world_xyz'],
+                    inputs['valid_mask'], target_xyz[:, :, -1],
+                    torch.as_tensor(data['path_mask'][ids], device=args.device), args.grounding_sigma)
+            loss = path_loss + args.grounding_weight*grounding_loss
             optimizer.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.)
             optimizer.step(); scheduler.step()
             exposures += args.batch_size*args.candidates
             losses.append(float(loss.detach()))
+            path_losses.append(float(path_loss.detach()))
+            grounding_losses.append(float(grounding_loss.detach()))
             if step % 100 == 0:
                 print(json.dumps(dict(step=step, loss=float(np.mean(losses[-100:])),
+                                     path_loss=float(np.mean(path_losses[-100:])),
+                                     grounding_loss=float(np.mean(grounding_losses[-100:])),
                                      elapsed_s=elapsed_before+synchronized_time(args.device)-started)), flush=True)
             if step % args.eval_every == 0 or step == args.steps or step == args.stop_after:
                 metrics = evaluate(model, data, geometry, dev_ids, args.device)
@@ -290,6 +305,8 @@ def main():
     parser.add_argument('--point-width', type=int, default=64)
     parser.add_argument('--pixel-stride', type=int, default=2)
     parser.add_argument('--endpoint-residual-bound', type=float, default=.05)
+    parser.add_argument('--grounding-weight', type=float, default=0.)
+    parser.add_argument('--grounding-sigma', type=float, default=.025)
     parser.add_argument('--event-scale', type=float, default=.2)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--seed', type=int, default=0)
@@ -301,6 +318,8 @@ def main():
     args = parser.parse_args()
     if min(args.steps, args.eval_every, args.batch_size, args.pixel_stride, args.point_width) < 1 or not 1 <= args.threads <= 4:
         parser.error('positive steps/batch/eval/point sizes and 1--4 threads required')
+    if args.grounding_weight < 0 or args.grounding_sigma <= 0:
+        parser.error('nonnegative grounding weight and positive sigma required')
     train(args)
 
 

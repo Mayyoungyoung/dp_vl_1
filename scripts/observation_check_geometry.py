@@ -6,7 +6,7 @@ import time
 import numpy as np
 import torch
 from routeset.common import write_json
-from routeset.observed_geometry import ObservedGeometryRouteHead
+from routeset.observed_geometry import ObservedGeometryRouteHead, positive_endpoint_attention_loss
 from routeset.observed_route_head import load_observed_dataset
 from routeset.train_v2 import positive_assignment_loss
 from scripts.train_observed_geometry import load_geometry, batch_inputs, train
@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--grounding-weight', type=float, default=0.)
     args = parser.parse_args()
     torch.set_num_threads(1)
     data = load_observed_dataset(args.data/'observations.jsonl', args.data/'supervision.jsonl', args.data/'qwen_cache')
@@ -25,11 +26,16 @@ def main():
     optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
     ids = np.array([0, 1])
     started = time.perf_counter()
-    xyz, opened, detail = model(**batch_inputs(data, geometry, ids, 'cpu'))
+    inputs = batch_inputs(data, geometry, ids, 'cpu')
+    xyz, opened, detail = model(**inputs)
     target = torch.cat([torch.as_tensor(data['paths'][ids, :, 1:]),
                         torch.as_tensor(data['events'][ids, :, 1:, None])*.2], -1)
     prediction = torch.cat([xyz[:, :, 1:], opened[:, :, 1:, None]*.2], -1)
     loss = positive_assignment_loss(prediction, target, data['path_mask'][ids], 'saturation', np.random.default_rng(0))
+    if args.grounding_weight:
+        loss = loss + args.grounding_weight*positive_endpoint_attention_loss(detail['attention'],
+            inputs['world_xyz'],inputs['valid_mask'],torch.as_tensor(data['paths'][ids,:,-1]),
+            torch.as_tensor(data['path_mask'][ids]),.025)
     loss.backward()
     assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in model.parameters())
     optimizer.step()
@@ -43,7 +49,8 @@ def main():
                   cache_dir=str(args.data/'qwen_cache'), steps=4, batch_size=2, candidates=4, horizon=24,
                   width=16, depth=1, pooling='both', geometry_pooling='spatial', point_width=8, pixel_stride=8,
                   endpoint_residual_bound=.05, event_scale=.2, lr=3e-4, seed=71, eval_every=2,
-                  threads=1, device='cpu', resume=False, stop_after=None)
+                  threads=1, device='cpu', resume=False, stop_after=None,
+                  grounding_weight=args.grounding_weight, grounding_sigma=.025)
     for name, resume, stop in [('full', False, None), ('resumed', False, 2), ('resumed', True, None)]:
         config = dict(common, output=str(args.output/name), resume=resume, stop_after=stop)
         train(argparse.Namespace(**config))

@@ -12,6 +12,28 @@ from torch import nn
 from torch.nn import functional as F
 
 
+def positive_endpoint_attention_loss(attention, world_xyz, valid_mask,
+                                     reference_endpoints, reference_mask, sigma=.025):
+    """Train-only spatial target from recorded positive endpoint observations.
+
+    This auxiliary grounding loss supplies no endpoint to the model forward.
+    Multiple positive endpoints form a mixture, never their possibly invalid
+    average. It is not an existence/validity label for unmatched route outputs.
+    """
+    if sigma <= 0 or not bool(reference_mask.any(1).all()):
+        raise ValueError('positive sigma and at least one positive endpoint per training example required')
+    if attention.shape != valid_mask.shape or world_xyz.shape[:2] != attention.shape:
+        raise ValueError('matching observed point attention/coordinates/mask required')
+    if not bool(valid_mask.any(1).all()):
+        raise ValueError('each training observation needs valid depth')
+    with torch.no_grad():
+        distance2 = ((world_xyz[:, :, None]-reference_endpoints[:, None])**2).sum(-1)
+        kernels = (-distance2/(2*sigma**2)).masked_fill(~reference_mask[:, None], float('-inf'))
+        logits = torch.logsumexp(kernels, dim=-1).masked_fill(~valid_mask, float('-inf'))
+        positive_density = logits.softmax(-1)
+    return -(positive_density*attention.clamp_min(1e-12).log()).sum(-1).mean()
+
+
 def backproject_rgbd(rgb, depth, intrinsics, camera_to_world, pixel_stride=2, max_depth=10.0):
     """Build an unlabelled observed point grid, preserving exact sampled pixels.
 

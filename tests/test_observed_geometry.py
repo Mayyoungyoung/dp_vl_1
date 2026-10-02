@@ -72,6 +72,22 @@ def test_empty_point_mask_rejected():
         ObservedGeometryEncoder(16)(**batch)
 
 
+def test_auxiliary_endpoint_labels_are_training_only_positive_mixtures():
+    from routeset.observed_geometry import positive_endpoint_attention_loss
+    points = torch.tensor([[[0.,0.,0.],[1.,0.,0.],[2.,0.,0.]]])
+    endpoints = torch.tensor([[[0.,0.,0.],[2.,0.,0.]]], requires_grad=True)
+    mask = torch.ones((1,3), dtype=torch.bool)
+    refs = torch.ones((1,2), dtype=torch.bool)
+    positive = torch.tensor([[.49,.02,.49]], requires_grad=True)
+    middle = torch.tensor([[.01,.98,.01]])
+    loss = positive_endpoint_attention_loss(positive,points,mask,endpoints,refs,.05)
+    assert loss < positive_endpoint_attention_loss(middle,points,mask,endpoints,refs,.05)
+    loss.backward()
+    assert positive.grad is not None and endpoints.grad is None
+    with pytest.raises(ValueError, match='positive endpoint'):
+        positive_endpoint_attention_loss(positive,points,mask,endpoints,~refs,.05)
+
+
 def test_route_head_start_endpoint_bound_and_parameter_update():
     torch.set_num_threads(1)
     model = ObservedGeometryRouteHead(16, horizon=8, width=16, point_width=8)

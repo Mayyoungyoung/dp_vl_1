@@ -122,7 +122,8 @@ def serialization_check(folder):
     fixtures = dict(manifest=manifest, observations=observation_manifest, restore_reference=reference, attempt_success=success,
                     attempt_failure=failure, supervision=supervision, summary=summary,
                     all_actual_observation_arrays=observed, all_actual_verification_arrays=verification,
-                    randomized_layout_sampling=randomized_layout(271100, observed["gripper_pose"][:3]))
+                    randomized_layout_sampling=randomized_layout(271100, observed["gripper_pose"][:3]),
+                    canonical_restore_diagnostic=dict(difference_from_original=restore, audit=reference))
     hashes = {}
     import hashlib
     import tempfile
@@ -232,6 +233,11 @@ def full_audit(task, obstacles):
     handles = sim.simGetObjectsInTree(sim.sim_handle_scene, ObjectType.ALL.value, 0)
     inventory = sorted((sim.simGetObjectName(handle), int(handle), int(sim.simGetObjectType(handle)))
                        for handle in handles)
+    # Include global cameras/lights and every robot link, not only the task
+    # subtree. This diagnoses image changes that coarse task state misses.
+    for name, handle, object_type in inventory:
+        state["_global_pose_" + name] = dict(pose=sim.simGetObjectPosition(handle, -1) +
+                                           sim.simGetObjectQuaternion(handle, -1))
     return dict(state=state, inventory=inventory)
 
 
@@ -337,6 +343,8 @@ def main():
     parser.add_argument("--minimum-target-pixels", type=int, default=10)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--serialization-check", type=Path, help="saved parent folder; checks actual array types without starting simulation")
+    parser.add_argument("--diagnostic-restores", type=int, default=0,
+                        help="save additional canonical restores before attempts; never replace the original reference")
     args = parser.parse_args()
     if args.self_test:
         self_test()
@@ -348,6 +356,8 @@ def main():
         parser.error("new --output directory, positive parents and valid dev-parent count required")
     if args.target_layout == "safe_randomized_v3" and args.obstacles != 1:
         parser.error("safe_randomized_v3 currently declares exactly one physical obstacle")
+    if args.diagnostic_restores < 0:
+        parser.error("diagnostic restore count must be nonnegative")
     from pyrep.const import ObjectType, PrimitiveShape
     from pyrep.objects.shape import Shape
     from rlbench.action_modes.action_mode import MoveArmThenGripper
@@ -391,6 +401,7 @@ def main():
                                     global_object_inventory_must_match=True),
                     continuous_whole_robot_collision_certified=False, parents_requested=args.parents,
                     joint_state_traces_recorded=True,
+                    diagnostic_restores=args.diagnostic_restores, diagnostic_restores_do_not_replace_reference=True,
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
                     target_layout_description=layout_descriptions[args.target_layout],
@@ -473,6 +484,21 @@ def main():
                     if not np.allclose(shape.get_position(), center, atol=1e-6, rtol=0):
                         raise RuntimeError("initial restored physical box center differs from validation geometry")
                 reference = full_audit(task, obstacles)
+                for diagnostic in range(args.diagnostic_restores):
+                    restore_full_snapshot(task, snapshot)
+                    diagnostic_observation = task.get_observation()
+                    diagnostic_audit = full_audit(task, obstacles)
+                    diagnostic_prefix = "restore_diagnostic_%02d" % diagnostic
+                    Image.fromarray(diagnostic_observation.front_rgb).save(folder / (diagnostic_prefix + ".png"))
+                    np.savez_compressed(folder / (diagnostic_prefix + ".npz"),
+                        rgb=diagnostic_observation.front_rgb, depth=diagnostic_observation.front_depth,
+                        mask=diagnostic_observation.front_mask,
+                        camera_intrinsics=diagnostic_observation.misc["front_camera_intrinsics"],
+                        camera_extrinsics=diagnostic_observation.misc["front_camera_extrinsics"])
+                    (folder / (diagnostic_prefix + ".json")).write_text(json_text(dict(
+                        difference_from_original=compare_restore(reference, diagnostic_audit, initial.front_rgb,
+                                                                 diagnostic_observation.front_rgb),
+                        audit=diagnostic_audit)), encoding="utf-8")
                 visible = [int(np.sum(initial.front_mask == target.get_handle())) for target in targets]
                 if min(visible) < args.minimum_target_pixels:
                     raise RuntimeError("target visibility check failed: pixels=" + str(visible))
@@ -528,9 +554,18 @@ def main():
                         task.reset()
                         restore_full_snapshot(task, snapshot)
                         restored = task.get_observation()
-                        difference = compare_restore(reference, full_audit(task, obstacles), initial.front_rgb, restored.front_rgb)
+                        restored_audit = full_audit(task, obstacles)
+                        difference = compare_restore(reference, restored_audit, initial.front_rgb, restored.front_rgb)
                         record["restore"] = difference
                         if not difference["global_inventory_equal"] or difference["max_abs"] > args.restore_atol or difference["rgb_max_difference"] != 0:
+                            diagnostic_prefix = "failed_restore_target%d_attempt%d" % (target_index, attempt)
+                            Image.fromarray(restored.front_rgb).save(folder / (diagnostic_prefix + ".png"))
+                            np.savez_compressed(folder / (diagnostic_prefix + ".npz"), rgb=restored.front_rgb,
+                                depth=restored.front_depth, mask=restored.front_mask,
+                                camera_intrinsics=restored.misc["front_camera_intrinsics"],
+                                camera_extrinsics=restored.misc["front_camera_extrinsics"])
+                            (folder / (diagnostic_prefix + ".json")).write_text(json_text(restored_audit), encoding="utf-8")
+                            record["failed_restore_diagnostic_prefix"] = parent_id + "/" + diagnostic_prefix
                             raise RuntimeError("full initial inventory/state/RGB equality failed")
                         restores += 1
                         arm = task._robot.arm
