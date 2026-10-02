@@ -1,5 +1,11 @@
 # State — 2026-10-02
 
+## Current checkpoint — 20:25 UTC / 2026-10-03 04:25 China
+
+- Actual9e0094a fixed64TRAIN preparation and ordinary1500x32/K4 training COMPLETE; original35% GPU1/CPU0 limit. All64 registered TRAIN parents closed before export. Actual63 parents/189 inputs/1108 positive references, one missing parent283220 unchanged. Capacity/H24 checks1108/1108; same36DEV identity/feature arrays and192000 exposure/init receipts retained. Source collector2626487 continues other registered roles onCPU2/3; no locked raw used.
+- Prefix76 best500 DEV Tip35/144=24.31%,Any12/36=33.33%,knownUnique.6667;last1500 Tip26/144=18.06%,Any22/36=61.11%,knownUnique.1111. These remain mixed baseline results, not method evidence. Saved-pool diagnosis, fixedlastTRAIN and real online36 requests also completed exit0; full archival/analysis is underway, MAIN currently251rows still awaits these new rows.
+- New bounded prefix44/6000 ordinary driver, first16TRAIN cross-goal opportunity audit and original A*32/64 scaling adapters are implemented and independently reviewed. Local combined46pass/1Torch skip before the final metadata-guard repair; server Torch validation is required before execution. No convergence, cross-goal audit or new A* generation has launched yet. Preserve first1500 exact-state gate and separate finish launch; do not interpret extra exposure as a method gain.
+
 ## Current checkpoint — 20:05 UTC / 2026-10-03 04:05 China
 
 - Actual9e0094a fixed32 requested TRAIN /31 observed parents ordinary pipeline is COMPLETE:140 server tests, TRAIN556/556 endpoint-capacity/H24 references pass, 129 real Qwen encodings, same36DEV input/feature arrays and initial weights,1500x32/K4=192000 training states. Missing parent283220 retains3 unavailable inputs/27 unattempted slots. No filtered long/unknown positives.

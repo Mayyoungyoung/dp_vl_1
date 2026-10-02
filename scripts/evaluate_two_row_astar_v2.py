@@ -1,4 +1,4 @@
-"""Fixed TRAIN-fitted observation A* v2 control for the closed formal28 export.
+"""Fixed TRAIN-fitted observation A* v2 control for a closed registered export.
 
 No neural model, planning threshold change, ground-truth inference input,
 replacement candidate, or checkpoint selection. Four submitted slots include
@@ -231,8 +231,11 @@ def run(data,output):
     _,final_gate=verify_export(data)
     if any(digest(path)!=value for path,value in source.items()):raise ValueError('Source changed during fixed control')
     report=dict(protocol=PROTOCOL,baseline='TRAIN prototype plus original observed grid A* v2',metrics=metric,
-        source_export_manifest_sha256=digest(data/'export_manifest.json'),requested_total_inputs=84,
-        actual_total_inputs=manifest['actual_inputs'],requested_total_parents=28,
+        source_export_manifest_sha256=digest(data/'export_manifest.json'),
+        requested_total_inputs=manifest['selection']['requested_inputs'],
+        actual_total_inputs=manifest['actual_inputs'],
+        requested_total_parents=sum(manifest['selection']['requested_parents'].values()),
+        registered_train_parents=manifest['selection']['requested_parents']['TRAIN'],
         planner_config=planner.CONFIG,prototype_config=planner.prototype.CONFIG,fit=fit,
         frozen_planner_source_integrity=planner_source_audit,
         fitting_seconds=fit['elapsed_seconds'],elapsed_seconds=time.perf_counter()-started,

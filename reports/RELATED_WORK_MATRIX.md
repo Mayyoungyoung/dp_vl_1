@@ -1,5 +1,7 @@
 # 任务层路线集合：近邻工作核验矩阵
 
+2026-10-02 20:23 UTC：补充核验见[跨目标机会协议中的一手来源](TWO_ROW_CROSS_GOAL_OPPORTUNITY_PROTOCOL.md)。[GoalFlow，CVPR2025正式论文](https://openaccess.thecvf.com/content/CVPR2025/html/Xing_GoalFlow_Goal-Driven_Flow_Matching_for_Multimodal_Trajectories_Generation_in_End-to-End_CVPR_2025_paper.html)及[官方实现](https://github.com/YvanYin/GoalFlow)已包含场景驱动目标选择和目标条件flow轨迹生成；“目标条件＋flow”不是本项目可单独主张的区别。MTR意图/局部读取、ModeSeq顺序模式记忆、T-MPC跨目标拓扑维护、目标条件VAE的形状/目标分离也继续作为直接限制。此次均为论文与实现来源核验，未复现这些系统。
+
 2026-10-02 18:20 UTC 补充：已核对目标条件轨迹原语、T-MPC、MomAD、EDGI和Eq-Net，见 [跨目标近邻五项核验](POST_K2_CROSS_GOAL_NEIGHBORS.md)。T-MPC明确维护不同目标之间的拓扑类别关系；改变目标本身不构成EDGI式全局等变作用。全部仍为原论文/源码核验，未声称复现。历史补全和局部更新未建立稳定优势，当前先完成新观测数据上的强普通基线。
 
 核验日期：2026-10-02（Asia/Shanghai）。范围为原论文、会议论文集、作者项目页及由原论文/项目页指向的代码。**本文件是文献与源码核验，不是复现结果表；下列外部方法均未在本项目完成复现。** 代码可访问、检查过推理入口、下载过示例和完成训练复现是不同状态。
