@@ -192,3 +192,13 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 固定 `7474782` 的 `observation_prototype_grounding.py` 已分别用旧TRAIN71指令、新32父TRAIN96指令学习颜色原型，再按同一旧8DEV/24指令严格3cm＋身份验收：分别19/24（79.17%）、20/24（83.33%），CPU完整单请求中位12.49/10.73ms。该对照使用TRAIN参考末端附近的当前可见RGB学习原型，测试只看RGB-D、相机与instruction，未知词表明确拒绝；没有测试目标/几何/mask筛点。
 
 它仅输出一个观测表面端点，不产生路线；不能据此报告多路线Valid或执行成功。少数非目标颜色区域会造成米级错误，全部保留后目标误差均值仍33.50/21.22cm。旧版本失败5条、新版本失败4条，包括完整保留的无参考DEV。它显示普通神经空间attention在当前颜色数据上的定位尚不充分；不将这种定位修复包装为研究创新。具体机制、所有失败、语言交换与运行成本见 `reports/OBSERVATION_PROTOTYPE_BASELINE.md` 和对应逐场景JSON。
+
+### 在线RGB-D冻结/LoRA配对入口与CPU验证
+
+新增独立入口 `scripts/train_observed_geometry_lora.py`，复用原在线Qwen的末两层q/v LoRA实现，不改变旧训练脚本行为。两臂必须从同一完整RGB-D辅助模型权重开始，核验架构、官方Qwen/processor、manifest和监督来源；geometry与普通集合头全部继续训练。Qwen逐请求读真实RGB和instruction，不接受隐藏特征缓存。训练可以预处理未学习的RGBXYZ，评价逐请求重新读RGB-D、反投影并执行真实Qwen与头，所有处理计时。
+
+预定新增曝光为每臂1000更新×4观测，K4共16000候选槽；共同预训练128000槽单独记录，不能把新增训练当全部成本。两臂学习率均1e-4、相同endpoint attention权重0.02；step0纳入原23参考ADE选模。最后一步和最优权重分别保存真实在线预测/指标、adapter梯度/参数hash，并保留优化器、调度器、RNG、采样器和全局步数恢复。
+
+固定 `093a1b4` 的首次CPU预检在参数审计阶段失败：旧hash函数无法直接把geometry标量log_attention_scale view为字节。原失败log/exit1完整保留，旧模型/评价无改动。局部修复在新入口flatten后计算hash，固定 `9c19288b0e2fb86b6bea42ac23758314134872c0` 后真实小Qwen结构CPU自测通过：8/8 adapter有非零梯度且真实更新，46/46几何与头参数张量更新，冻结base不变；零B初始化输出与冻结模型逐位相同，optimizer/RNG/sampler/scheduler恢复后的参数最大差为0。小模型测试不等于本轮2B模型已训练成功。
+
+同release的完整new64初始化核验也实际通过：216输入、192有参考TRAIN、24 DEV语义/23 DEV参考；每请求12544观测点、头1231965参数（几何321537），全部训练。共同best SHA `281aa924fd78207ad55795214a232ce87aab7000a8b2da8ea81c805f06d9a5f8`，全部当前图像、RGB-D与路线来源hash和预训练一致。验证不加载隐藏特征缓存、2B骨干或GPU。失败及成功的真实命令、PID、源码SHA、退出码和完整审计在 `reports/observed_online_geometry_preflight/`；GPU正式配对由主任务统一启动与记录。

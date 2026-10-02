@@ -1,0 +1,2060 @@
+{
+  "evaluation_protocol": "observation_eval_v2",
+  "baseline": "TRAIN endpoint-supervised color prototype RGB-D localization",
+  "scope": "closed exact instructions, one observed endpoint; no path, robot validity or open-vocabulary claim",
+  "data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_learning_curve_new32_v1",
+  "script_sha256": "fdeafdbc22f2e0351477e11ea597400d3037d5571369c150a1c70879a1f0a565",
+  "config": {
+    "endpoint_neighborhood_m": 0.04,
+    "color_scale_floor": 0.025,
+    "training_distance_quantile": 0.99,
+    "minimum_component_pixels": 3,
+    "maximum_depth_m": 10.0,
+    "connectivity": 8,
+    "extent_log_scale": 1.0,
+    "prototype": "median RGB and smoothed chromaticity",
+    "component_rule": "mean color likelihood times soft TRAIN metric-extent prior",
+    "prediction_rule": "observed point nearest component world-coordinate median"
+  },
+  "inputs": [
+    "current RGB",
+    "current optical-axis depth",
+    "camera intrinsics and camera-to-world",
+    "exact instruction"
+  ],
+  "candidate_budget": 1,
+  "proposal_budget_includes_abstentions": true,
+  "internal_components_are": "image segmentation hypotheses, not generated route candidates; all counts recorded",
+  "goal_rule": "original nearest-target identity AND <=0.03m; failed/unknown localization counted as zero",
+  "examples": 12,
+  "semantic_evaluation_examples": 12,
+  "reference_evaluation_examples": 12,
+  "semantic_goal_accuracy": 1.0,
+  "unknown_instruction_count": 0,
+  "abstention_count": 0,
+  "goal_error_m_conditional_on_prediction": 0.025508589874124913,
+  "reference_endpoint_error_m_conditional_on_prediction": 0.025805947545094462,
+  "cpu_latency_ms": {
+    "median": 12.86048348993063,
+    "p95": 14.674077229574323,
+    "first": 14.46097798179835,
+    "includes": "RGB/depth loading, camera backprojection, color segmentation, component scoring and endpoint; no Qwen/scoring/robot execution"
+  },
+  "language_swap": {
+    "directed_pairs": 24,
+    "changed_instruction_semantic_accuracy": 1.0,
+    "stale_instruction_semantic_accuracy": 0.0,
+    "per_pair": [
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target0",
+        "changed_instruction_id": "obstacle_reach_271100_target1",
+        "endpoint_response_m": 0.48152809189681656,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target0",
+        "changed_instruction_id": "obstacle_reach_271100_target2",
+        "endpoint_response_m": 0.18383266032581003,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target1",
+        "changed_instruction_id": "obstacle_reach_271100_target0",
+        "endpoint_response_m": 0.48152809189681656,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target1",
+        "changed_instruction_id": "obstacle_reach_271100_target2",
+        "endpoint_response_m": 0.2985343191129367,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target2",
+        "changed_instruction_id": "obstacle_reach_271100_target0",
+        "endpoint_response_m": 0.18383266032581003,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271100",
+        "original_id": "obstacle_reach_271100_target2",
+        "changed_instruction_id": "obstacle_reach_271100_target1",
+        "endpoint_response_m": 0.2985343191129367,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target0",
+        "changed_instruction_id": "obstacle_reach_271101_target1",
+        "endpoint_response_m": 0.48427173960999986,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target0",
+        "changed_instruction_id": "obstacle_reach_271101_target2",
+        "endpoint_response_m": 0.16384444859300185,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target1",
+        "changed_instruction_id": "obstacle_reach_271101_target0",
+        "endpoint_response_m": 0.48427173960999986,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target1",
+        "changed_instruction_id": "obstacle_reach_271101_target2",
+        "endpoint_response_m": 0.322096940644026,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target2",
+        "changed_instruction_id": "obstacle_reach_271101_target0",
+        "endpoint_response_m": 0.16384444859300185,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271101",
+        "original_id": "obstacle_reach_271101_target2",
+        "changed_instruction_id": "obstacle_reach_271101_target1",
+        "endpoint_response_m": 0.322096940644026,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target0",
+        "changed_instruction_id": "obstacle_reach_271102_target1",
+        "endpoint_response_m": 0.2985942679191171,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target0",
+        "changed_instruction_id": "obstacle_reach_271102_target2",
+        "endpoint_response_m": 0.15702708629346615,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target1",
+        "changed_instruction_id": "obstacle_reach_271102_target0",
+        "endpoint_response_m": 0.2985942679191171,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target1",
+        "changed_instruction_id": "obstacle_reach_271102_target2",
+        "endpoint_response_m": 0.44487861661256656,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target2",
+        "changed_instruction_id": "obstacle_reach_271102_target0",
+        "endpoint_response_m": 0.15702708629346615,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271102",
+        "original_id": "obstacle_reach_271102_target2",
+        "changed_instruction_id": "obstacle_reach_271102_target1",
+        "endpoint_response_m": 0.44487861661256656,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target0",
+        "changed_instruction_id": "obstacle_reach_271103_target1",
+        "endpoint_response_m": 0.4060997391479358,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target0",
+        "changed_instruction_id": "obstacle_reach_271103_target2",
+        "endpoint_response_m": 0.1508272437159498,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target1",
+        "changed_instruction_id": "obstacle_reach_271103_target0",
+        "endpoint_response_m": 0.4060997391479358,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target1",
+        "changed_instruction_id": "obstacle_reach_271103_target2",
+        "endpoint_response_m": 0.25934549037939336,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target2",
+        "changed_instruction_id": "obstacle_reach_271103_target0",
+        "endpoint_response_m": 0.1508272437159498,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      },
+      {
+        "parent_id": "obstacle_reach_271103",
+        "original_id": "obstacle_reach_271103_target2",
+        "changed_instruction_id": "obstacle_reach_271103_target1",
+        "endpoint_response_m": 0.25934549037939336,
+        "changed_instruction_semantic_accuracy": 1.0,
+        "stale_instruction_semantic_accuracy": 0.0
+      }
+    ]
+  },
+  "manifest_sha256": {
+    "observations.jsonl": "878ae1935499a5c5e6e64c4922f2d7cd6c1ffb80a0b0329af6e3b37efd914dfe",
+    "supervision.jsonl": "e7aa3be20b14bee36e91104e6de330595de0abe53f0b93730ac1713625c6cf84"
+  },
+  "model": {
+    "prototypes": {
+      "Move the gripper to touch the red sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.7607843137254902,
+          0.0,
+          0.0,
+          0.9505574406204556,
+          0.024721279689772176,
+          0.024721279689772176
+        ],
+        "scale": [
+          0.18823529411764706,
+          0.025,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 23.799039004323756,
+        "extent_m": 0.05767849443423576,
+        "train_examples": 5,
+        "train_pixels": 656
+      },
+      "Move the gripper to touch the purple sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.35294117647058826,
+          0.0,
+          0.35294117647058826,
+          0.48638547784303254,
+          0.02722904431393486,
+          0.48638547784303254
+        ],
+        "scale": [
+          0.09019607843137256,
+          0.025,
+          0.09019607843137256,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 7.510605909083827,
+        "extent_m": 0.05888766686690637,
+        "train_examples": 5,
+        "train_pixels": 523
+      },
+      "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.35294117647058826,
+          0.0,
+          0.0,
+          0.9012584704743466,
+          0.04937076476282672,
+          0.04937076476282672
+        ],
+        "scale": [
+          0.09803921568627452,
+          0.025,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 35.98549409994544,
+        "extent_m": 0.058186313617827806,
+        "train_examples": 9,
+        "train_pixels": 1022
+      },
+      "Move the gripper to touch the gray sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.36568627450980395,
+          0.36568627450980395,
+          0.36568627450980395,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ],
+        "scale": [
+          0.0963529411764706,
+          0.0963529411764706,
+          0.0963529411764706,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 1.4660235000080335,
+        "extent_m": 0.057701578247046616,
+        "train_examples": 10,
+        "train_pixels": 1211
+      },
+      "Move the gripper to touch the lime sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.7686274509803922,
+          0.0,
+          0.02460202604920405,
+          0.9507959479015918,
+          0.02460202604920405
+        ],
+        "scale": [
+          0.025,
+          0.18823529411764706,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 18.80089694060262,
+        "extent_m": 0.05809022215520284,
+        "train_examples": 5,
+        "train_pixels": 724
+      },
+      "Move the gripper to touch the white sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.642156862745098,
+          0.642156862745098,
+          0.642156862745098,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ],
+        "scale": [
+          0.16160784313725488,
+          0.16160784313725488,
+          0.16160784313725488,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 1.1226353133178752,
+        "extent_m": 0.05740697662903095,
+        "train_examples": 4,
+        "train_pixels": 475
+      },
+      "Move the gripper to touch the black sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333337,
+          0.33333333333333337,
+          0.33333333333333337
+        ],
+        "scale": [
+          0.025,
+          0.025,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 6.20831987697042,
+        "extent_m": 0.05870468783264476,
+        "train_examples": 5,
+        "train_pixels": 614
+      },
+      "Move the gripper to touch the green sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.3254901960784314,
+          0.0,
+          0.05188199389623601,
+          0.896236012207528,
+          0.05188199389623601
+        ],
+        "scale": [
+          0.025,
+          0.09411764705882353,
+          0.025,
+          0.025,
+          0.043276646643120344,
+          0.025
+        ],
+        "threshold": 25.0313871810207,
+        "extent_m": 0.059225125103746695,
+        "train_examples": 5,
+        "train_pixels": 452
+      },
+      "Move the gripper to touch the olive sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.3215686274509804,
+          0.3215686274509804,
+          0.0,
+          0.48553555278212934,
+          0.48553555278212934,
+          0.02892889443574129
+        ],
+        "scale": [
+          0.06447058823529413,
+          0.06447058823529413,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 5.596760321027954,
+        "extent_m": 0.05923680341512531,
+        "train_examples": 2,
+        "train_pixels": 239
+      },
+      "Move the gripper to touch the blue sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.0,
+          0.653921568627451,
+          0.028604377051949535,
+          0.028604377051949535,
+          0.942791245896101
+        ],
+        "scale": [
+          0.025,
+          0.025,
+          0.15254901960784317,
+          0.025,
+          0.025,
+          0.025428195604255334
+        ],
+        "threshold": 24.92530215740545,
+        "extent_m": 0.05695513564857834,
+        "train_examples": 4,
+        "train_pixels": 379
+      },
+      "Move the gripper to touch the navy sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.0,
+          0.3235294117647059,
+          0.053237358333905395,
+          0.053237358333905395,
+          0.8935252833321893
+        ],
+        "scale": [
+          0.025,
+          0.025,
+          0.06470588235294117,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 26.242153283264674,
+        "extent_m": 0.05766813511025924,
+        "train_examples": 5,
+        "train_pixels": 580
+      },
+      "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.7549019607843137,
+          0.7549019607843137,
+          0.0,
+          0.49361382419233657,
+          0.49361382419233657,
+          0.012772351615326822
+        ],
+        "scale": [
+          0.1941176470588235,
+          0.1941176470588235,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 4.390783360784954,
+        "extent_m": 0.057929266826984974,
+        "train_examples": 5,
+        "train_pixels": 701
+      },
+      "Move the gripper to touch the cyan sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.7215686274509804,
+          0.7215686274509804,
+          0.013885107541519195,
+          0.4930574462292404,
+          0.4930574462292404
+        ],
+        "scale": [
+          0.025,
+          0.196078431372549,
+          0.196078431372549,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 4.871158880419751,
+        "extent_m": 0.05848923953686943,
+        "train_examples": 3,
+        "train_pixels": 318
+      },
+      "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.6549019607843137,
+          0.0,
+          0.6549019607843137,
+          0.4925065471050902,
+          0.0149869057898196,
+          0.4925065471050902
+        ],
+        "scale": [
+          0.15294117647058825,
+          0.025,
+          0.15294117647058825,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 6.121946598546531,
+        "extent_m": 0.05758808439010561,
+        "train_examples": 5,
+        "train_pixels": 500
+      },
+      "Move the gripper to touch the silver sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.4843137254901961,
+          0.4843137254901961,
+          0.4843137254901961,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ],
+        "scale": [
+          0.0945882352941177,
+          0.0945882352941177,
+          0.0945882352941177,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 1.8583234325883007,
+        "extent_m": 0.057677140228953455,
+        "train_examples": 4,
+        "train_pixels": 492
+      },
+      "Move the gripper to touch the rose sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.6774509803921569,
+          0.0,
+          0.3411764705882353,
+          0.6473202822856106,
+          0.019101461278778036,
+          0.3333333333333333
+        ],
+        "scale": [
+          0.13137254901960788,
+          0.025,
+          0.06619607843137254,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 5.631788445907167,
+        "extent_m": 0.057065905233824696,
+        "train_examples": 4,
+        "train_pixels": 460
+      },
+      "Move the gripper to touch the azure sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.346078431372549,
+          0.6901960784313725,
+          0.01866081229418222,
+          0.3333333333333333,
+          0.6477768510552597
+        ],
+        "scale": [
+          0.025,
+          0.07058823529411765,
+          0.1454901960784314,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 4.868741906575085,
+        "extent_m": 0.05789597210272242,
+        "train_examples": 6,
+        "train_pixels": 655
+      },
+      "Move the gripper to touch the orange sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.6745098039215687,
+          0.3411764705882353,
+          0.0,
+          0.6476596440482534,
+          0.33333333333333337,
+          0.018848570224727135
+        ],
+        "scale": [
+          0.1465882352941176,
+          0.07043137254901964,
+          0.025,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 6.720254834263096,
+        "extent_m": 0.05690383434505206,
+        "train_examples": 2,
+        "train_pixels": 196
+      },
+      "Move the gripper to touch the teal sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.0,
+          0.37254901960784315,
+          0.37254901960784315,
+          0.024841695080370187,
+          0.48757915245981487,
+          0.48757915245981487
+        ],
+        "scale": [
+          0.025,
+          0.09411764705882353,
+          0.09411764705882353,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 6.103675261152166,
+        "extent_m": 0.05805436363455518,
+        "train_examples": 3,
+        "train_pixels": 407
+      },
+      "Move the gripper to touch the violet sphere while avoiding the gray obstacle.": {
+        "center": [
+          0.3568627450980392,
+          0.0,
+          0.7137254901960784,
+          0.3333333333333333,
+          0.018259935553168637,
+          0.6481418342993522
+        ],
+        "scale": [
+          0.09019607843137256,
+          0.025,
+          0.18760784313725493,
+          0.025,
+          0.025,
+          0.025
+        ],
+        "threshold": 8.447152291457215,
+        "extent_m": 0.05706845061394956,
+        "train_examples": 3,
+        "train_pixels": 350
+      }
+    },
+    "config": {
+      "endpoint_neighborhood_m": 0.04,
+      "color_scale_floor": 0.025,
+      "training_distance_quantile": 0.99,
+      "minimum_component_pixels": 3,
+      "maximum_depth_m": 10.0,
+      "connectivity": 8,
+      "extent_log_scale": 1.0,
+      "prototype": "median RGB and smoothed chromaticity",
+      "component_rule": "mean color likelihood times soft TRAIN metric-extent prior",
+      "prediction_rule": "observed point nearest component world-coordinate median"
+    },
+    "training_examples": 94,
+    "training_parents": 32,
+    "training_seconds": 1.423743671970442,
+    "training_rows": [
+      {
+        "id": "obstacle_reach_272000_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+        "pixels": 151,
+        "visible_extent_m": 0.05724828947752372,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272000_target1",
+        "used": false,
+        "reason": "no_positive_reference"
+      },
+      {
+        "id": "obstacle_reach_272000_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the purple sphere while avoiding the gray obstacle.",
+        "pixels": 87,
+        "visible_extent_m": 0.0601436278342013,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272001_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 146,
+        "visible_extent_m": 0.05592706620701474,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272001_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the purple sphere while avoiding the gray obstacle.",
+        "pixels": 114,
+        "visible_extent_m": 0.05772724747059841,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272001_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 87,
+        "visible_extent_m": 0.05884179705038025,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272002_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+        "pixels": 155,
+        "visible_extent_m": 0.05811816987212027,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272002_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the white sphere while avoiding the gray obstacle.",
+        "pixels": 89,
+        "visible_extent_m": 0.057251228542443446,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272002_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+        "pixels": 123,
+        "visible_extent_m": 0.059037381028893006,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272003_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.06019752432185027,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272003_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 150,
+        "visible_extent_m": 0.057657633245600554,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272003_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the olive sphere while avoiding the gray obstacle.",
+        "pixels": 122,
+        "visible_extent_m": 0.05921654407377208,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272004_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the blue sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.057425899023917294,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272004_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 138,
+        "visible_extent_m": 0.05752632442566339,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272004_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+        "pixels": 107,
+        "visible_extent_m": 0.05562928307854135,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272005_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the navy sphere while avoiding the gray obstacle.",
+        "pixels": 119,
+        "visible_extent_m": 0.056955713960319246,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272005_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 88,
+        "visible_extent_m": 0.05812724258157694,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272005_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+        "pixels": 139,
+        "visible_extent_m": 0.05670256298361042,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272006_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.",
+        "pixels": 151,
+        "visible_extent_m": 0.05784069849953708,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272006_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+        "pixels": 83,
+        "visible_extent_m": 0.05884754981595058,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272006_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 119,
+        "visible_extent_m": 0.05774552324849268,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272007_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the cyan sphere while avoiding the gray obstacle.",
+        "pixels": 91,
+        "visible_extent_m": 0.05848923953686943,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272007_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 137,
+        "visible_extent_m": 0.05782838342366941,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272007_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 109,
+        "visible_extent_m": 0.057304772205880976,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272008_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.",
+        "pixels": 89,
+        "visible_extent_m": 0.056452638472786365,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272008_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the white sphere while avoiding the gray obstacle.",
+        "pixels": 155,
+        "visible_extent_m": 0.05801763406476154,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272008_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the blue sphere while avoiding the gray obstacle.",
+        "pixels": 115,
+        "visible_extent_m": 0.05632227093989252,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272009_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the silver sphere while avoiding the gray obstacle.",
+        "pixels": 138,
+        "visible_extent_m": 0.057249069008134985,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272009_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+        "pixels": 83,
+        "visible_extent_m": 0.05876453060852942,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272009_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+        "pixels": 117,
+        "visible_extent_m": 0.05640552744190383,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272010_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 87,
+        "visible_extent_m": 0.0576369870897667,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272010_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 108,
+        "visible_extent_m": 0.0595611644098867,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272010_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+        "pixels": 149,
+        "visible_extent_m": 0.05767849443423576,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272011_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the orange sphere while avoiding the gray obstacle.",
+        "pixels": 83,
+        "visible_extent_m": 0.05527714436602695,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272011_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 121,
+        "visible_extent_m": 0.057773378415628636,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272011_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the teal sphere while avoiding the gray obstacle.",
+        "pixels": 153,
+        "visible_extent_m": 0.05805436363455518,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272012_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the olive sphere while avoiding the gray obstacle.",
+        "pixels": 117,
+        "visible_extent_m": 0.05925706275647853,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272012_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the cyan sphere while avoiding the gray obstacle.",
+        "pixels": 88,
+        "visible_extent_m": 0.0597882569429906,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272012_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 139,
+        "visible_extent_m": 0.05558582389852594,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272013_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the purple sphere while avoiding the gray obstacle.",
+        "pixels": 90,
+        "visible_extent_m": 0.05658109233534061,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272013_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+        "pixels": 152,
+        "visible_extent_m": 0.05868373053469494,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272013_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the silver sphere while avoiding the gray obstacle.",
+        "pixels": 115,
+        "visible_extent_m": 0.05810521144977193,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272014_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the teal sphere while avoiding the gray obstacle.",
+        "pixels": 113,
+        "visible_extent_m": 0.05647396202406787,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272014_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.",
+        "pixels": 154,
+        "visible_extent_m": 0.057929266826984974,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272014_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 85,
+        "visible_extent_m": 0.058349975334259875,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272015_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.05881450827193495,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272015_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 140,
+        "visible_extent_m": 0.056802175145900545,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272015_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 121,
+        "visible_extent_m": 0.060144517551564976,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272016_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the violet sphere while avoiding the gray obstacle.",
+        "pixels": 112,
+        "visible_extent_m": 0.05706845061394956,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272016_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+        "pixels": 157,
+        "visible_extent_m": 0.058172637143297186,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272016_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.05957438639567812,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272017_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+        "pixels": 120,
+        "visible_extent_m": 0.05653479082716853,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272017_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+        "pixels": 88,
+        "visible_extent_m": 0.0590027378793127,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272017_target2",
+        "used": false,
+        "reason": "no_positive_reference"
+      },
+      {
+        "id": "obstacle_reach_272018_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+        "pixels": 112,
+        "visible_extent_m": 0.05870468783264476,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272018_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 92,
+        "visible_extent_m": 0.058652030352417214,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272018_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the purple sphere while avoiding the gray obstacle.",
+        "pixels": 143,
+        "visible_extent_m": 0.05888766686690637,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272019_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the white sphere while avoiding the gray obstacle.",
+        "pixels": 113,
+        "visible_extent_m": 0.05661618322190768,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272019_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 142,
+        "visible_extent_m": 0.05621886872100826,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272019_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the violet sphere while avoiding the gray obstacle.",
+        "pixels": 89,
+        "visible_extent_m": 0.060047629258916005,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272020_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+        "pixels": 153,
+        "visible_extent_m": 0.05704318851453065,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272020_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the navy sphere while avoiding the gray obstacle.",
+        "pixels": 92,
+        "visible_extent_m": 0.05831917893048198,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272020_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.",
+        "pixels": 118,
+        "visible_extent_m": 0.05787636022218031,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272021_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 93,
+        "visible_extent_m": 0.058186313617827806,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272021_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the white sphere while avoiding the gray obstacle.",
+        "pixels": 118,
+        "visible_extent_m": 0.05756272471561845,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272021_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+        "pixels": 153,
+        "visible_extent_m": 0.05809022215520284,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272022_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+        "pixels": 111,
+        "visible_extent_m": 0.05678271108458837,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272022_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 87,
+        "visible_extent_m": 0.05692672557826204,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272022_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 151,
+        "visible_extent_m": 0.05898926681837637,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272023_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.059225125103746695,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272023_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.",
+        "pixels": 120,
+        "visible_extent_m": 0.05681441434201666,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272023_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the teal sphere while avoiding the gray obstacle.",
+        "pixels": 141,
+        "visible_extent_m": 0.058742104399195284,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272024_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the blue sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.05648437227323939,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272024_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the silver sphere while avoiding the gray obstacle.",
+        "pixels": 119,
+        "visible_extent_m": 0.05594980238981735,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272024_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the navy sphere while avoiding the gray obstacle.",
+        "pixels": 153,
+        "visible_extent_m": 0.05796611143949486,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272025_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the navy sphere while avoiding the gray obstacle.",
+        "pixels": 110,
+        "visible_extent_m": 0.05643653436218828,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272025_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.",
+        "pixels": 157,
+        "visible_extent_m": 0.05809583203799442,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272025_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+        "pixels": 86,
+        "visible_extent_m": 0.05653804050219867,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272026_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray obstacle.",
+        "pixels": 153,
+        "visible_extent_m": 0.056483222880639235,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272026_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+        "pixels": 111,
+        "visible_extent_m": 0.05801856578981621,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272026_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.",
+        "pixels": 90,
+        "visible_extent_m": 0.060259585933500975,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272027_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the cyan sphere while avoiding the gray obstacle.",
+        "pixels": 139,
+        "visible_extent_m": 0.057789135333523,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272027_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+        "pixels": 120,
+        "visible_extent_m": 0.05792548444854647,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272027_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the purple sphere while avoiding the gray obstacle.",
+        "pixels": 89,
+        "visible_extent_m": 0.059884062118388204,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272028_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray obstacle.",
+        "pixels": 83,
+        "visible_extent_m": 0.05758808439010561,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272028_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 118,
+        "visible_extent_m": 0.058111729604945324,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272028_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+        "pixels": 140,
+        "visible_extent_m": 0.057597019640480855,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272029_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the silver sphere while avoiding the gray obstacle.",
+        "pixels": 120,
+        "visible_extent_m": 0.05926916708573951,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272029_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the blue sphere while avoiding the gray obstacle.",
+        "pixels": 92,
+        "visible_extent_m": 0.058319591566596496,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272029_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the violet sphere while avoiding the gray obstacle.",
+        "pixels": 149,
+        "visible_extent_m": 0.056886424074829314,
+        "positive_references": 1
+      },
+      {
+        "id": "obstacle_reach_272030_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+        "pixels": 147,
+        "visible_extent_m": 0.05558840334496092,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272030_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+        "pixels": 83,
+        "visible_extent_m": 0.05806391988031706,
+        "positive_references": 2
+      },
+      {
+        "id": "obstacle_reach_272030_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the navy sphere while avoiding the gray obstacle.",
+        "pixels": 106,
+        "visible_extent_m": 0.05766813511025924,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272031_target0",
+        "used": true,
+        "instruction": "Move the gripper to touch the orange sphere while avoiding the gray obstacle.",
+        "pixels": 113,
+        "visible_extent_m": 0.05853052432407717,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272031_target1",
+        "used": true,
+        "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+        "pixels": 90,
+        "visible_extent_m": 0.06065576031962984,
+        "positive_references": 3
+      },
+      {
+        "id": "obstacle_reach_272031_target2",
+        "used": true,
+        "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+        "pixels": 148,
+        "visible_extent_m": 0.05634742157459446,
+        "positive_references": 3
+      }
+    ],
+    "training_source_sha256": {
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target0_route0.npz": "cfc7f73b1380f3406d4cdf732dbcce5022bf5ac2710892544c4dbb554db5ec25",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target0_route1.npz": "d946dec27d5445bc38cf13574049a486c517cc07e5778dfe03433ce66f05a9e2",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/front.png": "6453375a4fd03c191fe3dcc060628b22b058821d148b8ddd7b4942acdc123759",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/observation.npz": "5428c215ce45e1254061fb26f808c10b38b0cc3406372b9d975f60e2c425a9f1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target2_route0.npz": "803205d601cded897b658c298ea6df2fe78c39d265a16dd4fe745732ecd4a1ab",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target2_route3.npz": "834b784368196c5f644bdd693d29e2dba4da7a840df6a3ac35e781003a712a9c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target0_route0.npz": "d924255bfbf28b0e7f42a9b066f64327bc3717da394cad474024bd4dfcf87b2f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target0_route3.npz": "5718eb88354c0add7b8ecb46946d1f64537b3dcef7811c2879e7b410b5e09f37",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/front.png": "108c7f516bfdf3aefd96386b38beca4ea6ceeb344fac58b75b1e08035b2a7f65",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/observation.npz": "c1e96e46b45a798be0dcaa0af838908afb30aacd1f8b35cd90fc3417ee6318aa",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target1_route0.npz": "f8f03483cd5fcaf6725593cf5d8ccc4d2803223c2bf214e2a2d91d20a31efdfd",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target1_route3.npz": "a6148597d63262d381f400f6d8fbd67adfd763c4d5e4da1e7e0da491a4945243",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target2_route0.npz": "b4cd8c28029722fac83e0016137d967bac1a8757cd7cfd96f3fadce2f0e759d5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target2_route3.npz": "6ad4b29ca94d594084ae28f36b9bc453c2d6e5769bb31ac27720efef79cd4342",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target0_route0.npz": "60945607abc18d5fe6b3e336da73a993c0e7cae8647031aa30c94e73062bdcf0",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/front.png": "5f135fce6661c93569d2c3fb8a1c5feac196bcde73284f3c53715a035dae2974",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/observation.npz": "eaab9cc7bb765e032cfc3ddd05bb5ee4497a0ef136dd49c917afe710c3fdaf5a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target1_route0.npz": "8d7b948699121fc9bbabe34fcaaf5059dc84173347267b0868df59b91461cd59",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target1_route3.npz": "b8e3a9127329478fa9a8621422fb7a3e4840745b868f9e936e81d9616a202443",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target2_route0.npz": "627c9d62a317a03f3e4f4b49a21866e18c914d0baecb0da51749b2eafdaaa1f5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target0_route0.npz": "0cadf7e8c03702e60e4f91efbc41700981dec0ae108f5dc0978caa8ff15657d6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target0_route3.npz": "e9e2b4f85232975126cec84280884e2202f6393939b7f41a7e9598ed6a6b62c5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/front.png": "321f24ac915d8569a25379d10084a990e5b86525ad36e2951720ae6bc0f28488",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/observation.npz": "c373855be3e46fbdf095fb5cd9a123f50d1b240e751cbbdafc2ad77b62a97ab5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target1_route3.npz": "3ef6eb3069d45716c4656b1f9f04c2c06047385518b891a72e6e5fcd04b2e4e4",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target2_route0.npz": "0bc3836db4d8e906a6b641357d63d74319afe04366a90b325a316546cf94c494",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target2_route3.npz": "55000251114cbadcff6b92851661a2bdf743085d507326ded14da7e90f940ba1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target0_route0.npz": "5677374bf82d1b3c5c4aa73913917b2fbb59e53559172bfab184646149c4573e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target0_route3.npz": "1c30561b071dbd613548023fb3d7335ad03f89f35490d2c46981fac50b74f270",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/front.png": "43a4c11adc5f17e4b81507ca14123d3b66076fb50e46374e5d67d3ddedeb7a58",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/observation.npz": "a42236ed6d26c3ed4d1ed0d52e58fcbb5b53eb130be60fb386728fc6ec8e42f4",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target1_route0.npz": "74e71e5dcddebaaf9ee8a8ad708d67e80b4aa9078509f9076bb7e5df520af31e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target1_route3.npz": "0109d7d61998218e35acbef6575710a97e18d8e1af87f5acb55eeaba7ff88d18",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target2_route0.npz": "47d483b02c92ef6eb02115b6b981cccd406f5a3da2303df831f5fa907fc2283b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target0_route1.npz": "f5fc4862f9773e3ed72c1bda007979ece2332d8459b445915466c206ca68257d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target0_route3.npz": "061480f9c11b8205dcd8b42cac452a9432497f50019ff2d2a1d0a2a0dfb2accd",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/front.png": "0aef8a6d19f9740844c37acbf838e5295a77133048c747c098d6870f4dfb8098",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/observation.npz": "a5d7fee66e0d75c21623ec370bfc3853944102b9ba38cb2add23d21bc7269061",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route0.npz": "fcb5d568332782a5614b4d164cf7597dbcca4e5c6bc6ea3efa682dc07e7f9886",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route1.npz": "beb64de7456727f10ce3d9d4cd6ccbc9fa5ac0de409780496c291670600a78da",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route3.npz": "645bb3fed2151028302d78e6d74db3c304d763a97c8cef96c40a7cf31ec11793",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target2_route1.npz": "a1457218db1fc9c430653fdc458a6e4fde25d537ccee938fcd6a67921d4988dd",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target0_route0.npz": "469e29fb52e02f3fef7c454b0aa45190de2baf51bf12c8a5f4ef7bd1f5734607",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target0_route3.npz": "fdda313bebe61da5f9bcb10087ceac4e58e06576832f6d9c6209700c0eaf84df",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/front.png": "964502918c433fbcf44bc93cf6756a4e56f528e37497df681e1055c2bfa97b9b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/observation.npz": "430e9218945ac702830a3e32d9857208fc1cd9817f4c58f7484519f0971b566c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target1_route0.npz": "5b1e151edf601ca56e796dd2f465730f4bad2a1c41cf61e7df3010162b328bb0",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target2_route0.npz": "f1a33fcb1066505f05068f422b98844ea0d10e5d2ff9583505d56ffecd898a4a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target2_route3.npz": "8cc241204f70eed361fdf13566fd6e7afdc54c08f6fcd8fb70b9ef0e10a5f98f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route0.npz": "194da266b172a380291d3afc0782f39a54e5f6c0da4adba7df755755dbd3c073",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route1.npz": "7a7b7e8e2c820a57bdb26fee0f1a27cde29dbce137e35b2a059f98dc403aa277",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route3.npz": "f765c9e2808530ea5c9bdf28708aa85106c9a6c85887a0cbf13f5e36b9302c2a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/front.png": "119f8487759446a45ea67ff0fd390543db058f4e701be3d482d18dee205e2e03",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/observation.npz": "602957cb343416db99abf227df1a4056bde09e52d79493196edade917869d104",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target1_route1.npz": "7f31622d1547889ea555e121122e2af57a021304bda8ece6d60233d7b38235d1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target2_route1.npz": "0a2e11d36f0ba68a59bf1b76f70e4e903b2eb67769f66035ef72ee55915ecbfc",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target0_route0.npz": "1aaa3e275461942f22618fb33ed10f9787fb1715fe69f1f1941d4d40830279a1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target0_route3.npz": "5418ccb767b65f28064195254bb7a8b4c153adb09b5073606ca1973024651a46",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/front.png": "7ded48864f0fbc49ca18501a9e2f28a4ffbc4fb36894c145a749332f24b1ea8a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/observation.npz": "5b3eb7a800125f1ed84430734008c9bb8093f0f330b01b0ab5bbf6bca9da865f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target1_route0.npz": "640276df172eea15fdda80dd907ae0249eb0dba79d19398c7d3aae88837eb28f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target1_route1.npz": "32b3e63be2ce16cf891593272554787dca8cb804db83f4c65ad876d660867375",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target1_route3.npz": "b203f8a55683b127f3b138ed61ce24ee7f0ecea2c977b2aa5b1d4e7f64bb4d03",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272008/target2_route3.npz": "26ffe35cabb079ecb9cd9a27046a6e9e8ac10dec8375d32e5b14327b526fdec0",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target0_route1.npz": "8a403510a622ffa40f84f2417733a585e95d2b3b61bb602134e90cb85d7c798c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target0_route3.npz": "ad8a734f6b74e1eb52ccbc64e2dbd4e689a29e2b4b988eddc345de4ad3f8d7f8",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/front.png": "9ef73e604d29b6af2da42491af360dccd185d13a53adb13a27a4d357abe5e364",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/observation.npz": "cc6dc2ff66906d9c0ef49b92fc213e1c1345d45ec9d9b6357f859aea69247f68",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target1_route0.npz": "bf6e2efc0081efa12a1a4b1f036f302cf51b205539ec15d574caf484e0d42ac1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target1_route1.npz": "9e77fcc78aa88d9d7716751b061ba59e3822c2815644140851b3b8c1979ea68f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target1_route3.npz": "ca3e07d5704bd7333a5fb4110ae5142ca69e5089817d3dd38b8c62a5f39b669f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272009/target2_route1.npz": "3f8842462cd7daf75e92f2f04aee5a243c35d23532aaccff2bc5ce677c76c55b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target0_route0.npz": "a0788c5bcda18ba4fab3f7f145db7275f26e63b297a751c2f83841b9df17e67e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target0_route3.npz": "f984510e059b3974753051ced9c985391fe996b0e62868001cc8113f577a9c63",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/front.png": "547a04af9f9cab0fc37d61db7bdd8746026ba2d56bb0dc968597af7be8c340c6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/observation.npz": "d76dd36b513d9483097b58590fa9c2f29ca46f6fbf05cb3613b682f0c9cd91de",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target1_route0.npz": "b5643d6330fc41cc3328abac5475845c9c6d6474d0a0725357484dc6f9d0d1e5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target1_route3.npz": "90fbdd36aad80a9214a2e1a22567b7bab8376afe522c55b1595ec3235042b0ee",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target2_route0.npz": "d591965715de4d709990d3a3307d57fe13435004b859de4c0a8e64c563cad075",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272010/target2_route3.npz": "97260b529fc5e5e113886d7155e0c3370ac63ca65657c9a44ecbc703ea3d449d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target0_route0.npz": "c6efc0514fb824c0a011e76196a743e4b4001a6b2eb9abf28e9a959a18df23e8",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target0_route1.npz": "e99dd3f5fa09dc40ffeb9ea6bc0bb0cf37c910fc616030811591b199a659043f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target0_route3.npz": "60686ead4ef6a6229f00d63a7ec46d1756380185d28fd05345018f29f5b98eee",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/front.png": "0aece1017c9a908160372d5a29f3b917c6d9386a968c74890e222761246d6572",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/observation.npz": "a85b8a21eed343135484fa2e7d94fa9da6f5296598992ec3e297a240d4c301b3",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target1_route0.npz": "659981cbff42a2a89f740295334d8052c333a9b17c964a73e2f2f7299c789591",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target1_route1.npz": "6369403fb957ebe8255dcf1c825c10164b718ee9eb8bcf7fb4449219da5b3fec",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target1_route3.npz": "dcbc958ba68816a8e57f72f5ef908850c544c148049826d401eae9affa97f19b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target2_route1.npz": "368e03e9281f8defc3878a9a8ba64fac155c7ba993afd8efd689b84f62c7b848",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272011/target2_route3.npz": "23ea0cbac946d122b64a4bd835c861fe128613f767653bcad2538ff15ea0fe9a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272012/target0_route0.npz": "8f55d6dcf4ab0da0fa766ea21bc5185dfaf760e2333e8a7000ef2dd43853d528",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272012/front.png": "36552d69713dd473887e4d482e69bb3b12fab6ec8a8b6dacf03cbe971077d082",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272012/observation.npz": "6b0c69fd2a7c4f7163c50a56a015f5f3b0b8b5473f97f65546dc062004ec5841",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272012/target1_route0.npz": "f3a0eed5275a3c57a79ce18a2ba790747b3faa440cc3a34d2dba42c63f7d46fb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272012/target2_route3.npz": "2ba1d931baf1fd807103f6728815d7c3de6e72a7a1bf892bdfcb3a361ec9f2ef",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target0_route0.npz": "2e148facf42175ce28ffa39248e435fa0afb956fe6e2af1e3e48b6c332c14cc5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target0_route3.npz": "70534ad355bc1424b9743c54208702ee80860e9529299854307cd5be10993ba9",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/front.png": "7dfd12fa06370ce8561fa22d8928299947b5c6f434c6fce9e5d2d6f7ce043029",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/observation.npz": "8f681522d188226c1ae85402f3e7d0ffce50fbe4ac13b96c7eb2832c168bbcd2",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target1_route0.npz": "4e58f40dcfe70b5b45ac41955ecb1a051f6a564fa4548f128c7e81a09a3d832e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target1_route3.npz": "0ff0daf702b942858f6d43d60519435fd9595d788290e477a909c74249528ce1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target2_route0.npz": "fbd271ccdcc3ff40a04b18ac233eb632db4ea0052fbaea2042cc35ebf28b6e89",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272013/target2_route3.npz": "d2001bf69209ef5a743a86f2116ff6b1d68f3e6648dee8983c1f4f453c26fa46",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target0_route0.npz": "96f933a717d0a49b363abf12a5d73a50bf85da50130f1d39095619c61990b166",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target0_route1.npz": "90f3d5b3deed6cce4602a8586e7658d388f038f01068a0f69eae4120502b04c5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target0_route3.npz": "b3533aba718b2086b718f5962aefa06bfba8ca191e7059f7096ceb2faeb7bbb2",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/front.png": "d95ff6c8b33bfecd004f9eece64a78a48a88e7879217f3987280dc58138cec19",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/observation.npz": "7f4e5d71f3e25dbef294ce500055fd86d1c4a68210de7161682fe831405469e9",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target1_route0.npz": "682ac7ead106fd0e061af8355618c221febf8cb001c1315952015362ca4726db",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target1_route1.npz": "4ff06fec1cad02bc94bb7d523fb253f82a66fdd787ed69c58fea0f4ee8d05b90",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target2_route0.npz": "aeaba1bc3b2008060ba745c871b68474eb8b15fe135348d947ed1eff43ef65b9",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target2_route1.npz": "5285a871e141825da03b83cd13f035a0c759b8f1c4fb88bd5474ca1c015b12d6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272014/target2_route3.npz": "9a79779fe87130129114329c5977150e50c01cbe7d7e87ed82a1681011ec4083",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target0_route1.npz": "bfbef6f897387b0e73635f8073bf06c00354510f1d6fa12d833c61f62117416b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target0_route3.npz": "0be2dcf6d015652710ddef411380297024ddc308d22ab624c2a1bd1b311c8c99",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/front.png": "95a6ed4d1821e9771544bc207969a55ebcc8f97d013578f3caf3c6c973c451cf",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/observation.npz": "b91a4a3dbdab79a25a0f7c3eb9af4832d0102be0c15fd5b47d0892fd29332290",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target1_route0.npz": "463a6bdf14653e9bfe6493d1fb198cf581f4d91a399c7fe6a7eaa3df2d169913",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target1_route1.npz": "1e550c9060d818469c8457644c4bd5aa62b15a1ec6c1db53665f3b67d10d2ea3",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target1_route3.npz": "1a1137ae6781eb3936ebd754b0d66d5572ea4094faf95e66ce5f774d4805efed",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target2_route0.npz": "c44020f0c13a382d24a69572a47e16a53748c934773766a9451c10e80e10379f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272015/target2_route3.npz": "440d88f3ff1bcad2ad342f43422782d8e381c73b0ba97486bdcdeb440a8f3812",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/target0_route0.npz": "4db4ffd7432f9d1d65709f9a7347b24397803bd564c061cad50d4beb8d557a32",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/target0_route3.npz": "76c570210df1513d9fa58a24d5969a4a8e8a77e3e62afbcf3ed9084d8515828f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/front.png": "2fa5ca968347eceb80fe10756433a3ab8878fe9201b609915ab9749db1270787",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/observation.npz": "69ae42c82ba8e9d9d8f7806608acd141437077fe317ef2a015e84f6bf47ae329",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/target1_route0.npz": "71f0f7372b9d3336a042514bd1b9866442afea121ee705e72b1970e4a57af77e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272016/target2_route0.npz": "6c871cffbc54af4626e5659afa78b284eb3b54320615cf337b63a5681a6914c9",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/target0_route3.npz": "afd6a7d35d2b82cfcb6186bc5171b2dcee9767185699e6a727a7551276ef821b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/front.png": "ea23daad2064402adb451fb647b229244b66861339b3fd0c9379660058704091",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/observation.npz": "d85725e1045dded69ddfaa5f94539a9e56d4c5ed3c7253da1b7866285ce6ed15",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/target1_route0.npz": "df31af55aa20d3e90db8fb27ee2a07308800ea53f582ef892b816f10092e5c47",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/target1_route1.npz": "4b8c58cd039d9d7b6da3a101c07d72ed38eb935d9983517168ca44be4e236f42",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272017/target1_route3.npz": "bc4696c1cdd6d346b6920eec30f05459252e0fc3d0cbfbd9ab973b538bea04cb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/target0_route0.npz": "374175011c1b34bd7720dd856da61835370c8b1463a175edbb9bfa06fab11bd1",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/target0_route3.npz": "4dd64adf89acec3a7f09cc69665af076f9e6996a3bc82edf6575c2efe778ba81",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/front.png": "d93e4213623001667f99340d5820dfdb731c57af7abd4cb56ca53b53609b69c5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/observation.npz": "bbb3960f87f0de890ef721615e916e28e25e08eaaa9bf7823d8dac1b38e28b51",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/target1_route0.npz": "514bed29222d608acfa2bb1947de28bece19d2b2ad94675dfcf72831096f02c6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/target1_route3.npz": "2ece5a6ad6732c28093221f3cfb991bb386a4129c889eb9fb4be19a86b60d415",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272018/target2_route3.npz": "4935d4434c5b66bd0526f57aa356e92d052b0f3e7136ba0a372d2d8424e6bb2a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/target0_route0.npz": "7949034edd83d4a3f2715853fde73667ef96ccb327b183d2755407f4e7a8c984",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/front.png": "1bc6fa09a348f9f9a6d2bea5ed43b60adbdc8cf02b6194c130dea5d727ffa4e0",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/observation.npz": "5576b8e14fa8df68e3450bd6df6153af3c4aa9b7212d56155529c545f07f758d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/target1_route1.npz": "b9c59e46119996a288f635ced519102279499138c992b05d5a8127e763718dc4",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/target2_route0.npz": "fe615817e409a6ed0216d15ae13560badca1fd39ee9c31278b167a2254a8a8bf",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/target2_route1.npz": "a2ba0f3af250d90badefe1a92cebe21f42f174de430bb46920762dbb2898c119",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272019/target2_route3.npz": "ec0458001ae9d6b5deb9b0bbf9a5b9cc3eff6d9e07391c97d44417fe6986e05c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target0_route0.npz": "92a3459261e0d364f92e97fcb08b2da6541df3ca7e957ca9373f5becf2f8a07e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target0_route3.npz": "6dcca278812633da302996b46218d199cc15b5c323cb308fbfb37ff874a4fae8",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/front.png": "67b801c7e11d7001b78723fa12f4e1a718458806fa05aa331121b6a739671923",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/observation.npz": "cd563e28bde8b1c23d0da163d2c84739ea67145ce5aebff8db5581719666da3d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target1_route0.npz": "4c1efc50ea06d5ef489c5d81b5dba1bdfa83b0030e1b76e9fbe077138cb874eb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target1_route3.npz": "5f67f86d42e8df4625e84c8a31fb96731e267759a97e31c2aa4e19918a455f9a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target2_route0.npz": "18ad3da39a3f7b3bd044fed88a38164062eedfdbdfe78b8dfd554e276ad92781",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272020/target2_route3.npz": "5195af919ca37da6d46fa954c7c9c5e1ae5dd0e9d145d6e23c36cd6c9ef31964",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/target0_route0.npz": "c89d237784974f3f7ba047e16408bd7b04af35bf7349fba100168b3e57f55f20",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/target0_route3.npz": "6283504a86cbb95f3bd2464a1cfd43b769b9d10b9478a7954311a9aa372e8e08",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/front.png": "afef180789a83253b2d937ee7695a55fdef6e9dd4ee079cda45f734d9c53cd17",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/observation.npz": "79599e67dde1bf9bfc3a6fe4d78bad2b511716a9f8a425988dfe972cce0a2164",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/target1_route0.npz": "08d2ecee9299bf0713484b7ad83d870328a0add4bf19de21e6c45baf23e51b2d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/target1_route3.npz": "39c4ac4962edd3ede6a877de106dc2e1edc0cd9c3edf73d5f13028ab16f00b03",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272021/target2_route3.npz": "09952b6e0efbdd3d7cbff06146b57833e42e47376b628fa9d3bb02b80e9ab18c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target0_route0.npz": "73f428bf8a60276884b3e795f149cddbda796bd2949ba1d7ab65e96787405bf4",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target0_route1.npz": "e016393bc26fc9164079f0fdb6006430f46c4fd1e26faed2ad40a2cfa6cdf165",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target0_route3.npz": "4b84dfd5b7e11fab11a36aa036378e2d71e25c6dd635983ca62768d612fe19dd",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/front.png": "92c105223149961f16ec46718a6f5302bfb9bef2bd2e3dceb1c70ef514e66087",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/observation.npz": "34fe236c7f14c12169602f39c4ee62babef35fcbdeb5a4373647cbe27b8c2499",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target1_route0.npz": "8fb29fed3e38750a13c296bc7e89ec428a46abe95d722ac354ba7a846e810274",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target1_route3.npz": "77d83fbdb625ddbf7bcbf1eb927098ad42e7d73a2d76f61f2bcde68453759ba2",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target2_route0.npz": "fcd98234bd455eaa2fef6241dabab13895842288874a3a66984f3bb4ec11539c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272022/target2_route3.npz": "9ec9d1da67bec45e11a4dec345fde94335fbf40797232df54ccff24ea7a3cd28",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/target0_route0.npz": "976f8820f457285f72303f3e155781c2292e6ad25c5430ec4bf6b7163f352fc7",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/target0_route3.npz": "3a4c6865d8b6f0fa27925b0bb1fb579937a1e4d59a6690527270e89080a44f79",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/front.png": "12f20e323d27a3746fc1db702cc4fc5a98a7e881048ee3b7b63299b03c4a922a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/observation.npz": "e8473abd35394279c4114bb53eed68eccf56b9d5d65c9f7cdffd2b49617a0448",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/target1_route0.npz": "672a90dbee58ac11b738240e53ebaf66aec13816cb5ab58ce8e00ec9ae952fe0",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272023/target2_route3.npz": "86a74bd830dc4ed36988279c0fdb26bda547ebb4779f2a9649b63dc64bd967f2",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/target0_route0.npz": "bead3fb609770a81be113b6e6c840ced1abbc48ddac92929f9399aeb9ee79f25",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/target0_route3.npz": "1906922af724d49b01c9c6076377db08cf5800cdcb0cb8ed724870ea463f2487",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/front.png": "67c53f643a1d4f84977d1616bfc9e128d91b4a6864b2deea2d4343b03e588177",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/observation.npz": "6efee217f277b6bed1fe6b280d5a5bce9f7dc06b16dc483a4ead53586ccc9905",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/target1_route0.npz": "7e70ae42b6245ed81fa3e23e0e1f1a8b44669ec226367095ecdb1683bbe94556",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/target1_route3.npz": "2b53e23a2746cea13ec21a9acb00ddb8d628a795273e71f7667120e390b3149e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272024/target2_route3.npz": "eda7c8e1a1724571ba493be9fe8b3ca5e6f30b32034a5dd01b2d6c0520599757",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/target0_route0.npz": "8e4d231b027866ee8dae0a24b4d7dad1c0cfaff6565e81c82f0653cfa62ad4ac",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/front.png": "0d354715be79410083a0708bf19457847485f8c2205eadc50783b79f6d27097a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/observation.npz": "3d3a37e06a61bee4ba9b01fdc07c4240b7f0dcdabff711f5b2b04eefbcca4309",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/target1_route0.npz": "6e12ff0f2cf5a745def48e35d3e9eb555fe1095e160d284c1ebe36d6f82209e6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/target2_route0.npz": "4cac6d13322bd78eab9a554f1cc9caf14d38953b35cd8f8bc52d3a9de7abc29f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272025/target2_route3.npz": "4f52e5ad66be861f264b5ac363ec0851eb2ba559fb8c58c3c843a450324fe2ff",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target0_route1.npz": "c0ddb304f51ab9bec10747b09b01d575c06c6655f88e3f2c9f7ea79bd9ed2d7b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target0_route3.npz": "9fc482ef4f26ec536ab52ad2f76415da4bf0e706155e27bc7b2f21ef8d171d8c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/front.png": "de6846230bd9d07900340593e2f29238e6c99982c7f8124f08fb183e31dec922",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/observation.npz": "cf13916bcab3d5d9e2f441611759be45e160450b8bd7aa672a2e32965949ae28",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target1_route0.npz": "36a64788ce4c47b518ae1974908b35b746c1e410cc234ad290c6ab22790ccba5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target1_route1.npz": "185a88a81c6b732e63eec7a20d63812cc0fd45f02978e61eb8ec30366c065f5f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target1_route3.npz": "c88c05a5d8015b0f577ecbd04dd1e3fe298d02b422b00ae8d1e2b128c632f560",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target2_route0.npz": "4f2847286361dff85301f973c8ee4db5d926dbcd48a2ae3622acd35d0208bd32",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target2_route1.npz": "c5d13c67de994039a8d8d8516c85a17a57d7031e19150c67612a85fff5b5060e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272026/target2_route3.npz": "966abcdc7ea7e2e9f4a302e46d3eb95eb760deb3d90ec8badabd9d78a193bb98",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target0_route0.npz": "6204bd012dd45cfa22990ecc4d2d92cbd89784dee2fdbe4d9d8f0d8f6d40b3be",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target0_route1.npz": "c8239a8534dc8c840da54a9b38d48fa1cdec39d5748a7d84ed30e7602324927d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target0_route3.npz": "12363e5730770769d6cfd164b79f8c181dcaaad27f6e9cfe32aaf41c9c8f4fd4",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/front.png": "86015cc0e3432b84c9dbee9d51250e8686225462642f4d0e60779e8cc3b89939",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/observation.npz": "3951f465afa765048c822dfe5d290dbd62c358e2161796699fff3e95368e2d23",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target1_route1.npz": "f358a382edfbdeaf35aaf333ede5f16d0bb7232f8256fc7b397d872b44c72f70",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target1_route3.npz": "a575bbff491f7d90363e4fd1af0eb7d4bb531023c2860b9e86a729291e6b0e52",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272027/target2_route0.npz": "52bc525c16dacf6a28a46b3f28d2a12c2c94eca1c0986707374e2d9bee5c80aa",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/target0_route0.npz": "bdacb4beb78be3ca1bc446bb88c5a68f41a740c9ec983de82940d7f6732e266a",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/front.png": "1f94d7cd9a8ca897ec82bbeb886913db8ee38877a00ea4f2b62db5852136aa67",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/observation.npz": "529a8420ee7b53fe54a5fd1baa1f3f44f85c3b670e933aeb15634fb6ef04ff80",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/target1_route0.npz": "dc83dd0e6bbd298307047b568153def5f6217cfb3702e3d102e29c610708e653",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/target1_route3.npz": "ed370bf60a2c7018c0e4be1d9f61855af18f447c5331649262e0ba0ef981ed71",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/target2_route0.npz": "3f02288d55f1f9e0c5b3ab967efebc4bc933e4720a1adf059a126bfdc5abe5ae",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272028/target2_route3.npz": "fd2b0987ff2962fc68814c12d26e066e3e119c83a9f6bf2bb93c5175678c0b41",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target0_route0.npz": "b8a1721903e5e9fe3e66c1f5be060e1f58c980fe6a589431117890ed603377eb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target0_route1.npz": "d1d0af32791c04fdc6765b9ea5b69260762565a4b24188bc891466dc2eafc54b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target0_route3.npz": "ae5b3ae222a8a37fa6883d5f30315e22b2e79cb5cd6fad3730d62775574a6b42",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/front.png": "c7e33913c9e21d81a14996525a31a90fb07bdfe899b02a0ca50f5eb8b4477f3b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/observation.npz": "d19e34ff319777aeefff835a13389c31c872a2f3c0b27ecb2cad2184156c3eeb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target1_route0.npz": "e7e98c22243f5dbcfa7dda9207ea34ce57f11886057270cb87dcf2002630055d",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target1_route1.npz": "8bc6695ed4aade4712d114932935f47c34742cb382f46d9e7542892b8ecf994e",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target1_route3.npz": "15d45a5f5f3f0259793905a5f28f913d3ff96b857acd7beae05951be39c14462",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272029/target2_route1.npz": "87a693939feca18bad2a3f531d97fcacd5c919b87c54d0a85e60b63b86dffea3",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target0_route0.npz": "a1efb2ae42605325843637ddb400fd97bf5b4757e5170fbc313400ccc2f717fa",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target0_route1.npz": "bfdbe732134ec0abbc64da5134b03c8f4e328ffbd2e0b85ae108dfa5a62c6ea5",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/front.png": "7181fdbf9498a10204e0347ca6419d3ded889e27df6a818e9fe0f3999aa9b619",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/observation.npz": "a5fd57e0e954badd2b46c33d2597e7e8ba4cbd29094a7f7c43d7a3b77edf20f8",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target1_route0.npz": "81693e8d27d0618a69127e55547fd9906d22ccbaf4259b5a43b4fb27a2119a64",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target1_route3.npz": "7d9fad9838b2f6b5f2eb8596cc07c6c6872b28d9c8c97d26d3377f0311328f7f",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target2_route0.npz": "916ad1dc98c797d9ea7646f5d6be7e456aee1139fb47a44ad00cf537186423bb",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target2_route1.npz": "56c88645b7777ca1527e439ee05bbeb4e8b0e7c427d8df6c37627581525017d7",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272030/target2_route3.npz": "ffd4618aaf71f96358242df9d7bb85a15e28e25bc6f2606e57f083cd32356426",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target0_route0.npz": "41e8098f5d291d8e567fc1416fe6f93abaf50d4b88ef166ca5c3d4f0bfe02434",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target0_route1.npz": "85deae37421d7e106ff1bb0e594fe11ee6228620375d7e00d4a9f6073f46f95b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target0_route3.npz": "3221bd37fed3a5472fb81351381f28a3b9a44cad61f9b34c8b3ac7271c5c79cf",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/front.png": "7de028cbcc49c32eb55bca762dd86cdaf6919f74c31434da5bb1911981e9f275",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/observation.npz": "6fc6a586f2537bdecc88771c332a0bd41e8e0d16bfbd5361aac3d808a13b749b",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target1_route0.npz": "9a68c4dd355a82bdeedbde310cefd8febd8a43eb953917d418355c201963d9d6",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target1_route1.npz": "f82dd73d34a9e379980a4dbb5bff452e4cbf1eabacd199a58ebdeb32db4c4586",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target1_route3.npz": "173e64f760c2e096fe665ba12bf1edaef40b9c34a316c3ca3218e5515123b56c",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target2_route0.npz": "854238f70ded695bce421ca25dd787b597a8d3e92b9483a30378eb4b752a7206",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target2_route1.npz": "0f0800535619d042c48fa53ebbe8cacf477123c5b6cf21f69e6ae16cd2ddba80",
+      "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272031/target2_route3.npz": "91038cf796604b6f890794eb6484495701243aeb97499ab72df0ab293544c157"
+    }
+  },
+  "evaluation_source_sha256": {
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/front.png": "1ce5eb4b23f4116eb1a94ee82a3ba1ee24e59b74a74ccc29edc0fa19d5672d21",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/observation.npz": "03c812ceff5216f3929398ed22ae7358d4a81d48f7c84a0a3b022412ee12d40c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/target0_route0.npz": "5a2b14c35b2dec6eee6077a038009c08dab4bdc03a829d0955ffbc15138d194f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/target1_route0.npz": "7557b4f3c0b65f8d082b53ec58f4f4374d0f6b9c46d2743aefe011c02686b800",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/target1_route3.npz": "ae2b3f7fd42c2dbf1db45ed397386ee9883780e8611027eda8ca7d07e85a7b42",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271100/target2_route3.npz": "6f2c205bbf1122417770df482acca4fff28a5f0d6ff5b14bc838b5fa670a773e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/front.png": "75f71c71b5faad765699c89df80180d107e84c847f291b819283de423a887e14",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/observation.npz": "4b478067dee2d9a122c560c0b6b6b99be17aab4b775891da87c6a8c77053f738",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target0_route1.npz": "3c83c8fa99b729e2d9a2967c9639e360ee84900ff179b67fcd2b32fe387174cf",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target0_route3.npz": "650ba64cd54ec341a3dd8744f3c344a447ffb2548eed77e187c9c82b85d8d449",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target1_route0.npz": "2f5a91aa2ad03089b0f9fa655a76db446d5feb690781510c6942a26e824c25ab",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target1_route1.npz": "599faaa7ac46a60df70016e37d8b970cdd1241cb6870005aea50c23a07726128",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target1_route3.npz": "5ab4831fa64791bfb9a2a20ed5e2013db0ace6baae64d68f03abd0f2d4d76f4c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271101/target2_route0.npz": "d8228f495f268dddf1d651ebc24d4ec9ba5b1cb58bbc4a912c4404fa76307f5f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/front.png": "06da9a8a210a30933310d79b8d9befe7186531ecbeeaf78198293735f1b52155",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/observation.npz": "659c690bc9af985790690bf46494d7b11b38bbb3f1b7c35d4c3ab67e1b028420",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/target0_route0.npz": "1fa596bf06f4e778ab2d3c1f4ada4d75ed0a4f0b0dd09da288606cc13e01c91d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/target0_route3.npz": "c725dc78138e5c97bbddf94d7a1e7ef8603e1d9cddc83de86326f4f4ded82d4a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/target1_route0.npz": "c6945233144de4690f108f0b1f6b2c59854a7c0e6a392d356c3d18cd0343b9fd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/target1_route3.npz": "70b0c68f90f7efc4aea3b69ca784a1183c011cc90ff2074def07897846115a5b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271102/target2_route3.npz": "5962ddcd9ba02e400fa2ff4d0a220ef8ff8a5bd4ad2ce17779d99a2858cad279",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/front.png": "b006b2f09f19be82f5b75f87667237e04136522978e8d6521fcc402d99c31c95",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/observation.npz": "327be74bfd3eb020d4563669b684010e65a74a81e15edbef56234f033135001b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/target0_route3.npz": "9000356a8a241af4d482ee95872ea501c4d4721ae5a6429f298d16aeacd52bb3",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/target1_route0.npz": "749bdeceb258f84cd18153de8a4f8f742709b3ae135f2193120e69da1ea9080d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/target1_route3.npz": "3872037fb0a9c01d37606d2ab458015ddf2caec5ef43d244bee2d30c45be2778",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/target2_route0.npz": "dcaf784c891bb624fd0ed5ecf160b13adc29b2b472155f4dd059afa336e0725e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/obstacle_reach_271103/target2_route3.npz": "9a9ba096a387e7e70ff5bde2b393c500712cfc2492fda3c784d6aa5a6e332322"
+  },
+  "per_scene": [
+    {
+      "id": "obstacle_reach_271100_target0",
+      "parent_id": "obstacle_reach_271100",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.46544860865813353,
+        -0.0649665019666019,
+        0.8489358549340573
+      ],
+      "latency_seconds": 0.01446097798179835,
+      "reference_count": 1,
+      "reference_endpoint_error_m": 0.025604997589336282,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8243439328383826,
+      "pixels": 148,
+      "observed_extent_m": 0.057436240733608264,
+      "color_score": 0.8243512344823009,
+      "extent_score": 0.9999911425571858,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025371167513861283,
+      "nearest_target_index": 0
+    },
+    {
+      "id": "obstacle_reach_271100_target1",
+      "parent_id": "obstacle_reach_271100",
+      "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.061361436013678716,
+        0.19690656722118055,
+        0.846621589571041
+      ],
+      "latency_seconds": 0.013587234076112509,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.025759782744361748,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.6967696486313049,
+      "pixels": 83,
+      "observed_extent_m": 0.05861081098826075,
+      "color_score": 0.6970182825757065,
+      "extent_score": 0.999643289206873,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025651231305263783,
+      "nearest_target_index": 1
+    },
+    {
+      "id": "obstacle_reach_271100_target2",
+      "parent_id": "obstacle_reach_271100",
+      "instruction": "Move the gripper to touch the gray sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.30491904968162853,
+        0.024447811262289745,
+        0.854393719633654
+      ],
+      "latency_seconds": 0.012624155962839723,
+      "reference_count": 1,
+      "reference_endpoint_error_m": 0.026450199668214235,
+      "status": "predicted",
+      "components_considered": 8,
+      "eligible_components": 4,
+      "candidates_emitted": 1,
+      "selected_component": 8,
+      "selected_component_score": 0.8894035381183709,
+      "pixels": 114,
+      "observed_extent_m": 0.05709741562026955,
+      "color_score": 0.8894528078782781,
+      "extent_score": 0.9999446066621289,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.0256955785064835,
+      "nearest_target_index": 2
+    },
+    {
+      "id": "obstacle_reach_271101_target0",
+      "parent_id": "obstacle_reach_271101",
+      "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.47580270073247655,
+        -0.08218286703709847,
+        0.8530068281185067
+      ],
+      "latency_seconds": 0.014796906034462154,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.025576021792261497,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.7665145619100887,
+      "pixels": 153,
+      "observed_extent_m": 0.05864276501747518,
+      "color_score": 0.766537963676358,
+      "extent_score": 0.9999694708320028,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.02549594024681194,
+      "nearest_target_index": 0
+    },
+    {
+      "id": "obstacle_reach_271101_target1",
+      "parent_id": "obstacle_reach_271101",
+      "instruction": "Move the gripper to touch the olive sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.06643991913551828,
+        0.1764401000745006,
+        0.8604493888666198
+      ],
+      "latency_seconds": 0.012527380953542888,
+      "reference_count": 3,
+      "reference_endpoint_error_m": 0.025238684202901252,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.7275047670973102,
+      "pixels": 83,
+      "observed_extent_m": 0.05713165870007979,
+      "color_score": 0.7279811937977799,
+      "extent_score": 0.9993455508129485,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025576929782718652,
+      "nearest_target_index": 1
+    },
+    {
+      "id": "obstacle_reach_271101_target2",
+      "parent_id": "obstacle_reach_271101",
+      "instruction": "Move the gripper to touch the azure sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.3304371837954645,
+        -0.007962945117278372,
+        0.8673341799532281
+      ],
+      "latency_seconds": 0.011172073893249035,
+      "reference_count": 1,
+      "reference_endpoint_error_m": 0.026135804551500944,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8689407062317293,
+      "pixels": 119,
+      "observed_extent_m": 0.0590112678753121,
+      "color_score": 0.8690988977942646,
+      "extent_score": 0.9998179820927896,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025296502966835575,
+      "nearest_target_index": 2
+    },
+    {
+      "id": "obstacle_reach_271102_target0",
+      "parent_id": "obstacle_reach_271102",
+      "instruction": "Move the gripper to touch the lime sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.3004190598600438,
+        -0.004098517803807097,
+        0.8463517699608956
+      ],
+      "latency_seconds": 0.010959726991131902,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.026075729564669557,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8660422782902902,
+      "pixels": 112,
+      "observed_extent_m": 0.056487631162266586,
+      "color_score": 0.8663812432029288,
+      "extent_score": 0.9996087577896015,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025489247906601484,
+      "nearest_target_index": 0
+    },
+    {
+      "id": "obstacle_reach_271102_target1",
+      "parent_id": "obstacle_reach_271102",
+      "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.1072628149883803,
+        0.22336885324543918,
+        0.8567343038123199
+      ],
+      "latency_seconds": 0.012578411027789116,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.0245465171446271,
+      "status": "predicted",
+      "components_considered": 6,
+      "eligible_components": 6,
+      "candidates_emitted": 1,
+      "selected_component": 6,
+      "selected_component_score": 0.9450204736041625,
+      "pixels": 90,
+      "observed_extent_m": 0.05816558585068491,
+      "color_score": 0.9450606915930548,
+      "extent_score": 0.9999574440147071,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.02554263031362264,
+      "nearest_target_index": 1
+    },
+    {
+      "id": "obstacle_reach_271102_target2",
+      "parent_id": "obstacle_reach_271102",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.44417890836271556,
+        -0.06641414826652439,
+        0.8359896278880136
+      ],
+      "latency_seconds": 0.014573580934666097,
+      "reference_count": 1,
+      "reference_endpoint_error_m": 0.026508313548590953,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8314407961840102,
+      "pixels": 140,
+      "observed_extent_m": 0.057363286807545155,
+      "color_score": 0.8314532800471521,
+      "extent_score": 0.9999849854905363,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025404514334075545,
+      "nearest_target_index": 2
+    },
+    {
+      "id": "obstacle_reach_271103_target0",
+      "parent_id": "obstacle_reach_271103",
+      "instruction": "Move the gripper to touch the green sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.48973239814998837,
+        -0.02837468019887622,
+        0.8422852954784171
+      ],
+      "latency_seconds": 0.013096811017021537,
+      "reference_count": 1,
+      "reference_endpoint_error_m": 0.02742786766862884,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.7847133324761669,
+      "pixels": 154,
+      "observed_extent_m": 0.059087805477282804,
+      "color_score": 0.784715446660281,
+      "extent_score": 0.9999973057952114,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025618356939184725,
+      "nearest_target_index": 0
+    },
+    {
+      "id": "obstacle_reach_271103_target1",
+      "parent_id": "obstacle_reach_271103",
+      "instruction": "Move the gripper to touch the black sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.11626526197759013,
+        0.1291503598715343,
+        0.8672884569990016
+      ],
+      "latency_seconds": 0.013169777928851545,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.024921721258204056,
+      "status": "predicted",
+      "components_considered": 6,
+      "eligible_components": 6,
+      "candidates_emitted": 1,
+      "selected_component": 6,
+      "selected_component_score": 0.9340634179652599,
+      "pixels": 85,
+      "observed_extent_m": 0.05876304115704823,
+      "color_score": 0.9340638789649129,
+      "extent_score": 0.9999995064581092,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025499920001221765,
+      "nearest_target_index": 1
+    },
+    {
+      "id": "obstacle_reach_271103_target2",
+      "parent_id": "obstacle_reach_271103",
+      "instruction": "Move the gripper to touch the rose sphere while avoiding the gray obstacle.",
+      "prediction_endpoint": [
+        0.3431693033511509,
+        0.003958409796608614,
+        0.8572080291851273
+      ],
+      "latency_seconds": 0.010833579930476844,
+      "reference_count": 2,
+      "reference_endpoint_error_m": 0.02542573080783707,
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8655396884988017,
+      "pixels": 120,
+      "observed_extent_m": 0.05719381653743694,
+      "color_score": 0.8655418579476534,
+      "extent_score": 0.9999974935367576,
+      "semantic_goal_accuracy": 1.0,
+      "goal_error_m": 0.025461058672818095,
+      "nearest_target_index": 2
+    }
+  ]
+}

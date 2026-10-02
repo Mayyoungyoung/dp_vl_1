@@ -225,8 +225,11 @@ def markdown(result):
     parents = result["arms"]["full_free"]["budgets"]["b1"]["aggregate"]["parent_count"]
     negative = all(result["comparisons"][comparison][budget]["union_unique_valid"]["difference"] <= 0
         for comparison in ("local_paired_minus_full_free", "local_paired_minus_full_paired") for budget in ("b1", "b2"))
+    behind_free = all(result["comparisons"]["local_paired_minus_full_free"][budget]["union_unique_valid"]["difference"] <= 0
+                      for budget in ("b1", "b2"))
     conclusion = ("%d步筛选未支持局部门控：local_paired在b1/b2均未胜强full_free或同配对full_paired。保留全部负结果。" % steps
-                  if negative else "%d步开发筛选比较见下表；单训练种子尚不能建立方法优势。" % steps)
+                  if negative else ("%d步筛选未支持局部门控优于强基线：local_paired在b1/b2均落后full_free。对固定配对控制的小幅改善不能建立方法优势。" % steps
+                  if behind_free else "%d步开发筛选比较见下表；单训练种子尚不能建立方法优势。" % steps))
     lines = ["# 约束变化更新：seed0 开发筛选", "", "**" + conclusion + "**",
         "", "同一真实训练seed0；%d个DEV_MODEL父用于选优与分析。父场景bootstrap不代表训练种子稳定性。" % parents,
         "", "| 臂 | best步 | 新增b | 累计候选 | union UniqueValid | 新增类型 | 新路线有效率 | 编辑内点比例 | 编辑段数 |",
@@ -252,6 +255,39 @@ def markdown(result):
         "", "本次未完成多种子、独立设置、完整两请求同设备固定时间预算或真实观测约束变化；不可将单seed开发优势写成最终方法成立。"]
     if steps != 2000:
         lines += ["", "本表为续训后的新证据。追加成本见summary的incremental_*，累计成本见cumulative_*；不能将累计成本与原实验相加。原2000步的失败定位保留在v1报告，不套用到本轮。"]
+        lines += ["", "## 固定续训预算与实际趋势", "",
+                  "| 臂 | 原投入秒 | 本段新增秒 | 累计秒 | 新增目标槽 | 累计目标槽 |",
+                  "|---|---:|---:|---:|---:|---:|"]
+        for arm in ARMS:
+            summary = result["arms"][arm]["summary"]
+            origin = summary["cost_origin"]
+            lines.append("| %s | %.3f | %.3f | %.3f | %d | %d |" % (arm, origin["prior_elapsed_s"],
+                summary["incremental_elapsed_s"], summary["cumulative_elapsed_s"],
+                summary["incremental_trajectory_exposures"], summary["trajectory_exposures"]))
+        lines += ["", "上述为训练及开发评估实测墙钟时间，不是单请求端到端推理延迟或固定时间预算推理对照。门控仍先计算完整提案，没有稀疏推理加速证据。",
+                  "", "| 臂 | 步 | b1 Unique | b2 Unique | 路线损失 |",
+                  "|---|---:|---:|---:|---:|"]
+        for arm in ARMS:
+            for point in result["arms"][arm]["convergence"][-5:]:
+                lines.append("| %s | %d | %.5f | %.5f | %.7f |" % (arm, point["step"], point["b1_unique"],
+                    point["b2_unique"], point["loss"][1]))
+        lines += ["", "local的训练损失及末段开发指标仍在改善，不能据此宣称绝对收敛；但一次预先确定的等预算续训后仍落后自由匹配，末尾最优本身不构成无限续训的理由。",
+                  "", "## 失败定位与研究决定", ""]
+        strata = result["comparisons"]["local_paired_minus_full_free"]["b2"]["strata"]
+        for key, label in (("old_invalid_count", "旧路线失效数"), ("reference_types", "剩余参考类型数")):
+            values = "; ".join("%s: %+.5f" % (value, group["union_unique_valid"]) for value, group in strata[key].items())
+            lines.append("b2 local减full_free，按%s分层为%s。" % (label, values))
+            lines.append("")
+        for budget in ("b1", "b2"):
+            frag = result["arms"]["local_paired"]["budgets"][budget]["fragmentation"]
+            relation = frag["collision_segment_relation"]
+            lines.append("%s局部门控碎片路线比例%.2f%%；碰撞线段的两端均编辑/编辑复制边界/均复制计数为%d/%d/%d。保留点%d/%d精确复制。" % (
+                budget, 100*frag["parent_weighted"]["fragmented_route_fraction"],
+                relation["both_edited"]["colliding_segments"], relation["edit_copy_boundary"]["colliding_segments"],
+                relation["both_copied"]["colliding_segments"], frag["predicted_copy_points_exactly_equal"], frag["predicted_copy_points"]))
+            lines.append("")
+        if behind_free:
+            lines += ["研究决定：放弃当前局部门控作为核心机制，保留full_free普通补全为强基线；停止该分支追加训练，不增加碎片或连通mask模块。负结果、全部权重和预测保留。此决定针对当前实现与受控设置，不声称所有局部编辑机制均无效。", ""]
         return "\n".join(lines) + "\n"
     lines += ["", "## 失败定位与下一项可证伪假设", "",
         "b2时local相对full_free，在旧失效0/1/2的分层均回退（−0.18301/−0.05357/−0.21199），新参考类型数3/4/6/8/9/12的差依次0/−0.08621/−0.10417/−0.18750/−0.28125/−0.47500。不能用某个有利子组掩盖总体失败。",
