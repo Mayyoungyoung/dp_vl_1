@@ -167,15 +167,20 @@ def zero_motion_guard(arm_class,sim,counts):
 
 
 def mesh_provenance(shapes):
+    """Safe model-level provenance; runtime mesh-array hashes unavailable.
+
+    Pinned PyRep's simGetShapeMesh replaces its normals pointer with a Python
+    list from the indices buffer, then releases an integer as a native pointer.
+    Never call that API here. verify_assets separately hashes the actual model
+    files against archive members; procedural post dimensions are registered.
+    """
     rows=[]
     for shape in shapes:
-        vertices,indices,normals=shape.get_mesh_data()
-        arrays={}
-        for name,values in [('vertices',vertices),('indices',indices),('normals',normals)]:
-            values=np.asarray(values)
-            arrays[name]=dict(shape=list(values.shape),dtype=str(values.dtype),sha256=hashlib.sha256(values.tobytes()).hexdigest())
         rows.append(dict(name=shape.get_name(),handle=shape.get_handle(),collidable=bool(shape.is_collidable()),
-            bounding_box=shape.get_bounding_box(),mesh_arrays=arrays))
+            bounding_box=shape.get_bounding_box(),mesh_arrays=None,
+            runtime_mesh_arrays_available=False,
+            provenance_scope='Actual loaded model file/archive hashes plus registered procedural geometry; no runtime vertex/index/normal hashes',
+            excluded_api='Pinned simGetShapeMesh has an invalid normals pointer release'))
     return rows
 
 
@@ -274,6 +279,7 @@ def run(config,config_path,output):
     pilot.write_json(output/'manifest.json',dict(config=config,config_sha256=digest(config_path),source_sha256=digest(__file__),
         role='DEV_COLLECTION',original_instant_reproduced=False,old_native_snapshot_available=False,
         original_query_labels_unchanged=True,new_ik_budget=0,new_route_budget=0,configuration_replays_budget=6,
+        runtime_mesh_array_provenance_available=False,
         comparison_scope='Frozen joint configurations in a corresponding static scene; not original dynamic instant'))
     try:
         source=load_frozen(config);assets=verify_assets(config,env_module.DIR_PATH)

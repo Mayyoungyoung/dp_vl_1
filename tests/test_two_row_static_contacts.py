@@ -135,3 +135,13 @@ def test_hierarchy_propagates_invalid_handle_and_rejects_changed_type():
         diagnostic.hierarchy_depths([('root',1,0)],sim)
     with pytest.raises(RuntimeError,match='type changed'):
         diagnostic.hierarchy_depths([('root',1,0)],fake_hierarchy({1:-1},{1:1}))
+
+
+def test_model_provenance_never_calls_unsafe_runtime_mesh_api():
+    def unsafe():raise AssertionError('unsafe mesh API called')
+    shape=SimpleNamespace(get_mesh_data=unsafe,get_name=lambda:'post',get_handle=lambda:123,
+        is_collidable=lambda:True,get_bounding_box=lambda:[-.02,.02,-.02,.02,-.08,.08])
+    row=diagnostic.mesh_provenance([shape])[0]
+    assert row['name']=='post' and row['collidable']
+    assert row['mesh_arrays'] is None and not row['runtime_mesh_arrays_available']
+    assert 'model file/archive hashes' in row['provenance_scope']

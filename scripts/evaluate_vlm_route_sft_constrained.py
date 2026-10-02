@@ -25,7 +25,8 @@ from routeset.vlm_route_grammar import (GRAMMAR_PROTOCOL, INITIAL, RouteJSONGram
 
 
 from scripts.evaluate_vlm_route_sft import generation_inputs
-from routeset.vlm_sft_train_probe import train_probe_inputs, generate_train_probe
+from routeset.vlm_sft_train_probe import (train_probe_inputs, generate_train_probe,
+    decoding_kwargs, validate_greedy_scope, explicit_greedy_config)
 
 
 def main():
@@ -36,7 +37,10 @@ def main():
     parser.add_argument('--repeats',type=int,default=1)
     parser.add_argument('--scope',choices=['train8_preflight','dev24_comparison'],required=True)
     parser.add_argument('--plan',type=Path,default=Path('configs/vlm_depth_interface_train8_v1.json'))
+    parser.add_argument('--train8-greedy',action='store_true',
+        help='Only fixed TRAIN8 K1, argmax with existing grammar, 180s request-loop boundary')
     args=parser.parse_args()
+    validate_greedy_scope(args.train8_greedy,args.scope,args.seed,args.repeats)
     if args.output.exists():raise FileExistsError('Fresh autoregressive output required; do not overwrite or silently retry')
     if args.repeats<1:raise ValueError('Positive independent sampling repeats required')
     if os.environ.get('CUDA_VISIBLE_DEVICES')!='1':raise ValueError('Only authorized physical GPU1')
@@ -52,6 +56,8 @@ def main():
     checkpoint_hash=sha256(checkpoint)
     if training['artifacts_sha256'].get(checkpoint.name)!=checkpoint_hash:
         raise ValueError('SFT checkpoint hash differs from completed-run receipt')
+    if args.train8_greedy and checkpoint_hash!='675595f0f06eb523edfce1d783f61cf5726446b2a376e2e6cdf12f62c69be33f':
+        raise ValueError('Greedy control requires the unchanged original SFT best checkpoint')
     saved=torch.load(checkpoint,map_location='cpu',weights_only=False)
     config=saved['config']
     if saved['protocol']!=TRAINING_PROTOCOL or config['model_revision']!=QWEN_REVISION or config['horizon']!=24:
@@ -78,8 +84,12 @@ def main():
         torch_dtype=torch.bfloat16,attn_implementation='sdpa',device_map={'':'cuda'})
     install_lora(model,rank=config['lora_rank'],alpha=config['lora_alpha']);load_adapters(model,saved['adapters'])
     model.requires_grad_(False);model.eval();del saved
-    decoding=dict(do_sample=True,temperature=.7,top_p=.9,top_k=0,num_beams=1,num_return_sequences=1,
-                  repetition_penalty=1.,use_cache=True)
+    decoding=decoding_kwargs(args.train8_greedy)
+    effective_generation_config = None
+    if args.train8_greedy:
+        # Use this explicit object in generate and serialize the same object,
+        # instead of reporting unmodified model defaults as effective settings.
+        effective_generation_config = explicit_greedy_config(model.generation_config)
     torch.cuda.synchronize();startup=time.perf_counter()-started
     fragments = None
     grammar_caches = {}
@@ -107,7 +117,12 @@ def main():
         cache = grammar_caches[k]
         hits_before,misses_before = cache.hits,cache.misses
         constraint = RouteGrammarLogitsProcessor(cache,prompt_tokens)
-        result=model.generate(**prefix,max_new_tokens=max_tokens,logits_processor=LogitsProcessorList([constraint]),**decoding)
+        if args.train8_greedy:
+            if max_tokens != 512: raise ValueError('Fixed greedy512 token budget required')
+            result=model.generate(**prefix,logits_processor=LogitsProcessorList([constraint]),
+                                  generation_config=effective_generation_config,use_model_defaults=False)
+        else:
+            result=model.generate(**prefix,max_new_tokens=max_tokens,logits_processor=LogitsProcessorList([constraint]),**decoding)
         output_ids=result[0,prompt_tokens:]
         text=processor.batch_decode(output_ids[None],skip_special_tokens=True,clean_up_tokenization_spaces=False)[0]
         output_tokens=len(output_ids)
@@ -125,7 +140,7 @@ def main():
         return dict(text=text,tokens=dict(prompt_tokens=int(prompt_tokens),output_tokens=output_tokens,
             reached_token_limit=output_tokens>=max_tokens,last_output_token_id=last_token,grammar=grammar_receipt))
     if args.scope=='train8_preflight':
-        groups=generate_train_probe(samples,request,args.output,seed=args.seed)
+        groups=generate_train_probe(samples,request,args.output,seed=args.seed,greedy=args.train8_greedy)
     else:
         groups=generate_comparison(samples,request,args.output,seed=args.seed,repeats=args.repeats,horizon=24)
     elapsed=time.perf_counter()-started
@@ -152,6 +167,13 @@ def main():
               'End-to-end generation excludes startup and separate later checker; no learned selection score. '
               'All constraint compilation/masking is included in actual request timing. No output text/route repair. '
               'Repeats are sampling repeats, not training seeds.')
+    if args.train8_greedy:
+        summary.update(decoding_mode='greedy', effective_generation_config=effective_generation_config.to_dict(),
+            generation_use_model_defaults=False,effective_generation_mode=effective_generation_config.get_generation_mode().value,
+            inherited_model_generation_config_is_not_effective=True,
+            requested_max_new_tokens_per_call=512, requested_calls=8, requested_slots=8,
+            request_loop_limit_seconds=180.,
+            scope=summary['scope']+' This is a single deterministic TRAIN8 greedy diagnostic, not a sampling repeat or a DEV result.')
     write_json(args.output/'summary.json',summary)
     print(json.dumps({key:summary[key] for key in ('status','checkpoint_step','elapsed_seconds','gpu_hours_reserved','peak_cuda_allocated_bytes','groups')}),flush=True)
 

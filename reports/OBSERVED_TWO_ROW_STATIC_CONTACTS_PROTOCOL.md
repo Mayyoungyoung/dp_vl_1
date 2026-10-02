@@ -6,7 +6,7 @@
 
 原 endpoint 诊断没有落盘 native configuration trees 或 scene `.ttt`，没有保存查询瞬间的完整 solver/controller/contact 状态。不能在新进程声称原查询瞬间复现，也不再重复 v3 式隐藏状态重建。所有产物固定标记 `original_instant_reproduced=false`，原 24-query 标签保持只读。
 
-本次是**同一固定模型、记录的静态场景布局与六个冻结关节向量下的碰撞对象比较**。模型来源由原 RLBench pinned archive SHA 检查，再逐字节核验实际 `task_design.ttt`、`task_ttms/reach_target.ttm` 与 archive 对应成员；默认 Panda 嵌在 `task_design.ttt`，不把未加载的独立 Panda model 当实际来源。当前 PyRep Arm 源 hash 必须与原诊断保存值一致。每个实际 shape 记录 bbox、collidable flag，以及 vertex/index/normal 数组的形状、dtype 和 SHA。旧查询没有运行时 mesh hash，这项证据不被追溯声称为当时已经核验。
+本次是**同一固定模型、记录的静态场景布局与六个冻结关节向量下的碰撞对象比较**。模型来源由原 RLBench pinned archive SHA 检查，再逐字节核验实际 `task_design.ttt`、`task_ttms/reach_target.ttm` 与 archive 对应成员；默认 Panda 嵌在 `task_design.ttt`，不把未加载的独立 Panda model 当实际来源。当前 PyRep Arm 源 hash 必须与原诊断保存值一致。每个实际 shape 记录 bbox、collidable flag；程序生成的四柱几何来自原固定注册配置。原计划读取 runtime vertex/index/normal SHA 的 API 在第二次唯一实跑发生原生崩溃，具体固定源码会错误释放整数索引作为 normals 指针。因此后续不调用此 unsafe API，明确 `runtime_mesh_arrays_available=false`：仅实际模型文件/归档的字节哈希可核验，不能声称运行时 mesh 数组核验。旧查询同样没有 mesh hash。
 
 按原记录恢复非机器人对象的世界 pose、目标颜色/布局、四柱原尺寸与 flags、机器人 model root，以及原共同 arm/gripper joints 和 target readback。对象 name/type inventory 和已保存的柱体 bbox 必须精确匹配。依赖/名称/必要字段不匹配则关闭全部比较。记录新旧 common world、RGB-D/current/camera 全字段差异；它们是复现边界的公开证据，不更换旧 reference、不归零或放宽旧严格 gate。即使某些字段相同，仍不声称原动态瞬间复现。
 
@@ -31,3 +31,5 @@
 新增独立脚本 `scripts/diagnose_two_row_static_contacts.py`、配置 `configs/observed_two_row_static_contacts_v1.json`、测试 `tests/test_two_row_static_contacts.py`；原 collector 和原 endpoint 脚本不变。新增 9 测试覆盖固定六配置与 hash、model archive 一致性、零容差 restore、非有限状态拒绝、对象分类、collection 与 link 两层矩阵、禁止 IK/路线/开始物理以及 UI-only 更新。合并旧检查实际 **36 passed / 0.62 s**。运行必须等固定 release 与 CPU1 授权，使用全新输出和不可变 launcher。
 
 首次运行后仅增加根节点兼容修复：已验证的 inventory 句柄通过 `simGetObjectType` 核验，再用 pinned backend 原始 `lib.simGetObjectParent` 避开包装器对合法 `-1` 的错误检查。非根父节点必须属于完整 inventory，循环与重复句柄拒绝。新增 4 项层级测试，合并 **40 passed / 0.65 s**；没有放宽世界/图像恢复门槛或调用新的 IK。
+
+第二次实跑为独立 `observed_two_row_static_contacts_root_api_fix1`，固定 e122112，40 项服务器检查通过后发生 signal11/exit1；原始日志、新静态共同状态和新旧差异完整保留。尚未应用六个配置，不能给布局结论。后续只移除 unsafe mesh API，增加禁止调用它的 provenance 单测；不改共享依赖、状态门槛或六个输入向量。

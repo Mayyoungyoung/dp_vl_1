@@ -13,6 +13,35 @@ from .vlm_sft_evaluation import GENERATION_SAMPLE_KEYS, request_seed, safe_parse
 PARENTS = ['obstacle_reach_%d' % n for n in range(272000, 272008)]
 
 
+def decoding_kwargs(greedy=False):
+    """Explicit generation overrides; default is byte-for-value legacy sampling."""
+    result = dict(do_sample=True, temperature=.7, top_p=.9, top_k=0, num_beams=1,
+                  num_return_sequences=1, repetition_penalty=1., use_cache=True)
+    if greedy:
+        # None clears the model's saved sampling defaults. No temperature/top-p
+        # operation should be claimed for argmax decoding.
+        result.update(do_sample=False, temperature=None, top_p=None, top_k=None)
+    return result
+
+
+def validate_greedy_scope(greedy, scope, seed, repeats):
+    if greedy and (scope != 'train8_preflight' or seed != 0 or repeats != 1):
+        raise ValueError('Greedy control permits only fixed seed0, one TRAIN8 K1 probe')
+
+
+def explicit_greedy_config(base):
+    """Clone actual HF config; callers must use use_model_defaults=False."""
+    from copy import deepcopy
+    config = deepcopy(base)
+    unused = config.update(**decoding_kwargs(True), max_new_tokens=512)
+    if unused:
+        raise ValueError('Unknown explicit generation override')
+    config.validate(strict=True)
+    if config.get_generation_mode().value != 'greedy_search':
+        raise ValueError('Actual generation mode must be greedy_search')
+    return config
+
+
 def validate_probe_samples(samples):
     if len(samples) != 8 or [s['parent_id'] for s in samples] != PARENTS:
         raise ValueError('Exactly eight predeclared TRAIN parents required')
@@ -55,14 +84,23 @@ def train_probe_inputs(config, index, plan):
     return samples, hashes
 
 
-def generate_train_probe(samples, generate_request, output, seed=0):
+def generate_train_probe(samples, generate_request, output, seed=0, greedy=False, clock=time.perf_counter):
+    validate_greedy_scope(greedy, 'train8_preflight', seed, 1)
     validate_probe_samples(samples)
     output = Path(output); output.mkdir(parents=True, exist_ok=False)
     paths, events, records = [], [], []
+    loop_started = clock()
+    attempted_calls = 0
     for sample in samples:
-        started = time.perf_counter(); text, token_metadata, failure = '', {}, None
+        started = clock(); text, token_metadata, failure = '', {}, None
+        # Preserve the exact previous request seeds. Greedy does not consume
+        # sampling RNG, but it is not allowed to introduce another seed trial.
         decoding_seed = request_seed(seed, 0, sample['id'], 'train8_constrained_k1', 0)
+        attempted = False
         try:
+            if greedy and clock()-loop_started >= 180.:
+                raise TimeoutError('180s request-loop boundary reached; requested slot retained without another call')
+            attempted = True; attempted_calls += 1
             result = generate_request(sample, 1, decoding_seed, 512)
             text, token_metadata = result['text'], result['tokens']
             if not isinstance(text, str): raise TypeError('Raw decoded text required')
@@ -70,12 +108,15 @@ def generate_train_probe(samples, generate_request, output, seed=0):
             failure = dict(type=type(error).__name__, message=str(error)); text = ''
         xyz, opened, receipt = safe_parse_paths(text, 1, 24)
         record = dict(scene_id=sample['id'], parent_id=sample['parent_id'], split='TRAIN',
-            method='train8_constrained_k1', repeat=0, request=0, k=1, horizon=24, max_new_tokens=512,
+            method='train8_constrained_greedy_k1' if greedy else 'train8_constrained_k1', repeat=0, request=0, k=1, horizon=24, max_new_tokens=512,
             decoding_seed=decoding_seed, text=text, tokens=token_metadata, failure=failure, parse=receipt,
-            observed_input_to_decoded_routes_seconds=time.perf_counter()-started)
+            observed_input_to_decoded_routes_seconds=clock()-started)
+        if greedy:
+            record.update(request_attempted=attempted, decoding_mode='greedy', loop_elapsed_seconds=clock()-loop_started)
         records.append(record); paths.append(xyz); events.append(opened)
         with (output/'requests.jsonl').open('a', encoding='utf-8') as handle:
             handle.write(json.dumps(record, allow_nan=False)+'\n'); handle.flush()
+    loop_seconds = clock()-loop_started
     np.savez_compressed(output/'predictions.npz', scene_ids=np.asarray([s['id'] for s in samples]),
         parent_ids=np.asarray(PARENTS), paths=np.stack(paths), gripper_open=np.stack(events))
     result = dict(scope='TRAIN-only capacity/format probe; not independent4 versus whole4 or a DEV result',
@@ -86,5 +127,11 @@ def generate_train_probe(samples, generate_request, output, seed=0):
         reached_token_limit=sum(r['tokens'].get('reached_token_limit', False) for r in records),
         total_generation_seconds=sum(r['observed_input_to_decoded_routes_seconds'] for r in records),
         geometry_opened=False, candidate_pooling_between_repeats=False)
+    if greedy:
+        result.update(decoding_mode='greedy', attempted_autoregressive_calls=attempted_calls,
+            budget_unattempted_slots=sum(not r['request_attempted'] for r in records),
+            request_loop_seconds=loop_seconds, request_loop_limit_seconds=180.,
+            request_loop_budget_overshoot_seconds=max(0., loop_seconds-180.),
+            deadline_policy='Check before each complete request; an in-flight request may finish beyond the boundary; no retry')
     (output/'probe_summary.json').write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')
     return [result]
