@@ -86,3 +86,15 @@
 | Ariadne: Trajectory Planning without Trajectory Data: A Manifold-Guided Approach | 2026 preprint per [author paper](https://silongyong.github.io/paper/ariadne.pdf) and [official repository](https://github.com/SilongYong/Ariadne); official main `4c6d9f3fa770e8dbbc77e2a7b874c7f5a63ef905` read via git ls-remote | State-only score model, local normal-space estimates from score derivatives, endpoint-corrected projection ODE | Known start/goal; not image-language finite-budget route-set generation. Repository currently contains paper/citation and says implementation is planned upon acceptance. No code reproduction or venue acceptance claimed. |
 
 Research implication: using valid trajectory states as geometric support, or recombining them toward a goal, is not by itself a new mechanism. Our observation inputs cannot acquire privileged goal coordinates or unseen geometry from this comparison. This literature check does not trigger a new implementation or transfer the paper's reported results to this project.
+
+## 观测图与语义通路诊断的近邻核验 — 2026-10-03
+
+| 工作 | 原文/正式状态与代码核验 | 具体边界及本项目决定 |
+|---|---|---|
+| [Neural A*](https://proceedings.mlr.press/v139/yonetani21a.html)，[原文](https://proceedings.mlr.press/v139/yonetani21a/yonetani21a.pdf)，[作者代码](https://github.com/omron-sinicx/neural-astar) | ICML2021，PMLR139:12029–12039。已读方法3.1–3.2：可微节点选择、指导代价图、search-history监督。[当前minimal分支astar.py](https://raw.githubusercontent.com/omron-sinicx/neural-astar/minimal/src/neural_astar/planner/astar.py)实际读取；支持学习地图并切换priority-queue推理，显式接收start/goal maps。作者明确论文复现使用icml2021分支 | 学习代价场后调用A*不是新机制；原始单参考search-history监督不能被本项目解释为“未采到的路线不存在”。当前原生空间惩罚不是其复现。本次没有安装、训练或运行外部实现；3D观测图、未知目标及集合预算适配尚未实现。 |
+| [LACO / Language-Conditioned Path Planning](https://proceedings.mlr.press/v229/xie23b.html)，[原文](https://proceedings.mlr.press/v229/xie23b/xie23b.pdf)，[作者项目](https://amberxie88.github.io/lapp/) | CoRL2023，PMLR229:3384–3396。原文3.1–3.3将RGB、语言和查询机器人关节状态输入学习碰撞函数，再交给规划器；语言定义允许接触的物体。已核验作者项目和论文；该项目页面未提供可核验代码入口，本次不宣称读取官方实现 | 语义约束与几何规划模块化本身不新。其输入输出与本项目已知初始夹爪状态下的任务级路径集不同；不能借用其论文成绩证明本项目的接触/执行有效性。新TRAIN通路probe仅诊断固定模型的依赖，不算方法贡献或此系统复现。 |
+| [LHD原文v2](https://arxiv.org/html/2512.13090v2)，[作者项目](https://jebeom.github.io/lhd_project_page/)，[官方代码](https://github.com/jebeom/LHD) | arXiv v2为2026-06-15；作者与arXiv列RA-L11(6):7118–7125，DOI10.1109/LRA.2026.3685932。IEEE入口本次未成功读取，因此正式状态归属作者/arXiv记录。已读原文问题/方法与仓库README：俯视RGB、CLIP语言、避障扩散核和反向梯度场；原问题是二维多机器人协调。仓库含train/evaluation入口，本次未执行 | 可达性归纳偏置、语言条件场和避障扩散已有直接近邻。多机器人联合轨迹不同于同一任务的K条备选方案，不能互换候选分母。尚未移植或复现，也不以论文reported speedup填本项目结果。 |
+
+当前研究决定是先做固定12条TRAIN的语义直接通路敏感性与观测图正参考支持检查；前者固定geometry context、anchor和输出端点，交换同图的直接Qwen路径分量，属于干预诊断，不能当正常任务质量。后者在图已固定后检查正参考，零路径搜索，不把参考端点交给实际生成器。若随后采用学习字段或模块化路径头，仍须与相同输入/预算的普通头及100k空间惩罚强传统基线配对；上述文献排除了把这些通用部件单独命名为创新的做法。
+
+本次GitHub API只读tree核验：`omron-sinicx/neural-astar`默认`minimal` tree `473edbbd7d20df3e2440b55989f87e720be2d06e`；`jebeom/LHD`默认`main` tree `56cdd718b1e1c83ce4212e288095c2aaa26743ce`。这是来源快照，不是本项目训练commit或外部复现证据。
