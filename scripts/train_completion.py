@@ -138,6 +138,8 @@ def train_one(args):
         rng = np.random.default_rng(args.seed)
         sampler = np.random.default_rng(args.seed + 100000)
         context_rng = np.random.default_rng(args.seed + 200000)
+        draft_rng = np.random.default_rng(args.seed + 300000)
+        self_draft_batches = 0
         step_start, best, elapsed_before, exposures = 0, -float("inf"), 0., 0
         history = []
         if args.resume and (out / "last.pt").exists():
@@ -145,12 +147,18 @@ def train_one(args):
             for key in ("dataset_sha256", "mechanism", "objective", "width", "depth", "seed", "lr", "batch_size", "steps"):
                 if config[key] != checkpoint["config"][key]:
                     raise ValueError("Resume config mismatch: " + key)
+            for key, default in [('self_draft_prob', 0.), ('self_draft_start', 1000)]:
+                if config[key] != checkpoint['config'].get(key, default):
+                    raise ValueError('Resume config mismatch: '+key)
             model.load_state_dict(checkpoint["model"])
             optimizer.load_state_dict(checkpoint["optimizer"])
             scheduler.load_state_dict(checkpoint["scheduler"])
             restore_rng(checkpoint["rng"], rng)
             sampler.bit_generator.state = checkpoint["sampler_state"]
             context_rng.bit_generator.state = checkpoint["context_rng_state"]
+            if 'draft_rng_state' in checkpoint:
+                draft_rng.bit_generator.state = checkpoint['draft_rng_state']
+            self_draft_batches = checkpoint.get('self_draft_batches', 0)
             step_start, best = checkpoint["step"], checkpoint["best"]
             elapsed_before, exposures, history = checkpoint["elapsed_s"], checkpoint["trajectory_exposures"], checkpoint["history"]
         write_json(out / "config.json", config)
@@ -164,6 +172,26 @@ def train_one(args):
             k = 4 if step % 4 == 0 else 2
             contexts = build_contexts(data, ids, context_rng, "empty" if k == 4 else None)
             scenes = torch.as_tensor(data["scenes"][ids], device=args.device)
+            # Late model-generated contexts address measured reference/model
+            # draft shift. No reference coordinates enter these model inputs.
+            if k == 2 and args.self_draft_prob > 0 and step >= args.self_draft_start and draft_rng.random() < args.self_draft_prob:
+                with torch.no_grad():
+                    empty = torch.zeros((len(ids), 2, config['horizon'], 3), device=args.device)
+                    absent = torch.zeros((len(ids), 2), dtype=torch.bool, device=args.device)
+                    draft_np = decode_paths(model(scenes, empty, absent, k=2), scenes).cpu().numpy()
+                contexts['drafts'] = draft_np
+                contexts['present'] = np.ones((len(ids), 2), dtype=bool)
+                contexts['valid'] = draft_validity(draft_np, data['scenes'][ids], contexts['present'])
+                remaining = data['path_mask'][ids].copy()
+                for row, idx in enumerate(ids):
+                    labels = route_modes(draft_np[row], data['scenes'][idx])
+                    covered = set(labels[contexts['valid'][row] & (labels >= 0)].tolist())
+                    for label in covered:
+                        remaining[row] &= data['modes'][idx] != label
+                    if not remaining[row].any():
+                        remaining[row] = data['path_mask'][idx]
+                contexts['remaining_mask'] = remaining
+                self_draft_batches += 1
             drafts = torch.as_tensor(contexts["drafts"], device=args.device)
             valid = torch.as_tensor(contexts["valid"], device=args.device)
             targets = encode_paths(torch.as_tensor(data["paths"][ids], device=args.device), scenes)
@@ -188,6 +216,7 @@ def train_one(args):
                 checkpoint = dict(model=model.state_dict(), optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict(),
                                   scaler=None, step=step, config=config, rng=rng_state(rng), sampler_state=sampler.bit_generator.state,
                                   context_rng_state=context_rng.bit_generator.state, best=best, history=history,
+                                  draft_rng_state=draft_rng.bit_generator.state, self_draft_batches=self_draft_batches,
                                   elapsed_s=elapsed, trajectory_exposures=exposures)
                 atomic_checkpoint(out / "last.pt", checkpoint)
                 if improved:
@@ -204,6 +233,7 @@ def train_one(args):
         summary = dict(metrics=metrics, elapsed_s=elapsed,
                        gpu_hours_reserved=elapsed / 3600 if args.device.startswith("cuda") else 0.,
                        trajectory_exposures=exposures, parameters=model.active_parameter_count(),
+                       self_draft_batches=self_draft_batches, extra_training_draft_forwards=self_draft_batches,
                        peak_cuda_memory_mb=torch.cuda.max_memory_allocated() / 2**20 if args.device.startswith("cuda") else 0.,
                        best_step=checkpoint["step"], best_checkpoint_sha256=sha256(out / "best.pt"),
                        prediction_sha256={kind: sha256(out / "dev_model" / kind / "predictions.npz") for kind in CONTEXT_KINDS})
@@ -233,9 +263,13 @@ def main():
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--stop-after", type=int)
+    parser.add_argument("--self-draft-prob", type=float, default=0.)
+    parser.add_argument("--self-draft-start", type=int, default=1000)
     args = parser.parse_args()
     if args.steps < 1 or args.eval_every < 1 or args.batch_size < 1 or not 1 <= args.threads <= 4:
         parser.error("positive steps/eval/batch and 1--4 CPU threads required")
+    if not 0 <= args.self_draft_prob <= 1 or args.self_draft_start < 1:
+        parser.error('self draft probability must be in [0,1], start >=1')
     if args.mechanism == "both":
         for mechanism in ("attention", "coverage"):
             paired = copy.copy(args)

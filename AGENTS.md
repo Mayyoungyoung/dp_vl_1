@@ -6,6 +6,7 @@ Keep task-level route generation distinct from robot execution and controlled or
 Use only `ssh wzy3090`, GPU 1 (UUID GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab), 35% memory and four CPU threads unless higher authorization is evidenced.
 Do not alter shared environments, stop others' jobs, use sudo, or create paid services.
 Local workspace is the code/commit writer. Run server experiments from immutable commit exports.
+Never overwrite a running shell script. Freeze the launcher and imported source before startup, and record actual source hashes.
 Use DEV_MODEL for research decisions; historical TEST/OOD are now historical/development evidence.
 Record failures, manifests, budgets, checkpoint/RNG state and actual commands. Never infer success from a launch command.
 Authorized remote supplied during session: `git@github.com:Mayyoungyoung/dp_vl_1.git`. Use `codex/multiroute-v2`; do not force-push.
