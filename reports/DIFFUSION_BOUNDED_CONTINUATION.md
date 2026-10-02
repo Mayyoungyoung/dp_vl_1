@@ -27,4 +27,10 @@ The targeted continuation test compares continuous4 against completed2 → new-o
 - Launcher: a newly frozen file with actual deployed source hashes, normalized Git blob hashes, source checkpoint/metadata hashes and successful targeted-test guard. Root owns GPU startup.
 - An interruption resumes only its new output using the recorded command plus `--resume`; do not relaunch the fresh two-arm launcher or change the completed source output.
 
-Status at preparation: implementation ready for frozen-source targeted tests; no continuation training started by this worker. Actual job records and subsequent result report supersede this preparation status.
+Frozen source `16b746e774c741f75cb3ed16a35986f09ea6193e` passed all10 targeted tests in3.33s, CPU1 with CUDA hidden. Recorded worker PID268374, child268376, UTC2026-10-02T11:22:44.943217 to11:22:49.045279, exit0. Logs and status are in `multigate_diffusion_v3_validation/`.
+
+Prepared launcher `.bootstrap/launch_multigate_diffusion_v3_16b746.sh` SHA256 `e1f6b5164c733c079e33669d7e35cfde711a1eac89cc05f5ff7811bb6c1ab91b` passed `bash -n`. Its11 deployed raw source hashes, normalized Git blob hashes and both source runs' original five artifact hashes were independently checked. The audit is `multigate_diffusion_v3_validation/source_hash_audit.json`.
+
+Root launched the frozen script. Both recorded arms completed12000 with exit0; the entire new artifact tree was synchronized and independently analyzed. Incremental/cumulative streams match, all original five artifact hashes match the pre-launch audit, and cost accounting passes. See [DIFFUSION_MULTIGATE_V3_RESULTS.md](DIFFUSION_MULTIGATE_V3_RESULTS.md) and `multigate_diffusion_v3/artifact_index.json`. Independent/set K4 UniqueValid improved to1.21354/1.09375, still below ordinary regression3.39844 despite4x cumulative target exposure. Stop this continuation branch at the declared cap; no PG sweep. The improving tail prevents a convergence-limit claim.
+
+Actual read-only local reproduction: `F:/ProgramData/anaconda3/python.exe -m scripts.analyze_diffusion_continuation` completed with exit0 and produced the report, full parent-paired metrics, three figures and hash index. Binary inputs remain under ignored `runs/` and the server paths in that index.

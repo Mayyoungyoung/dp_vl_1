@@ -28,3 +28,16 @@
 - Resources: see RESOURCE_ENVELOPE.md. Keep sequential GPU1 queue.
 - Git remote authorized by user: `git@github.com:Mayyoungyoung/dp_vl_1.git`; research branch `codex/multiroute-v2`. Immutable release trees and every training source commit are recorded with jobs. Verify actual remote head rather than trusting a stale prose commit.
 - Follow current logs in RESEARCH_LOG.md and job records in JOBS.json. Final-paper core evidence incomplete.
+
+## Latest audited decisions — 2026-10-02 12:00 UTC
+
+This block supersedes earlier in-progress collection/continuation statements above.
+
+- Both natural256 and obstacle128 collections are complete. Obstacle128:1536 attempts,746 successful references,493 classified references,1536 exact restores,0 setup failures;9102.59 seconds. These are collection counts, not model outcomes.
+- Reserved obstacle export contains96 TRAIN/8 fresh DEV parents,312 observations,285/23 positive-reference instructions;3 TRAIN and1 DEV zero-reference inputs remain. True Qwen cache312/312 hashes verified,22.952 seconds including load. Locked roles were not opened for development.
+- v diffusion bounded continuation completed12000 steps per arm,3072000 target slots each: independent Unique1.21354/Valid40.17%, set1.09375/33.72%. Both improved but remain far below regression despite4x exposure; stop this branch, without claiming convergence. Original3k checkpoints and all stream digests unchanged.
+- TRAIN obstacle references pass the same2cm tip check181/181 before and after H24 resampling. Most peak-last collisions begin in the first25% of path length; investigate local geometry, not relabel references.
+- New96 obstacle soft/peak pair launched from6c44469,3000x32,K4,fresh seed0; prospectively both select DEV by UniqueClassifiedTipValidAtK +0.05*TipValidAtK.14 fixed-source tests passed. All24 DEV instructions retained. Prior ADE selections remain historical evidence.
+- New96 observed A*v2 completed exit0 from6c44469 on all24 fresh DEV instructions. Analyze its saved report with the paired neural results; do not infer superiority from completion alone.
+- Six-task collection exact cross-process resume passed: state,inventory,RGB,depth,pose,open,camera,language all identical; first slot hash unchanged;3/3 original-task successes. Formal continuation `runs/observation_multitask_six_formal_v1` is running CPU1 from6c44469 over the registered144 parents,432 requested attempts. Actual closure counts remain authoritative. Source and launcher fixed; do not duplicate.
+- Next candidate is only a TRAIN audit of whether observation-derived early exit regions distinguish known routes. No allocation module is implemented; connected boundaries withJ=1 would falsify this representation. Conventional local geometry reading remains a possible baseline repair, not established novelty.

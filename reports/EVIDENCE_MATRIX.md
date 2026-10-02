@@ -25,7 +25,9 @@
 | 观测A*传统基线已合理运行 | v2已实测 | OBSERVED_ASTAR_V2_PROTOCOL：固定TRAIN修复后44/48 TipValid，UniqueClassified1.333，median1.969s；v1失败保留 | 闭集指令原型、末端箱体检查；低覆盖且非整机执行，尚无固定时间公平对比 |
 | 峰值定位收益迁移到新布局 | 三种子开发支持 | OBSERVATION_FRESH_DEV_TRANSFER：原64模型soft28.47±3.18%→peak72.05±3.14%，无新训练 | 新16DEV已用于分析，不是锁定TEST；原型单端点40/48仍强 |
 | 新192观测训练有效 | 配对seed0实测 | OBSERVATION_RESERVED192_PAIR：原ADE-best语义66.67%→95.83%，各384000槽 | 仅常规定位修复，peak末步回落87.5%，相对64数据与曝光均三倍 |
-| v参数化解决扩散路线失效 | 未获支持 | DIFFUSION_PARAMETERIZATION_RESULTS：v-set Unique.7969；仍约75%碰撞 | 单训练seed；准备有上限的额外曝光检查，不声称充分强扩散基线 |
+| v参数化解决扩散路线失效 | 未获支持 | DIFFUSION_MULTIGATE_V3_RESULTS：12000步ind/set Unique1.21354/1.09375，Valid40.17%/33.72% | 单训练seed；累计曝光为回归4倍，仍在改善不能称收敛；停止此支线 |
+| 错误参考或H24重采样导致观测碰撞 | 当前TRAIN诊断不支持 | OBSERVATION_TRAIN_GEOMETRY_DIAGNOSTIC：181/181原始与H24正参考通过固定检查 | seed0模型前段碰撞仍多；不以此证明未观察几何/整臂安全 |
+| 模拟器跨进程同父恢复 | 已实测通过 | observation_multitask_resume_probe_v1：world/RGB-D/camera/language精确一致，首记录hash未变，3/3任务成功 | 只有恢复机制证据；不等于六任务已完成或路线类型可判别 |
 | 研究初版核心已成立 | 尚未成立 | REMAINING_EXPERIMENTS.md | 主要缺口是有效观测规划和稳定核心优势；剩余工作不只是扩大规模 |
 
 所有开发集bootstrap区间只描述已选择开发数据上的配对差异，不能作为最终锁定测试的确认性推断。未实测字段在MAIN_RESULTS中留空。

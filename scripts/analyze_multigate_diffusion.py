@@ -113,8 +113,15 @@ def analyze(args):
     parameterizations = {config.get("parameterization", "epsilon") for config in configs.values()}
     if len(parameterizations) != 1:
         raise ValueError("paired parameterization mismatch")
-    if summaries["independent"]["trajectory_exposures"] != baseline_summary["trajectory_exposures"]:
+    diffusion_slots = summaries["independent"]["trajectory_exposures"]
+    regression_slots = baseline_summary["trajectory_exposures"]
+    same_training_exposure = diffusion_slots == regression_slots
+    if not same_training_exposure and not getattr(args, "allow_unequal_training_exposure", False):
         raise ValueError("regression/diffusion gradient-slot mismatch")
+    if "continuation" in configs["independent"]:
+        for key in ("incremental_stream_sha256", "incremental_trajectory_exposures", "incremental_reference_pool_access"):
+            if summaries["independent"][key] != summaries["set_diffusion"][key]:
+                raise ValueError("continuation segment mismatch: " + key)
     comparisons = {}
     for arm in arm_values:
         comparisons[arm + "_minus_regression_k4"] = {name: paired_difference(value.mean(0), baseline_values[name])
@@ -132,7 +139,12 @@ def analyze(args):
         summaries=summaries, configs=configs, histories=histories, regression=baseline_summary,
         regression_parent_metrics={key: float(value.mean()) for key, value in baseline_values.items()},
         comparisons=comparisons, known_reference_count_strata=strata, artifact_hashes=artifacts,
-        fairness="same data/information/768000 target slots; regression freely matches full positive pool, diffusion samples balanced positives; different active parameters/forwards and CPU allocations",
+        same_training_exposure=same_training_exposure,
+        diffusion_to_regression_exposure_ratio=diffusion_slots / regression_slots,
+        fairness=("same data/information; diffusion %d versus regression %d target slots (%.1fx); "
+                  "regression freely matches full positive pool, diffusion samples balanced positives; "
+                  "different active parameters/forwards and CPU allocations") %
+                  (diffusion_slots, regression_slots, diffusion_slots / regression_slots),
         timing_caution="old regression head latency excludes exact checker; diffusion measured request includes transfer and checker; do not quote speedup as identical timing scope",
         train_cpu_caution="historical regression trainer used4 torch CPU threads; diffusion uses1, so wall-clock training cost is measured but not a compute-matched superiority test",
         metadata_source=str(metadata), binary_source=str(runs), regression_metadata_source=str(baseline_metadata),
@@ -158,22 +170,24 @@ def markdown(result):
             m = item["mean"]
             lines.append("| %s | %s | %.5f | %.5f | %.5f | %.5f | %d | %d |" %
                 (arm, key[1:], m["valid_rate"], m["any_valid"], m["unique_valid"], m["reference_coverage"], summary["best_step"], summary["trajectory_exposures"]))
-    lines += ["", "K4为同训练预算的主比较。扩散K1/2/8是未见K推断转移；普通固定K4回归无K8结果，表中不造对照。", "",
+    exposure_note = ("K4为同目标槽训练预算的主比较。" if result["same_training_exposure"] else
+        "扩散累计训练目标槽为回归的%.1f倍；两扩散臂彼此等预算，与历史回归不是等总训练预算比较。" % result["diffusion_to_regression_exposure_ratio"])
+    lines += ["", exposure_note + "扩散K1/2/8是未见K推断转移；普通固定K4回归无K8结果，表中不造对照。", "",
         "## K4父场景配对差", "", "| 对比 | UniqueValid差 | 条件父bootstrap95% | Valid差 |", "|---|---:|---|---:|"]
     for label, comparison in result["comparisons"].items():
         u = comparison["unique_valid"]
         lines.append("| %s | %.6f | [%.6f, %.6f] | %.6f |" % (label, u["mean"], *u["parent_bootstrap95"], comparison["valid_rate"]["mean"]))
     lines += ["", "区间只重采样当前DEV父场景，不能量化训练种子不确定性或将已用于选择的DEV变成测试。", "",
-        "## 收敛与成本", "", "| 方法 | 总elapsed秒 | GPU小时 | active参数 | 最后3次DEV UniqueValid | 最后3次训练loss |", "|---|---:|---:|---:|---|---|"]
+        "## 收敛与成本", "", "| 方法 | 本输出elapsed秒 | 本输出GPU小时 | active参数 | 最后3次DEV UniqueValid | 最后3次训练loss |", "|---|---:|---:|---:|---|---|"]
     for arm, summary in result["summaries"].items():
         tail = result["histories"][arm][-3:]
         lines.append("| %s | %.3f | %.6f | %d | %s | %s |" % (arm, summary["elapsed_s"], summary["gpu_hours_reserved"], summary["active_parameters"],
             ", ".join("%d:%.4f" % (x["step"], x["dev_model"]["unique_valid"]) for x in tail),
             ", ".join("%.5f" % x["loss"] for x in tail)))
     lines += ["", "实际配对stream/目标槽/参考池访问检查通过；完整哈希见JSON。两扩散臂同父/目标/时间/噪声，未增加隐藏候选、几何修复或评分筛选。", "",
-        "公平范围：同原始数据、真实几何/终点信息、目标槽。回归可在整个正例池自由匹配；扩散使用已知正例平衡采样。这是模型目标差异，不等于完全相同目标。", "",
+        "公平范围：" + result["fairness"] + "。回归可在整个正例池自由匹配；扩散使用已知正例平衡采样。这是模型目标差异，不等于完全相同目标。", "",
         "历史回归用4个torch CPU线程，扩散用1个；训练墙钟不是同CPU算力优越性证据。旧回归仅测head，而扩散请求计时含生成/传输/checker，不直接宣称同口径加速比。", "",
-        "当前没有观测输入、语义目标推断、训练评分器或SelectedValid执行证据。是否需要继续配对收敛检查，由曲线和失败样例决定；不可把明显未收敛的扩散称作已尽力强基线。PG强度筛选尚未执行。", ""]
+        "当前没有观测输入、语义目标推断、训练评分器或SelectedValid执行证据。训练末尾仍在改善时，不可称扩散已收敛或给出扩散方法的性能上限。PG强度筛选尚未执行。", ""]
     return "\n".join(lines)
 
 
@@ -192,7 +206,7 @@ def plot_results(destination, result, values, data, ids, examples, baseline, par
             ax.grid(alpha=.2)
             ax.scatter([4], [result["regression_parent_metrics"][metric]], color="black", marker="*", s=100)
     axes[0].legend()
-    fig.suptitle("DEV seed0; bars: sampling SD, 3 separate repeats; black star: regression K4")
+    fig.suptitle("DEV seed0; sampling SD, 3 separate repeats; black star: regression K4\nDiffusion/regression training exposure: %.1fx" % result["diffusion_to_regression_exposure_ratio"])
     fig.savefig(destination / "budget_curves.png", dpi=170)
     plt.close(fig)
     fig, axes = plt.subplots(1, 2, figsize=(10, 4), constrained_layout=True)
@@ -205,6 +219,7 @@ def plot_results(destination, result, values, data, ids, examples, baseline, par
         ax.set(xlabel="Training steps", ylabel=label)
         ax.grid(alpha=.2)
         ax.legend()
+    fig.suptitle("DEV seed0; diffusion/regression cumulative training exposure: %.1fx" % result["diffusion_to_regression_exposure_ratio"])
     fig.savefig(destination / "convergence.png", dpi=170)
     plt.close(fig)
     difference = values["set_diffusion"]["k4"]["unique_valid"].mean(0) - baseline_values["unique_valid"]
@@ -239,6 +254,8 @@ def main():
     parser.add_argument("--metadata", help="Tracked config/summary/history/status export; predictions remain under --runs")
     parser.add_argument("--regression", default="runs/v2_round2/saturation_k4_seed0")
     parser.add_argument("--regression-metadata", help="Tracked regression config/summary export")
+    parser.add_argument("--allow-unequal-training-exposure", action="store_true",
+                        help="Explicit extra-training diagnostic; prominently label ratio, never claim matched training budget")
     parser.add_argument("--output", default="reports/multigate_diffusion_v1/analysis.json")
     parser.add_argument("--report", default="reports/DIFFUSION_MULTIGATE_RESULTS.md")
     parser.add_argument("--figures", default="reports/multigate_diffusion_v1/figures")

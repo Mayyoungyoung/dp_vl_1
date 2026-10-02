@@ -91,3 +91,8 @@ Qwen3-VL-2B-Instruct revision `89644892e4d85e24eaac8bacfd4f463576704203` 的官�
 2026-10-02补充：自然256父批次已实际完成并exit0，2304次尝试中2281成功、23失败、1近重复，全部2304次严格恢复通过，0父初始化失败。该总计是获准的机械采集审计，不是生成器结果；近重复之外的路径也不因此算不同类型。实际耗时6324.26秒。
 
 原采集器中的192TRAIN/64DEV字段保持原样；10:10:31UTC预注册的 `configs/observation_partition_reservation_v1.json` 定义后续派生数据的精确父角色，取代全64父都用于开发的旧计划。`export_observation_roles.py` 先按parent_id过滤，再解析所选记录、打开所选父文件，拒绝锁定/评分/校准角色与跨父路径。实际导出192TRAIN+16freshDEV（624输入，576/48，均有参考），输入SHA `aa17ecef147f73ada2e902ac30f7de39be0acc47a25ced5959607619bf945495`。源文件未变；Linux测试真实拒绝符号链接跨父。新DEV会用于开发泛化检查，不能称最终锁定测试。评分、校准和锁定父内容未被打开用于选方法。
+
+
+预注册障碍角色已从原128父collector独立导出：96TRAIN＋8DEV_MODEL、312个观测指令，285/288 TRAIN与23/24 DEV有至少一个参考，4个零参考输入保留。只读过滤在JSON载荷解析之前按父进行；score/calibration/locked未进入导出。input SHA d24e7ec52948a6b521498a72885a5c880c4a50b0e295f65386e692d67feee072。初次导出因旧attempt记录不含split而exit1；修复只从原观测/监督取source split，新目录完整exit0。
+
+312条真实Qwen冻结特征完成，22.952秒含3.688秒加载，峰值4279495680字节；全部特征和图像SHA逐条核验。该耗时是整批提取，不能冒充单请求延迟。

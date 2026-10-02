@@ -1,6 +1,6 @@
 # 六任务正式采集准备：144 个预注册父场景
 
-状态：采集器与一个 TRAIN 父的真实跨进程恢复验证完成，正式启动器已准备；本 agent 尚未启动正式采集。原始任务演示加入自由前接近提案，数据名称始终为 RLBench-derived；不宣称三个几何不同轨迹就是三种任务路线。
+状态：采集器与一个 TRAIN 父的真实跨进程恢复验证完成；root 已启动固定源码的单 CPU 正式采集，完成情况以实际 job 为准。原始任务演示加入自由前接近提案，数据名称始终为 RLBench-derived；不宣称三个几何不同轨迹就是三种任务路线。
 
 候选任务仅保留已有成功、恢复和成本证据的六项：reach_target、pick_and_lift、push_button、take_lid_off_saucepan、pick_up_cup、slide_block_to_target。旧四任务小批 4 父 12/12 成功，总 433.585 秒；来源以旧作业实际执行副本与 hash 为准，不追认后续 commit 为当时源。新四任务中 cup 三次合计 137.540 秒、slide 122.473 秒，均 3/3 成功和严格记录状态／RGB／物体清单／语言恢复。peg 215.607 秒、stack 473.091 秒，仅保留可采性证据，不纳入本轮正式任务。
 
@@ -22,6 +22,10 @@ variation 固定为 `parent_index % task.variation_count()`。因此角色之间
 
 正式启动器 `scripts/launch_six_task_formal.sh` 已准备，collector 源硬固定同一 6c 版本，禁 GPU、单 CPU，继续使用已注册的 `data/observation_multitask_resume_probe_v1`。名称沿用首次恢复验证目录以避免复制或重复采集首父；其分区 manifest 从开始就是完整 144 父注册。正式阶段会跳过已闭合首父，新增物理采集到该同一语料；尚未由本 agent 启动。相机在运动阶段仍默认开启，独立性能候选不改变这一版本。
 
+root 已固定正式 launcher 版本 `c9b3f23` 并启动 `runs/observation_multitask_six_formal_v1`，collector 仍固定 6c，单 CPU 持续采集。后续完成情况应读取实际 job 和机械状态，不能从启动记录推断完成。性能优化只在独立训练父审计，不修改此运行作业。
+
 旧四任务实际成功源副本 `observation_collect_rlbench.py` 的 SHA256 为 `0a86f823874381ba7dd822774a5324e4a550d6855f82a932b9f336b748d916c3`，对应 wrapper SHA256 为 `3157ff9224559c625d65721ec18c75d7836fba48805604f0ea07e3068b266cb8`。按旧 4 任务总耗时及 cup/slide 小批线性推算，六任务每类 24 父约需 4.6 个 CPU 进程小时，尚未计不同 variation、独立进程启动和失败重建的波动；仅作排程估计，不是实测正式成本。
 
 独立性能候选仅完成源码核验：已安装 RLBench `backend/scene.py` SHA256 为 `d95fe8c900d9a5f7efc77bf7cd3d8697514ddbc59d3fa885b60523b4695d690d`。逐步观测会根据当前相机开关执行 RGB-D 渲染，pose/open 则独立读取。可在严格初态图像核验后临时关闭 front RGB-D，并在下一次恢复校验前开启；不得调用会删除 sensor 的 `_set_camera_properties()`。正式默认尚未采用此优化；需要相同 TRAIN 父和提案的独立 on/off 实测及全部额外尝试预算后再决定。
+
+性能候选 harness 已实现为 `scripts/benchmark_demo_render.py`，仅在 proposal 0 的 `Scene.get_demo` 调用期间临时切换相机配置，初始／严格恢复图像以及 pose/open 采样语义保留。两臂单独输出、各多消耗一个真实采集提案；完整初态及原始轨迹／事件逐点比较，异常退出也恢复相机开关。三项本地开关测试通过，实际 on/off 模拟器验证尚未执行。它不覆盖自由前缀阶段，也不会自动采用到正式采集。

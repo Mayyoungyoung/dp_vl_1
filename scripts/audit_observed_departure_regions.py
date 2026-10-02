@@ -284,8 +284,12 @@ def summarize(records, evaluations):
             known_same_type_mapped_pairs=same, fragmented_same_type_pairs=fragmented,
             maximum_regions=max((c for c in counts if c is not None), default=None))
     no_branch = all(r['multi_region_instructions'] == 0 for r in by_radius.values())
+    failed = any(r['generation_failed'] > 0 for r in by_radius.values())
+    decision = ('inconclusive_no_observed_multi_regions_with_generation_failures' if failed else
+                'reject_this_boundary_representation_no_multi_region_space') if no_branch else (
+                'inspect_coverage_and_fragmentation_before_any_allocator; multiple_components_alone_are_not_evidence')
     return dict(config=CONFIG, parents=len(PARENTS), observations=len(records), radii=by_radius,
-        decision='reject_this_boundary_representation_no_multi_region_space' if no_branch else 'inspect_coverage_and_fragmentation_before_any_allocator; multiple_components_alone_are_not_evidence',
+        decision=decision,
         limitation='observed partial-space proxy only; local components are not certified global route/homotopy classes; reference sets incomplete; unknown types retained')
 
 

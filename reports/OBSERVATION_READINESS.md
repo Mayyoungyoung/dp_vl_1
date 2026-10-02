@@ -226,3 +226,9 @@ natural父262000–262191为TRAIN，262192–262207为DEV_MODEL，262208–26222
 固定 `7f27f93514850973fba93260e8569f2a7fec27ea` 已实际完成旧natural64 soft/peak三seed原best在新16 DEV父/48指令上的CPU迁移评价、exit0。没有新增训练或重新选模：严格语义从28.47±3.18%提高到72.05±3.14%，参考ADE从6.60±0.28cm降到6.21±0.14cm，三个配对方向一致。所有失败与144场景配对差异保留，三个peak种子共同失败的green/azure/violet/gray四指令完整列出。新DEV仍是开发泛化检查，不是最终锁定测试；详见 `reports/OBSERVATION_FRESH_DEV_TRANSFER.md`。新的192 TRAIN从头配对与旧64 prototype公平迁移由主任务排队，未完成前不记作结果。
 
 两项随后均已真实完成：new192同384000候选槽的seed0原best为soft66.67%/peak95.83%，但peak last3000退至87.50%，详见 `OBSERVATION_RESERVED192_PAIR.md`。旧64已拟合prototype未追加训练，在同48新DEV上40/48=83.33%，保留全部8离群失败，详见 `OBSERVATION_PROTOTYPE_FRESH_DEV.md`；它仍只是K1端点定位，且与新192神经模型训练数据和预算不同，不能混作公平路线比较。
+
+随后固定 `3fc6fd77c060bfb5b94bca3466be56837afb4fe4` 完成障碍old32 TRAIN-only检查：94有参考输入的181条原始路线与实际训练H24全部满足原2cm TipValid，70未知类型仍有效，排除这批参考重采样/余量冲突。seed0 peak last在96 TRAIN/384候选上已有338语义正确，但其中154条仍碰撞，115条首次碰撞在自身路径前25%弧长；真实raw DEV文件未读取。该单种子训练诊断支持转向早段绕障问题，详见 `OBSERVATION_TRAIN_GEOMETRY_DIAGNOSTIC.md`，不当作独立测试或完整机器人有效性证据。
+
+新障碍96 TRAIN/8新DEV配对训练前，预先固定可选选模协议 `dev_tip_unique_valid_v1`：DEV分数为 `UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK`。它复用原2cm箱体余量、3cm目标与事件判据，对全部DEV（含无参考指令）计数；未知路线类型保持有效并计入次项。几何验收标签只在全部预测完成后读取，不进入生成条件、损失或推理修复。原脚本默认仍为参考ADE选模，旧结果和门槛不变；新配对两臂必须同协议，best与last分别保留。此调整加强基线与任务指标的一致性，不当作方法创新。
+
+固定release `870fc45aaf963946d7ec06c08ab3d23c8f585f38` 的实际CPU1预检已exit0：`tests/test_observed_selection.py` 与 `tests/test_observed_geometry.py` 合计14项通过，pytest耗时2.76秒。覆盖默认历史输出、公式/无参考分母/未知有效、标签读入顺序及不影响forward、恢复协议拒绝和原几何/peak梯度兼容。原始命令、PID、日志、源码SHA在 `reports/observed_tip_selection_preflight/`；通过测试本身不代表新配对已有实测收益。

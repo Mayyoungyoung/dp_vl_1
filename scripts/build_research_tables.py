@@ -47,7 +47,10 @@ def main():
                 training_threads=config['threads'],sampling_repeats=len(entry['repeats']),budget_status=entry['budget_status'],
                 forward_passes=config['sampling_steps'],end_to_end_controlled_ms=timing.get('request_generate_transfer_check_ms_p50'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
-                cost_scope='train plus evaluation and timing; repeated across K, deduplicate by run_id; no VLM/scorer; inspect convergence before strong-baseline claims',
+                cumulative_elapsed_s=result.get('cumulative_elapsed_s',result['elapsed_s']),
+                cumulative_gpu_hours=result.get('cumulative_gpu_hours_reserved',result['gpu_hours_reserved']),
+                incremental_training_exposures=result.get('incremental_trajectory_exposures',result['trajectory_exposures']),
+                cost_scope='elapsed/gpu_hours are this output tree; cumulative includes prior continuation once; exposures cumulative; repeated across K, deduplicate by run_id; no VLM/scorer',
                 source=str(source.relative_to(root))))
     completion_sources = sorted((reports/'v2_completion').glob('*/summary.json'))
     completion_sources += sorted((reports/'v2_completion/replication').glob('seed*/*/summary.json'))

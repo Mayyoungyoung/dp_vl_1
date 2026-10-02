@@ -63,3 +63,13 @@
 2. DETR/MTR/LED/Particle Guidance/SetPO 已覆盖集合匹配、意图查询、相关候选、相互作用和集合多样性目标。仅组合这些模块不足以建立方法贡献。
 3. 可以检验的窄问题是：在严格候选和更新时间预算下，补全器能否区分“已有路线条数”和“当前任务下实际已覆盖的有效方案”，并在重复、无效草稿、条件变化时稳定分配剩余预算。
 4. 首轮必须同时给普通补全 attention、无有效性门控、非幂等聚合与从空集合生成结果。若普通基线已经解决，则保留强基线并换机制，不能靠换名保留创新结论。
+
+
+## 观测绕障瓶颈后的补充近邻（2026-10-02）
+
+- [Multiple Topologies Prediction原文](https://arxiv.org/html/2011.03894v1)、[CoRL2020记录](https://corlconf.github.io/corl2020/paper_497/)、[作者实现](https://github.com/rohjunha/multiple-topologies-prediction)：将多主体行为分成拓扑模式并学习条件轨迹；拓扑意图加连续路线本身不新。此处已读原文和官方入口，没有运行其代码。
+- [TMPD原文](https://arxiv.org/html/2603.26696v1)：2026预印本，扩散提出多路线，已知障碍和历史缆绳路径参与拓扑筛选，使用噪声/引导时程及候选池。已读方法与算法；未独立确认正式发表或官方实现。生成大池后按类过滤的预算不能直接当作本项目严格K。
+- [ComposableNav作者项目](https://amrl.cs.utexas.edu/ComposableNav/)：作者标CoRL2025，以指令选择动作约束原语并组合扩散。这里只核验作者说明与方法概述，未复现；语言约束组合和碰撞引导不能作为新概念主张。
+- [Topology-Driven Parallel Trajectory Optimization作者代码](https://github.com/tud-amr/guidance_planner)：作者仓库列T-RO2024与ICRA2023关联论文，给定动态障碍、状态和目标，生成拓扑不同引导路线。已核验代码来源和README，未安装或复现。候选路线的绕障分类及先离散引导后连续优化已有强传统先例。
+
+研究判断：当前181条障碍TRAIN正参考本身与训练重采样均通过固定2cm协议，而单seed峰值头前段频繁撞障。应先区分几何表示/训练收敛与集合预算分配的贡献，不能仅把局部地图cross-attention、碰撞损失或传统拓扑分类换名作为核心。
