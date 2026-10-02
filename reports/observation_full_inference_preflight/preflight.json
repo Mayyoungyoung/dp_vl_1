@@ -1,0 +1,26 @@
+{
+  "run": "/home/wzy/dpvlm/route_set_v1/runs/observed_geometry_grounding_v2/seed0",
+  "checkpoint_sha256": "b803e93f0c4169f667c50a715c32a2f91feb49f48fd95343a8567fd9ef03e69e",
+  "model_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "processor_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "requests": 24,
+  "input_manifest_sha256": "31fb89f7a68df597d059f8c0a5be5367395ed58873766cd8b87c3000243a0bb3",
+  "source_script_sha256": "fa534bc7892b06abf186c19389d16e72aad5827c56954ab04bdb2041939c4e58",
+  "input_fields": [
+    "RGB",
+    "instruction",
+    "current depth",
+    "camera calibration",
+    "current gripper pose/open"
+  ],
+  "excluded": [
+    "future path tokens",
+    "true target coordinates",
+    "complete obstacle geometry",
+    "verification labels"
+  ],
+  "scope": "single-request observation-to-path inference; excludes collision validation, scoring, robot execution",
+  "cache_use": "no cached Qwen or learned point features; actual processor/model/geometry/head every request",
+  "status": "input_and_source_preflight_only",
+  "gpu_executed": false
+}
