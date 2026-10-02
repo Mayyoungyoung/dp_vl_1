@@ -1,5 +1,16 @@
 # State — 2026-10-02
 
+## Current checkpoint — 16:02 UTC / 2026-10-03 00:02 China
+
+This block supersedes older running statements. Actual status receipts and source hashes remain authoritative.
+
+- All six ordinary/event-supported head training jobs completed. Three-seed original ADE-selected best: ordinary ADE9.8548±0.1615cm versus auxiliary9.0827±0.3151; endpoint17.9283±0.4284 versus15.6893±0.8077cm. Fixed1500 ADE improves only2/3 seeds, and cup fixed-step ADE worsens in all three. Keep auxiliary as a stronger conventional baseline, not the paper mechanism. Source3f9cea5 replication jobs all exit0; actual paired initialization/RNG and48000-draw chains equal. Full evidence: OBSERVATION_MULTITASK_LANDMARK_THREE_SEED.md. GPU released.
+- Source1915de7 teacher audit completed exactly9 forwards. Units, label shift/mask and causal prefix tests passed; coordinates account for97.04% NLL. Conditional endpoints cannot establish visual grounding because true earlier path points expose target direction. Only one next control selected: same-checkpoint grammar-greedy TRAIN8, not yet executed; freeze/test source first.
+- Source1915de7 static collision attempt failed before any of six configurations was applied, because pinned PyRep mishandles the legal root-parent sentinel. All six remain unattempted. Minimal validated hierarchy fix is ready; only a new immutable release/fresh output may retry. No layout change or physical conclusion from the failure.
+- New84ee7a6 formal collector is complete exit0 at15:10:13UTC:144 parent records closed; closure is not success. Old6c44469 collector status must be read before any action. Locked contents/model metrics remain unopened.
+- Seed0 first-close spatial analysis from saved predictions completed: macro14.152→13.174cm, but lift/cup worsen; event sequence100% does not certify contact position. All12-parent paired saved-prediction visualization is being prepared, with identical axes and no outcome-selected panels.
+- Paper-core A–H remains incomplete: actual Qwen and multi-task data are present, but general route-set mechanism, representative success/coverage and independent confirmation are not yet established.
+
 ## Current checkpoint — 15:10 UTC
 
 15:22UTC measured addendum: grammar TRAIN8 completed exit0,8/8 strict format but0/8 target within3cm,mean endpoint57.372cm; GPU released and no DEV/K4 expansion. Twenty-four endpoint IK queries completed,48 exact restores; both orientations3/6 collision-aware versus6/6 ignore, additional configurations collide. No new route references. Ordinary auxiliary37tests and actual prefix108 initial-forward/48000-draw sampler audit passed fromaef3983; launcher55c2c4a is reviewed for the single1500-step run. Read its actual status before claiming completion. JOBS snapshot15:20:40 contains242 records (registry245), showing new84ee formal collector no longer running; only mechanical closure/exit may be inspected for locked roles.9-forward TRAIN SFT token diagnostic and six-configuration static collision comparison are under implementation, not launched. Full SFT plots v2 all48panels/source hashes unchanged; all8pages visually checked.

@@ -179,6 +179,33 @@ def mesh_provenance(shapes):
     return rows
 
 
+def hierarchy_depths(inventory,sim):
+    """Validate handles, then read root sentinels without PyRep's -1 check.
+
+    The pinned sim.simGetObjectParent wrapper raises on the valid root value
+    -1. Its Object.get_parent catches RuntimeError broadly. Here every handle
+    is independently checked, and nonroot parents must exist in the audited
+    inventory; unrelated validation errors and malformed graphs fail closed.
+    """
+    types={int(handle):int(typ) for _,handle,typ in inventory}
+    if len(types)!=len(inventory):raise RuntimeError('duplicate inventory handle')
+    for handle,typ in types.items():
+        if int(sim.simGetObjectType(handle))!=typ:raise RuntimeError('inventory handle type changed')
+    parents={handle:int(sim.lib.simGetObjectParent(handle)) for handle in types}
+    if any(parent!=-1 and parent not in types for parent in parents.values()):
+        raise RuntimeError('parent outside audited inventory')
+    depths={}
+    for handle in types:
+        chain=[];current=handle
+        while current!=-1 and current not in depths:
+            if current in chain:raise RuntimeError('cyclic scene hierarchy')
+            chain.append(current);current=parents[current]
+        value=-1 if current==-1 else depths[current]
+        for child in reversed(chain):
+            value+=1;depths[child]=value
+    return depths
+
+
 def configure_static_world(task,posts,source,sim):
     saved=source['world'];robot=task._robot
     inventory=legacy.full_audit(task,posts)['inventory']
@@ -188,12 +215,8 @@ def configure_static_world(task,posts,source,sim):
     robot_handles={o.get_handle() for o in robot_objects}
     # Restore nonrobot global transforms in parent-before-child order. Robot
     # links are reconstructed from model root plus frozen joint coordinates.
-    def depth(handle):
-        value=0
-        while sim.simGetObjectParent(handle)!=-1:
-            handle=sim.simGetObjectParent(handle);value+=1
-        return value
-    for name,handle,_ in sorted(inventory,key=lambda item:depth(item[1])):
+    depths=hierarchy_depths(inventory,sim)
+    for name,handle,_ in sorted(inventory,key=lambda item:depths[item[1]]):
         if handle in robot_handles and handle!=robot.arm.get_handle():continue
         pose=saved['state']['_global_pose_'+name]['pose']
         current=sim.simGetObjectPosition(handle,-1)+sim.simGetObjectQuaternion(handle,-1)

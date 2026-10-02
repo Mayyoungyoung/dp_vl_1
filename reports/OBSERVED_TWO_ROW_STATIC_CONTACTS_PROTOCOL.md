@@ -1,6 +1,6 @@
 # 六个冻结碰撞配置：静态对象定位预登记
 
-状态：代码与纯逻辑测试已准备，未启动模拟器。本诊断只处理前次 24-query 中实际碰撞的 query **5/7/13/15/21/23**；新 IK、路线提案和训练参考预算全部为 **0**。配置文件冻结原 manifest、24-query ledger、common world、NPZ 和 PNG 的五个 SHA256。记录被修改、缺少查询、返回配置不再对应原碰撞标签或 joint readback 非零时直接拒绝。
+状态：原固定 release 的一次实跑在初始化父节点接口处失败，0/6 配置应用；[失败结果完整保留](OBSERVED_TWO_ROW_STATIC_CONTACTS_RESULTS.md)。只修根节点接口的版本已完成本地检查，尚未重跑。本诊断只处理前次 24-query 中实际碰撞的 query **5/7/13/15/21/23**；新 IK、路线提案和训练参考预算全部为 **0**。配置文件冻结原 manifest、24-query ledger、common world、NPZ 和 PNG 的五个 SHA256。记录被修改、缺少查询、返回配置不再对应原碰撞标签或 joint readback 非零时直接拒绝。
 
 ## 能复现什么，不能复现什么
 
@@ -29,3 +29,5 @@
 ## 实现与检查
 
 新增独立脚本 `scripts/diagnose_two_row_static_contacts.py`、配置 `configs/observed_two_row_static_contacts_v1.json`、测试 `tests/test_two_row_static_contacts.py`；原 collector 和原 endpoint 脚本不变。新增 9 测试覆盖固定六配置与 hash、model archive 一致性、零容差 restore、非有限状态拒绝、对象分类、collection 与 link 两层矩阵、禁止 IK/路线/开始物理以及 UI-only 更新。合并旧检查实际 **36 passed / 0.62 s**。运行必须等固定 release 与 CPU1 授权，使用全新输出和不可变 launcher。
+
+首次运行后仅增加根节点兼容修复：已验证的 inventory 句柄通过 `simGetObjectType` 核验，再用 pinned backend 原始 `lib.simGetObjectParent` 避开包装器对合法 `-1` 的错误检查。非根父节点必须属于完整 inventory，循环与重复句柄拒绝。新增 4 项层级测试，合并 **40 passed / 0.65 s**；没有放宽世界/图像恢复门槛或调用新的 IK。

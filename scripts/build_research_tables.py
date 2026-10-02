@@ -209,7 +209,7 @@ def main():
     observation_folders += [p.name for p in reports.glob('observed_anchor_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_natural_reserved*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_multitask_prefix*') if p.is_dir()]
-    observation_folders += [p.name for p in reports.glob('observed_multitask_landmark_aux_v1') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_multitask_landmark_*') if p.is_dir()]
     for folder in observation_folders:
         for source in sorted((reports/folder).rglob('summary.json')):
             if not (source.parent/'config.json').is_file():

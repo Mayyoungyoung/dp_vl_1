@@ -103,3 +103,35 @@ def test_guard_blocks_ik_routes_starts_but_services_ui_and_restores():
     assert ui==[False,False]
     assert count==dict(ik_attempts=1,path_attempts=1,simulation_start_attempts=1,ui_updates=2)
     assert arm.get_path is original
+
+
+def fake_hierarchy(parents,types):
+    return SimpleNamespace(simGetObjectType=lambda handle:types[handle],
+        lib=SimpleNamespace(simGetObjectParent=lambda handle:parents[handle]))
+
+
+def test_hierarchy_handles_root_sentinel_and_parent_order():
+    inventory=[('grandchild',3,0),('root',1,0),('child',2,1),('other_root',4,2)]
+    sim=fake_hierarchy({1:-1,2:1,3:2,4:-1},{1:0,2:1,3:0,4:2})
+    assert diagnostic.hierarchy_depths(inventory,sim)=={1:0,2:1,3:2,4:0}
+
+
+def test_hierarchy_rejects_parent_outside_inventory():
+    with pytest.raises(RuntimeError,match='outside'):
+        diagnostic.hierarchy_depths([('child',1,0)],fake_hierarchy({1:2},{1:0}))
+
+
+def test_hierarchy_rejects_cycles_and_duplicate_handles():
+    with pytest.raises(RuntimeError,match='cyclic'):
+        diagnostic.hierarchy_depths([('a',1,0),('b',2,0)],fake_hierarchy({1:2,2:1},{1:0,2:0}))
+    with pytest.raises(RuntimeError,match='duplicate'):
+        diagnostic.hierarchy_depths([('a',1,0),('b',1,0)],fake_hierarchy({1:-1},{1:0}))
+
+
+def test_hierarchy_propagates_invalid_handle_and_rejects_changed_type():
+    def invalid(handle):raise RuntimeError('invalid handle')
+    sim=fake_hierarchy({1:-1},{1:0});sim.simGetObjectType=invalid
+    with pytest.raises(RuntimeError,match='invalid handle'):
+        diagnostic.hierarchy_depths([('root',1,0)],sim)
+    with pytest.raises(RuntimeError,match='type changed'):
+        diagnostic.hierarchy_depths([('root',1,0)],fake_hierarchy({1:-1},{1:1}))
