@@ -1,0 +1,204 @@
+"""Pure one-shot formal116 registration; no simulator, IK, path search or images.
+
+The generated geometry is supervision/collection metadata. Registration permits
+an attempted collection, never certifies an actual initial state or route.
+"""
+import argparse
+import copy
+import hashlib
+import json
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+
+from scripts import collect_two_row_layout4 as batch
+
+PROTOCOL = 'observed_two_row_formal116_registration_v1'
+RL_REVISION = '02720bba4c73fe02eb75df946b8791b806028a9d'
+COLOR_SOURCE_SHA256 = '85c33ceecb9ea9e6b05742829f4bdc714b8d500ff5b24e62fba13426ca7a16a2'
+# Read literally from the pinned rlbench/const.py; no simulator import required.
+COLORS = (
+    ('red',(1.,0.,0.)), ('maroon',(.5,0.,0.)), ('lime',(0.,1.,0.)),
+    ('green',(0.,.5,0.)), ('blue',(0.,0.,1.)), ('navy',(0.,0.,.5)),
+    ('yellow',(1.,1.,0.)), ('cyan',(0.,1.,1.)), ('magenta',(1.,0.,1.)),
+    ('silver',(.75,.75,.75)), ('gray',(.5,.5,.5)), ('orange',(1.,.5,0.)),
+    ('olive',(.5,.5,0.)), ('purple',(.5,0.,.5)), ('teal',(0.,.5,.5)),
+    ('azure',(0.,.5,1.)), ('violet',(.5,0.,1.)), ('rose',(1.,0.,.5)),
+    ('black',(0.,0.,0.)), ('white',(1.,1.,1.)))
+ARM_Q = [1.4177980422973633,-.3296482563018799,-1.0256242752075195,
+         -3.047668218612671,1.8225327730178833,3.522265672683716,-.7149819135665894]
+GRIPPER_Q = [.039962686598300934,.03994722291827202]
+ROLE_RANGES = [('TRAIN',0,64),('DEV_MODEL',64,76),('DEV_SCORE',76,88),
+               ('CALIBRATION',88,100),('TEST_LOCKED',100,116)]
+ORDER = list(range(16))+list(range(64,76))+list(range(16,64))+list(range(76,116))
+
+
+def canonical_hash(value):
+    return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),
+                                     ensure_ascii=False,allow_nan=False).encode('utf-8')).hexdigest()
+
+
+def color_table():
+    return [dict(index=i,name=name,rgb=list(rgb)) for i,(name,rgb) in enumerate(COLORS)]
+
+
+def role_for_index(index):
+    if isinstance(index,bool) or not isinstance(index,int) or not 0<=index<116:
+        raise ValueError('Registered parent index must be 0..115')
+    return next(role for role,start,end in ROLE_RANGES if start<=index<end)
+
+
+def validate_spec(spec,base):
+    fixed = dict(protocol=PROTOCOL,layout_rng_seed=283199,parent_seed_start=283200,
+        parent_seed_stop_exclusive=283316,requested_parents=116,targets_per_parent=3,
+        proposals_per_target=9,requested_route_proposals=3132,post_height_m=.14,
+        physical_layout_hash_quantization_m=.001,geometry_resampling_attempts=0,
+        failed_parent_replacements=0,setup_path_budget=0,initialization_ik_budget=0,
+        fallback_attempts=0,canonicalization_passes=2,requested_setup_actions=0,
+        row_x_ranges=[[.135,.145],[.335,.345]],
+        post_y_ranges=[[[-.115,-.105],[.105,.115]],[[-.155,-.145],[.145,.155]]],
+        goal_x_range=[.45,.47],goal_y_ranges=[[-.175,-.145],[-.015,.015],[.145,.175]],
+        goal_z=.84,canonical_entry_xyz=[0.,0.,.865],
+        role_ranges=[dict(role=r,start_inclusive=a,stop_exclusive=b) for r,a,b in ROLE_RANGES],
+        execution_indices=ORDER,shard_indices=[ORDER[::2],ORDER[1::2]])
+    if any(spec.get(k)!=v for k,v in fixed.items()):
+        raise ValueError('Formal116 split, budget, geometry or RNG registration changed')
+    if canonical_hash(base)!=spec['base_config_canonical_sha256']:
+        raise ValueError('Original fixed v4 geometric/checking configuration changed')
+    if spec['base_config_canonical_sha256']!='3e8f1a7af2d559124a2c985d6cf93f623cd6c4d003dc9892620679b54d8ccc06':
+        raise ValueError('Original base configuration identity required')
+    if (spec['color_table']!=color_table() or spec['color_table_sha256']!=canonical_hash(color_table())
+            or spec['color_source_sha256']!=COLOR_SOURCE_SHA256 or spec['rlbench_revision']!=RL_REVISION):
+        raise ValueError('Pinned official twenty-color table changed')
+    init=spec['canonical_init']
+    if (init['canonical_arm_joints']!=ARM_Q or init['canonical_gripper_joints']!=GRIPPER_Q
+            or init['canonical_entry_xyz']!=[0.,0.,.865] or init['canonicalization_passes']!=2
+            or init['source_v4']!='/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v4'
+            or init['source_v4_commit']!='7b496e24a85512f23fe448d50288c14b27ed6f12'
+            or init['anchor_file']!='two_row_reach_283001/restore_reference.json'
+            or init['anchor_sha256']!='a85b52d80f7517076efe7057ef5c2820521fd93c638c0f8178436494df7ada2f'
+            or init['original_arm_py_sha256']!='4c0d5e09aa777de145c184f05a24ac74bb770aedb534dc0c9501d726c17ebe5d'
+            or init['rlbench_archive']!='/home/wzy/dpvlm/route_set_v1/.observation-deps/rlbench-02720bba.tar.gz'
+            or init['rlbench_archive_sha256']!='df5ec0e96d5ec8d0f13cd3e9becab29dc35352663f9e3e6775270eca759f521a'
+            or init['old_dynamic_state_reproduced'] or init['setup_trajectory_executed']):
+        raise ValueError('Fixed canonical static initial state/provenance changed')
+    if any(k in init for k in ('v5_before_preparation_sha256','source_v5','before_world')):
+        raise ValueError('New formal parents must not claim old dynamic before-world evidence')
+
+
+def validate_exclusions(rows):
+    expected={('v4','two_row_reach_283001')}|{
+        (version,'two_row_reach_%d'%seed) for version in ('v5','v6') for seed in range(283100,283104)}
+    if len(rows)!=9 or {(r['version'],r['parent_id']) for r in rows}!=expected:
+        raise ValueError('All nine public v4/v5/v6 geometry records required')
+    for row in rows:
+        if row['role']!='DEV_COLLECTION' or not row.get('source'):
+            raise ValueError('Only public development geometry exclusion metadata permitted')
+        for key in ('geometry_exact_sha256','geometry_1mm_sha256','source_sha256'):
+            value=row[key]
+            if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value):
+                raise ValueError('Complete mechanical exclusion hashes required')
+
+
+def apply_duplicate_gate(plans,excluded):
+    """Close every member of a duplicate group, without replacing its budget."""
+    groups=[];hits=[];blocked={p['parent_id']:[] for p in plans}
+    for suffix in ('exact','1mm'):
+        key='registered_geometry_'+suffix+'_sha256';oldkey='geometry_'+suffix+'_sha256'
+        by_hash={}
+        for p in plans:by_hash.setdefault(p[key],[]).append(p)
+        for sha,members in by_hash.items():
+            if len(members)>1:
+                roles=sorted({p['role'] for p in members})
+                group=dict(hash_kind=suffix,sha256=sha,parent_ids=[p['parent_id'] for p in members],
+                           roles=roles,cross_split=len(roles)>1)
+                groups.append(group)
+                # Same-role duplicates also cannot count as independent parents.
+                for p in members:blocked[p['parent_id']].append('duplicate_geometry_'+suffix)
+        for old in excluded:
+            for p in by_hash.get(old[oldkey],[]):
+                hits.append(dict(parent_id=p['parent_id'],hash_kind=suffix,
+                    excluded_parent_id=old['parent_id'],excluded_version=old['version'],
+                    sha256=old[oldkey],source=old['source'],source_sha256=old['source_sha256']))
+                blocked[p['parent_id']].append('public_prior_geometry_'+suffix)
+    for p in plans:
+        reasons=sorted(set(blocked[p['parent_id']]))
+        if not p['geometry_precheck']['passed']:reasons.append('geometry_precheck_failed')
+        p['registration_failure_reasons']=reasons
+        p['usable_for_model']=not reasons
+        p['registration_eligible']=not reasons
+        p['collection_allowed']=not reasons
+        p['predeclared_unattempted_routes']=27 if reasons else 0
+        p['eligibility_scope']='Registration only; actual full-state/visibility/restore/route gates remain mandatory.'
+    return dict(duplicate_groups=groups,prior_geometry_hits=hits,
+        blocked_parent_ids=[p['parent_id'] for p in plans if not p['registration_eligible']],
+        geometry_scope='Four post centers/halves + three goal centers, exact and 1mm; excludes color, seed, entry and robot drift.')
+
+
+def build_registration(spec,base_config,excluded_hashes):
+    """Sample all116 once, then derive roles/order/shards; no outcome resampling."""
+    validate_spec(spec,base_config)
+    rows=excluded_hashes.get('entries') if isinstance(excluded_hashes,dict) else excluded_hashes
+    validate_exclusions(rows)
+    if canonical_hash(rows)!=spec['excluded_entries_canonical_sha256']:
+        raise ValueError('Registered public development exclusion table changed')
+    rng=np.random.RandomState(283199);sample=lambda bounds:float(rng.uniform(*bounds))
+    plans=[];colors=color_table()
+    for index in range(116):
+        seed=283200+index;role=role_for_index(index);config=copy.deepcopy(base_config)
+        config.update(protocol=batch.collector.LAYOUT_PROTOCOL,seed=seed,split=role,
+            selected_target_indices=[0,1,2],requested_route_proposals=27,requested_setup_actions=0,
+            preparation_xyz=[],entry_xyz=[0.,0.,.865])
+        config['row_x']=[sample(bounds) for bounds in spec['row_x_ranges']]
+        config['post_y']=[[sample(bounds) for bounds in row] for row in spec['post_y_ranges']]
+        config['goal_xyz']=[[sample(spec['goal_x_range']),sample(bounds),spec['goal_z']] for bounds in spec['goal_y_ranges']]
+        config['post_size_xyz'][2]=.14
+        selected_colors=[copy.deepcopy(colors[int(i)]) for i in rng.choice(20,3,replace=False)]
+        # This compatibility copy reaches only pure ideal-tip geometry code.
+        # The old pilot's DEV/setup guards remain unchanged for real execution.
+        check_config=copy.deepcopy(config);check_config.update(split='DEV_COLLECTION',requested_setup_actions=1)
+        check=batch.geometry_precheck(check_config)
+        centers,halves=batch.collector.geometry(config)
+        plans.append(dict(parent_id='two_row_reach_%06d'%seed,role=role,split=role,index=index,seed=seed,
+            rng_seed=283199,config=config,target_colors=selected_colors,geometry_precheck=check,
+            registered_geometry_exact_sha256=batch.scene_geometry_hash(centers,halves,config['goal_xyz']),
+            registered_geometry_1mm_sha256=batch.scene_geometry_hash(centers,halves,config['goal_xyz'],.001)))
+    gate=apply_duplicate_gate(plans,rows)
+    order=[plans[i]['parent_id'] for i in ORDER]
+    return dict(protocol=PROTOCOL,specification=copy.deepcopy(spec),canonical_init=copy.deepcopy(spec['canonical_init']),
+        parent_plan=plans,execution_indices=ORDER.copy(),execution_order=order,shards=[order[::2],order[1::2]],
+        role_counts=dict(Counter(p['role'] for p in plans)),requested_parents=116,requested_routes=3132,
+        predeclared_unattempted_routes=sum(p['predeclared_unattempted_routes'] for p in plans),
+        duplicate_gate=gate,excluded_hashes=copy.deepcopy(rows),
+        canonical_hashes=dict(spec=canonical_hash(spec),base_config=canonical_hash(base_config),
+                              excluded_entries=canonical_hash(rows),color_table=canonical_hash(colors)),
+        rng_policy='One NumPy RandomState(283199); increasing index: 12 geometry uniforms then choice(20,3,replace=False). No resampling.',
+        reference_set_complete=False,all_solution_count=None,
+        training_authorized=False,simulation_started=False,
+        status='registered_only_actual_collection_gates_pending')
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--spec',type=Path,required=True)
+    parser.add_argument('--base-config',type=Path,required=True)
+    parser.add_argument('--excluded-hashes',type=Path,required=True)
+    parser.add_argument('--output',type=Path,required=True)
+    args=parser.parse_args()
+    if args.output.exists():raise FileExistsError('Fresh registration file required; never overwrite')
+    load=lambda p:json.loads(p.read_text(encoding='utf-8'))
+    result=build_registration(load(args.spec),load(args.base_config),load(args.excluded_hashes))
+    result['source_files_sha256']={str(path):batch.digest(path) for path in
+        (Path(__file__),Path(batch.__file__),Path(batch.collector.__file__),
+         Path(batch.collector.legacy.__file__),args.spec,args.base_config,args.excluded_hashes)}
+    args.output.parent.mkdir(parents=True,exist_ok=True)
+    # Exclusive creation also prevents a concurrent registration overwrite.
+    with args.output.open('x',encoding='utf-8') as stream:
+        json.dump(result,stream,indent=2,ensure_ascii=False,allow_nan=False)
+    print(json.dumps(dict(requested_parents=116,requested_routes=3132,
+        role_counts=result['role_counts'],blocked_parents=len(result['duplicate_gate']['blocked_parent_ids']),
+        registration_sha256=batch.digest(args.output))))
+
+
+if __name__=='__main__':main()

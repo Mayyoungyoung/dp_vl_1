@@ -142,10 +142,11 @@ def collect_routes(task,posts,targets,saved,plan,output,phase,counters,gripper_s
         identifier=parent+'_target%d'%target
         color_index=int(np.linalg.norm(palette-targets[target].get_color(),axis=1).argmin())
         instruction='Move the gripper to touch the %s sphere while avoiding the gray posts.'%colors[color_index][0]
-        legacy.append_json(output/'observations.jsonl',dict(id=identifier,parent_id=parent,split='DEV_COLLECTION',image=parent+'/front.png',instruction=instruction))
+        legacy.append_json(output/'observations.jsonl',dict(id=identifier,parent_id=parent,split=c['split'],image=parent+'/front.png',instruction=instruction))
         routes=[];types=[];seen=set()
         for attempt,proposed in enumerate(itertools.product(pilot.PASSAGES,repeat=2)):
             tic=time.perf_counter();trace=[];counters['route_attempts']+=1
+            legacy.append_json(output/'slot_ledger.jsonl',dict(event='started',parent_id=parent,input_id=identifier,attempt=attempt))
             record=dict(parent_id=parent,input_id=identifier,attempt=attempt,success=False,simulated_steps=0,
                 proposed_type_supervision_only=proposed,actual_route_type=None,
                 camera_flags={key:bool(getattr(task._obsconfig.front_camera,key)) for key in ('rgb','depth','mask','depth_in_meters')})
@@ -179,17 +180,20 @@ def collect_routes(task,posts,targets,saved,plan,output,phase,counters,gripper_s
             finally:
                 phase['name']='audit';record['seconds']=time.perf_counter()-tic
                 pilot.add_execution_totals(counters,record);legacy.append_json(output/'attempts.jsonl',record)
+                legacy.append_json(output/'slot_ledger.jsonl',dict(event='completed',parent_id=parent,input_id=identifier,attempt=attempt))
                 print(legacy.json_text(record),flush=True)
             if record.get('fatal_restore_gate'):raise RuntimeError('strict route restore failed; remaining slots unattempted')
-        legacy.append_json(output/'supervision.jsonl',dict(id=identifier,parent_id=parent,split='DEV_COLLECTION',
+        legacy.append_json(output/'supervision.jsonl',dict(id=identifier,parent_id=parent,split=c['split'],
             task='rlbench_derived_two_row_reach',observation=parent+'/observation.npz',routes=routes,route_types=types,
             verification_only=parent+'/verification_only.npz',reference_set_complete=False,
+            route_config='route_configs/'+parent+'.json',
             semantic_targets=dict(centers=goals.tolist(),target_index=target,tolerance=c['endpoint_tolerance_m'])))
         per_target.append(pilot.summarize_reference_types(identifier,types,c))
     return per_target
 
 
-def run(config,config_path,output):
+def run_collection(config,config_path,output,source_loader):
+    """Shared physical worker; each public entry validates its own registration."""
     from pyrep.backend import sim
     from pyrep.const import ObjectType,PrimitiveShape
     from pyrep.objects.shape import Shape
@@ -201,21 +205,23 @@ def run(config,config_path,output):
     from rlbench import environment as env_module
     from rlbench.observation_config import ObservationConfig
     from rlbench.tasks.reach_target import ReachTarget
-    validate_registration(config);output.mkdir(parents=True,exist_ok=False)
+    output.mkdir(parents=True,exist_ok=False)
     started=time.perf_counter();env=None;fatal=None;shutdown=None;records=[];saved={};per_target=[]
     counters=dict(route_attempts=0,accepted_routes=0,strict_route_restores=0);guard_counts={};phase=dict(name='initialization')
     pilot.write_json(output/'manifest.json',dict(config=config,config_sha256=batch.digest(config_path),
         sources_sha256={Path(p).name:batch.digest(p) for p in (__file__,pilot.__file__,legacy.__file__,endpoint.__file__,static.__file__,
             batch.__file__,legacy.native_snapshot.__code__.co_filename)},
-        benchmark='RLBench-derived canonical static start, bounded development repair',role='DEV_COLLECTION',
-        geometry_groups_unchanged=True,original_dynamic_state_reproduced=False,executed_setup_trajectory=False,
+        benchmark='RLBench-derived canonical static start',role=config['role'],
+        geometry_groups_unchanged=config['protocol']=='two_row_canonical_init_bounded_v6',original_dynamic_state_reproduced=False,executed_setup_trajectory=False,
         native_snapshot_scope='New same-process trees only; exported scene is not a verified dynamic roundtrip',
         input_contract=['RGB','instruction','depth','camera','current gripper pose/open'],
         labels_only=['target/post coordinates','guide sequences','route types','masks'],
         runtime_mesh_arrays_available=False,full_robot_continuous_certificate=False,
         reference_set_complete=False,all_solution_count=None))
     try:
-        plans,q,g=load_sources(config);assets=static.verify_assets(config,env_module.DIR_PATH)
+        plans,q,g=source_loader(config);assets=static.verify_assets(config,env_module.DIR_PATH)
+        (output/'route_configs').mkdir()
+        for p in plans:pilot.write_json(output/'route_configs'/(p['parent_id']+'.json'),p['config'])
         arm_path=Path(Arm.solve_ik_via_sampling.__code__.co_filename)
         if batch.digest(arm_path)!=config['original_arm_py_sha256']:raise ValueError('pinned Arm source changed')
         pilot.write_json(output/'model_assets.json',dict(assets=assets,arm_py_sha256=batch.digest(arm_path)))
@@ -237,8 +243,8 @@ def run(config,config_path,output):
             if not gripper_shapes:raise RuntimeError('missing gripper collision shapes')
             for plan in plans:
                 c=plan['config'];parent=plan['parent_id'];folder=output/parent;folder.mkdir()
-                clock=time.perf_counter();record=dict(parent_id=parent,geometry_group=parent,role='DEV_COLLECTION',
-                    requested_route_slots=27 if c['seed']==283102 else 0,passed=False,initialization='new static joint start')
+                clock=time.perf_counter();record=dict(parent_id=parent,geometry_group=parent,role=c['split'],
+                    requested_route_slots=27 if c['seed']==config['route_parent_seed'] else 0,passed=False,initialization='new static joint start')
                 records.append(record);phase['name']='initialization';random.seed(c['seed']);np.random.seed(c['seed'])
                 try:
                     task._pyrep.stop();centers,halves=pilot.geometry(c)
@@ -282,12 +288,12 @@ def run(config,config_path,output):
                 finally:
                     phase['name']='audit';record['elapsed_seconds']=time.perf_counter()-clock
                     pilot.write_json(folder/'initialization_audit.json',record);legacy.append_json(output/'layout_audits.jsonl',record)
-            selected=next(p for p in plans if p['config']['seed']==283102);parent=selected['parent_id']
+            selected=next(p for p in plans if p['config']['seed']==config['route_parent_seed']);parent=selected['parent_id']
             if parent in saved:
                 # Reuse the very same in-process snapshot audited before the fourth layout.
                 phase['name']='restore';check,_,_=restore_check(task,posts,saved[parent],gripper_shapes,external_shapes)
                 pilot.write_json(output/'selected_snapshot_return.json',check)
-                random.seed(283102);np.random.seed(283102)
+                random.seed(config['route_parent_seed']);np.random.seed(config['route_parent_seed'])
                 per_target=collect_routes(task,posts,targets,saved[parent],selected,output,phase,counters,gripper_shapes,external_shapes)
     except Exception as error:
         fatal=repr(error);pilot.write_json(output/'failure.json',dict(error=fatal,traceback=traceback.format_exc(),restore_failure=getattr(error,'restore_evidence',None)))
@@ -296,15 +302,28 @@ def run(config,config_path,output):
             try:env.shutdown()
             except Exception as error:shutdown=repr(error)
         summary=dict(status='error' if fatal or shutdown else ('collection_finished' if counters['route_attempts']==27 else 'initialization_gate_closed'),
-            requested_layout_audits=4,completed_layout_audits=len(records),passed_layout_audits=sum(r['passed'] for r in records),
+            requested_layout_audits=config['requested_layout_audits'],completed_layout_audits=len(records),passed_layout_audits=sum(r['passed'] for r in records),
             requested_route_proposals=27,unattempted_route_proposals=27-counters['route_attempts'],
             **counters,per_target=per_target,planning_api_entry_counts=guard_counts,elapsed_seconds=time.perf_counter()-started,
             old_dynamic_initial_state_reproduced=False,executed_setup_trajectory=False,fatal_error=fatal,shutdown_error=shutdown,
             actual_geometry_duplicate_groups=batch.duplicate_groups(records,'actual_geometry_1mm_sha256'),
             internal_entry_counts_are_not_candidate_counts=True)
         pilot.write_json(output/'summary.json',summary)
+        pilot.write_json(output/'mechanical_receipt.json',dict(protocol=config['protocol'],role=config['role'],
+            requested_route_proposals=27,started_slots=counters['route_attempts'],
+            completed_slots=sum(row['event']=='completed' for row in batch.read_rows(output/'slot_ledger.jsonl')),
+            unattempted_slots=27-counters['route_attempts'],runtime_error=bool(fatal or shutdown),
+            elapsed_seconds=summary['elapsed_seconds'],
+            layouts=[dict(parent_id=r['parent_id'],actual_geometry_1mm_sha256=r.get('actual_geometry_1mm_sha256'),
+                initial_observation_saved=(output/r['parent_id']/'new_initial.json').exists()) for r in records],
+            no_route_validity_or_success_metrics=True))
         pilot.write_json(output/'artifact_hashes.json',{p.relative_to(output).as_posix():batch.digest(p) for p in output.rglob('*') if p.is_file() and p.name!='artifact_hashes.json'})
     return summary
+
+
+def run(config,config_path,output):
+    validate_registration(config)
+    return run_collection(config,config_path,output,load_sources)
 
 
 def main(argv=None):

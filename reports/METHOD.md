@@ -1,5 +1,7 @@
 # 方法实现与证据边界
 
+2026-10-02 18:20 UTC 更新：固定十二个旧开发父上的三种子迁移已完成。原规则 best 的平均 ADE 改善4.74%，仅2/3种子改善；固定末步 ADE 退化1.49%，不能据此建立核心机制。v6四个静态初态均通过，原失败布局取得23/27有效参考，但仍是旧开发几何。下一实际实验为一次登记的116个新父场景与普通集合回归，先用真实 TRAIN 参考核对表示容量，再读取独立 DEV 预测决定机制。跨目标路线对应关系只保留为条件假设；T-MPC已有不同目标间拓扑类别对齐和身份维护，不把对应、缓存或类型分配本身称为创新。详见 [固定迁移结果](OBSERVATION_LEGACY_DEV_TRANSFER_RESULTS.md)、[近邻核验](POST_K2_CROSS_GOAL_NEIGHBORS.md)、[正式采集协议](OBSERVED_TWO_ROW_FORMAL116_PROTOCOL.md)。
+
 2026-10-02 17:35 UTC 更新（后文较早状态为历史）：Qwen6000步续训完成，best NLL降至.416633；同8TRAIN贪心端点仍0/8在3cm内，均值23.391→27.769cm，停止这组扩训及DEV/K4扩展。四布局v5完成108请求槽，61条有效参考（49已知类型、12unknown）、20路线失败、27setup未尝试槽；6/12目标条件有≥5已知类型，但仅为DEV_COLLECTION局部布局可采性。详见[物理结果](OBSERVED_TWO_ROW_LAYOUT4_V5_RESULTS.md)、[续训结果](VLM_SFT_CONTINUATION_6000_RESULTS.md)。下一实际工作是有界静态初始化修复与已冻结三种子模型在另一批12父上的前瞻迁移；未得到这些新结果，核心A–H仍未完成。
 
 2026-10-02 16:09 UTC：支持事件位置的普通辅助基线已完成三个配对训练种子，原规则best宏ADE9.8548→9.0827cm、末端17.9283→15.6893cm。固定1500路径误差仅2/3种子改善，杯子均退化；没有把该辅助当新集合机制。9次真实Qwen条件前向审计通过单位/mask/shift/因果检查，但坐标占97.04% NLL；真前缀条件末端准确不能证明视觉定位。下一唯一SFT控制是同权重TRAIN8贪心生成。详见 OBSERVATION_MULTITASK_LANDMARK_THREE_SEED.md、VLM_SFT_TEACHER_AUDIT_RESULTS_V1.md。
