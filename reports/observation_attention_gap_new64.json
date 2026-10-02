@@ -1,0 +1,2025 @@
+{
+  "scope": "post-hoc grounding diagnosis, no peak-output replacement or revised selection",
+  "split": "DEV_MODEL",
+  "examples": 24,
+  "semantic_denominator": 24,
+  "reference_examples": 23,
+  "fixed_training_diagnostic": {
+    "selection": "lexicographically first eight TRAIN parents, all instructions, never selected by performance",
+    "parents": [
+      "derived_reach_262000",
+      "derived_reach_262001",
+      "derived_reach_262002",
+      "derived_reach_262003",
+      "derived_reach_262004",
+      "derived_reach_262005",
+      "derived_reach_262006",
+      "derived_reach_262007"
+    ],
+    "examples": 24,
+    "means": {
+      "intended_target_mass_4cm": 0.8102393398682276,
+      "other_target_mass_4cm": 0.15821655645656088,
+      "outside_all_target_neighborhoods_mass": 0.03154437597064922,
+      "intended_has_greatest_target_mass": 1.0,
+      "effective_point_count": 40.56049386401066,
+      "peak_goal_error_m": 0.04330353866773189,
+      "peak_semantic_accuracy": 0.9166666666666666,
+      "anchor_goal_error_m": 0.046107127950711646,
+      "anchor_semantic_accuracy": 0.5,
+      "candidate_goal_error_m": 0.0452994052772265,
+      "candidate_semantic_accuracy": 0.4166666666666667,
+      "endpoint_from_anchor_m": 0.01633005286566913,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    }
+  },
+  "semantic_rule": "unchanged target identity and <=0.03m; all rows retained",
+  "diagnostic_neighborhood_m": 0.04,
+  "device": "cpu",
+  "threads": 1,
+  "frozen_Qwen_cache_used": true,
+  "cache_usage": "only a genuinely frozen-Qwen checkpoint is inspected; this is not online LoRA or end-to-end latency",
+  "prototype_output_scope": "one surface endpoint",
+  "model_output_scope": "four complete paths; centers compared only for localization diagnosis",
+  "checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_learning_curve_new64_v1/aux_seed0/best.pt",
+  "checkpoint_sha256": "281aa924fd78207ad55795214a232ce87aab7000a8b2da8ea81c805f06d9a5f8",
+  "source_training_config": {
+    "observations": "/home/wzy/dpvlm/route_set_v1/data/observation_learning_curve_new64_v1/observations.jsonl",
+    "supervision": "/home/wzy/dpvlm/route_set_v1/data/observation_learning_curve_new64_v1/supervision.jsonl",
+    "cache_dir": "/home/wzy/dpvlm/route_set_v1/data/observation_learning_curve_new64_v1/qwen_cache",
+    "output": "/home/wzy/dpvlm/route_set_v1/runs/observed_learning_curve_new64_v1/aux_seed0",
+    "steps": 1000,
+    "batch_size": 32,
+    "candidates": 4,
+    "horizon": 24,
+    "width": 128,
+    "depth": 2,
+    "pooling": "both",
+    "geometry_pooling": "spatial",
+    "point_width": 64,
+    "pixel_stride": 2,
+    "endpoint_residual_bound": 0.05,
+    "grounding_weight": 0.02,
+    "grounding_sigma": 0.025,
+    "event_scale": 0.2,
+    "lr": 0.0003,
+    "seed": 0,
+    "eval_every": 250,
+    "threads": 1,
+    "device": "cuda",
+    "resume": false,
+    "stop_after": null,
+    "feature_dim": 4096,
+    "dataset_fingerprint": "7db74b160a9b8beb201cefc2f67b1a27c3402bfd9a5e7053b18fc356b0253c3b",
+    "code_commit": "bb307709ecfb81b39eaf266012a64b7a9810bcc7",
+    "source_script_sha256": "ce147d1425384936d061aec26516bccd0f030348bd7591f6b64a3153f27b6a58",
+    "objective": "saturation",
+    "selection_split": "DEV_MODEL",
+    "selection_metric": "negative candidate_matched_ADE_m",
+    "condition_fields": [
+      "frozen real-Qwen RGB+instruction hidden states",
+      "current gripper pose7/open1",
+      "current RGB pixels + metric depth + camera calibration"
+    ],
+    "endpoints": "learned observed surface anchor + coordinatewise bounded residual; see endpoint_residual_bound; no given target",
+    "target_coordinate_policy": "semantic coordinates used only in evaluation; training supervision is recorded route and event",
+    "geometry_role": "conventional spatial grounding baseline, not claimed core mechanism",
+    "train_examples": 192,
+    "dev_examples": 24,
+    "train_parents": 64,
+    "dev_parents": 8,
+    "skipped_supervision": [],
+    "unreferenced_observations": [
+      {
+        "id": "derived_reach_261028_target2",
+        "split": "DEV_MODEL",
+        "reason": "no_successful_reference_routes"
+      }
+    ],
+    "evaluation_protocol": "observation_eval_v2",
+    "cache_config": {
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "processor": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "manifest_sha256": "43205853a21731b3be3f133210031f50016d1ca9208d5c50e26b23a3c9252c31",
+      "torch": "2.4.1+cu121",
+      "transformers": "4.57.1",
+      "model_parameter_count": 2127532032,
+      "model_trainable_parameter_count": 0,
+      "input_contract": [
+        "id",
+        "image",
+        "instruction",
+        "parent_id",
+        "split"
+      ],
+      "max_pixels": 262144,
+      "dtype": "torch.bfloat16",
+      "cache_scope": "frozen backbone only; invalid after LoRA/weight updates"
+    },
+    "geometry_preprocessing": {
+      "unique_current_observations": 72,
+      "sampled_points": 12544,
+      "pixel_stride": 2,
+      "load_preprocess_total_s": 0.4275104539701715,
+      "image_npz_load_backproject_ms_median": 3.8759810850024223,
+      "image_npz_load_backproject_ms_p95": 4.7862044360954314,
+      "cached_content": "raw observed RGB/XYZ/UV/depth/mask only; trainable point features recomputed every forward",
+      "source_hashes": {
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262000/front.png": "4331de6ad7643dc56102f6ddad630279670bc831f5e254b765b61980e8414e8b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262000/observation.npz": "974c2fe55281c18edb5379ddc5f7e4d19acd045e3a45cdf4cd0ede4804873a4c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262001/front.png": "3dd943d87dd6680ee2cc731d89866aafdc612cd1f55c14184b441e3bc000ea05",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262001/observation.npz": "d21aaeaf66a46e4559f5ab458fa1d235ee2ad0b7dafc0631416c3e5159b55e8d",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262002/front.png": "4a3e0d318ab3ff3d93e7b0c639f2ee6af1b6df8afe629c4adf85b7613971c1e3",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262002/observation.npz": "01240de6b1b0ee39cefd70a26c686f969037ed90c56e41783f0277a01ab88aa6",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262003/front.png": "d77d47bfc6c8924adc2c560b6931395a56d1e69bc1703cb315b901aebc82071d",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262003/observation.npz": "c3bbc859363a9b7c34380bd1863af12e833e2534f8187147aeca97a58e8c50cc",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262004/front.png": "ab0c1e587cebe070675a2f9bdce521d56573bef57ddc2765174930ccb723e1ad",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262004/observation.npz": "c15589199188f43aa86cb205bd769691adeb1c21e6fff94a58f7b20c11639202",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262005/front.png": "71f13e0edfba283a1cfcda1dd5b119bfcea4b0b4b93083ee730e208bcc1883bb",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262005/observation.npz": "e8ca1815fc78a25ecd7739e2bebc15668bef709646de108624fd6b7f24ee0599",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262006/front.png": "2b7eb890939dd7117ea0e8b1b0590b2d1cd63d948e000ceeb346a0053e15ceb2",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262006/observation.npz": "e2bea091517d0aadc3dee7e23021addbf83ef3166259f77746040ba3debbb1ff",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262007/front.png": "282f98d70bb35481b37e04ff70ff452f39f91ab0797a7bca5cbf20a267a22896",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262007/observation.npz": "d8982f2124272fd25eb6c7fd16ca8eb342d85e8a48976c0d5946ef4a29c87a41",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262008/front.png": "0eb1b98479a2c6a61faa4261a9508e74adc14512ba32c6c2062b297449ac7a53",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262008/observation.npz": "9278a1ca80e9ce2c8ad3c64fd0ed0bfe75f5604eccfb0b6dd44d97a1dc09eb3a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262009/front.png": "75856e2564273bfaf424cd93853edb770243598a16d47a830b565d2712fec521",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262009/observation.npz": "1b4b4defeb84545324e449add3481180a490949e1335ef7e217c970b161c484f",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262010/front.png": "b1ee2221ceebfbe9155b6e58a70287ca3f76b712d1068e15232fb95539e612b3",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262010/observation.npz": "8fa7c850ab34e8adae17e9b673dd61ded404d1aa10b4ae9e562396182cc42c28",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262011/front.png": "70d378aff7c0015bab27a3bb07215bf99186a3297fdb00a49ae8256eeac3e59b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262011/observation.npz": "895a8eb891c31eddc42dc46f8758bcbca2a97eb300bb33a99b23614f69638314",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262012/front.png": "9e01d26debce6963b11256d8bdbfdbf39e107239d77f7e473e8eba681c6a6d84",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262012/observation.npz": "08c70ece4975e6156cb8b6a1c031c204b18da5717eafe5333c59d39f7f46fe88",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262013/front.png": "29519fe93dbd211706641e2292131955229ddb9a24bab6878a45ecfefce35ade",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262013/observation.npz": "ec8171a475e0c8fff148bb2d4dfac6aeaff6bd1ddc7c3ed457382f84a2cd2cd7",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262014/front.png": "09a2d5ddd0681bc0c3c6a6ed20b8727de16eabc175f58761c3386f6db7a81891",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262014/observation.npz": "38d5fb17d7cc98aa13ac0f581fca57eed27be4f9af5b9db96ee4fa33e89d2a52",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262015/front.png": "bd2aa134cc7a3c4835034f8a160014da2d2210841a7eb3caf2b7de9650d93a34",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262015/observation.npz": "d8abb7a4babee8898cc7509a4e55eddccec52659c514878021d2216fdbfa895c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262016/front.png": "97d4caa89f40ca09a26028d03a8ff96ead7c0bd1c017032a142abc95fe4306e7",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262016/observation.npz": "183bebf5d689e30c512469c9494baa17184b869632c2cd239cbd71a1e08fccfe",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262017/front.png": "485d33cc76934d0abd1b54118afd1e525435a698e31905bc3a29729c74bc63a0",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262017/observation.npz": "fbe92ff0cf80a6038a245f86a9d08a37d803298e419ceb2a96a5637e49f291d2",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262018/front.png": "af3e106564bf641ca1ab867fc49cd63d1d83526c3b434ab7df264cfa595ab677",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262018/observation.npz": "9df9b1d7523eb8c8843d2483848a4f510c5becb643fb67d295e8256253b90925",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262019/front.png": "635fc78af33523e0cd6d22b2cce9f65dceaaa53b053fb3fbb558500bc6c75f8e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262019/observation.npz": "345c8163f08d652fc5a6315c05c1b1381d978f2d8e2ba3aa94c3e8f08774928d",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262020/front.png": "eeb02841e82575bab405d11d2a8d3bf539345e7a3fe4d35578cd863f886af071",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262020/observation.npz": "bcf3a2ee594bd37df4850f17dd98a0cb3c1a5b3f945b85dc2d5159aa98cd904a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262021/front.png": "a7f480f61c207eab3454a70ce0e4dda409feafa7f5b09702225f68179665f112",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262021/observation.npz": "63a9de10c74345c1497ae5b6172d3e46d7a1accc15240c8a644ef09c8e6cf47c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262022/front.png": "196babbe13929e90f2802f1e56729d56d710079c49e575df0531a741ebb4f958",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262022/observation.npz": "23ce167a6612a89df46bcd778e10a4ef0b6d59e5411b56261e2d2c873e9d1b06",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262023/front.png": "92cee34f3729fc1ca51c234e8cb31676e22e6211ff213ec3560443daa34c21bb",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262023/observation.npz": "e45f1fd1308230e373b19e646726a92e43e679b5a17f13a7fc481e105add755a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262024/front.png": "e940f16be9984eeb349e1227b22333c3a243b4b5848bcfbb255c7e6421bb0f5e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262024/observation.npz": "3ef00fde91420f1ed6fb1da30bf65f70d175481261571038e43b79f38d8f80bf",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262025/front.png": "1bb3eedd750fee353a8c28602bc8626b7086bad9e511eb45e0c5ab8c39f79318",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262025/observation.npz": "bf40924693f75eb57d74afa734a4b29389eab53d3064cfa148dfeb867470de6a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262026/front.png": "c8a5ff318b2c6f0cbfc873daf1b1df64af32d1dfb64eb8d8d3ffd07d0994ea47",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262026/observation.npz": "29a87581b71de4a892018ae4c2d2842220f28c463e3a62dad3a58c9a93558791",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262027/front.png": "29fa0e1cae9010ef4b9e2cb28ab40caecf3cc8e791e421ae2c05c1bf79fe1431",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262027/observation.npz": "4daf14de088b45f1045b355c21511d14e3d988b5697509aa6771b645f5b243ab",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262028/front.png": "c22742edc24eb81bf7ff25ff683fb6d4a6ec33b3caf95b5f82a22b591586f57f",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262028/observation.npz": "f79a398f5d630c5b03fd0cfaf035a1ea6889011a599d693752406d7200d434ad",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262029/front.png": "0f40d9a3875bd65955f674e4016fdd04c96f20cfac2d3c5ad7cc0b6f7cfff953",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262029/observation.npz": "36eb6f96ab46d5bba92595a8f7047a9ba8fec5a2b39a6ad5076baef4bd9fa867",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262030/front.png": "fe89b489e93dd8b1ea5f7175e450583e73c2dc45cbc06b86edd4064bcf4ce981",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262030/observation.npz": "53835d3befffb22289d6487ee99700f67db3b066ffc6a3d9cd93d5e133691e3e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262031/front.png": "b7455aef6148c2dde53898059f7508e3b6059ac7de265e748b23933f5f841174",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262031/observation.npz": "cd2d62550a71e21a33074e19d4534d056731185de27c59cdadb4c3c4c9d8bf94",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262032/front.png": "092402eab54e04b59e321a4ffb7b8b844815a344b46be825e56bc5ce22734e67",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262032/observation.npz": "7673b61cbd3e1845ece8796d4b715232518c67eb1192cafe65819c029b8ae627",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262033/front.png": "7c720a5666c4a2f327e9381d99b5399ee84dab307640a859c6da1fa009d2767a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262033/observation.npz": "03467d14c6229e33274683d28a14605452273cb60e3c3e26fdb1c7acce3cf9f2",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262034/front.png": "59c00b79b58fa10b68177af8e78bf46f475d159225cc2c6cbb0e4dc0da8aa78b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262034/observation.npz": "029b050111035a15d51bd8ced72012220040f9849191904cd99888b2668d9590",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262035/front.png": "eaa823beed066a532c2103b1c41615b473504e237ee6f4d51bd8f81aba664ba8",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262035/observation.npz": "5a0fe1db850420c416ba5c77b0cba054ccba4f589f62ecdfb0ac3d8c4b71c8e9",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262036/front.png": "8f033cad702a30f6662b9739b05fdc54fd1fd420faa2bee44d45cbcae21a135a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262036/observation.npz": "4bf74cd6caf905f46f11b22015bb4424ad1099f9b37bb665e087edba8119d045",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262037/front.png": "b06dae0e9ed10a29348b4b83e7c9ac3e68cd9889529c1913da977fd84a870aa8",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262037/observation.npz": "64e7817a307346a901264e32fa9954f8bc9492708cb834f99e61587221b0e4cb",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262038/front.png": "1f89f6aa02fccd0b6f51dfa9532b794252505c1803775dd78a977f32b6aaa1ef",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262038/observation.npz": "c93b0517b6e53b027bc117656613a73f2f373cfef0099925d9cd7f689c0109d8",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262039/front.png": "81a685f97b7a5fa1cc8b415f3a884d3d8134bb2ce673bc1b45b2575fc7c6a764",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262039/observation.npz": "dc6b21726abb924d3ca96d8300b340021a9aea60c9408ec395eaa02af0996527",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262040/front.png": "b26c8d24ac7d77014309bfa3e6475a7aba161cdbccf63454f6d0f486f132572e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262040/observation.npz": "afe3da81bc27cac0d6b50db9dd94619c79ffa8191bc948ed3d2aeca4d9eee609",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262041/front.png": "89f0a8b15d06f4bf6fe48f828fdbcea0eddaf87924154fd5f0eb86f046565dad",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262041/observation.npz": "e18a929d2a898078bb5751664c510c0c5be0010c2a375f34c9d4fe4683652c1a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262042/front.png": "2c91421066a65cacbb258b6e792839e1194433fde3b6da3c2be29739ad3a424c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262042/observation.npz": "fbd8c08997429728561f8dffbf1ea083d247478ee003055bc34ff405dad40b59",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262043/front.png": "50aeac4f919d1b19e8a327b16da876bff62f463a61b8cb69d7f47f8625c9bbe4",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262043/observation.npz": "3551842437921b8834201e0cdd6d84c953b9101ceaaba6956c3c7c81098f6c2f",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262044/front.png": "6f2593bba055d8268f188728c9287e8277b1319899ae2c18adb5b4902397f2f0",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262044/observation.npz": "ecde8a4782d45c839b365e849b1a984cb7781e96e991f7dd108964d2ddc9c49d",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262045/front.png": "dac49f8b49e8bc54fd34dd00a773b89767cfbdd93681f919a27bf8006e5d6cd5",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262045/observation.npz": "9e3894777f8329e9542ce1a34bb9c719a16bf7ce4add52ebe3a4ca1e33145213",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262046/front.png": "3194460a1aa8540365504137796a3f6317de43086c678049c9c64e82759df707",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262046/observation.npz": "3e862194bd0339b6ea95c422b1fa8106f4570a885c604f59b0d01c23a3f1eb2f",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262047/front.png": "06399e02cb1ef178a4a9db73f3a64e263839ef2c43f2946c907f1ae51e3cb46b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262047/observation.npz": "501246e7a8044f30a9091e0531106387a87aaded699e740014fd91bf9d70e262",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262048/front.png": "c98ad0f4f0bdab3570d2bc25f8000b976b359df6fa4cc0440688914002af4e9c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262048/observation.npz": "f379ccd545856e39090bc55930e3ab6b0f06c5d89328ce063e8d083810bc54fd",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262049/front.png": "300262653d92810b7923baa6e587e034080e6da56336283c3cdbde214111befe",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262049/observation.npz": "3cafa30f10d764a411249607e791d875fc4e54ca3f6fcbd6896bc7b569ea007c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262050/front.png": "3db8bd28abe8a79676540c87338235bb6b8d8610027c3c9872f4975874284ca6",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262050/observation.npz": "6df7f323599a0fa559354168a84cf8cacce0e238fa61ab2a826fad9195f6a0b8",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262051/front.png": "fea3727abd243949eb2bfec161a72e0930d0fba85dfd1e4001583985e5498eab",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262051/observation.npz": "95b5c7d53183c75e16cfbf566b1cc8a7c699ea04c6e8a884eda743d0211a6f70",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262052/front.png": "811f4aa1665af095779448767e4e93b4f589876c360df7f07158b0adaa13cfc3",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262052/observation.npz": "649ff652543aea92daa31f5e8c4503688a6d7a062dae915e1599e36ebc2cbaf1",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262053/front.png": "c983ca53ae3a67af723a57ff99dd1edf2181ec2b9e2787fd595eb844b5a505de",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262053/observation.npz": "2683cb29cb508b6d142b30b2b832b33e78d35da408f4a2bad2bd4ba327a0ee43",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262054/front.png": "3a64d1a92f17c50472fd593b8cbac98da517e983023fd62bf4505fc152b760bb",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262054/observation.npz": "1bb56bf2bc71d29e952a38c02cddfb2fd303333cdc162560150d7e6d40a1981d",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262055/front.png": "d533898b577dcc9cec3d76c1474cf6f297f8e06704815cd7cda4352e6603e6df",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262055/observation.npz": "f50965953ca9fe082c032cf1b51ea8d64aa0c982bd9dcaabc9865d2b17a29f08",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262056/front.png": "7b2b9c0b65f2d70a710eb3d12cc8a05ff91c04605b6c36a0867453c34c780ea1",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262056/observation.npz": "2572da70866ea80a7c9a7806844662e2bff470fb92e2370a56053178c95b05aa",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262057/front.png": "5415d70d719cb5382376cb38490c36abd03f62bcada579db3965ed6ab5c8cc7a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262057/observation.npz": "a565efb028ef370b9f64fddae506a6bc9abed0969db6492a5f2a002b27ae6687",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262058/front.png": "39bc8c4c61b9383a202c50be1e9d4d311084e6c53f2af80bc468477e76db7552",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262058/observation.npz": "90e43fb03950ffe4863a1de6e11ead9ce0bbda448141d5e447294d248de8bd2a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262059/front.png": "ec5d3a2d1e37653140d730e6caf017c2c1c42a0444632b4ffc2966fea5e748d0",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262059/observation.npz": "f4e43974b615f3b4759075bb90c01b4f5a377977db9aafcf90aa08b202a747f7",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262060/front.png": "736acb4a578d6fe8a8a21c9857b53b7e3283b3c82edcfd25c8177442fea03587",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262060/observation.npz": "a5cd3507b417fb28a7c12f84b081002f868c22064f4b69adbf3ccde770041499",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262061/front.png": "b3d0e9c55af424dec8f27f4179cf388669086008a34caa8ddc7323a90fd9c09e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262061/observation.npz": "297119b986799fee842155182e9eeccc0eaca795d3b5aa9e4a181c6618e2ca85",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262062/front.png": "37e92b830887d41a6cdbb921cfe21d015ef73b6545d1aa5dcc8244ed737f552b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262062/observation.npz": "a4ce162c6847b26e13ae7aca72515b69bf622879d5e620047060f1806da15dba",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262063/front.png": "1a9efdbcaa9a62dadf3aa509456d585792baff7e87d4956593f7e2873bd26c56",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/derived_reach_262063/observation.npz": "694ab4bb4c03ab2777d15af055924e3050f56f4dfd228bfa6391ce3787068ab0",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261024/front.png": "689369253a3f4cf019e0456f14faf1fcda5cbbe1439a4d46e8265d509e5c1a7a",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261024/observation.npz": "d83b36381be4cc48e56e3756fe9b5077ba3efaa1cc597ce54272299831ec5bfc",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261025/front.png": "6ba41ffb26e7b129884fdc2d334ee64ef7f350e7982a9f234d8157f65536655c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261025/observation.npz": "f5453d6d496db8456c4d20a6a619d8c0cba994e99c1d2572e239aeb2b986c81b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261026/front.png": "b6dafabf9ef630273fb923b0bc5eb255e173f99ce29262cddf2145813feed3b4",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261026/observation.npz": "67559cc91744678bb4cea213e00ac61ea92f67b55951cee9ab063089115cc4ef",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261027/front.png": "8ebc23c801603be472f2ae6b1313656875860b7860439d05fa932204ee0fcad6",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261027/observation.npz": "ba1e08fceb5d39b2f1414d05198d8cbe4b0ba01d9ce3970f16c2463052cc6a78",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261028/front.png": "c9f26208304a979ca16e5695748a9f24f0b48a6c606af089e30555cac42e62aa",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261028/observation.npz": "a9381fef88c9e8a58dc103380b0e034a7b4b57e1bbdcab8f0522c98f6fd589a3",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261029/front.png": "a80d926affac00eb13441d10d7c7f67cee0e904caaf36ba6f7e4b3ba0441b0cb",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261029/observation.npz": "d4cc31a72b27fd3125371cc9403a12dc817fc6631c860d51612cc965fc471c39",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261030/front.png": "ea3d1e3dbe51bb847bb71f13a4193fa9d60de90a61fcf7f5ec92292d40d7f88c",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261030/observation.npz": "fa82cf9cb9fe0501bfe56d151c0ffd7a4df60baa2f14b340a73c557b5500215b",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261031/front.png": "7b8cc1c175cd8d4125f99aa51e139cb504394be72f89920134fcd05661dfeb0e",
+        "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/derived_reach_261031/observation.npz": "4e153cb9a4ba441238429c29b7428d045b61f87f7b27a412b34564daf5b30d36"
+      }
+    }
+  },
+  "prototype_report_sha256": "9c7d0eb48c449ec64e1d5165bcf852c44ad38d26f3305455bd0a8bf19de7b7f9",
+  "script_sha256": "45ed4da0588c76c97de8e2865cbae91b187557030a5aa55a089fa3445a81ad19",
+  "means": {
+    "intended_target_mass_4cm": 0.6772603283946713,
+    "other_target_mass_4cm": 0.24923972592417462,
+    "outside_all_target_neighborhoods_mass": 0.0734999527145798,
+    "intended_has_greatest_target_mass": 0.8333333333333334,
+    "effective_point_count": 53.511806293120706,
+    "peak_goal_error_m": 0.06271419939171752,
+    "peak_semantic_accuracy": 0.875,
+    "anchor_goal_error_m": 0.10496533028809979,
+    "anchor_semantic_accuracy": 0.16666666666666666,
+    "candidate_goal_error_m": 0.10295678530993845,
+    "candidate_semantic_accuracy": 0.19791666666666666,
+    "endpoint_from_anchor_m": 0.01541268767323345,
+    "prototype_goal_error_m": 0.1606449574863197,
+    "prototype_semantic_accuracy": 0.9166666666666666
+  },
+  "per_scene": [
+    {
+      "id": "derived_reach_261024_target0",
+      "parent_id": "derived_reach_261024",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.772979736328125,
+      "other_target_mass_4cm": 0.22389131784439087,
+      "outside_all_target_neighborhoods_mass": 0.0031295246444642544,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.772979736328125,
+        0.022221693769097328,
+        0.2016696184873581
+      ],
+      "effective_point_count": 37.14166448917136,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.17429892718791962,
+        0.11719828844070435,
+        0.9407634139060974
+      ],
+      "learned_anchor": [
+        0.17354315519332886,
+        0.042082529515028,
+        0.9566777944564819
+      ],
+      "peak_goal_error_m": 0.02631495662615248,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.08225376117542656,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.07622841981466154,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014160165563225746,
+      "prototype_goal_error_m": 0.02531288494659636,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261024_target1",
+      "parent_id": "derived_reach_261024",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.21606199443340302,
+      "other_target_mass_4cm": 0.7761425375938416,
+      "outside_all_target_neighborhoods_mass": 0.007795305456966162,
+      "intended_has_greatest_target_mass": false,
+      "per_target_attention_mass": [
+        0.7267892360687256,
+        0.21606199443340302,
+        0.049353305250406265
+      ],
+      "effective_point_count": 42.022133534461894,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.1920545995235443,
+        0.10857218503952026,
+        0.9010784029960632
+      ],
+      "learned_anchor": [
+        0.20302264392375946,
+        0.05026400461792946,
+        0.9241740703582764
+      ],
+      "peak_goal_error_m": 0.20062450921262584,
+      "peak_semantic_accuracy": 0.0,
+      "anchor_goal_error_m": 0.1449162100989028,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.14883632959909376,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013284087181091309,
+      "prototype_goal_error_m": 0.025216704524315278,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261024_target2",
+      "parent_id": "derived_reach_261024",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.6657742857933044,
+      "other_target_mass_4cm": 0.31824129819869995,
+      "outside_all_target_neighborhoods_mass": 0.01598498225212097,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.29847368597984314,
+        0.01976761780679226,
+        0.6657742857933044
+      ],
+      "effective_point_count": 43.9016468057307,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.11822891980409622,
+        -0.1862504780292511,
+        1.0677452087402344
+      ],
+      "learned_anchor": [
+        0.1352088302373886,
+        -0.10234501957893372,
+        1.0268819332122803
+      ],
+      "peak_goal_error_m": 0.023281083239628103,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.10981054157260148,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.10514630407728369,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014875625260174274,
+      "prototype_goal_error_m": 0.024315651450862633,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261025_target0",
+      "parent_id": "derived_reach_261025",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.5632600784301758,
+      "other_target_mass_4cm": 0.4257659316062927,
+      "outside_all_target_neighborhoods_mass": 0.010973954573273659,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.5632600784301758,
+        0.09237556159496307,
+        0.33339038491249084
+      ],
+      "effective_point_count": 49.48750711496352,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.11242084950208664,
+        -0.15513771772384644,
+        0.8109830617904663
+      ],
+      "learned_anchor": [
+        0.14549896121025085,
+        -0.0658562108874321,
+        0.9535370469093323
+      ],
+      "peak_goal_error_m": 0.026252354792668114,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.19605188132416942,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.18626578559837298,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014811912551522255,
+      "prototype_goal_error_m": 0.02478799048693045,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261025_target1",
+      "parent_id": "derived_reach_261025",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.7359426021575928,
+      "other_target_mass_4cm": 0.19922959804534912,
+      "outside_all_target_neighborhoods_mass": 0.06482787430286407,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.13185390830039978,
+        0.7359426021575928,
+        0.06737569719552994
+      ],
+      "effective_point_count": 31.829122480048063,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.1400211751461029,
+        0.31339359283447266,
+        1.048936128616333
+      ],
+      "learned_anchor": [
+        0.1250292956829071,
+        0.23146690428256989,
+        1.0185983180999756
+      ],
+      "peak_goal_error_m": 0.023082921314036088,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.09812186481794799,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.08604331410364192,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.02358737215399742,
+      "prototype_goal_error_m": 0.025587735097286606,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261025_target2",
+      "parent_id": "derived_reach_261025",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8747790455818176,
+      "other_target_mass_4cm": 0.11272938549518585,
+      "outside_all_target_neighborhoods_mass": 0.01249054353684187,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.007494837045669556,
+        0.1052345484495163,
+        0.8747790455818176
+      ],
+      "effective_point_count": 36.847305251543666,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.19563035666942596,
+        -0.003919313196092844,
+        1.2017199993133545
+      ],
+      "learned_anchor": [
+        0.19124868512153625,
+        0.019399328157305717,
+        1.1737151145935059
+      ],
+      "peak_goal_error_m": 0.02551318248338659,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.03162631941311438,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03082340352722622,
+      "candidate_semantic_accuracy": 0.5,
+      "endpoint_from_anchor_m": 0.015034550800919533,
+      "prototype_goal_error_m": 2.693211445532531,
+      "prototype_semantic_accuracy": 0.0
+    },
+    {
+      "id": "derived_reach_261026_target0",
+      "parent_id": "derived_reach_261026",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.44752946496009827,
+      "other_target_mass_4cm": 0.5404567122459412,
+      "outside_all_target_neighborhoods_mass": 0.012013860046863556,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.44752946496009827,
+        0.42694616317749023,
+        0.11351054161787033
+      ],
+      "effective_point_count": 82.90778753855773,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.2522914409637451,
+        -0.18988502025604248,
+        0.9923480749130249
+      ],
+      "learned_anchor": [
+        0.3560255467891693,
+        -0.12117519974708557,
+        0.9989211559295654
+      ],
+      "peak_goal_error_m": 0.024794860971960615,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.1417392959478746,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.1326684471824222,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.012740335427224636,
+      "prototype_goal_error_m": 0.025087212288659823,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261026_target1",
+      "parent_id": "derived_reach_261026",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9748870730400085,
+      "other_target_mass_4cm": 0.00664801150560379,
+      "outside_all_target_neighborhoods_mass": 0.0184650756418705,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0011520416010171175,
+        0.9748870730400085,
+        0.0054959701374173164
+      ],
+      "effective_point_count": 43.25757344658101,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.44617900252342224,
+        -0.0033681828062981367,
+        1.0656253099441528
+      ],
+      "learned_anchor": [
+        0.43979328870773315,
+        -0.01527557335793972,
+        1.0528652667999268
+      ],
+      "peak_goal_error_m": 0.02444780516045981,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.005947120308331305,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.01953218848153612,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.01777506060898304,
+      "prototype_goal_error_m": 0.024920893568243865,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261026_target2",
+      "parent_id": "derived_reach_261026",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8956810832023621,
+      "other_target_mass_4cm": 0.047857850790023804,
+      "outside_all_target_neighborhoods_mass": 0.05646124482154846,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.011593226343393326,
+        0.03626462444663048,
+        0.8956810832023621
+      ],
+      "effective_point_count": 47.94373820318316,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.4790501594543457,
+        -0.17687958478927612,
+        0.819385290145874
+      ],
+      "learned_anchor": [
+        0.4743504226207733,
+        -0.18574035167694092,
+        0.8334968686103821
+      ],
+      "peak_goal_error_m": 0.023131413405275622,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.02157008264148481,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.019003754129295752,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.01304217055439949,
+      "prototype_goal_error_m": 0.02535557176066644,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261027_target0",
+      "parent_id": "derived_reach_261027",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8578700423240662,
+      "other_target_mass_4cm": 0.12189280986785889,
+      "outside_all_target_neighborhoods_mass": 0.02023708075284958,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.8578700423240662,
+        0.11570150405168533,
+        0.006191304884850979
+      ],
+      "effective_point_count": 37.164300374425174,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.19838331639766693,
+        0.18001660704612732,
+        1.0014197826385498
+      ],
+      "learned_anchor": [
+        0.22277358174324036,
+        0.1848655641078949,
+        0.970677375793457
+      ],
+      "peak_goal_error_m": 0.026701059312372176,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.018537652732589078,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.021817994792459588,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.01624452881515026,
+      "prototype_goal_error_m": 0.025660507113310388,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261027_target1",
+      "parent_id": "derived_reach_261027",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8713189363479614,
+      "other_target_mass_4cm": 0.11144852638244629,
+      "outside_all_target_neighborhoods_mass": 0.017232388257980347,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.018149329349398613,
+        0.8713189363479614,
+        0.09329919517040253
+      ],
+      "effective_point_count": 48.619015819559614,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.4644619822502136,
+        0.2796710431575775,
+        0.8344393968582153
+      ],
+      "learned_anchor": [
+        0.43493059277534485,
+        0.22962509095668793,
+        0.8638741970062256
+      ],
+      "peak_goal_error_m": 0.023036935875002513,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.05088138323848742,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03868620333082511,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.01920907013118267,
+      "prototype_goal_error_m": 0.025820162838159463,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261027_target2",
+      "parent_id": "derived_reach_261027",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8016208410263062,
+      "other_target_mass_4cm": 0.18532346189022064,
+      "outside_all_target_neighborhoods_mass": 0.013055738992989063,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.06294681131839752,
+        0.12237665057182312,
+        0.8016208410263062
+      ],
+      "effective_point_count": 43.01854392808711,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.2934781610965729,
+        -0.13244110345840454,
+        0.9234898686408997
+      ],
+      "learned_anchor": [
+        0.30084964632987976,
+        -0.07149003446102142,
+        0.9377224445343018
+      ],
+      "peak_goal_error_m": 0.022251258448145093,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.07760858948857194,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.07517044213773129,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013338080607354641,
+      "prototype_goal_error_m": 0.02531415535948938,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261028_target0",
+      "parent_id": "derived_reach_261028",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.14134469628334045,
+      "other_target_mass_4cm": 0.8114808797836304,
+      "outside_all_target_neighborhoods_mass": 0.047174546867609024,
+      "intended_has_greatest_target_mass": false,
+      "per_target_attention_mass": [
+        0.14134469628334045,
+        0.00805242732167244,
+        0.8034284710884094
+      ],
+      "effective_point_count": 75.09936615302622,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.4681673049926758,
+        0.23187723755836487,
+        1.2199645042419434
+      ],
+      "learned_anchor": [
+        0.41415899991989136,
+        0.1859077513217926,
+        1.2056947946548462
+      ],
+      "peak_goal_error_m": 0.41510928689248155,
+      "peak_semantic_accuracy": 0.0,
+      "anchor_goal_error_m": 0.3460839451576524,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.3393468062313345,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013759924098849297,
+      "prototype_goal_error_m": 0.024673289855979996,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261028_target1",
+      "parent_id": "derived_reach_261028",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.6712175011634827,
+      "other_target_mass_4cm": 0.003950148820877075,
+      "outside_all_target_neighborhoods_mass": 0.32483240962028503,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0004631012852769345,
+        0.6712175011634827,
+        0.0034870475064963102
+      ],
+      "effective_point_count": 45.60293566647727,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.11521347612142563,
+        -0.09756136685609818,
+        0.8453016877174377
+      ],
+      "learned_anchor": [
+        0.151035875082016,
+        -0.1457088738679886,
+        0.8241780996322632
+      ],
+      "peak_goal_error_m": 0.023605502667262163,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.08331355931735131,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.08527979525983395,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.015421617776155472,
+      "prototype_goal_error_m": 0.024948558607842442,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261028_target2",
+      "parent_id": "derived_reach_261028",
+      "split": "DEV_MODEL",
+      "reference_count": 0,
+      "intended_target_mass_4cm": 0.9689788222312927,
+      "other_target_mass_4cm": 0.001752037787809968,
+      "outside_all_target_neighborhoods_mass": 0.029269177466630936,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0011185078183189034,
+        0.0006335299112834036,
+        0.9689788222312927
+      ],
+      "effective_point_count": 52.940403861811845,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.473449170589447,
+        0.2735128402709961,
+        1.222121000289917
+      ],
+      "learned_anchor": [
+        0.4311992824077606,
+        0.254497230052948,
+        1.201076865196228
+      ],
+      "peak_goal_error_m": 0.02433566420401793,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.035470615217491924,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.048968847490267794,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.01765957847237587,
+      "prototype_goal_error_m": 0.025329057637737365,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261029_target0",
+      "parent_id": "derived_reach_261029",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.06312879174947739,
+      "other_target_mass_4cm": 0.3368387222290039,
+      "outside_all_target_neighborhoods_mass": 0.600032389163971,
+      "intended_has_greatest_target_mass": false,
+      "per_target_attention_mass": [
+        0.06312879174947739,
+        0.12182267010211945,
+        0.21501603722572327
+      ],
+      "effective_point_count": 98.26305506122418,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.2027110457420349,
+        0.21774551272392273,
+        0.8047556281089783
+      ],
+      "learned_anchor": [
+        0.22488245368003845,
+        0.023556280881166458,
+        0.815858006477356
+      ],
+      "peak_goal_error_m": 0.37819055094963827,
+      "peak_semantic_accuracy": 0.0,
+      "anchor_goal_error_m": 0.23961220027206653,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.23167989006589249,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013198199681937695,
+      "prototype_goal_error_m": 0.025431613351470622,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261029_target1",
+      "parent_id": "derived_reach_261029",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9707024693489075,
+      "other_target_mass_4cm": 0.014547185972332954,
+      "outside_all_target_neighborhoods_mass": 0.014749666675925255,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        7.628889306943165e-06,
+        0.9707024693489075,
+        0.014539557509124279
+      ],
+      "effective_point_count": 30.377922739138242,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.17124858498573303,
+        0.27936071157455444,
+        1.159889817237854
+      ],
+      "learned_anchor": [
+        0.17212852835655212,
+        0.2673863470554352,
+        1.1349878311157227
+      ],
+      "peak_goal_error_m": 0.025463476044512403,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.007932310573550845,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.015444130807033028,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.01904885470867157,
+      "prototype_goal_error_m": 0.024763849172659606,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261029_target2",
+      "parent_id": "derived_reach_261029",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8065118193626404,
+      "other_target_mass_4cm": 0.06900479644536972,
+      "outside_all_target_neighborhoods_mass": 0.12448348104953766,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        2.0353505533421412e-05,
+        0.06898444145917892,
+        0.8065118193626404
+      ],
+      "effective_point_count": 28.519133077622886,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.19997450709342957,
+        0.22643232345581055,
+        0.8134899735450745
+      ],
+      "learned_anchor": [
+        0.21297726035118103,
+        0.21719709038734436,
+        0.832659125328064
+      ],
+      "peak_goal_error_m": 0.02275886777809325,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.03768690955122622,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03226000333690025,
+      "candidate_semantic_accuracy": 0.25,
+      "endpoint_from_anchor_m": 0.018977830186486244,
+      "prototype_goal_error_m": 0.025797367333751126,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261030_target0",
+      "parent_id": "derived_reach_261030",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.3947660028934479,
+      "other_target_mass_4cm": 0.4677298069000244,
+      "outside_all_target_neighborhoods_mass": 0.13750454783439636,
+      "intended_has_greatest_target_mass": false,
+      "per_target_attention_mass": [
+        0.3947660028934479,
+        0.4350424110889435,
+        0.03268740698695183
+      ],
+      "effective_point_count": 76.81632549108095,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.07510849088430405,
+        -0.21323780715465546,
+        1.0105384588241577
+      ],
+      "learned_anchor": [
+        0.21854789555072784,
+        0.004495540633797646,
+        1.083395004272461
+      ],
+      "peak_goal_error_m": 0.022253112449729797,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.2863363126507683,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.28087109399710064,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013946786522865295,
+      "prototype_goal_error_m": 0.6082192329897479,
+      "prototype_semantic_accuracy": 0.0
+    },
+    {
+      "id": "derived_reach_261030_target1",
+      "parent_id": "derived_reach_261030",
+      "split": "DEV_MODEL",
+      "reference_count": 2,
+      "intended_target_mass_4cm": 0.8001788258552551,
+      "other_target_mass_4cm": 0.13384108245372772,
+      "outside_all_target_neighborhoods_mass": 0.06598011404275894,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.09526856988668442,
+        0.8001788258552551,
+        0.038572508841753006
+      ],
+      "effective_point_count": 69.36801103487912,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.4564095735549927,
+        0.19754764437675476,
+        1.1382993459701538
+      ],
+      "learned_anchor": [
+        0.3830101788043976,
+        0.14828598499298096,
+        1.1019062995910645
+      ],
+      "peak_goal_error_m": 0.02699121309619226,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.09842652188566849,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.10463977770196187,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.015147840604186058,
+      "prototype_goal_error_m": 0.02521691745218835,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261030_target2",
+      "parent_id": "derived_reach_261030",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8511446118354797,
+      "other_target_mass_4cm": 0.09317298978567123,
+      "outside_all_target_neighborhoods_mass": 0.05568264424800873,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0016656731022521853,
+        0.09150731563568115,
+        0.8511446118354797
+      ],
+      "effective_point_count": 52.58661633854491,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.449061781167984,
+        0.04787268862128258,
+        0.8307688236236572
+      ],
+      "learned_anchor": [
+        0.454659640789032,
+        0.06952075660228729,
+        0.8465017080307007
+      ],
+      "peak_goal_error_m": 0.027487773314383415,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.03511236071801806,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03346137282730197,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014288019388914108,
+      "prototype_goal_error_m": 0.025752776390711784,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261031_target0",
+      "parent_id": "derived_reach_261031",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.47808873653411865,
+      "other_target_mass_4cm": 0.45210331678390503,
+      "outside_all_target_neighborhoods_mass": 0.06980773061513901,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.47808873653411865,
+        0.2597145438194275,
+        0.19238877296447754
+      ],
+      "effective_point_count": 77.93515832552706,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.10011698305606842,
+        0.047778259962797165,
+        1.097812294960022
+      ],
+      "learned_anchor": [
+        0.22759413719177246,
+        -0.06829415261745453,
+        1.1258535385131836
+      ],
+      "peak_goal_error_m": 0.022262408603116086,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.1813029608396936,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.172518658520674,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.012846284545958042,
+      "prototype_goal_error_m": 0.025000676797971782,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261031_target1",
+      "parent_id": "derived_reach_261031",
+      "split": "DEV_MODEL",
+      "reference_count": 2,
+      "intended_target_mass_4cm": 0.7626883387565613,
+      "other_target_mass_4cm": 0.20412209630012512,
+      "outside_all_target_neighborhoods_mass": 0.03318972885608673,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0008004880510270596,
+        0.7626883387565613,
+        0.20332160592079163
+      ],
+      "effective_point_count": 78.15635232737014,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.4853982925415039,
+        -0.2383529394865036,
+        1.180245041847229
+      ],
+      "learned_anchor": [
+        0.4330137073993683,
+        -0.22020620107650757,
+        1.1167842149734497
+      ],
+      "peak_goal_error_m": 0.024970273712554548,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.06573507621968866,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.07452355869652935,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014987405389547348,
+      "prototype_goal_error_m": 0.024567333810212654,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_261031_target2",
+      "parent_id": "derived_reach_261031",
+      "split": "DEV_MODEL",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.6677920818328857,
+      "other_target_mass_4cm": 0.3235829174518585,
+      "outside_all_target_neighborhoods_mass": 0.008624855428934097,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0023777124006301165,
+        0.321205198764801,
+        0.6677920818328857
+      ],
+      "effective_point_count": 54.477731971881106,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.24193984270095825,
+        -0.11114873737096786,
+        0.9588326811790466
+      ],
+      "learned_anchor": [
+        0.32016485929489136,
+        -0.1605478823184967,
+        1.0364034175872803
+      ],
+      "peak_goal_error_m": 0.02228031484752593,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.12309045175171676,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.11174632572914248,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.012519203126430511,
+      "prototype_goal_error_m": 0.02518739130434743,
+      "prototype_semantic_accuracy": 1.0
+    },
+    {
+      "id": "derived_reach_262000_target0",
+      "parent_id": "derived_reach_262000",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.7535001635551453,
+      "other_target_mass_4cm": 0.2097836583852768,
+      "outside_all_target_neighborhoods_mass": 0.03671598061919212,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.7535001635551453,
+        0.01447697076946497,
+        0.1953066885471344
+      ],
+      "effective_point_count": 31.919104556694588,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.07851811498403549,
+        0.21124327182769775,
+        0.8886867761611938
+      ],
+      "learned_anchor": [
+        0.11025577038526535,
+        0.21504130959510803,
+        0.9529708623886108
+      ],
+      "peak_goal_error_m": 0.02285326753891835,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.06903895324539326,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.05962500212887113,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.01757863536477089,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262000_target1",
+      "parent_id": "derived_reach_262000",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9470056891441345,
+      "other_target_mass_4cm": 0.01451085414737463,
+      "outside_all_target_neighborhoods_mass": 0.0384855680167675,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.006456699222326279,
+        0.9470056891441345,
+        0.008054154925048351
+      ],
+      "effective_point_count": 41.973070420227224,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.28189849853515625,
+        0.0036581673193722963,
+        1.2070581912994385
+      ],
+      "learned_anchor": [
+        0.2720322608947754,
+        0.016616005450487137,
+        1.233256220817566
+      ],
+      "peak_goal_error_m": 0.02412460280663917,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.009365811939721358,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.011436024609945557,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.014486400410532951,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262000_target2",
+      "parent_id": "derived_reach_262000",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8887984752655029,
+      "other_target_mass_4cm": 0.08559084683656693,
+      "outside_all_target_neighborhoods_mass": 0.025611039251089096,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.07911334931850433,
+        0.0064774989150464535,
+        0.8887984752655029
+      ],
+      "effective_point_count": 39.45983272652009,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.23137745261192322,
+        0.2519358694553375,
+        1.1567403078079224
+      ],
+      "learned_anchor": [
+        0.20902347564697266,
+        0.2354383021593094,
+        1.1151753664016724
+      ],
+      "peak_goal_error_m": 0.024929410555062464,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.02751225999734906,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.04244933980326311,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.02269526943564415,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262001_target0",
+      "parent_id": "derived_reach_262001",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9376256465911865,
+      "other_target_mass_4cm": 0.019824068993330002,
+      "outside_all_target_neighborhoods_mass": 0.04255032539367676,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.9376256465911865,
+        0.01599053293466568,
+        0.0038335369899868965
+      ],
+      "effective_point_count": 41.291063780498995,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.33784720301628113,
+        0.1320810317993164,
+        1.1513522863388062
+      ],
+      "learned_anchor": [
+        0.3158690333366394,
+        0.11144396662712097,
+        1.1690804958343506
+      ],
+      "peak_goal_error_m": 0.022519538327034235,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.012462344423053716,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.019335106691277013,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.017229340970516205,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262001_target1",
+      "parent_id": "derived_reach_262001",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9631831645965576,
+      "other_target_mass_4cm": 0.026782231405377388,
+      "outside_all_target_neighborhoods_mass": 0.01003476046025753,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.006249267607927322,
+        0.9631831645965576,
+        0.020532963797450066
+      ],
+      "effective_point_count": 24.972066516277284,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.2152152955532074,
+        -0.02960408665239811,
+        0.9341813921928406
+      ],
+      "learned_anchor": [
+        0.2216911017894745,
+        -0.029527388513088226,
+        0.921728253364563
+      ],
+      "peak_goal_error_m": 0.025893918829825793,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.01810182053451298,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.01090306732868901,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.013368531130254269,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262001_target2",
+      "parent_id": "derived_reach_262001",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.5664610266685486,
+      "other_target_mass_4cm": 0.2991759479045868,
+      "outside_all_target_neighborhoods_mass": 0.13436298072338104,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.029129205271601677,
+        0.27004674077033997,
+        0.5664610266685486
+      ],
+      "effective_point_count": 75.38477941104715,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.3641025424003601,
+        0.1658315509557724,
+        0.8862316608428955
+      ],
+      "learned_anchor": [
+        0.32444605231285095,
+        0.11659380793571472,
+        0.8790681958198547
+      ],
+      "peak_goal_error_m": 0.027378963209133366,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.07741586942536816,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.07256375606890489,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.017467927187681198,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262002_target0",
+      "parent_id": "derived_reach_262002",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8096317648887634,
+      "other_target_mass_4cm": 0.17779654264450073,
+      "outside_all_target_neighborhoods_mass": 0.012571602128446102,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.8096317648887634,
+        0.17755556106567383,
+        0.0002409884036751464
+      ],
+      "effective_point_count": 42.4080207556999,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.2706841230392456,
+        0.07083692401647568,
+        0.8606189489364624
+      ],
+      "learned_anchor": [
+        0.28605571389198303,
+        0.11707966774702072,
+        0.8447375297546387
+      ],
+      "peak_goal_error_m": 0.027280759592180587,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.037216147895776125,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.0305552669048626,
+      "candidate_semantic_accuracy": 0.25,
+      "endpoint_from_anchor_m": 0.01332440972328186,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262002_target1",
+      "parent_id": "derived_reach_262002",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.7835374474525452,
+      "other_target_mass_4cm": 0.16354292631149292,
+      "outside_all_target_neighborhoods_mass": 0.052919499576091766,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.119993194937706,
+        0.7835374474525452,
+        0.04354973882436752
+      ],
+      "effective_point_count": 45.70811763620122,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.36177513003349304,
+        0.28287866711616516,
+        0.7982697486877441
+      ],
+      "learned_anchor": [
+        0.33507055044174194,
+        0.24396219849586487,
+        0.8244504332542419
+      ],
+      "peak_goal_error_m": 0.023258540422306392,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.041919530661830934,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03458937907400648,
+      "candidate_semantic_accuracy": 0.25,
+      "endpoint_from_anchor_m": 0.014609451405704021,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262002_target2",
+      "parent_id": "derived_reach_262002",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9469420909881592,
+      "other_target_mass_4cm": 0.03164433315396309,
+      "outside_all_target_neighborhoods_mass": 0.02141421101987362,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0026920014061033726,
+        0.028952330350875854,
+        0.9469420909881592
+      ],
+      "effective_point_count": 31.428413738584556,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.19652187824249268,
+        0.2692485749721527,
+        1.0375542640686035
+      ],
+      "learned_anchor": [
+        0.1867039054632187,
+        0.2513580918312073,
+        1.038977861404419
+      ],
+      "peak_goal_error_m": 0.022307170697831002,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.008400539219096406,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.02011248646911136,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.021779390051960945,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262003_target0",
+      "parent_id": "derived_reach_262003",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.7522124648094177,
+      "other_target_mass_4cm": 0.242345929145813,
+      "outside_all_target_neighborhoods_mass": 0.005441492889076471,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.7522124648094177,
+        0.22259312868118286,
+        0.019752806052565575
+      ],
+      "effective_point_count": 53.374710370088025,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.28516536951065063,
+        -0.05063328146934509,
+        1.0275917053222656
+      ],
+      "learned_anchor": [
+        0.3272366523742676,
+        -0.05419042706489563,
+        1.0684396028518677
+      ],
+      "peak_goal_error_m": 0.022622298756665715,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.06280407157847527,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.05412378212146428,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.015076695941388607,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262003_target1",
+      "parent_id": "derived_reach_262003",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8826448321342468,
+      "other_target_mass_4cm": 0.1151091605424881,
+      "outside_all_target_neighborhoods_mass": 0.0022468059323728085,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.07549082487821579,
+        0.8826448321342468,
+        0.03961833566427231
+      ],
+      "effective_point_count": 54.742136394735745,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.45515507459640503,
+        -0.016018684953451157,
+        1.1662620306015015
+      ],
+      "learned_anchor": [
+        0.43484532833099365,
+        -0.01393712218850851,
+        1.1463338136672974
+      ],
+      "peak_goal_error_m": 0.0258163396326484,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.01847560450278315,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.03163034134006573,
+      "candidate_semantic_accuracy": 0.25,
+      "endpoint_from_anchor_m": 0.016006741672754288,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262003_target2",
+      "parent_id": "derived_reach_262003",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9528069496154785,
+      "other_target_mass_4cm": 0.020384222269058228,
+      "outside_all_target_neighborhoods_mass": 0.026811037212610245,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.008920026943087578,
+        0.011464196257293224,
+        0.9528069496154785
+      ],
+      "effective_point_count": 26.934552064515586,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.05735751613974571,
+        0.27966201305389404,
+        1.2193422317504883
+      ],
+      "learned_anchor": [
+        0.03243270888924599,
+        0.25771063566207886,
+        1.206714153289795
+      ],
+      "peak_goal_error_m": 0.023783805014363602,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.01272050320611178,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.022533088993030057,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.023739531636238098,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262004_target0",
+      "parent_id": "derived_reach_262004",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9280372858047485,
+      "other_target_mass_4cm": 0.018244897946715355,
+      "outside_all_target_neighborhoods_mass": 0.05371890962123871,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.9280372858047485,
+        0.01101770345121622,
+        0.007227194961160421
+      ],
+      "effective_point_count": 31.125192434145113,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.12680219113826752,
+        -0.05352978780865669,
+        1.204978346824646
+      ],
+      "learned_anchor": [
+        0.12147121876478195,
+        -0.04257230833172798,
+        1.2208149433135986
+      ],
+      "peak_goal_error_m": 0.02435489660850253,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.01633569979968192,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.013368827548052348,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.01808534748852253,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262004_target1",
+      "parent_id": "derived_reach_262004",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9411441683769226,
+      "other_target_mass_4cm": 0.05361495912075043,
+      "outside_all_target_neighborhoods_mass": 0.005240708123892546,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.015709366649389267,
+        0.9411441683769226,
+        0.03790559247136116
+      ],
+      "effective_point_count": 30.138696713957437,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.22838427126407623,
+        0.04598158970475197,
+        0.9416760206222534
+      ],
+      "learned_anchor": [
+        0.23658549785614014,
+        0.03053528442978859,
+        0.9313479661941528
+      ],
+      "peak_goal_error_m": 0.026515882810780253,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.02399608879099878,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.015646809829847716,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.013327222317457199,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262004_target2",
+      "parent_id": "derived_reach_262004",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.6109222173690796,
+      "other_target_mass_4cm": 0.37166133522987366,
+      "outside_all_target_neighborhoods_mass": 0.017416391521692276,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.001580694573931396,
+        0.3700806498527527,
+        0.6109222173690796
+      ],
+      "effective_point_count": 48.396972956444515,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.22838427126407623,
+        0.04598158970475197,
+        0.9416760206222534
+      ],
+      "learned_anchor": [
+        0.24072685837745667,
+        -0.1404217779636383,
+        0.9213928580284119
+      ],
+      "peak_goal_error_m": 0.300074818475053,
+      "peak_semantic_accuracy": 0.0,
+      "anchor_goal_error_m": 0.11302432629997938,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.1057743053494251,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.015252229757606983,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262005_target0",
+      "parent_id": "derived_reach_262005",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8534677624702454,
+      "other_target_mass_4cm": 0.12428857386112213,
+      "outside_all_target_neighborhoods_mass": 0.022243812680244446,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.8534677624702454,
+        0.06804085522890091,
+        0.05624772235751152
+      ],
+      "effective_point_count": 23.42489325366664,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.052525125443935394,
+        -0.11938349902629852,
+        0.8854044675827026
+      ],
+      "learned_anchor": [
+        0.06067659333348274,
+        -0.10480345040559769,
+        0.8929623961448669
+      ],
+      "peak_goal_error_m": 0.026734060049242805,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.039205451065150575,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.03232768165542969,
+      "candidate_semantic_accuracy": 0.25,
+      "endpoint_from_anchor_m": 0.014955885708332062,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262005_target1",
+      "parent_id": "derived_reach_262005",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.5748250484466553,
+      "other_target_mass_4cm": 0.4225267171859741,
+      "outside_all_target_neighborhoods_mass": 0.002648006659001112,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.4208846092224121,
+        0.5748250484466553,
+        0.001642117858864367
+      ],
+      "effective_point_count": 47.07035079700848,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.06454866379499435,
+        -0.12813800573349,
+        0.881091296672821
+      ],
+      "learned_anchor": [
+        0.1815478503704071,
+        -0.16515111923217773,
+        0.8965111970901489
+      ],
+      "peak_goal_error_m": 0.20279577657529543,
+      "peak_semantic_accuracy": 0.0,
+      "anchor_goal_error_m": 0.07957881550114672,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.08986586475735632,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013879820704460144,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262005_target2",
+      "parent_id": "derived_reach_262005",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9114137887954712,
+      "other_target_mass_4cm": 0.03218363597989082,
+      "outside_all_target_neighborhoods_mass": 0.056402940303087234,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.03071758709847927,
+        0.001466049812734127,
+        0.9114137887954712
+      ],
+      "effective_point_count": 25.244887833082235,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.054265283048152924,
+        0.19517353177070618,
+        1.2007105350494385
+      ],
+      "learned_anchor": [
+        0.018979236483573914,
+        0.1714959293603897,
+        1.1804149150848389
+      ],
+      "peak_goal_error_m": 0.025184268804446467,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.027286992528280672,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.0339122718332894,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.016491567716002464,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262006_target0",
+      "parent_id": "derived_reach_262006",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.8247825503349304,
+      "other_target_mass_4cm": 0.12304944545030594,
+      "outside_all_target_neighborhoods_mass": 0.05216778442263603,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.8247825503349304,
+        0.11954326927661896,
+        0.003506175009533763
+      ],
+      "effective_point_count": 47.70103999054635,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.31353968381881714,
+        0.04081893339753151,
+        1.100785255432129
+      ],
+      "learned_anchor": [
+        0.2717948257923126,
+        0.01104418933391571,
+        1.0896661281585693
+      ],
+      "peak_goal_error_m": 0.02491641920736061,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.03784147551975287,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.044588300061662076,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.014102713204920292,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262006_target1",
+      "parent_id": "derived_reach_262006",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.5466559529304504,
+      "other_target_mass_4cm": 0.4386966824531555,
+      "outside_all_target_neighborhoods_mass": 0.014647320844233036,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.4036790430545807,
+        0.5466559529304504,
+        0.035017646849155426
+      ],
+      "effective_point_count": 50.242401793663895,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.09674455970525742,
+        -0.0868288204073906,
+        0.940131425857544
+      ],
+      "learned_anchor": [
+        0.19183646142482758,
+        -0.051304154098033905,
+        1.0099811553955078
+      ],
+      "peak_goal_error_m": 0.022803393652204167,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.14076361197812715,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.12935113836458803,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.013479184359312057,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262006_target2",
+      "parent_id": "derived_reach_262006",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9326490163803101,
+      "other_target_mass_4cm": 0.036342933773994446,
+      "outside_all_target_neighborhoods_mass": 0.03100811503827572,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.0038358191959559917,
+        0.03250711411237717,
+        0.9326490163803101
+      ],
+      "effective_point_count": 42.109041737976426,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.41777777671813965,
+        -0.28618690371513367,
+        0.9414443969726562
+      ],
+      "learned_anchor": [
+        0.4055028557777405,
+        -0.28859007358551025,
+        0.936843991279602
+      ],
+      "peak_goal_error_m": 0.02365241009141103,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.015707797414745338,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.01520609914462153,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.014115635305643082,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262007_target0",
+      "parent_id": "derived_reach_262007",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.5544431209564209,
+      "other_target_mass_4cm": 0.392158567905426,
+      "outside_all_target_neighborhoods_mass": 0.05339798703789711,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.5544431209564209,
+        0.00025946740061044693,
+        0.39189910888671875
+      ],
+      "effective_point_count": 49.998674018083754,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.07958479225635529,
+        0.23999513685703278,
+        1.127220630645752
+      ],
+      "learned_anchor": [
+        0.04387025162577629,
+        0.12685948610305786,
+        1.125285029411316
+      ],
+      "peak_goal_error_m": 0.022027789916374288,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.10287730117904169,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.09100730146457846,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.020961588248610497,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262007_target1",
+      "parent_id": "derived_reach_262007",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.9760769605636597,
+      "other_target_mass_4cm": 0.008116709999740124,
+      "outside_all_target_neighborhoods_mass": 0.015806099399924278,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.00022426464420277625,
+        0.9760769605636597,
+        0.007892445661127567
+      ],
+      "effective_point_count": 22.804514833464925,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.07265597581863403,
+        -0.21559348702430725,
+        0.9793035387992859
+      ],
+      "learned_anchor": [
+        0.06507502496242523,
+        -0.21527199447155,
+        0.9784543514251709
+      ],
+      "peak_goal_error_m": 0.024349556773730657,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.01803601731677946,
+      "anchor_semantic_accuracy": 1.0,
+      "candidate_goal_error_m": 0.007852249125901217,
+      "candidate_semantic_accuracy": 1.0,
+      "endpoint_from_anchor_m": 0.013879031874239445,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    },
+    {
+      "id": "derived_reach_262007_target2",
+      "parent_id": "derived_reach_262007",
+      "split": "TRAIN",
+      "reference_count": 3,
+      "intended_target_mass_4cm": 0.6069765686988831,
+      "other_target_mass_4cm": 0.3698221743106842,
+      "outside_all_target_neighborhoods_mass": 0.02320164442062378,
+      "intended_has_greatest_target_mass": true,
+      "per_target_attention_mass": [
+        0.3692951500415802,
+        0.0005270260153338313,
+        0.6069765686988831
+      ],
+      "effective_point_count": 45.59931800312579,
+      "valid_points": 12544,
+      "attention_peak_point": [
+        0.04522097110748291,
+        0.004534418694674969,
+        1.076634168624878
+      ],
+      "learned_anchor": [
+        0.053209029138088226,
+        0.07825548946857452,
+        1.1090688705444336
+      ],
+      "peak_goal_error_m": 0.023107039678555135,
+      "peak_semantic_accuracy": 1.0,
+      "anchor_goal_error_m": 0.09648403679392273,
+      "anchor_semantic_accuracy": 0.0,
+      "candidate_goal_error_m": 0.09842823598519287,
+      "candidate_semantic_accuracy": 0.0,
+      "endpoint_from_anchor_m": 0.016028717160224915,
+      "prototype_goal_error_m": null,
+      "prototype_semantic_accuracy": null
+    }
+  ]
+}

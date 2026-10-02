@@ -21,6 +21,11 @@ from scripts.train_observed_routes import observation_metrics, paired_language_i
 POINT_FIELDS = ('world_xyz', 'rgb', 'uv', 'depth', 'valid_mask')
 
 
+def validate_anchor_resume(current_config, saved_config):
+    if current_config.get('anchor_mode', 'soft') != saved_config.get('anchor_mode', 'soft'):
+        raise ValueError('resume config mismatch: anchor_mode')
+
+
 def read_geometry(image, observation, pixel_stride):
     """Whitelist current RGB/depth/camera; never flatten arbitrary NPZ fields."""
     with Image.open(image) as source:
@@ -198,13 +203,15 @@ def train(args):
             skipped_supervision=data['skipped'], unreferenced_observations=data['unreferenced'],
             evaluation_protocol=data['evaluation_protocol'], cache_config=data['cache_config'], geometry_preprocessing=geometry['metadata'])
         model = ObservedGeometryRouteHead(config['feature_dim'], args.horizon, args.candidates, args.width,
-                                          args.depth, args.point_width, args.endpoint_residual_bound).to(args.device)
+                                          args.depth, args.point_width, args.endpoint_residual_bound,
+                                          anchor_mode=args.anchor_mode).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         rng, sampler = np.random.default_rng(args.seed), np.random.default_rng(args.seed+100000)
         first_step, best, elapsed_before, exposures, history = 0, -float('inf'), 0., 0, []
         if args.resume:
             checkpoint = torch.load(out/'last.pt', map_location=args.device, weights_only=False)
+            validate_anchor_resume(config, checkpoint['config'])
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -302,6 +309,7 @@ def main():
     parser.add_argument('--depth', type=int, default=2)
     parser.add_argument('--pooling', choices=('mean', 'last', 'both'), default='both')
     parser.add_argument('--geometry-pooling', choices=('spatial',), default='spatial')
+    parser.add_argument('--anchor-mode', choices=('soft', 'straight_through_peak'), default='soft')
     parser.add_argument('--point-width', type=int, default=64)
     parser.add_argument('--pixel-stride', type=int, default=2)
     parser.add_argument('--endpoint-residual-bound', type=float, default=.05)

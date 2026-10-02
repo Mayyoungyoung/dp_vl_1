@@ -89,8 +89,11 @@ class ObservedGeometryEncoder(nn.Module):
     route head may use context and anchor, but all baseline/mechanism variants
     must share this information. No point-selection oracle or repair is used.
     """
-    def __init__(self, feature_dim=4096, width=128, point_width=64):
+    def __init__(self, feature_dim=4096, width=128, point_width=64, anchor_mode='soft'):
         super().__init__()
+        if anchor_mode not in ('soft', 'straight_through_peak'):
+            raise ValueError('anchor_mode must be soft or straight_through_peak')
+        self.anchor_mode = anchor_mode
         self.feature_dim, self.width, self.point_width = feature_dim, width, point_width
         self.task_query = nn.Sequential(nn.LayerNorm(feature_dim), nn.Linear(feature_dim, point_width))
         self.state_query = nn.Sequential(nn.Linear(8, point_width), nn.SiLU(), nn.Linear(point_width, point_width))
@@ -123,7 +126,14 @@ class ObservedGeometryEncoder(nn.Module):
         logits = logits * self.log_attention_scale.exp().clamp(max=100.)
         weights = logits.masked_fill(~valid_mask, float('-inf')).softmax(-1)
         safe_xyz = torch.where(valid_mask[..., None], world_xyz, torch.zeros_like(world_xyz))
-        anchor = (weights[..., None] * safe_xyz).sum(1)
+        soft_anchor = (weights[..., None] * safe_xyz).sum(1)
+        anchor = soft_anchor
+        if self.anchor_mode == 'straight_through_peak':
+            peak_index = weights.masked_fill(~valid_mask, float('-inf')).argmax(1)
+            peak_anchor = safe_xyz[torch.arange(batch, device=safe_xyz.device), peak_index]
+            # Forward exactly equals an existing valid observed point. Backward
+            # follows the unchanged soft spatial expectation. No label is used.
+            anchor = peak_anchor.detach() + (soft_anchor-soft_anchor.detach())
         attended = (weights[..., None] * point_features).sum(1)
         mean = (point_features * valid_mask[..., None]).sum(1) / valid_mask.sum(1, keepdim=True)
         context = self.fusion(torch.cat([attended, mean, query, anchor-current[:, :3]], dim=-1))
@@ -142,14 +152,14 @@ class ObservedGeometryRouteHead(nn.Module):
     """
     def __init__(self, feature_dim, horizon=24, max_candidates=4, width=128,
                  depth=2, point_width=64, endpoint_residual_bound=.05,
-                 geometry_pooling='spatial'):
+                 geometry_pooling='spatial', anchor_mode='soft'):
         super().__init__()
         from .observed_route_head import ObservedRouteHead
         if geometry_pooling != 'spatial':
             raise NotImplementedError('only spatial pooling is currently implemented')
         if endpoint_residual_bound <= 0:
             raise ValueError('endpoint residual bound must be positive')
-        self.geometry = ObservedGeometryEncoder(feature_dim, width, point_width)
+        self.geometry = ObservedGeometryEncoder(feature_dim, width, point_width, anchor_mode=anchor_mode)
         self.head = ObservedRouteHead(feature_dim, horizon, max_candidates, width, depth)
         self.endpoint_residual_bound = endpoint_residual_bound
 

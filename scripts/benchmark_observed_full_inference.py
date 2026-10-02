@@ -98,7 +98,8 @@ def main():
     processor = AutoProcessor.from_pretrained(args.model, local_files_only=True,
         min_pixels=64*32*32, max_pixels=config['cache_config']['max_pixels'])
     head = ObservedGeometryRouteHead(config['feature_dim'], config['horizon'], config['candidates'], config['width'],
-        config['depth'], config['point_width'], config['endpoint_residual_bound']).to(device)
+        config['depth'], config['point_width'], config['endpoint_residual_bound'],
+        anchor_mode=config.get('anchor_mode','soft')).to(device)
     checkpoint = torch.load(args.run/'best.pt', map_location=device, weights_only=False)
     head.load_state_dict(checkpoint['model']); head.requires_grad_(False).eval()
     loading_seconds = clock()-load_started

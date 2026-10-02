@@ -28,7 +28,8 @@ def analyze(args):
     if geometry['fingerprint'] != config['dataset_fingerprint']:
         raise ValueError('current dataset differs from checkpoint')
     model = ObservedGeometryRouteHead(config['feature_dim'], config['horizon'], config['candidates'], config['width'],
-                                     config['depth'], config['point_width'], config['endpoint_residual_bound']).eval()
+                                     config['depth'], config['point_width'], config['endpoint_residual_bound'],
+                                     anchor_mode=config.get('anchor_mode','soft')).eval()
     model.load_state_dict(checkpoint['model'], strict=True)
     prototype = json.loads(args.prototype.read_text())
     prototype_rows = {row['id']:row for row in prototype['per_scene']}

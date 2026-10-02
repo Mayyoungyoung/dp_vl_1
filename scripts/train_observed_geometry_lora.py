@@ -54,6 +54,8 @@ def load_geometry_initialization(head, path, expected, observations, supervision
     path = Path(path)
     checkpoint = torch.load(path, map_location='cpu', weights_only=False)
     source = checkpoint.get('config', {})
+    if source.get('anchor_mode','soft') != 'soft':
+        raise ValueError('This online comparison requires its original soft-anchor initialization')
     for key in ('feature_dim', 'horizon', 'candidates', 'width', 'depth', 'pooling', 'event_scale',
                 'point_width', 'pixel_stride', 'endpoint_residual_bound', 'grounding_weight', 'grounding_sigma'):
         if source.get(key) != expected[key]:

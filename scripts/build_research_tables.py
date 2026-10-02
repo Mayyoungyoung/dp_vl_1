@@ -74,11 +74,16 @@ def main():
                 cumulative_gpu_hours=result.get('cumulative_gpu_hours_reserved',result['gpu_hours_reserved']),
                 cost_scope='elapsed/gpu_hours are incremental output-tree cost; cumulative includes prior continuation; shared old4 producer cost separate; deduplicate budgets by run_id',
                 code_commit=config['code_commit'],source=str(source.relative_to(root))))
-    for source in sorted((reports/'observation_prototype_v1').glob('*.json')):
+    prototype_sources = sorted((reports/'observation_prototype_v1').glob('*.json'))
+    prototype_sources += sorted(reports.glob('observation_prototype_obstacle_*/report.json'))
+    for source in prototype_sources:
         result=json.loads(source.read_text())
-        rows.append(dict(tier='observed_RGBD_task_specific_endpoint',task='RLBench_derived_reach_three_targets',
-            protocol=result['evaluation_protocol'],method='TRAIN_color_prototype_'+source.stem,split='DEV_MODEL',K=1,
-            run_id='observation_prototype_v1/'+source.stem,semantic_goal_accuracy=result['semantic_goal_accuracy'],
+        obstacle = 'obstacle_' in source.parent.name
+        run_id = str(source.parent.relative_to(reports))+'/'+source.stem
+        rows.append(dict(tier='observed_RGBD_task_specific_endpoint',
+            task='RLBench_derived_obstacle_reach_three_targets' if obstacle else 'RLBench_derived_reach_three_targets',
+            protocol=result['evaluation_protocol'],method='TRAIN_color_prototype_'+(source.parent.name if obstacle else source.stem),split='DEV_MODEL',K=1,
+            run_id=run_id,semantic_goal_accuracy=result['semantic_goal_accuracy'],
             endpoint_error_m=result['reference_endpoint_error_m_conditional_on_prediction'],
             center_endpoint_error_m=result['goal_error_m_conditional_on_prediction'],
             reference_evaluation_examples=result['reference_evaluation_examples'],semantic_evaluation_examples=result['semantic_evaluation_examples'],
@@ -110,13 +115,17 @@ def main():
                 method=folder+'_'+source.parent.name+'_'+config.get('adapter_mode','frozen_cache'),
                 seed=config['seed'],split='DEV_MODEL',K=config['candidates'],
                 run_id=str(source.parent.relative_to(reports)),training_exposures=result['trajectory_exposures'],
+                common_pretraining_exposures=result.get('common_pretraining',{}).get('total_trajectory_exposures'),
+                common_pretraining_gpu_hours=result.get('common_pretraining',{}).get('gpu_hours_reserved'),
                 selected_step=result['best_step'],grounding_weight=config.get('grounding_weight'),
+                anchor_mode=config.get('anchor_mode','soft') if 'geometry_parameters' in config or 'geometry_role' in config else None,
                 training_threads=config['threads'],reference_evaluation_examples=metrics.get('reference_evaluation_examples',metrics['examples']),
                 semantic_evaluation_examples=metrics['semantic_evaluation_examples'],
                 cost_scope=('online Qwen/head train and evaluation; gpu_hours includes setup; elapsed_s excludes setup; common head pretraining separate'
                     if 'online' in folder else 'head training/evaluation only; separate Qwen encoding is excluded'),
                 candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
                 semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+                RGBD_Qwen_generation_ms=metrics.get('online_request_ms_median'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
                 source=str(source.relative_to(root))))
     for source in sorted((reports/'observation_eval_v2').glob('*/metrics.json')):
@@ -153,6 +162,7 @@ def main():
           'reference_evaluation_examples','semantic_evaluation_examples','training_exposures','training_threads','selected_step','grounding_weight',
           'extra_training_draft_forwards','forward_passes','cost_scope','elapsed_s','gpu_hours',
           'cumulative_elapsed_s','cumulative_gpu_hours','incremental_training_exposures','center_endpoint_error_m','cpu_endpoint_ms',
+          'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

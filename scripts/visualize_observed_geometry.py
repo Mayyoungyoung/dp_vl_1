@@ -43,7 +43,8 @@ def main():
         raise ValueError('fixed visualization requires first two DEV parents with all three instructions')
     ids = np.concatenate(groups)
     model = ObservedGeometryRouteHead(config['feature_dim'], config['horizon'], config['candidates'], config['width'],
-                                      config['depth'], config['point_width'], config['endpoint_residual_bound'])
+                                      config['depth'], config['point_width'], config['endpoint_residual_bound'],
+                                      anchor_mode=config.get('anchor_mode','soft'))
     checkpoint = torch.load(args.run/'best.pt', map_location='cpu', weights_only=False)
     model.load_state_dict(checkpoint['model']); model.eval()
     paths, opened, details = model(**batch_inputs(data, geometry, ids, 'cpu'))

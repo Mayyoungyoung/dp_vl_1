@@ -105,3 +105,73 @@ def test_route_head_start_endpoint_bound_and_parameter_update():
     assert any(not torch.equal(parameter, before[name]) for name,parameter in model.named_parameters() if name.startswith('geometry.point_encoder'))
     assert any(not torch.equal(parameter, before[name]) for name,parameter in model.named_parameters() if name.startswith('geometry.task_query'))
     assert any(not torch.equal(parameter, before[name]) for name,parameter in model.named_parameters() if name.startswith('head.output'))
+
+
+def test_soft_default_exact_historical_formula_and_equal_initialization():
+    torch.manual_seed(72)
+    default = ObservedGeometryEncoder(16, width=12, point_width=8)
+    torch.manual_seed(72)
+    explicit = ObservedGeometryEncoder(16, width=12, point_width=8, anchor_mode='soft')
+    torch.manual_seed(72)
+    peak = ObservedGeometryEncoder(16, width=12, point_width=8, anchor_mode='straight_through_peak')
+    for name,value in default.state_dict().items():
+        assert torch.equal(value, explicit.state_dict()[name])
+        assert torch.equal(value, peak.state_dict()[name])
+    batch=inputs()
+    first,second=default(**batch),explicit(**batch)
+    assert all(torch.equal(first[key],second[key]) for key in first)
+    safe_xyz=torch.where(batch['valid_mask'][...,None],batch['world_xyz'],torch.zeros_like(batch['world_xyz']))
+    historical=(first['attention'][...,None]*safe_xyz).sum(1)
+    assert torch.equal(first['anchor_xyz'],historical)
+    assert torch.equal(first['attention'],peak(**batch)['attention'])
+
+
+def test_peak_forward_valid_point_and_exact_soft_anchor_gradient():
+    model=ObservedGeometryEncoder(16,width=12,point_width=8,anchor_mode='straight_through_peak')
+    batch=inputs()
+    batch['features'].requires_grad_()
+    result=model(**batch)
+    weights=result['attention']
+    weights.retain_grad()
+    peak=weights.masked_fill(~batch['valid_mask'],float('-inf')).argmax(1)
+    expected=batch['world_xyz'][torch.arange(2),peak]
+    assert torch.equal(result['anchor_xyz'],expected)
+    assert bool(batch['valid_mask'][torch.arange(2),peak].all())
+    result['anchor_xyz'].sum().backward()
+    safe_xyz=torch.where(batch['valid_mask'][...,None],batch['world_xyz'],torch.zeros_like(batch['world_xyz']))
+    assert torch.equal(weights.grad,safe_xyz.sum(-1))
+    assert batch['features'].grad.abs().sum()>0
+    assert model.task_query[-1].weight.grad.abs().sum()>0
+    with pytest.raises(TypeError):
+        model(**batch,target_xyz=torch.zeros(2,3))
+
+
+def test_peak_checkpoint_optimizer_resume_and_mode_rejection(tmp_path):
+    from scripts.train_observed_geometry import validate_anchor_resume
+    model=ObservedGeometryRouteHead(16,horizon=8,width=16,point_width=8,anchor_mode='straight_through_peak')
+    optimizer=torch.optim.AdamW(model.parameters(),lr=1e-3)
+    scheduler=torch.optim.lr_scheduler.LambdaLR(optimizer,lambda _:1.)
+    batch=inputs()
+    def step():
+        optimizer.zero_grad(set_to_none=True)
+        xyz,opened,_=model(**batch)
+        (xyz.square().mean()+opened.square().mean()).backward()
+        optimizer.step(); scheduler.step()
+    step()
+    path=tmp_path/'peak.pt'
+    torch.save(dict(model=model.state_dict(),optimizer=optimizer.state_dict(),scheduler=scheduler.state_dict(),
+                    config=dict(anchor_mode='straight_through_peak')),path)
+    step()
+    expected={name:value.clone() for name,value in model.state_dict().items()}
+    checkpoint=torch.load(path,weights_only=False)
+    validate_anchor_resume(dict(anchor_mode='straight_through_peak'),checkpoint['config'])
+    model.load_state_dict(checkpoint['model']);optimizer.load_state_dict(checkpoint['optimizer'])
+    scheduler.load_state_dict(checkpoint['scheduler']);step()
+    assert all(torch.equal(value,model.state_dict()[name]) for name,value in expected.items())
+    with pytest.raises(ValueError,match='anchor_mode'):
+        validate_anchor_resume(dict(anchor_mode='soft'),checkpoint['config'])
+    with pytest.raises(ValueError,match='anchor_mode'):
+        validate_anchor_resume(dict(anchor_mode='straight_through_peak'),{})
+    validate_anchor_resume(dict(anchor_mode='soft'),{})
+    with pytest.raises(ValueError,match='anchor_mode'):
+        ObservedGeometryEncoder(anchor_mode='unsupported')
