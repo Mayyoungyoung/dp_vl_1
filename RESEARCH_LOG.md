@@ -355,4 +355,3 @@ Root follow-up at21:41UTC: MAIN261 rows retain all original258 fields; JOBS473 a
 新extension288实现为独立注册和采集器：256TRAIN＋32后采集封存DEV，7776预登记提案，首个明确阶段只有train32；后续阶段按真实闭合状态单独推进。旧代码/116父数据/失败/角色保持。当前本地完整157测试及最终采集20测试通过，服务器tests/prepare/采集尚未运行，须按真实job receipt更新。8GiB新增内部预算、CPU2/3、GPU隐藏；原12DEV继续标记reused。用户已授权的研究闭环继续，新增数据不是新方法证据。
 
 cosine和native100k结果已完整归档、实核并提交82c17d2。MAIN267保持；新诊断不写作泛化收益。cosine改善TRAIN拟合但未改善DEV，停止LR扩展。native100k的空间惩罚增加路线类型但请求成本更高，仅是传统对照。论文核心优势仍未成立。
-
