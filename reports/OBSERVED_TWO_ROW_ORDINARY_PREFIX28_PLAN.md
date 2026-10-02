@@ -1,5 +1,7 @@
 # 正式两排 prefix28：普通强基线预登记
 
+18:48 UTC实测补充：冻结源码 `ce548f43ab22e804a8b70dea2f8bf297e20c8b84` 在服务器CPU1实际83项测试全部通过（16.05s，无skip），包括真实四步与两步中断恢复至四步的全状态位等价。第一次测试命令引用了不存在的 `test_observed_geometry_training.py`，未运行任何测试并exit1；改用实际 `test_observed_geometry.py` 后以独立run_id通过，原失败保留在 [准备记录](observed_two_row_prefix28_preparation_v1/targeted_tests.status.json)。新release实际读取运行语料的机械hash gate通过，14个已闭合父无重复或几何错配；这是当时机械快照。数据尚未全前缀闭合，未启动GPU训练。
+
 本轮只建设 ordinary baseline，不包含集合补全、allocator、路径更新或新的核心机制。正式采集源为 `262648796fd47b25a2051cc227b6838515b651c6`，数据目录 `/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1`。采集正在进行；本文不声称数据已闭合、已编码或已训练。
 
 ## 固定父场景和来源
