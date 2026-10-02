@@ -121,6 +121,8 @@ def guided_sample(schedule, model, condition, k, steps=40, generator=None, stren
     """
     if strength < 0 or bandwidth <= 0:
         raise ValueError("nonnegative strength and positive bandwidth required")
+    if strength > 0 and getattr(schedule, "parameterization", "epsilon") != "epsilon":
+        raise ValueError("nonzero PG currently supports epsilon prediction only")
     if strength == 0 or k == 1:
         return schedule.sample(model, condition, k, steps, generator)
     was_training = model.training

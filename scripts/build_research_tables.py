@@ -34,6 +34,21 @@ def main():
                 seed=None,split=row['split'],K=row['K'],ValidAtK=row['valid_rate'],AnyValidAtK=row['success'],
                 UniqueValidAtK=row['unique_valid'],ReferenceCoverageAtK=row['reference_coverage'],SelectedValidAtK=row['selected_valid'],
                 source=str(source.relative_to(root))))
+    for source in sorted(reports.glob('multigate_diffusion_*/training/seed*/*/summary.json')):
+        result=json.loads(source.read_text()); config=json.loads((source.parent/'config.json').read_text())
+        for budget, entry in result['metrics'].items():
+            metrics=entry['mean']; timing=entry['repeats'][0]
+            rows.append(dict(tier='controlled_oracle_diffusion',task='variable_opening_pairs',
+                protocol='DEV_selected_separate_sampling_repeats',method=result['arm']+'_'+config.get('parameterization','epsilon'),
+                seed=config['seed'],split='DEV_MODEL',K=int(budget[1:]),
+                run_id=str(source.parent.relative_to(reports)),selected_step=result['best_step'],
+                ValidAtK=metrics['valid_rate'],AnyValidAtK=metrics['any_valid'],UniqueValidAtK=metrics['unique_valid'],
+                ReferenceCoverageAtK=metrics['reference_coverage'],training_exposures=result['trajectory_exposures'],
+                training_threads=config['threads'],sampling_repeats=len(entry['repeats']),budget_status=entry['budget_status'],
+                forward_passes=config['sampling_steps'],end_to_end_controlled_ms=timing.get('request_generate_transfer_check_ms_p50'),
+                elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
+                cost_scope='train plus evaluation and timing; repeated across K, deduplicate by run_id; no VLM/scorer; inspect convergence before strong-baseline claims',
+                source=str(source.relative_to(root))))
     completion_sources = sorted((reports/'v2_completion').glob('*/summary.json'))
     completion_sources += sorted((reports/'v2_completion/replication').glob('seed*/*/summary.json'))
     completion_sources += sorted((reports/'v2_completion_selfdraft').glob('seed*/*/summary.json'))
@@ -92,11 +107,13 @@ def main():
     tip_sources = sorted(reports.glob('obstacle_new*_evaluation/tip_evaluation_v1/*/dev_model/metrics.json'))
     tip_sources += sorted(reports.glob('obstacle_new*_evaluation/hard_tip_evaluation_v1/dev_model/metrics.json'))
     tip_sources += sorted(reports.glob('obstacle_fixed_step1000_evaluation/tip_evaluation_v1/*/metrics.json'))
+    tip_sources += sorted(reports.glob('obstacle_original_best_evaluation/original_best_tip_v1/*/metrics.json'))
     for source in tip_sources:
         metrics=json.loads(source.read_text())
         fixed_step = 'obstacle_fixed_step1000_evaluation' in source.parts
-        method = source.parent.name if fixed_step else source.parent.parent.name
-        seed = int(method.rsplit('_seed',1)[1]) if fixed_step else 0
+        original_all_seeds = 'obstacle_original_best_evaluation' in source.parts
+        method = source.parent.name if fixed_step or original_all_seeds else source.parent.parent.name
+        seed = int(method.rsplit('_seed',1)[1]) if fixed_step or original_all_seeds else 0
         rows.append(dict(tier='observed_RGBD_box_tip_check',task='RLBench_derived_obstacle_reach_three_targets',
             protocol=metrics['evaluation_protocol'],method=method,seed=seed,split='DEV_MODEL',K=metrics['candidates'],
             checkpoint_selection_protocol='fixed_step_1000' if fixed_step else 'original_DEV_ADE_best',
@@ -184,6 +201,7 @@ def main():
           'extra_training_draft_forwards','forward_passes','cost_scope','elapsed_s','gpu_hours',
           'cumulative_elapsed_s','cumulative_gpu_hours','incremental_training_exposures','center_endpoint_error_m','cpu_endpoint_ms',
           'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms','checkpoint_selection_protocol',
+          'sampling_repeats','budget_status',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

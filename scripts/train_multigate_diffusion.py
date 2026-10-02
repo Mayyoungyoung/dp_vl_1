@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 from routeset.common import decode_paths, encode_paths, seed_all, sha256, write_json
-from routeset.diffusion import DiffusionSchedule
+from routeset.diffusion_parameterization import ParameterizedDiffusionSchedule
 from routeset.models import RouteDenoiser
 from routeset.multigate import route_metrics
 from routeset.multigate_diffusion import PairedTrainingStream, load_development
@@ -113,20 +113,23 @@ def train_one(args):
         source = Path(__file__).resolve().parents[1]
         source_hashes = {name: sha256(source / name) for name in (
             "scripts/train_multigate_diffusion.py", "routeset/multigate_diffusion.py",
+            "routeset/diffusion_parameterization.py",
             "routeset/models.py", "routeset/diffusion.py", "routeset/common.py",
             "routeset/multigate.py", "routeset/train_v2.py")}
         config = vars(args).copy()
+        config["parameterization"] = getattr(args, "parameterization", "epsilon")
         config.update(dataset_sha256=sha256(args.data), source_hashes=source_hashes,
             horizon=int(data["paths"].shape[-2]), cond_dim=int(data["scenes"].shape[-1]),
             code_commit=os.environ.get("CODE_COMMIT", "unrecorded"), gpu_uuid=os.environ.get("RESEARCH_GPU_UUID"),
             information="controlled true geometry and known endpoints; no observation/VLM claim",
-            selection_split="DEV_MODEL", objective="epsilon MSE on same sampled positive routes",
+            selection_split="DEV_MODEL", objective=config["parameterization"] + " MSE on same sampled positive routes",
             target_sampling="uniform parent then variant; distinct known modes first, legal repeats if needed",
             candidate_budget="exactly K returned, no hidden particles, repair or filtering; DDIM eta0",
             optimizer="AdamW weight_decay1e-4, constant LR, clip_grad_norm1, FP32")
         model = RouteDenoiser(config["cond_dim"], config["horizon"], args.width, args.depth,
                               set_attention=args.arm == "set_diffusion").to(args.device)
-        diffusion = DiffusionSchedule(args.diffusion_steps, args.device)
+        diffusion = ParameterizedDiffusionSchedule(args.diffusion_steps, args.device,
+                                                   parameterization=config["parameterization"])
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         stream = PairedTrainingStream(data, train_ids, args.seed)
@@ -158,8 +161,9 @@ def train_one(args):
             targets = encode_paths(torch.as_tensor(paths, device=args.device), condition)
             times, noise = times.to(args.device), noise.to(args.device)
             noisy, epsilon = diffusion.q_sample(targets, times, noise)
+            objective_target = diffusion.training_target(targets, epsilon, times)
             optimizer.zero_grad(set_to_none=True)
-            loss = (model(noisy, diffusion.normalized_time(times), condition) - epsilon).square().mean()
+            loss = (model(noisy, diffusion.normalized_time(times), condition) - objective_target).square().mean()
             if not torch.isfinite(loss):
                 raise FloatingPointError("nonfinite training loss at step %d" % step)
             loss.backward()
@@ -243,6 +247,7 @@ def main():
     parser.add_argument("--eval-every", type=int, default=500)
     parser.add_argument("--diffusion-steps", type=int, default=100)
     parser.add_argument("--sampling-steps", type=int, default=40)
+    parser.add_argument("--parameterization", choices=("epsilon", "v"), default="epsilon")
     parser.add_argument("--eval-candidates", type=int, nargs="+", default=[1, 2, 4, 8])
     parser.add_argument("--final-repeats", type=int, default=3)
     parser.add_argument("--latency-requests", type=int, default=20)
