@@ -91,7 +91,7 @@ CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 \
 
 `observations.jsonl`（严格5字段）与 `supervision.jsonl` 分离；当前观测npz含深度、相机和夹爪状态，监督npz才含未来路径，目标坐标和目标index仅在supervision用于训练监督/评价。父场景划分同时约束图像、语言和所有路线变体。参考集不完整，未匹配路线不得当不存在。审计结果与全数据文件hash在 `reports/observation_reach32_audit/`；hash清单自身SHA256为 `b6cb09f782d8bd8d3755ec33671cf6399bf7d5c2a57c7a47b52e6b3d9c93e81b`。首父场景从不同进程、相同种子独立重建的RGB SHA256一致。
 
-每指令成功参考条数分布：88条指令有3条参考、5条有2条、1条有1条、2条没有成功参考。TRAIN保存208条路线、DEV_MODEL保存67条。没有参考的2条不是无解标签；路径监督训练/评价需明确报告排除计数。96条观测指令仍全部保留并缓存Qwen，避免把规划器采集失败误写成语义目标不存在。32场景初图montage已检查，见 `reports/observation_32scene_montage.png`；实例mask可见率尚未量化。
+每指令成功参考条数分布：88条指令有3条参考、5条有2条、1条有1条、2条没有成功参考。TRAIN保存208条路线、DEV_MODEL保存67条。没有参考的2条不是无解标签；它们不能参与参考路径loss/ADE，但必须保留在有独立目标标签的语义评价中。96条观测指令仍全部保留并缓存Qwen，避免把规划器采集失败误写成语义目标不存在。32场景初图montage已检查，见 `reports/observation_32scene_montage.png`；实例mask可见率尚未量化。
 
 ![真实观测和采集路线](observation_real_rollouts.png)
 
@@ -117,3 +117,40 @@ CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 \
 | observation_derived_reach_pilot_20261002d | 9/9成功且完整恢复0差 | 启动32父正式pilot |
 | observation_rlbench_pilot_20261002c | reach采集成功，切换pick_and_lift时模型句柄不存在 | 在停止状态导入新任务；以d版重新核验四任务 |
 | observation_derived_reach32_20261002 | Python采集与数据审计完成，但外层wrapper实际退出1 | 运行期间为补source冻结而修改了shell，Python结束后bash读剩余行时报unexpected EOF；保留为 `collection_complete_wrapper_failed`，不伪记exit0。275轨迹、summary与hash审计均已完整写出；后续使用不可变wrapper/commit release |
+
+### 冻结Qwen普通头失败后的实测定位
+
+`runs/observed_frozen_v1/seed0` 的best checkpoint为750步；本轮使用CPU1重新读取实际checkpoint并同时评价TRAIN和DEV_MODEL，没有改动3cm验收标准。94条有路线监督的指令参与路径评价（TRAIN71、DEV23）；无成功参考的两条仍保留但不计入路径训练/评价。
+
+| checkpoint / split | 轨迹ADE (m) | 候选终点误差 (m) | 严格语义目标正确率 | 仅最近目标身份（诊断，不是成功率） |
+|---|---:|---:|---:|---:|
+| best750 TRAIN | 0.06451 | 0.12675 | 2.11% | 88.73% |
+| best750 DEV_MODEL | 0.09966 | 0.19544 | 0% | 81.52% |
+| last1000 TRAIN | 0.05552 | 0.10751 | 3.17% | 88.38% |
+| last1000 DEV_MODEL | 0.11156 | 0.22283 | 0% | 56.52% |
+
+结论是米制定位不足并伴随后期过拟合；不能把它简化为训练集已经掌握任务。best模型在TRAIN本身仍有12.7cm终点误差。同图仅换语言时，TRAIN/DEV平均终点响应分别28.55/28.49cm，说明语言并未被完全忽略；但每组4候选的终点分散度只有约6mm，也未产生可靠的新方案。
+
+RGB-D与标签核验：96/96目标中心投影在图像内；目标中心到最近观测表面平均22.24mm、最大22.97mm，中心射线观测点到目标最大25.70mm，与球表面到球心距离相符。PyRep内参负焦距是其约定，按原符号反投影、外参按camera-to-world、无上下翻转，可以得到一致的世界坐标。此诊断使用真实目标坐标仅核验数据，绝不进入模型条件。它不等于实例mask可见率或完整遮挡证明，但不支持“全部目标不可见/坐标系整体错误导致约20cm误差”的解释。
+
+诊断源为 `scripts/observation_diagnose_head.py`，汇总、逐场景与可重建预测在 `reports/observation_head_diagnostic/`；服务器同目录包含实际预测NPZ，普通Git按既有规则不收录NPZ。复现：
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+PYTHONPATH=<recorded-release> .venv/bin/python -m scripts.observation_diagnose_head \
+  --run runs/observed_frozen_v1/seed0 --output reports/observation_head_diagnostic
+```
+
+据此实现常规观测定位修复：`routeset/observed_geometry.py` 从当前RGB-D、原相机参数产生12,544个无标签观测点；冻结Qwen条件与当前夹爪状态对可训练点特征作空间attention，产生学习的表面anchor和128维上下文。已有普通集合头共享该上下文；终点为预测anchor加逐坐标有界残差（默认5cm），起点仍为当前夹爪位置。该模块是强观测基线的输入修复，**不是论文核心创新**；未增加真实目标、实例分割标签、完整几何或路径答案输入。
+
+`scripts/train_observed_geometry.py` 默认与原头对齐1000步、batch32、K4、128维头和2层集合块，保留相同已知正例匹配目标及DEV选择标准。总参数1,231,965，其中观测几何321,537。仅缓存原始观测点；可训练点编码每步重算。训练支持完整模型、AdamW、调度器、随机状态、采样器和曝光量恢复，保存best/last。记录原始RGB-D读盘/反投影、geometry与头的单请求时延；明确Qwen编码须另外计入总延迟，尚不冒称端到端机器人系统时延。
+
+CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后向和参数更新0.167秒，点编码、任务query和路径输出参数确实更新；小配置4步完整训练与2步中断后恢复2步的最终模型逐位相同。详见 `reports/observation_geometry_validation.json`。这证明实现和恢复链路可运行；geometry版本的训练收益需由随后固定commit的真实GPU实验判定。
+
+### 评价协议修复：observation_eval_v2
+
+发现并修复了真实分母错误：最初loader因规划器未采到参考而同时删除了两条观测，导致DEV语义只评23条。参考集不完整不意味着目标不存在，因此新版保留全部96观测，TRAIN loss仍只用71条有参考指令；DEV语义评价改为24条，参考ADE/终点/事件仍只统计原23条，缺参考行这些指标为null，不当作失败或有效。
+
+严格颜色身份和3cm阈值完全不变，DEV checkpoint选择仍基于原23条参考ADE。旧23条历史输出完整保留。CPU已用原冻结头best750权重重新评价：24条严格语义仍0%，23条参考ADE仍0.09965624m、终点误差仍0.19544326m。新增证据在 `reports/observation_eval_v2/observed_frozen_v1_seed0/`，包含metrics、逐场景、原checkpoint/config SHA、原训练release和实际评价源SHA；没有覆盖旧训练summary。该目录的TRAIN子目录保留71条有参考训练样本诊断；新geometry训练结束会另对完整72条TRAIN观测评价，参考指标分母71。
+
+新版loader/指标与geometry共12项CPU测试通过，特别验证无参考语义失败会降低完整分母、无参考ADE保持null、输入数量不减少。真实数据确认TRAIN监督71、DEV全部24，其中23有参考。新版geometry完整4步与中断恢复再次逐位相同，见 `reports/observation_geometry_validation_v2.json`。在线冻结/LoRA对照必须使用其实际骨干按同协议重评，不能用旧冻结缓存替代已微调骨干。

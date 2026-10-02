@@ -20,6 +20,7 @@ from .models import _RouteBlock
 QWEN_REVISION = "89644892e4d85e24eaac8bacfd4f463576704203"
 OBSERVATION_KEYS = {"id", "parent_id", "split", "image", "instruction"}
 CACHE_KEYS = {"mean_hidden", "last_hidden", "id", "parent_id", "split", "image_sha256", "input_tokens"}
+OBSERVATION_EVAL_PROTOCOL = "observation_eval_v2"
 
 
 def resample_event_segments(poses, gripper_open, horizon=24):
@@ -85,7 +86,7 @@ def load_observed_dataset(observations, supervision, cache_dir, horizon=24, pool
     if pooling not in ("mean", "last", "both"):
         raise ValueError("pooling must be mean, last or both")
     source_hashes = {str(observations): sha256(observations), str(supervision): sha256(supervision), str(config_path): sha256(config_path)}
-    samples, skipped, seen, parent_splits = [], [], set(), {}
+    samples, skipped, unreferenced, seen, parent_splits = [], [], [], set(), {}
     for row in rows:
         if set(row) != OBSERVATION_KEYS or row["id"] in seen:
             raise ValueError("observation manifest must have unique ids and exactly observation-only fields")
@@ -101,8 +102,9 @@ def load_observed_dataset(observations, supervision, cache_dir, horizon=24, pool
         if label["parent_id"] != parent or label.get("split", row["split"]) != row["split"]:
             raise ValueError("supervision identity/split mismatch")
         if not label.get("routes"):
-            skipped.append(dict(id=row["id"], reason="no_successful_reference_routes"))
-            continue
+            # A failed collector does not remove this observation from semantic
+            # evaluation, and is never a label that no valid route exists.
+            unreferenced.append(dict(id=row["id"], split=row["split"], reason="no_successful_reference_routes"))
         row_key = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()[:20]
         cache_path = cache_dir / (row_key + ".npz")
         with np.load(cache_path, allow_pickle=False) as archive:
@@ -123,7 +125,7 @@ def load_observed_dataset(observations, supervision, cache_dir, horizon=24, pool
             # accidentally entering a convenient flattened observation vector.
             current = np.r_[observation["gripper_pose"].reshape(7), observation["gripper_open"].reshape(1)].astype(np.float32)
         paths, events = [], []
-        for filename in label["routes"]:
+        for filename in label.get("routes", []):
             route_path = _resolve(supervision.parent, filename)
             with np.load(route_path, allow_pickle=False) as archive:
                 path, event = resample_event_segments(archive["gripper_pose"], archive["gripper_open"], horizon)
@@ -146,14 +148,16 @@ def load_observed_dataset(observations, supervision, cache_dir, horizon=24, pool
     mask = np.zeros((len(samples), reference_count), dtype=bool)
     for row, sample in enumerate(samples):
         count = len(sample["paths"])
-        paths[row, :count], events[row, :count], mask[row, :count] = sample["paths"], sample["events"], True
+        if count:
+            paths[row, :count], events[row, :count], mask[row, :count] = sample["paths"], sample["events"], True
     fingerprint = hashlib.sha256(json.dumps(source_hashes, sort_keys=True).encode()).hexdigest()
     return dict(features=np.stack([s["feature"] for s in samples]), current=np.stack([s["current"] for s in samples]),
                 paths=paths, events=events, path_mask=mask, splits=np.asarray([s["split"] for s in samples]),
                 scene_ids=np.asarray([s["id"] for s in samples]), parent_ids=np.asarray([s["parent_id"] for s in samples]),
                 semantic_targets=[s["semantic_targets"] for s in samples], image_hashes=np.asarray([s["image_hash"] for s in samples]),
                 instructions=[s["instruction"] for s in samples], skipped=skipped, source_hashes=source_hashes,
-                fingerprint=fingerprint, cache_config=cache_config)
+                fingerprint=fingerprint, cache_config=cache_config, unreferenced=unreferenced,
+                evaluation_protocol=OBSERVATION_EVAL_PROTOCOL)
 
 
 class ObservedRouteHead(nn.Module):

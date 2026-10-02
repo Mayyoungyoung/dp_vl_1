@@ -19,7 +19,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from routeset.common import seed_all, sha256, write_json
-from routeset.observed_route_head import (ObservedRouteHead, QWEN_REVISION,
+from routeset.observed_route_head import (ObservedRouteHead, QWEN_REVISION, OBSERVATION_EVAL_PROTOCOL,
     resample_event_segments)
 from routeset.train_v2 import (atomic_checkpoint, positive_assignment_loss,
     restore_rng, rng_state, synchronized_time)
@@ -169,16 +169,20 @@ def load_raw_observations(observations, supervision, horizon):
     if len(labels) != len(label_rows):
         raise ValueError("duplicate supervision id")
     hashes = {str(observations): sha256(observations), str(supervision): sha256(supervision)}
-    samples, skipped = [], []
+    samples, skipped, unreferenced = [], [], []
     for row in rows:
         if row["split"] not in ("TRAIN", "DEV_MODEL"):
             continue
         label = labels.get(row["id"])
-        if label is None or not label.get("routes"):
-            skipped.append(dict(id=row["id"], reason="missing_supervision_or_successful_routes"))
+        if label is None:
+            skipped.append(dict(id=row["id"], reason="missing_supervision"))
             continue
         if label["parent_id"] != row["parent_id"] or label.get("split", row["split"]) != row["split"]:
             raise ValueError("supervision identity/split mismatch")
+        if not label.get("routes"):
+            # Collection failure does not remove a semantic evaluation input.
+            # It also does not mean that no feasible route exists.
+            unreferenced.append(dict(id=row["id"], split=row["split"], reason="no_successful_reference_routes"))
         image = resolve(observations.parent, row["image"])
         current_file = resolve(supervision.parent, label["observation"])
         with np.load(current_file, allow_pickle=False) as archive:
@@ -187,7 +191,7 @@ def load_raw_observations(observations, supervision, horizon):
         if not np.isfinite(current).all():
             raise ValueError("non-finite current gripper state")
         paths, events = [], []
-        for filename in label["routes"]:
+        for filename in label.get("routes", []):
             route = resolve(supervision.parent, filename)
             with np.load(route, allow_pickle=False) as archive:
                 xyz, opened = resample_event_segments(archive["gripper_pose"], archive["gripper_open"], horizon)
@@ -207,14 +211,16 @@ def load_raw_observations(observations, supervision, horizon):
     mask = np.zeros((len(samples), max_refs), dtype=bool)
     for index, sample in enumerate(samples):
         count = len(sample["paths"])
-        paths[index, :count], events[index, :count], mask[index, :count] = sample["paths"], sample["events"], True
+        if count:
+            paths[index, :count], events[index, :count], mask[index, :count] = sample["paths"], sample["events"], True
     fingerprint = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
     return dict(current=np.stack([sample["current"] for sample in samples]), paths=paths, events=events,
                 path_mask=mask, scene_ids=np.asarray([s["id"] for s in samples]),
                 parent_ids=np.asarray([s["parent_id"] for s in samples]), splits=np.asarray([s["split"] for s in samples]),
                 image_paths=[s["image_path"] for s in samples], image_hashes=np.asarray([s["image_hash"] for s in samples]),
                 instructions=[s["instruction"] for s in samples], semantic_targets=[s["semantic_targets"] for s in samples],
-                source_hashes=hashes, fingerprint=fingerprint, skipped=skipped)
+                source_hashes=hashes, fingerprint=fingerprint, skipped=skipped,
+                unreferenced=unreferenced, evaluation_protocol=OBSERVATION_EVAL_PROTOCOL)
 
 
 def online_feature(backbone, processor, image_path, instruction, device, pooling):
@@ -294,7 +300,8 @@ def train(args):
     if provenance.get("model_id") != "Qwen/Qwen3-VL-2B-Instruct" or provenance.get("revision") != QWEN_REVISION or not provenance.get("all_hashes_verified"):
         raise ValueError("Pinned official model/processor provenance required")
     data = load_raw_observations(args.observations, args.supervision, args.horizon)
-    train_ids, dev_ids = [np.flatnonzero(data["splits"] == split) for split in ("TRAIN", "DEV_MODEL")]
+    train_ids = np.flatnonzero((data["splits"] == "TRAIN") & data["path_mask"].any(axis=1))
+    dev_ids = np.flatnonzero(data["splits"] == "DEV_MODEL")
     if not len(train_ids) or not len(dev_ids) or set(data["parent_ids"][train_ids]) & set(data["parent_ids"][dev_ids]):
         raise ValueError("Nonempty parent-disjoint TRAIN and DEV_MODEL required")
     out = Path(args.output)
@@ -351,7 +358,8 @@ def train(args):
             objective="saturation assignment on xyz and event_scale*open probability; same as frozen route head",
             effective_batch=args.batch_size * args.accumulation, selection_split="DEV_MODEL", selection_metric="negative candidate_matched_ADE_m",
             train_examples=len(train_ids), dev_examples=len(dev_ids), train_parents=len(set(data["parent_ids"][train_ids])),
-            dev_parents=len(set(data["parent_ids"][dev_ids])), skipped_supervision=data["skipped"])
+            dev_parents=len(set(data["parent_ids"][dev_ids])), skipped_supervision=data["skipped"],
+            unreferenced_observations=data["unreferenced"], evaluation_protocol=OBSERVATION_EVAL_PROTOCOL)
         rng, sampler = np.random.default_rng(args.seed), np.random.default_rng(args.seed + 100000)
         first, best, elapsed_before, setup_before, exposures, requests, history = 0, -float("inf"), 0., 0., 0, 0, []
         if args.resume:

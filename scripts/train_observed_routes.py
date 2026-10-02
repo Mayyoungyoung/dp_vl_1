@@ -10,7 +10,7 @@ import torch
 
 from routeset.common import seed_all, sha256, write_json
 from routeset.observed_route_head import (ObservedRouteHead, load_observed_dataset,
-                                         semantic_endpoint_accuracy)
+                                         semantic_endpoint_accuracy, OBSERVATION_EVAL_PROTOCOL)
 from routeset.train_v2 import (atomic_checkpoint, positive_assignment_loss, restore_rng,
                               rng_state, synchronized_time)
 
@@ -25,29 +25,36 @@ def observation_metrics(paths, opened, data, ids):
     for row, idx in enumerate(ids):
         references = data["paths"][idx, data["path_mask"][idx]]
         events = data["events"][idx, data["path_mask"][idx]]
-        distances = np.linalg.norm(paths[row, :, None] - references[None], axis=-1).mean(axis=-1)
-        nearest = distances.argmin(axis=1)
-        endpoints = np.linalg.norm(paths[row, :, None, -1] - references[None, :, -1], axis=-1)
-        event_match = [event_sequence(candidate) == event_sequence(events[target]) for candidate, target in zip(opened[row], nearest)]
+        reference_metrics = dict(candidate_matched_ADE_m=None, reference_matched_ADE_m=None,
+                                 candidate_endpoint_error_m=None, best_endpoint_error_m=None,
+                                 event_state_accuracy=None, event_sequence_accuracy=None)
+        if len(references):
+            distances = np.linalg.norm(paths[row, :, None] - references[None], axis=-1).mean(axis=-1)
+            nearest = distances.argmin(axis=1)
+            endpoints = np.linalg.norm(paths[row, :, None, -1] - references[None, :, -1], axis=-1)
+            event_match = [event_sequence(candidate) == event_sequence(events[target]) for candidate, target in zip(opened[row], nearest)]
+            reference_metrics.update(candidate_matched_ADE_m=float(distances.min(axis=1).mean()),
+                reference_matched_ADE_m=float(distances.min(axis=0).mean()),
+                candidate_endpoint_error_m=float(endpoints.min(axis=1).mean()), best_endpoint_error_m=float(endpoints.min()),
+                event_state_accuracy=float(np.mean((opened[row] > .5) == (events[nearest] > .5))),
+                event_sequence_accuracy=float(np.mean(event_match)))
         semantics = semantic_endpoint_accuracy(paths[row, :, -1], data["semantic_targets"][idx])
         rows.append(dict(scene_id=str(data["scene_ids"][idx]), parent_id=str(data["parent_ids"][idx]),
-                         candidate_matched_ADE_m=float(distances.min(axis=1).mean()),
-                         reference_matched_ADE_m=float(distances.min(axis=0).mean()),
-                         candidate_endpoint_error_m=float(endpoints.min(axis=1).mean()),
-                         best_endpoint_error_m=float(endpoints.min()),
-                         event_state_accuracy=float(np.mean((opened[row] > .5) == (events[nearest] > .5))),
-                         event_sequence_accuracy=float(np.mean(event_match)),
+                         reference_count=len(references), **reference_metrics,
                          semantic_goal_accuracy=None if semantics is None else float(semantics.mean()),
                          AnySemanticGoalAtK=None if semantics is None else float(semantics.any()),
                          SelectedSemanticGoalAtK=None, ValidAtK=None, AnyValidAtK=None,
                          UniqueValidAtK=None, ReferenceCoverageAtK=None, SelectedValidAtK=None))
     result = {}
     for key in rows[0]:
-        if key in ("scene_id", "parent_id"):
+        if key in ("scene_id", "parent_id", "reference_count"):
             continue
         values = [row[key] for row in rows if row[key] is not None]
         result[key] = float(np.mean(values)) if values else None
     result.update(examples=len(ids), parents=len(set(data["parent_ids"][ids])), candidates=int(paths.shape[1]),
+                  evaluation_protocol=OBSERVATION_EVAL_PROTOCOL,
+                  reference_evaluation_examples=sum(row["reference_count"] > 0 for row in rows),
+                  examples_without_reference=sum(row["reference_count"] == 0 for row in rows),
                   semantic_evaluation_examples=sum(row["semantic_goal_accuracy"] is not None for row in rows),
                   geometry_validation="not implemented; no validity or route-type claims",
                   endpoint_semantics="predicted final end-effector xyz; target identities only used for evaluation")
@@ -139,7 +146,7 @@ def train(args):
         torch.cuda.reset_peak_memory_stats()
     seed_all(args.seed)
     data = load_observed_dataset(args.observations, args.supervision, args.cache_dir, args.horizon, args.pooling)
-    train_ids = np.flatnonzero(data["splits"] == "TRAIN")
+    train_ids = np.flatnonzero((data["splits"] == "TRAIN") & data["path_mask"].any(axis=1))
     dev_ids = np.flatnonzero(data["splits"] == "DEV_MODEL")
     if not len(train_ids) or not len(dev_ids):
         raise ValueError("parent-disjoint TRAIN and DEV_MODEL examples are required; DEV_COLLECTION cannot be relabelled silently")
@@ -167,6 +174,7 @@ def train(args):
                       event_loss="MSE on scaled gripper-open probability within positive assignment",
                       train_parents=len(set(data["parent_ids"][train_ids])), dev_parents=len(set(data["parent_ids"][dev_ids])),
                       train_examples=len(train_ids), dev_examples=len(dev_ids), skipped_supervision=data["skipped"],
+                      unreferenced_observations=data["unreferenced"], evaluation_protocol=OBSERVATION_EVAL_PROTOCOL,
                       cache_config=data["cache_config"])
         model = ObservedRouteHead(config["feature_dim"], args.horizon, args.candidates, args.width, args.depth).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
