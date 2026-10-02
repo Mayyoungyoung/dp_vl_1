@@ -130,6 +130,7 @@ def main():
     observation_folders += [p.name for p in reports.glob('observed_obstacle_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_online_geometry_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_anchor_*') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_natural_reserved*') if p.is_dir()]
     for folder in observation_folders:
         for source in sorted((reports/folder).rglob('summary.json')):
             result=json.loads(source.read_text()); metrics=result['metrics']
@@ -154,6 +155,17 @@ def main():
                 RGBD_Qwen_generation_ms=metrics.get('online_request_ms_median'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
                 source=str(source.relative_to(root))))
+    for source in sorted((reports/'observed_natural_fresh_dev_v1').glob('*/metrics.json')):
+        metrics=json.loads(source.read_text()); provenance=json.loads((source.parent/'provenance.json').read_text())
+        rows.append(dict(tier='observed_RGBD_language_current',task='RLBench_derived_reach_three_targets_fresh16DEV',
+            protocol=metrics['evaluation_protocol'],checkpoint_selection_protocol=provenance['checkpoint_selection_protocol'],
+            method=provenance['method'],seed=provenance['seed'],split='DEV_MODEL',K=metrics['candidates'],
+            run_id=provenance['source_training_run'],selected_step=metrics['checkpoint_step'],
+            candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
+            semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+            reference_evaluation_examples=metrics['reference_evaluation_examples'],semantic_evaluation_examples=metrics['semantic_evaluation_examples'],
+            cost_scope='unchanged old64 best checkpoint transfer to fresh16 DEV; no additional training or new selection; not locked TEST',
+            code_commit=provenance['source_training_commit'],source=str(source.relative_to(root))))
     for source in sorted((reports/'observed_anchor_fixed_step1000_v1').glob('*/*/metrics.json')):
         metrics=json.loads(source.read_text()); provenance=json.loads((source.parent/'provenance.json').read_text())
         rows.append(dict(tier='observed_RGBD_language_current',

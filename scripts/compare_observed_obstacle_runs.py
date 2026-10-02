@@ -68,7 +68,11 @@ def plot_all_dev(data, predictions, destination):
     ids = sorted(labels, key=lambda item: (labels[item]["parent_id"], labels[item]["semantic_targets"]["target_index"]))
     if len(parents) != 4 or len(ids) != 12:
         raise ValueError("this prespecified plot requires all four pilot DEV parents and all twelve target instructions")
-    colors = {"plain": "#3677b7", "aux": "#d85f37"}
+    # Historical two-arm colors stay fixed; named traditional or new learned
+    # controls can use the same complete, prespecified 12-instruction display.
+    palette = ["#3677b7", "#d85f37", "#28976a", "#8656a8"]
+    colors = {name: {"plain": "#3677b7", "aux": "#d85f37"}.get(name, palette[index % len(palette)])
+              for index, name in enumerate(predictions)}
     for plane, axes_index in [("xy", (0, 1)), ("xz", (0, 2))]:
         figure, axes = plt.subplots(4, 3, figsize=(13, 15))
         for index, identifier in enumerate(ids):

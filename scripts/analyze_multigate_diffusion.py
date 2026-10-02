@@ -110,6 +110,9 @@ def analyze(args):
                 "eval_every", "diffusion_steps", "sampling_steps", "eval_candidates", "final_repeats", "source_hashes"):
         if configs["independent"][key] != configs["set_diffusion"][key]:
             raise ValueError("paired configuration mismatch: " + key)
+    parameterizations = {config.get("parameterization", "epsilon") for config in configs.values()}
+    if len(parameterizations) != 1:
+        raise ValueError("paired parameterization mismatch")
     if summaries["independent"]["trajectory_exposures"] != baseline_summary["trajectory_exposures"]:
         raise ValueError("regression/diffusion gradient-slot mismatch")
     comparisons = {}
@@ -132,7 +135,8 @@ def analyze(args):
         fairness="same data/information/768000 target slots; regression freely matches full positive pool, diffusion samples balanced positives; different active parameters/forwards and CPU allocations",
         timing_caution="old regression head latency excludes exact checker; diffusion measured request includes transfer and checker; do not quote speedup as identical timing scope",
         train_cpu_caution="historical regression trainer used4 torch CPU threads; diffusion uses1, so wall-clock training cost is measured but not a compute-matched superiority test",
-        metadata_source=str(metadata), binary_source=str(runs), regression_metadata_source=str(baseline_metadata))
+        metadata_source=str(metadata), binary_source=str(runs), regression_metadata_source=str(baseline_metadata),
+        parameterization=next(iter(parameterizations)))
     write_json(args.output, result)
     destination = Path(args.figures)
     destination.mkdir(parents=True, exist_ok=True)
@@ -143,6 +147,7 @@ def analyze(args):
 
 def markdown(result):
     lines = ["# Multigate扩散对照：seed0开发筛选", "", result["protocol"], "",
+        "训练参数化：`%s`。不同参数化的训练loss不可直接比较数值。" % result.get("parameterization", "epsilon"), "",
         "以下3次重复为同一训练checkpoint的独立采样，不是3个训练种子；每次只生成K条后单独评价。", "",
         "| 方法 | K | Valid | AnyValid | UniqueValid | ReferenceCoverage | 最优步 | 目标槽 |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
     b = result["regression_parent_metrics"]
@@ -159,7 +164,7 @@ def markdown(result):
         u = comparison["unique_valid"]
         lines.append("| %s | %.6f | [%.6f, %.6f] | %.6f |" % (label, u["mean"], *u["parent_bootstrap95"], comparison["valid_rate"]["mean"]))
     lines += ["", "区间只重采样当前DEV父场景，不能量化训练种子不确定性或将已用于选择的DEV变成测试。", "",
-        "## 收敛与成本", "", "| 方法 | 总elapsed秒 | GPU小时 | active参数 | 最后3次DEV UniqueValid | 最后3次epsilon loss |", "|---|---:|---:|---:|---|---|"]
+        "## 收敛与成本", "", "| 方法 | 总elapsed秒 | GPU小时 | active参数 | 最后3次DEV UniqueValid | 最后3次训练loss |", "|---|---:|---:|---:|---|---|"]
     for arm, summary in result["summaries"].items():
         tail = result["histories"][arm][-3:]
         lines.append("| %s | %.3f | %.6f | %d | %s | %s |" % (arm, summary["elapsed_s"], summary["gpu_hours_reserved"], summary["active_parameters"],
@@ -196,7 +201,7 @@ def plot_results(destination, result, values, data, ids, examples, baseline, par
         axes[0].plot(steps, [r["loss"] for r in history], marker="o", label=arm)
         axes[1].plot(steps, [r["dev_model"]["unique_valid"] for r in history], marker="o", label=arm)
     axes[1].axhline(result["regression_parent_metrics"]["unique_valid"], color="black", linestyle="--", label="regression best")
-    for ax, label in zip(axes, ("epsilon MSE, tail200", "DEV K4 UniqueValid, fixed noise seed")):
+    for ax, label in zip(axes, (result.get("parameterization", "epsilon") + " MSE, tail200", "DEV K4 UniqueValid, fixed noise seed")):
         ax.set(xlabel="Training steps", ylabel=label)
         ax.grid(alpha=.2)
         ax.legend()
