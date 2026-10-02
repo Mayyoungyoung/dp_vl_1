@@ -1,0 +1,172 @@
+import copy
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+from scripts import train_observed_two_row_cosine as cosine
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def policy():
+    def unique(pairs):
+        assert len(dict(pairs))==len(pairs),'Duplicate JSON key'
+        return dict(pairs)
+    return json.loads((ROOT/'configs/observed_two_row_cosine_v1.json').read_text(),object_pairs_hook=unique)
+
+
+def metadata():
+    values={key:'fixed' for key in cosine.POLICY_FIELDS}
+    values.update(cosine_protocol=cosine.PROTOCOL,cosine_schedule=cosine.SCHEDULE,cosine_total_steps=200)
+    return values
+
+
+def state(step=2,total=200):
+    return dict(cosine_schedule=cosine.SCHEDULE,cosine_total_steps=total,last_epoch=step,
+        _cosine_initializing=False,_step_count=step+1,
+        used_lrs=[[.0003*cosine.factor(i,total)] for i in range(step)],base_lrs=[.0003],
+        _last_lr=[.0003*cosine.factor(step,total)])
+
+
+def test_policy_exact_budget_and_lr_phase():
+    p=cosine.validate_policy(policy())
+    assert p['total_steps']*p['batch_size']*p['candidates']==1536000
+    assert p['total_steps']//p['eval_every']==48
+    assert (cosine.factor(0,12000),cosine.factor(6000,12000),cosine.factor(12000,12000))==(1.,.5,0.)
+    assert cosine.factor(11999,12000)>0
+    assert p['expected_sample_stream_audit']['observation_draws']==384000
+
+
+@pytest.mark.parametrize('key,value',[('total_steps',6000),('warmup_steps',1),('restart_count',1),('lr_floor',.00001),
+    ('batch_size',64),('seed',1),('eval_every',500),('data','different'),('reference_run','different')])
+def test_policy_rejects_extra_schedule_or_budget_choices(key,value):
+    p=policy();p[key]=value
+    with pytest.raises(ValueError):cosine.validate_policy(p)
+
+
+def test_lr_trace_requires_actual_full_prefix_and_correct_phase():
+    assert len(cosine.validate_lr_state(state(),200,2))==2
+    for changed in (dict(state(),used_lrs=[]),dict(state(),cosine_schedule='constant'),dict(state(),last_epoch=1),
+                    dict(state(),_last_lr=[0.]),dict(state(),used_lrs=[[.0003],[.0003]])):
+        with pytest.raises(ValueError):cosine.validate_lr_state(changed,200,2)
+    with pytest.raises(ValueError):cosine.factor(12001,12000)
+
+
+def test_resume_rejects_constant_changed_source_total_or_schedule():
+    config=dict(metadata(),steps=200,lr=.0003)
+    saved=dict(config=dict(config),scheduler=state(),step=2)
+    cosine.validate_resume(config,saved,200)
+    for key in cosine.POLICY_FIELDS:
+        changed=copy.deepcopy(saved);changed['config'][key]='changed'
+        with pytest.raises(ValueError):cosine.validate_resume(config,changed,200)
+    with pytest.raises(ValueError):cosine.validate_resume(config,dict(saved,config={'steps':200}),200)
+    with pytest.raises(ValueError):cosine.validate_resume(config,saved,400)
+    scaled=copy.deepcopy(saved)
+    scaled['scheduler']['base_lrs']=[.0006]
+    scaled['scheduler']['used_lrs']=[[2*x for x in row] for row in scaled['scheduler']['used_lrs']]
+    scaled['scheduler']['_last_lr']=[2*x for x in scaled['scheduler']['_last_lr']]
+    with pytest.raises(ValueError,match='base LR'):cosine.validate_resume(config,scaled,200)
+
+
+def test_same_sampler_counts_cannot_replace_same_initialization_and_chain():
+    p=policy();stream=p['expected_sample_stream_audit']
+    cfg={key:'same' for key in cosine.shared.CONFIG_FIELDS};cfg['steps']=12000
+    saved=dict(step=12000,config=cfg,trajectory_exposures=1536000,
+        sample_stream_audit=stream,rng={'x':np.array([1,2])},sampler_state={'x':42},
+        history=[dict(step=i) for i in range(250,12001,250)],scheduler=state(12000,12000))
+    ref=copy.deepcopy(saved)
+    summary=dict(last_step=12000,trajectory_exposures=1536000,sample_stream_audit=stream)
+    assert cosine.validate_finished(p,saved,ref,summary)['passed']
+    for key in ('initial_model_sha256','initial_torch_cpu_rng_sha256','initial_sampler_state_sha256','index_chain_sha256'):
+        changed=copy.deepcopy(saved);changed['sample_stream_audit'][key]='different'
+        with pytest.raises(ValueError,match='sequence'):cosine.validate_finished(p,changed,ref,summary)
+    changed=copy.deepcopy(saved);changed['rng']['x'][0]=9
+    with pytest.raises(ValueError,match='RNG'):cosine.validate_finished(p,changed,ref,summary)
+    changed=copy.deepcopy(saved);changed['history'].pop()
+    with pytest.raises(ValueError,match='budget'):cosine.validate_finished(p,changed,ref,summary)
+
+
+def test_scheduler_real_torch_trace_restore_and_constant_equivalence():
+    torch=pytest.importorskip('torch')
+    klass=torch.optim.lr_scheduler.LambdaLR
+    parameter=torch.nn.Parameter(torch.tensor([1.]))
+    optimizer=torch.optim.AdamW([parameter],lr=.0003)
+    scheduler=cosine.make_scheduler(klass,optimizer,6)
+    assert optimizer.param_groups[0]['lr']==.0003
+    for _ in range(2):
+        optimizer.zero_grad();parameter.square().sum().backward();optimizer.step();scheduler.step()
+    saved_opt=copy.deepcopy(optimizer.state_dict());saved_lr=copy.deepcopy(scheduler.state_dict())
+    cosine.validate_lr_state(saved_lr,6,2)
+    other=torch.optim.AdamW([torch.nn.Parameter(parameter.detach().clone())],lr=.0003)
+    resumed=cosine.make_scheduler(klass,other,6);other.load_state_dict(saved_opt);resumed.load_state_dict(saved_lr)
+    assert not cosine.shared.state_differences(scheduler.state_dict(),resumed.state_dict())
+    with pytest.raises(ValueError):resumed.load_state_dict(dict(saved_lr,cosine_schedule='constant'))
+    a=torch.optim.AdamW([torch.nn.Parameter(torch.tensor([1.]))],lr=.0003)
+    b=torch.optim.AdamW([torch.nn.Parameter(torch.tensor([1.]))],lr=.0003)
+    old=klass(a,lambda _:1.);adapter=cosine.make_scheduler(klass,b,6,'constant_test_control')
+    assert old.state_dict()==adapter.state_dict()
+
+
+def test_scoped_adapter_restores_every_reference_after_failure():
+    torch=pytest.importorskip('torch');calls=[]
+    def original(args):calls.append(vars(args));raise RuntimeError('interrupted')
+    original_audit=lambda *args:{}
+    ordinary=SimpleNamespace(base=SimpleNamespace(train=original,new_stream_audit=original_audit))
+    original_scheduler=torch.optim.lr_scheduler.LambdaLR
+    with pytest.raises(RuntimeError):
+        with cosine.schedule_adapter(ordinary,metadata(),{},total_steps=200):
+            ordinary.base.train(SimpleNamespace(steps=1500,output='unused',resume=False))
+    assert ordinary.base.train is original and ordinary.base.new_stream_audit is original_audit
+    assert torch.optim.lr_scheduler.LambdaLR is original_scheduler and calls[0]['steps']==200
+
+
+def test_actual_shared_loop_cosine_continuous_resume_full_state_and_constant_control(tmp_path,monkeypatch):
+    """100-step intervals preserve the unchanged loop's last100-loss history too."""
+    torch=pytest.importorskip('torch')
+    from scripts import train_observed_two_row as ordinary
+    from test_two_row_observation_training import fixture
+    data,geometry,_,sources,labels=fixture(tmp_path,monkeypatch)
+    ids=np.array(['t_target0','t_target1','t_target2'])
+    data={key:(np.concatenate([value,value]) if isinstance(value,np.ndarray) else value*2) for key,value in data.items()}
+    data['scene_ids'][:3]=ids;data['parent_ids'][:3]='t';data['splits']=np.array(['TRAIN']*3+['DEV_MODEL']*3)
+    data.update(tasks=['reach']*6,source_hashes={},cache_config={},skipped=[],unreferenced=[],evaluation_protocol='observation_eval_v2')
+    train_labels=[dict(row,id=str(ids[i]),parent_id='t',split='TRAIN') for i,row in enumerate(labels)]
+    sources[1].write_text(''.join(json.dumps(r)+'\n' for r in train_labels+labels))
+    geometry.update(index=np.zeros(6,dtype=int),fingerprint='fixture',metadata={'source_hashes':{}})
+    monkeypatch.setattr(ordinary.base,'load_observed_dataset',lambda *a,**kw:data)
+    monkeypatch.setattr(ordinary.base,'load_geometry',lambda *a,**kw:geometry)
+    monkeypatch.setattr(ordinary.base,'measure_latency',lambda *a,**kw:{})
+    values=dict(observations=str(sources[0]),supervision=str(sources[1]),cache_dir='fixture',
+        output=str(tmp_path/'full'),steps=1500,batch_size=2,candidates=2,horizon=2,width=16,depth=1,
+        pooling='both',geometry_pooling='spatial',anchor_mode='straight_through_peak',endpoint_mode='surface_anchor',
+        sampling_mode='uniform',metric_aggregation='instruction',refinement_mode='none',refinement_sigma=None,
+        refinement_prefix_fraction=None,refinement_bound=None,checkpoint_selection='tip_unique_valid',point_width=8,
+        pixel_stride=2,endpoint_residual_bound=.05,grounding_weight=.02,grounding_sigma=.025,grounding_target='endpoint',
+        event_scale=.2,lr=3e-4,seed=0,eval_every=100,threads=1,device='cpu',resume=False,stop_after=None,sample_stream_audit=True)
+    values.update({key:'fixture' for key in ('two_row_driver_sha256','two_row_export_sha256','two_row_quality_audit_sha256','two_row_selection_sha256')})
+    def run(name,resume=False,stop=None,kind='cosine',total=200):
+        args=SimpleNamespace(**dict(values,output=str(tmp_path/name),resume=resume,stop_after=stop))
+        with cosine.schedule_adapter(ordinary,metadata(),{},total_steps=total,kind=kind),ordinary.evaluation_adapter(sources):
+            ordinary.base.train(args)
+        return torch.load(tmp_path/name/'last.pt',weights_only=False)
+    full=run('full')
+    run('split',stop=100)
+    resumed=run('split',resume=True)
+    for key in cosine.shared.STATE_FIELDS:
+        assert not cosine.shared.state_differences(full[key],resumed[key],key),key
+    assert len(resumed['scheduler']['used_lrs'])==200
+    # Independent constant adapter must reproduce the unchanged base loop exactly.
+    original_args=SimpleNamespace(**dict(values,output=str(tmp_path/'original'),steps=2,eval_every=2))
+    with ordinary.evaluation_adapter(sources):ordinary.base.train(original_args)
+    original=torch.load(tmp_path/'original/last.pt',weights_only=False)
+    values['eval_every']=2
+    constant=run('constant',kind='constant_test_control',total=2)
+    for key in cosine.shared.STATE_FIELDS:
+        assert not cosine.shared.state_differences(original[key],constant[key],key),key
+    # Source/protocol failure is checked before any resumed training update.
+    bad=copy.deepcopy(resumed);bad['config']['cosine_schedule']='constant'
+    torch.save(bad,tmp_path/'split/last.pt')
+    with pytest.raises(ValueError,match='protocol/source/total'):run('split',resume=True)

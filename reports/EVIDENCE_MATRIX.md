@@ -1,5 +1,19 @@
 # 主张—证据对应表
 
+## 最新证据：2026-10-02 22:15 UTC
+
+实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。
+
+| 主张 | 实际证据 | 判断与边界 |
+|---|---|---|
+| native实现保持原edge算法结果 | 全192历史槽raw/H24/events、确定计数和checker决定一致；74Linux测试通过 | 支持这些输入上的等价，不证明任意输入全局浮点等价 |
+| 标准空间惩罚能增加有用类型 | 同native DEV Unique.6667→1.4444；Tip66.67%→51.39%，Any同24/36 | 真实质量—覆盖取舍；非学习机制贡献 |
+| native空间惩罚提供固定时间优势 | 完整请求中位.6264→.9263s；24失败达20k节点，无timeout | 不支持固定端到端时间优势；下轮100k是不同预算 |
+| cosine恢复/调度实现通过真实门禁 | source71e348，91tests/0skip，3新Torchcases实际成功；逐步LR/基准LR/采样链受限 | 仅工程验证；fresh12000正在运行，尚无研究结果 |
+| 已有新集合方法优势 | completion/refiner/crossgoal失败保留；不新增失败记忆微小机会审计 | 核心贡献仍未成立 |
+
+[native完整证据](OBSERVED_TWO_ROW_NATIVE_ASTAR_RESULTS.md)与[cosine验证](observed_two_row_cosine_validation_v1/VALIDATION_RESULTS.md)均已原字节归档。下一100k两臂传统控制仍在实现。6000/constant12000完整在线Qwen时延未重测；不挪用旧1500时延。以下日期为历史语境。
+
 ## 最新证据：2026-10-02 21:41 UTC
 
 后续唯一神经控制已固定为fresh12000 cosine配对：同初始化/抽样链/189输入/48次选模，无warmup/restart/LR扫描/新seed。状态为实现中、未启动；旧constant原源/结果保留。它是普通强基线修复的证伪实验，尚无LR因果或收益证据。

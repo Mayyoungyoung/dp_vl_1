@@ -1,5 +1,15 @@
 # State — 2026-10-02
 
+## Current checkpoint — 2026-10-02 22:15 UTC
+
+实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。
+
+This block supersedes older running/pending statements below; retain those as history. Native two-arm A* source b184060 is COMPLETE, archived and visually reviewed. All192 historical edge slots match the native implementation in raw/H24/events, deterministic counts and checker decisions. DEV edge/spatial Tip96/144=66.67% versus74/144=51.39%; knownUnique24/36=.6667 versus52/36=1.4444; Any24/36 for both. Full-request median .6264s versus.9263s. Spatial has44attachment failures+24node-cap failures+2finite wrong-goal routes; no timeouts. This is a standard quality–coverage–cost tradeoff, not a learned contribution or fixed-time advantage. Read reports/OBSERVED_TWO_ROW_NATIVE_ASTAR_RESULTS.md.
+
+Cosine source71e34850481b79bdbc828d1c1944f0de00329960 passed91 actual server tests in8.85s,0skip including3newTorch cases. Validation PID592391/592393 ended22:10:54.265947UTC;18evidence items and335source hashes are archived in reports/observed_two_row_cosine_validation_v1. Root separately launched fresh12000 onCPU0/GPU1/35%,SSH99280; RUNNING per the latest launch notification. Do not relaunch or read dependent completion artifacts before actual exit. Same initial tensors/full sample-chain/189TRAIN/K4/H24/1536000states/48DEV choices; only one cosine cycle,no warmup/restart/floor/sweep. No result or LR-causality claim yet.
+
+Next conventional control is one jointly raised100000-node budget for BOTH native arms, being implemented independently. It is a new node-budget setting, not the original20000-node comparison and not proof of fixed end-to-end time advantage. No new set module or failed-memory audit is scheduled. Formal116 remains mechanically complete and reserved raw sealed.
+
 ## 2026-10-02 22:04 UTC：同预算cosine普通控制准备
 
 独立五文件已实现、复审无阻断；本地13pass/3因无Torch而skip。下一步在冻结源码上通过实际Torch恢复等价/历史回归门禁，之后单独启动fresh12000。相同真实Qwen缓存、初始化、189 TRAIN输入完整抽样链、K4/H24、损失、1536000路径状态和48次DEV选择；仅替换为无warmup/restart/floor的单周期cosine。原constant12000记录保持不变。不因新DEV选择更多步/曲线/seed。

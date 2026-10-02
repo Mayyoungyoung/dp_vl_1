@@ -1,5 +1,15 @@
 # Resume
 
+## Latest actual checkpoint — 2026-10-02 22:15 UTC
+
+实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。
+
+Do not restart completed native tests/TRAIN/DEV stages. Read reports/OBSERVED_TWO_ROW_NATIVE_ASTAR_RESULTS.md: edge/spatial DEV Tip66.67%/51.39%,knownUnique.6667/1.4444,Any24/36both;median full request .6264/.9263s. All192 historical edge slots match; spatial24node-cap failures are real20000 expansions,no timeouts. All failed slots/unknowns/wrong goals remain, and this is a traditional control with a quality–coverage–cost tradeoff.
+
+Cosine real validation source71e34850481b79bdbc828d1c1944f0de00329960 completed91tests/0skip including3newTorch cases;root then launched fresh12000 CPU0/GPU1/35% SSH99280. Inspect actual PID/status before any recovery; no duplicate fresh launch, no constant-checkpoint resume, no automatic extension. Wait for actual exit before reading final receipts. Same-source resume alone is permitted after a genuine interruption and PID/lock check; completed sealed pools must never be regenerated. Read reports/observed_two_row_cosine_validation_v1/VALIDATION_RESULTS.md and OBSERVED_TWO_ROW_COSINE_PROTOCOL.md. No cosine research result is yet recorded here.
+
+After actual completion, compare all189TRAIN and36DEV saved best/last pools to constant12000 with0newforward;report exact LR trace,init/samplechain,all48selection opportunities and real costs. The separate100k-node BOTH-arm native control is implementation only and must be frozen/validated before root launch;not equal node budget to20k or fixed end-to-end time evidence. No new learned mechanism or failure-memory audit. Formal116 is closed;reservedraw remains sealed. Root updates MAIN/JOBS/registry/deployments.
+
 ## 2026-10-02 22:04 UTC：同预算cosine普通控制准备
 
 独立五文件已实现、复审无阻断；本地13pass/3因无Torch而skip。下一步在冻结源码上通过实际Torch恢复等价/历史回归门禁，之后单独启动fresh12000。相同真实Qwen缓存、初始化、189 TRAIN输入完整抽样链、K4/H24、损失、1536000路径状态和48次DEV选择；仅替换为无warmup/restart/floor的单周期cosine。原constant12000记录保持不变。不因新DEV选择更多步/曲线/seed。

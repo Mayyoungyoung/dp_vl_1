@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-10-02 22:15 UTC — native conventional tradeoff verified; cosine engineering gate passed and fresh run launched
+
+实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。
+
+Hypothesis: shared native implementation can remove the Python search-time bottleneck without changing either planner. Actual sourceb184060 passed74Linux tests,TRAIN andDEV stages each exit0. Full saved-pool comparison includes every192historical edge slots:raw/H24/events/deterministic counts/checker outcomes all exact. NativeDEV edge/spatial hasTip96/144→74/144,knownUnique24/36→52/36,Any24/36both,classifiedduplicates65→22;full-requestmedian.6264→.9263s.44goal-attachment failures remainboth,spatial adds24actual20000-node caps and0timeouts;4versus2finitewrong-goal routes retained. All12parent figures and288newDEVslots archived/QA. Judgment:more useful traditional coverage with a quality/time cost,not novel learned mechanism or fixed-time superiority. Preserve Python negative and20k source. Next one100k-node BOTH-arm control is independently in implementation;no result yet,clearly different node budget.
+
+Optimization hypothesis remains unproven:one fresh12000 cosine may reduce constant-run late endpoint drift. Source71e348 passed91realserver tests in8.85s,no skip including3Torch cases:actualsharedloop continuous200 versus100+100 resume fullstate/history,andconstant-adapter equivalence. ActualrecordPID592391/59239322:10:44.793556→22:10:54.265947UTC,exit0. Archive18evidence items+335sourcehashes,wrapper byte equality andJUnitcase checks complete. Root then independently launched CPU0/GPU1/35% SSH99280,fresh sameinit/samplechain/189inputs/1536000states/48DEVchoices. Atthisrecord run isnot declaredcomplete;no dependentfinalproductsread,no researchoutcomeinvented. No warmup/restart/floor/LRsweep/newseed. Afterexit analyze allsavedbest/lastTRAIN189/DEV36 with0newforward. No failure-memorymicroaudit ornewsetmodule is scheduled.
+
 ## 2026-10-02 22:04 UTC：同预算cosine普通控制准备
 
 独立五文件已实现、复审无阻断；本地13pass/3因无Torch而skip。下一步在冻结源码上通过实际Torch恢复等价/历史回归门禁，之后单独启动fresh12000。相同真实Qwen缓存、初始化、189 TRAIN输入完整抽样链、K4/H24、损失、1536000路径状态和48次DEV选择；仅替换为无warmup/restart/floor的单周期cosine。原constant12000记录保持不变。不因新DEV选择更多步/曲线/seed。
