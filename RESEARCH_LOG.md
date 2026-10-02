@@ -1,5 +1,27 @@
 # Research log
 
+## 最新实际快照 — 2026-10-02 22:41 UTC
+
+本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。
+
+两臂共同100k/2秒/K4的native传统对照，source42904f0，DEV均Tip96/144=66.67%、Any24/36；edge/spatial已分类不同有效数24/36=.6667、62/36=1.7222，已知类型覆盖.0319444/.0685185。全部36请求首路径相同；两臂均44附着失败+4有限错误目标、0节点上限/0超时。完整请求中位.707706/1.220680秒，共同body57.463680秒；更多类型保留了有效槽率，但请求耗时更高。它是标准传统规划的质量—覆盖—成本取舍，不是新学习核心、不比原20k同节点预算，也不构成固定端到端时间优势。完整100k归档由observation负责；原192edge等价证据保留，新100k不替代它。
+
+cosine同预算12000末步TRAIN Tip94.84%改善拟合，DEV26.39%低于constant43.06%；保留best/last全部结果，停止LR扩展。[完整结果](reports/observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md)。没有新核心方法胜利，也没有12000真实Qwen在线时延重测。formal116 reserved raw持续封存。
+
+下一步仅只读评估独立256TRAIN+32新DEV父的数据扩展成本/去重/最小实现，保留旧12DEV的reused性质；尚未授权采集或修改旧collector。数据规模控制本身不能称方法贡献。
+
+## 2026-10-02 22:21 UTC — cosine配对完成：训练拟合改善，DEV泛化不成立
+
+假设：在同数据、初始权重、抽样链和12000步下，单周期cosine可能缓解恒定LR后期末端漂移。修改：独立scoped日程，仅LR变化；原constant代码/权重/数据/阈值不变；91实际服务器测试含真实Torch恢复/历史等价全部通过。随后root独立fresh运行到12000，未换seed或追加预算。
+
+单次cosine普通控制已实际完成，source71e34850481b79bdbc828d1c1944f0de00329960，PID593217/593221于22:21:21.678075UTC退出0。91服务器测试均通过；初始化、完整384000抽样链及最终RNG/sampler严格同constant12000。两臂均1536000训练路径状态、48次DEV选择，只有LR日程变化。相同64请求TRAIN父中63可观测父/189输入，原缺失父不替换，DEV固定36输入。
+
+固定last12000 TRAIN Tip575/756=76.06%→717/756=94.84%，语义81.75%→98.68%，候选→最近正参考ADE2.791→.785cm；DEV Tip62/144=43.06%→38/144=26.39%、Any28/36→22/36、knownUnique.6389→.4444。cosine原规则best4250 DEV Tip52/144=36.11%、Any27/36、knownUnique.8611；constant best5500为59/144=40.97%、30/36、.8333。保留cosine best多1个跨条件求和已分类有效类型的取舍，不写全面优胜。严格配对支持训练拟合改善，不能支持DEV泛化改善或新集合贡献。
+
+判断：TRAIN末步Tip条件80改善/92相同/17下降，而DEV7改善/9相同/20下降；DEV失败同时有端点及碰撞。cosine TRAIN最后10个端点失败都在3.095–3.498cm；DEV39个端点失败包含16个>6cm，不能统一解释为身份错误。最后3000步DEV Tip仅26.39–31.25%，训练path loss仍降至.000021655。支持该优化调度改善本次训练拟合，否证“更好拟合足以改善此DEV”的预期；不从这一结果推导新的核心模块。
+
+实际执行收尾：原始34文件、12000 LR、完整48次DEV历史、checkpoint索引及189/36四池归档；本地0forward重新聚合，12父36指令全部图逐图QA。base528.534s/.146815 GPUh，外层542.291s；固定lastTRAIN额外189请求756状态已纳入job成本，没有新Qwen。决定停止LR/步数/seed扩展、保留constant；下一独立传统100k共同节点预算控制已由root从42904f0实际启动TRAIN门禁SSH66842，尚无本记录中的结果。详见 reports/observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md。
+
 ## 2026-10-02 22:15 UTC — native conventional tradeoff verified; cosine engineering gate passed and fresh run launched
 
 实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。

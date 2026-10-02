@@ -1,5 +1,25 @@
 # 消融与失败记录
 
+## 最新实际快照 — 2026-10-02 22:41 UTC
+
+本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。
+
+两臂共同100k/2秒/K4的native传统对照，source42904f0，DEV均Tip96/144=66.67%、Any24/36；edge/spatial已分类不同有效数24/36=.6667、62/36=1.7222，已知类型覆盖.0319444/.0685185。全部36请求首路径相同；两臂均44附着失败+4有限错误目标、0节点上限/0超时。完整请求中位.707706/1.220680秒，共同body57.463680秒；更多类型保留了有效槽率，但请求耗时更高。它是标准传统规划的质量—覆盖—成本取舍，不是新学习核心、不比原20k同节点预算，也不构成固定端到端时间优势。完整100k归档由observation负责；原192edge等价证据保留，新100k不替代它。
+
+cosine同预算12000末步TRAIN Tip94.84%改善拟合，DEV26.39%低于constant43.06%；保留best/last全部结果，停止LR扩展。[完整结果](observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md)。没有新核心方法胜利，也没有12000真实Qwen在线时延重测。formal116 reserved raw持续封存。
+
+下一步仅只读评估独立256TRAIN+32新DEV父的数据扩展成本/去重/最小实现，保留旧12DEV的reused性质；尚未授权采集或修改旧collector。数据规模控制本身不能称方法贡献。
+
+## 单次同预算LR消融已完成：拟合改善，DEV未改善
+
+source71e348的91真实服务器测试与一次fresh12000均完成exit0。初始模型、完整抽样链、最终RNG/sampler逐项严格同constant；同189TRAIN、36DEV、12000更新、1536000路径状态、48DEV选择，唯一变量为无warmup/restart/floor的cosine日程。旧constant源、权重和原报告不变。
+
+固定last TRAIN Tip76.06→94.84%、语义81.75→98.68%、最近正例ADE2.791→.785cm；DEV last Tip43.06→26.39%、Any28/36→22/36、knownUnique.6389→.4444。原规则best DEV Tip40.97→36.11%、Any30/36→27/36，knownUnique.8333→.8611的小幅覆盖取舍保留。两臂best分别5500/4250，固定last都12000，不追加选择。
+
+全189TRAIN/36DEV逐条件核对与全12父图已完成，0新增forward；cosine末3000步DEV Tip26.39–31.25%，不是只最后一步偶发退化。[完整失败分解、历史及成本](observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md)。这是普通优化控制，停止schedule扩展，不能证明新机制或将训练拟合收益当泛化收益。base528.534s/.146815GPUh；没有完整Qwen在线时延新测。
+
+native20k传统覆盖/有效率/成本取舍保留；100k两臂控制由root从42904f0实际启动TRAIN门禁，属于不同搜索预算，尚无本记录中的结果。旧crossgoal/refiner/completion否证与reserved封存不变。
+
 ## 最新普通控制与传统取舍：2026-10-02 22:15 UTC
 
 实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。

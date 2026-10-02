@@ -1,0 +1,2525 @@
+{
+  "id": "two_row_reach_283265_target0",
+  "parent_id": "two_row_reach_283265",
+  "split": "DEV_MODEL",
+  "arm": "spatial",
+  "metrics": {
+    "candidates": 4,
+    "TipValidAtK": 1.0,
+    "AnyTipValidAtK": 1.0,
+    "UniqueClassifiedTipValidAtK": 2,
+    "UnknownTypeTipValidCount": 0,
+    "DuplicateClassifiedTipValidCount": 2,
+    "KnownReferenceTypeCoverageAtK": 0.2,
+    "known_reference_types": 5,
+    "SelectedTipValidAtK": null,
+    "selected_index": null,
+    "semantic_goal_accuracy": 1.0,
+    "AnySemanticGoalAtK": 1.0,
+    "endpoint_error_m": 0.025250374595197887,
+    "TipClearAtK": 1.0,
+    "StartCorrectAtK": 1.0,
+    "EventSequenceCorrectAtK": 1.0,
+    "mean_path_length_m": 0.704280204730561,
+    "format_failure_count": 0,
+    "ValidAtK": null,
+    "AnyValidAtK": null,
+    "UniqueValidAtK": null,
+    "SelectedValidAtK": null,
+    "evaluation_protocol": "observed_two_row_tip_eval_v1",
+    "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+    "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+    "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+    "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+    "paths_repaired_or_filtered": false
+  },
+  "candidates": [
+    {
+      "candidate": 0,
+      "finite_xyz": true,
+      "finite_event_values": true,
+      "semantic_goal_correct": true,
+      "endpoint_error_m": 0.025250374595197887,
+      "start_error_m": 0.0,
+      "starts_at_current_state": true,
+      "tip_segments_clear": true,
+      "event_state_sequence_correct": true,
+      "length_m": 0.5401263060373489,
+      "declared_passage_type": [
+        "middle",
+        "middle"
+      ],
+      "TipValid": true,
+      "classified_tip_valid": true
+    },
+    {
+      "candidate": 1,
+      "finite_xyz": true,
+      "finite_event_values": true,
+      "semantic_goal_correct": true,
+      "endpoint_error_m": 0.025250374595197887,
+      "start_error_m": 0.0,
+      "starts_at_current_state": true,
+      "tip_segments_clear": true,
+      "event_state_sequence_correct": true,
+      "length_m": 0.6387658510878753,
+      "declared_passage_type": [
+        "middle",
+        "middle"
+      ],
+      "TipValid": true,
+      "classified_tip_valid": true
+    },
+    {
+      "candidate": 2,
+      "finite_xyz": true,
+      "finite_event_values": true,
+      "semantic_goal_correct": true,
+      "endpoint_error_m": 0.025250374595197887,
+      "start_error_m": 0.0,
+      "starts_at_current_state": true,
+      "tip_segments_clear": true,
+      "event_state_sequence_correct": true,
+      "length_m": 0.777264581854017,
+      "declared_passage_type": [
+        "over",
+        "over"
+      ],
+      "TipValid": true,
+      "classified_tip_valid": true
+    },
+    {
+      "candidate": 3,
+      "finite_xyz": true,
+      "finite_event_values": true,
+      "semantic_goal_correct": true,
+      "endpoint_error_m": 0.025250374595197887,
+      "start_error_m": 0.0,
+      "starts_at_current_state": true,
+      "tip_segments_clear": true,
+      "event_state_sequence_correct": true,
+      "length_m": 0.8609640799430023,
+      "declared_passage_type": [
+        "over",
+        "over"
+      ],
+      "TipValid": true,
+      "classified_tip_valid": true
+    }
+  ],
+  "reference_count": 5,
+  "known_reference_count": 5,
+  "generation": {
+    "version": "v2_virtual_exact_endpoints",
+    "localization": {
+      "status": "predicted",
+      "components_considered": 1,
+      "eligible_components": 1,
+      "candidates_emitted": 1,
+      "selected_component": 1,
+      "selected_component_score": 0.8295657458718756,
+      "pixels": 148,
+      "observed_extent_m": 0.056645148476048374,
+      "color_score": 0.8298602481238969,
+      "extent_score": 0.9996451182561316
+    },
+    "localization_seconds": 0.008221428957767785,
+    "grid": {
+      "shape": [
+        67,
+        69,
+        58
+      ],
+      "grid_nodes": 268134,
+      "free_nodes": 76623,
+      "ordinary_free_nodes": 76607,
+      "unknown_nodes": 188320,
+      "unknown_nodes_still_blocked": 188319,
+      "observed_surface_occupied_voxels": 2148,
+      "obstacle_observed_points": 50028,
+      "obstacle_points_outside_workspace": 21518,
+      "target_component_pixels": 148,
+      "lower": [
+        -0.979303059577942,
+        -0.7474054074287415,
+        0.4721025848388672
+      ],
+      "nominal_upper": [
+        0.6459320759773255,
+        0.9280871725082398,
+        1.8921586847305298
+      ],
+      "effective_upper": [
+        0.6706969404220582,
+        0.9525945925712587,
+        1.8971025848388672
+      ],
+      "voxel_m": 0.025,
+      "conservative_surface_inflation_m": 0.04165063509461096,
+      "geometric_guarantee": "continuous segment supercover is relative to this discrete proxy only, not true obstacles or full robot; cell-center depth projection and point quantization are approximations",
+      "contact_allowances": {
+        "current_tip_center": [
+          0.0002692863345146179,
+          0.00042193569242954254,
+          0.8647353053092957
+        ],
+        "current_tip_radius_m": 0.04,
+        "current_tip_region_voxels": 18,
+        "current_tip_newly_free_voxels": 15,
+        "current_tip_unknown_voxels": 0,
+        "current_tip_voxel_indices": [
+          [
+            38,
+            29,
+            16
+          ],
+          [
+            38,
+            30,
+            15
+          ],
+          [
+            38,
+            30,
+            16
+          ],
+          [
+            39,
+            29,
+            15
+          ],
+          [
+            39,
+            29,
+            16
+          ],
+          [
+            39,
+            29,
+            17
+          ],
+          [
+            39,
+            30,
+            15
+          ],
+          [
+            39,
+            30,
+            16
+          ],
+          [
+            39,
+            30,
+            17
+          ],
+          [
+            39,
+            31,
+            15
+          ],
+          [
+            39,
+            31,
+            16
+          ],
+          [
+            40,
+            29,
+            15
+          ],
+          [
+            40,
+            29,
+            16
+          ],
+          [
+            40,
+            30,
+            15
+          ],
+          [
+            40,
+            30,
+            16
+          ],
+          [
+            40,
+            30,
+            17
+          ],
+          [
+            40,
+            31,
+            15
+          ],
+          [
+            40,
+            31,
+            16
+          ]
+        ],
+        "predicted_endpoint": [
+          0.4708394075170298,
+          -0.14682470173659024,
+          0.8578875924574513
+        ],
+        "target_radius_m": 0.054087336678133875,
+        "target_depth_shell_m": 0.03,
+        "target_region_voxels": 8,
+        "target_newly_free_voxels": 1,
+        "target_unknown_voxels": 1,
+        "target_permitted_voxel_indices": [
+          [
+            56,
+            24,
+            15
+          ]
+        ]
+      },
+      "grid_construction_seconds": 0.07354090909939259
+    },
+    "virtual_start_attachments": {
+      "kind": "start",
+      "exact_endpoint": [
+        0.0002692863345146179,
+        0.00042193569242954254,
+        0.8647353053092957
+      ],
+      "rounded_index": [
+        39,
+        30,
+        16
+      ],
+      "original_contact_radius_m": 0.04,
+      "neighboring_cells_considered": 27,
+      "accepted_connections": 16,
+      "accepted_voxel_indices": [
+        [
+          38,
+          29,
+          16
+        ],
+        [
+          38,
+          30,
+          15
+        ],
+        [
+          38,
+          30,
+          16
+        ],
+        [
+          39,
+          29,
+          15
+        ],
+        [
+          39,
+          29,
+          16
+        ],
+        [
+          39,
+          29,
+          17
+        ],
+        [
+          39,
+          30,
+          15
+        ],
+        [
+          39,
+          30,
+          16
+        ],
+        [
+          39,
+          30,
+          17
+        ],
+        [
+          39,
+          31,
+          15
+        ],
+        [
+          40,
+          29,
+          15
+        ],
+        [
+          40,
+          29,
+          16
+        ],
+        [
+          40,
+          30,
+          15
+        ],
+        [
+          40,
+          30,
+          16
+        ],
+        [
+          40,
+          30,
+          17
+        ],
+        [
+          40,
+          31,
+          15
+        ]
+      ],
+      "candidates": [
+        {
+          "index": [
+            38,
+            29,
+            15
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            -0.02240540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.0413100964405304,
+          "original_grid_free": true,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            38,
+            29,
+            16
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            -0.02240540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.03807739545195415,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.03771686834252513,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029436990153044462,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 17,
+              "original_start_permission_samples": 17,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0002390060108155012,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            38,
+            29,
+            17
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            -0.02240540742874142,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.0494292627993082,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            38,
+            30,
+            15
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.0025945925712584916,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.034498650870249614,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.0401938267269095,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0030311959562823176,
+            "ray_check": {
+              "passed": true,
+              "samples": 15,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 15,
+              "original_start_permission_samples": 15,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00029237300623208284,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            38,
+            30,
+            16
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.0025945925712584916,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.030553574068281276,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.0401938267269095,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029293850529938936,
+            "ray_check": {
+              "passed": true,
+              "samples": 14,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 14,
+              "original_start_permission_samples": 14,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0002325850073248148,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            38,
+            30,
+            17
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.0025945925712584916,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.04389629670968299,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            38,
+            31,
+            15
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.027594592571258514,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.04386102775595692,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            38,
+            31,
+            16
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.027594592571258514,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.0408307939218355,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            38,
+            31,
+            17
+          ],
+          "center_xyz": [
+            -0.02930305957794188,
+            0.027594592571258514,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.051580206559938994,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            39,
+            29,
+            15
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            -0.02240540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.029204567661636382,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.035106798433839806,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.002885997062548995,
+            "ray_check": {
+              "passed": true,
+              "samples": 13,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 13,
+              "original_start_permission_samples": 13,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00020598398987203836,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            29,
+            16
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            -0.02240540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.024418655752962194,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024624054439723084,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0030885660089552402,
+            "ray_check": {
+              "passed": true,
+              "samples": 11,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 11,
+              "original_start_permission_samples": 11,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00021953799296170473,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            29,
+            17
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            -0.02240540742874142,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.0398702235416388,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.02465751610270922,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029816969763487577,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 17,
+              "original_start_permission_samples": 17,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00021310802549123764,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            30,
+            15
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.0025945925712584916,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.01834501611458952,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.0401938267269095,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0026908540166914463,
+            "ray_check": {
+              "passed": true,
+              "samples": 9,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 9,
+              "original_start_permission_samples": 9,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00019321299623697996,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            30,
+            16
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.0025945925712584916,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.008938880954746245,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.038433258258699976,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0028657959774136543,
+            "ray_check": {
+              "passed": true,
+              "samples": 5,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 5,
+              "original_start_permission_samples": 5,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0002737980103120208,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            30,
+            17
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.0025945925712584916,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.032760762646826466,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.02468585560589403,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029865079559385777,
+            "ray_check": {
+              "passed": true,
+              "samples": 15,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 15,
+              "original_start_permission_samples": 15,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0002051719930022955,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            31,
+            15
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.027594592571258514,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.03271349049224185,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.029234139988173546,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0026490669697523117,
+            "ray_check": {
+              "passed": true,
+              "samples": 15,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 15,
+              "original_start_permission_samples": 15,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00019555597100406885,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            39,
+            31,
+            16
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.027594592571258514,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.02852256013517324,
+          "original_grid_free": true,
+          "accepted": false,
+          "checks": {
+            "passed": false,
+            "finite_point_cloud_segment_clear": false,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.01613380833605268,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.003080792957916856,
+            "ray_check": {
+              "passed": true,
+              "samples": 13,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 13,
+              "original_start_permission_samples": 13,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00027327006682753563,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": "exact_visible_point_distance_or_fixed_ray_contact_check_failed"
+        },
+        {
+          "index": [
+            39,
+            31,
+            17
+          ],
+          "center_xyz": [
+            -0.004303059577941859,
+            0.027594592571258514,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.042507651230609636,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            40,
+            29,
+            15
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            -0.02240540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.035345289313857234,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.03548677798321454,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.003021972021088004,
+            "ray_check": {
+              "passed": true,
+              "samples": 16,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 16,
+              "original_start_permission_samples": 16,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0002125399187207222,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            29,
+            16
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            -0.02240540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.031506403367551276,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.025941380758336827,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0025280769914388657,
+            "ray_check": {
+              "passed": true,
+              "samples": 14,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 14,
+              "original_start_permission_samples": 14,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.0001957169733941555,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            29,
+            17
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            -0.02240540742874142,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.044564755464799995,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            40,
+            30,
+            15
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.0025945925712584916,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.02707253812670178,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.04006533951047174,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.003001108067110181,
+            "ray_check": {
+              "passed": true,
+              "samples": 12,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 12,
+              "original_start_permission_samples": 12,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00026228197384625673,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            30,
+            16
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.0025945925712584916,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.021823984446024004,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.038258125811078,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029121090192347765,
+            "ray_check": {
+              "passed": true,
+              "samples": 10,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 10,
+              "original_start_permission_samples": 10,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00020028301514685154,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            30,
+            17
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.0025945925712584916,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.03833601796716598,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.028485764348850934,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.002597304992377758,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 17,
+              "original_start_permission_samples": 17,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00019236397929489613,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            31,
+            15
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.027594592571258514,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.03829562853072359,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.02909066410495077,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0033519540447741747,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 17,
+              "original_start_permission_samples": 17,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00021828000899404287,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            40,
+            31,
+            16
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.027594592571258514,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.04,
+          "length_m": 0.034783891976628296,
+          "original_grid_free": true,
+          "accepted": false,
+          "checks": {
+            "passed": false,
+            "finite_point_cloud_segment_clear": false,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.018361232791925274,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0029467539861798286,
+            "ray_check": {
+              "passed": true,
+              "samples": 15,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 15,
+              "original_start_permission_samples": 15,
+              "original_target_permission_samples": 0,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00020458106882870197,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": "exact_visible_point_distance_or_fixed_ray_contact_check_failed"
+        },
+        {
+          "index": [
+            40,
+            31,
+            17
+          ],
+          "center_xyz": [
+            0.020696940422058052,
+            0.027594592571258514,
+            0.8971025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": false,
+          "radius_m": 0.04,
+          "length_m": 0.046939142701164886,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        }
+      ],
+      "attachment_seconds": 0.0579475499689579,
+      "complete_route_proposals_emitted": 0
+    },
+    "virtual_goal_attachments": {
+      "kind": "goal",
+      "exact_endpoint": [
+        0.4708394075170298,
+        -0.14682470173659024,
+        0.8578875924574513
+      ],
+      "rounded_index": [
+        58,
+        24,
+        15
+      ],
+      "original_contact_radius_m": 0.054087336678133875,
+      "neighboring_cells_considered": 27,
+      "accepted_connections": 3,
+      "accepted_voxel_indices": [
+        [
+          57,
+          25,
+          14
+        ],
+        [
+          57,
+          25,
+          16
+        ],
+        [
+          59,
+          25,
+          16
+        ]
+      ],
+      "candidates": [
+        {
+          "index": [
+            57,
+            23,
+            14
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.17240540742874144,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.050666388519336074,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            23,
+            15
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.17240540742874144,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.037454406211594245,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            23,
+            16
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.17240540742874144,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.038582148251930015,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            24,
+            14
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.14740540742874142,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.04373840007344519,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            24,
+            15
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.14740540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.027364160137953245,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            24,
+            16
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.14740540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.02888852504241686,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            25,
+            14
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.12240540742874151,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.05009004248727671,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.022732619540462764,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0026590339839458466,
+            "ray_check": {
+              "passed": true,
+              "samples": 22,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 4,
+              "original_start_permission_samples": 0,
+              "original_target_permission_samples": 18,
+              "unknown_samples": 17,
+              "unknown_samples_admitted_only_by_original_contact": 17,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00032958202064037323,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            57,
+            25,
+            15
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.12240540742874151,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.036670996379263895,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            57,
+            25,
+            16
+          ],
+          "center_xyz": [
+            0.4456969404220581,
+            -0.12240540742874151,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.037822104575483136,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0028764120070263743,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 7,
+              "original_start_permission_samples": 0,
+              "original_target_permission_samples": 10,
+              "unknown_samples": 4,
+              "unknown_samples_admitted_only_by_original_contact": 4,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00020779191982001066,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        },
+        {
+          "index": [
+            58,
+            23,
+            14
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.17240540742874144,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.04398817535251633,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            23,
+            15
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.17240540742874144,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.027761649625238857,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            23,
+            16
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.17240540742874144,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.02926531751041361,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            24,
+            14
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.14740540742874142,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.035790002601790424,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            24,
+            15
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.14740540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.010801569576083117,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            24,
+            16
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.14740540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.014227562137547004,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            25,
+            14
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.12240540742874151,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.04332307701016401,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            25,
+            15
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.12240540742874151,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.02669529210739978,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            58,
+            25,
+            16
+          ],
+          "center_xyz": [
+            0.47069694042205823,
+            -0.12240540742874151,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.02825576471749079,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            23,
+            14
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.17240540742874144,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.05052559961143601,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            23,
+            15
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.17240540742874144,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.037263733510827145,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            23,
+            16
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.17240540742874144,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.038397076115724474,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            24,
+            14
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.14740540742874142,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.043575233005545506,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            24,
+            15
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.14740540742874142,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.027102593059675707,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            24,
+            16
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.14740540742874142,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.028640882836064578,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            25,
+            14
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.12240540742874151,
+            0.8221025848388672
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.049947629041627375,
+          "original_grid_free": true,
+          "accepted": false,
+          "checks": {
+            "passed": false,
+            "finite_point_cloud_segment_clear": false,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.019919130696281134,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.0026224059984087944,
+            "ray_check": {
+              "passed": true,
+              "samples": 21,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 10,
+              "original_start_permission_samples": 0,
+              "original_target_permission_samples": 11,
+              "unknown_samples": 1,
+              "unknown_samples_admitted_only_by_original_contact": 1,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00019441195763647556,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": "exact_visible_point_distance_or_fixed_ray_contact_check_failed"
+        },
+        {
+          "index": [
+            59,
+            25,
+            15
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.12240540742874151,
+            0.8471025848388671
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.03647622877917642,
+          "original_grid_free": false,
+          "accepted": false,
+          "rejection": "outside_original_local_free_attachment_set"
+        },
+        {
+          "index": [
+            59,
+            25,
+            16
+          ],
+          "center_xyz": [
+            0.49569694042205814,
+            -0.12240540742874151,
+            0.8721025848388673
+          ],
+          "within_grid": true,
+          "within_unchanged_contact_radius": true,
+          "radius_m": 0.054087336678133875,
+          "length_m": 0.03763329489988373,
+          "original_grid_free": true,
+          "accepted": true,
+          "checks": {
+            "passed": true,
+            "finite_point_cloud_segment_clear": true,
+            "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+            "observed_nontarget_points": 50028,
+            "exact_point_distance_seconds": 0.00351533608045429,
+            "ray_check": {
+              "passed": true,
+              "samples": 17,
+              "failed_samples": 0,
+              "ordinary_visible_free_samples": 7,
+              "original_start_permission_samples": 0,
+              "original_target_permission_samples": 13,
+              "unknown_samples": 0,
+              "unknown_samples_admitted_only_by_original_contact": 0,
+              "first_failed_sample_coordinates": [],
+              "step_m": 0.0025,
+              "continuous_visibility_certificate": false
+            },
+            "ray_check_seconds": 0.00021052395459264517,
+            "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+          },
+          "rejection": null
+        }
+      ],
+      "attachment_seconds": 0.013431482017040253,
+      "complete_route_proposals_emitted": 0
+    },
+    "attempts": [
+      {
+        "expanded_nodes": 400,
+        "neighbor_edges_examined": 10400,
+        "free_edges_examined": 8773,
+        "diagonal_supercover_voxels_examined": 34972,
+        "virtual_start_edges": 16,
+        "virtual_goal_edges": 3,
+        "virtual_goal_edges_examined": 1,
+        "permission_start_edge_checks": 268,
+        "permission_target_edge_checks": 0,
+        "successful_route_grid_edges": 18,
+        "successful_route_virtual_edges": 2,
+        "successful_route_edges_in_start_permission": 1,
+        "successful_route_edges_in_target_permission": 0,
+        "selected_start_attachment": [
+          40,
+          29,
+          16
+        ],
+        "selected_goal_attachment": [
+          57,
+          25,
+          16
+        ],
+        "status": "path_found",
+        "search_seconds": 0.002444641082547605,
+        "complete_raw_paths_emitted": 1,
+        "maximum_expanded_nodes": 100000,
+        "search_deadline_seconds": 2.0,
+        "native": {
+          "protocol": "observed_astar_native_exact_graph_100k_v1",
+          "test_only": false,
+          "abi_version": 1,
+          "build_receipt_sha256": "5ec30db6ff31ca33d5eaaddf69ad3c23cbe7eca81ee5abc4907840e991da8d58",
+          "library_sha256": "295a5e662d1a8726a9960c7d786006940fd1a312494bde9b442869b67f22f8d1",
+          "original_neighbor_table_sha256": "7b94ff0252777a13b898644be94dfa331133f73224ed294913937eae851c290f",
+          "ctypes_preparation_seconds": 0.0015442160656675696,
+          "kernel_seconds": 0.000750945,
+          "ctypes_preparation_counts_toward_search_deadline": true,
+          "clock_check_interval_expanded_nodes": 64,
+          "abi_protocol": "observed_astar_native_exact_graph_v1",
+          "effective_search_config": {
+            "protocol": "observed_astar_native_exact_graph_100k_v1",
+            "maximum_expanded_nodes_per_candidate": 100000,
+            "search_deadline_seconds": 2.0,
+            "clock_check_interval_expanded_nodes": 64,
+            "historical_node_cap": 20000,
+            "node_budget_multiplier": 5,
+            "both_arms": true
+          },
+          "budget_adapter_sha256": "97243bfcc482786623faa9b26acbe8bda608349ea1182abc5b57c4bdcd36642a"
+        },
+        "spatial_penalty": {
+          "previous_returned_raw_paths": 0,
+          "sigma_m": 0.05,
+          "preprocessing_seconds": 1.8620630726218224e-06,
+          "preprocessing_inside_original_search_deadline": false,
+          "search_plus_preprocessing_seconds": 0.002446503145620227,
+          "all_returned_paths_included_without_postcheck_filter": true,
+          "field_max": 0.0,
+          "field_sha256": null,
+          "evaluated_free_vertices": 0,
+          "field_bytes": 0
+        },
+        "slot": 0,
+        "path_materialization_resampling_seconds": 0.00017617305275052786,
+        "raw_point_count": 21,
+        "raw_original_grid_proxy_clear": false,
+        "h24_original_grid_proxy_clear": false,
+        "raw_original_grid_voxels_checked": 46,
+        "h24_original_grid_voxels_checked": 48,
+        "raw_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.05789935705251992,
+          "ray_check": {
+            "passed": true,
+            "samples": 251,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 241,
+            "original_start_permission_samples": 20,
+            "original_target_permission_samples": 10,
+            "unknown_samples": 4,
+            "unknown_samples_admitted_only_by_original_contact": 4,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0007011110428720713,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "h24_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.06654298701323569,
+          "ray_check": {
+            "passed": true,
+            "samples": 249,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 239,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 10,
+            "unknown_samples": 4,
+            "unknown_samples_admitted_only_by_original_contact": 4,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0008713350398465991,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "resampling_changed_visible_point_ray_proxy": false,
+        "exact_grid_path_duplicate": false,
+        "raw_length_m": 0.5503945251210167,
+        "h24_length_m": 0.5401263060373489,
+        "post_generation_checks_change_output": false
+      },
+      {
+        "expanded_nodes": 9391,
+        "neighbor_edges_examined": 244166,
+        "free_edges_examined": 222394,
+        "diagonal_supercover_voxels_examined": 860737,
+        "virtual_start_edges": 16,
+        "virtual_goal_edges": 3,
+        "virtual_goal_edges_examined": 1,
+        "permission_start_edge_checks": 338,
+        "permission_target_edge_checks": 8,
+        "successful_route_grid_edges": 19,
+        "successful_route_virtual_edges": 2,
+        "successful_route_edges_in_start_permission": 1,
+        "successful_route_edges_in_target_permission": 0,
+        "selected_start_attachment": [
+          40,
+          31,
+          15
+        ],
+        "selected_goal_attachment": [
+          57,
+          25,
+          14
+        ],
+        "status": "path_found",
+        "search_seconds": 0.010546167963184416,
+        "complete_raw_paths_emitted": 1,
+        "maximum_expanded_nodes": 100000,
+        "search_deadline_seconds": 2.0,
+        "native": {
+          "protocol": "observed_astar_native_exact_graph_100k_v1",
+          "test_only": false,
+          "abi_version": 1,
+          "build_receipt_sha256": "5ec30db6ff31ca33d5eaaddf69ad3c23cbe7eca81ee5abc4907840e991da8d58",
+          "library_sha256": "295a5e662d1a8726a9960c7d786006940fd1a312494bde9b442869b67f22f8d1",
+          "original_neighbor_table_sha256": "7b94ff0252777a13b898644be94dfa331133f73224ed294913937eae851c290f",
+          "ctypes_preparation_seconds": 0.0020266090286895633,
+          "kernel_seconds": 0.008352061,
+          "ctypes_preparation_counts_toward_search_deadline": true,
+          "clock_check_interval_expanded_nodes": 64,
+          "abi_protocol": "observed_astar_native_exact_graph_v1",
+          "effective_search_config": {
+            "protocol": "observed_astar_native_exact_graph_100k_v1",
+            "maximum_expanded_nodes_per_candidate": 100000,
+            "search_deadline_seconds": 2.0,
+            "clock_check_interval_expanded_nodes": 64,
+            "historical_node_cap": 20000,
+            "node_budget_multiplier": 5,
+            "both_arms": true
+          },
+          "budget_adapter_sha256": "97243bfcc482786623faa9b26acbe8bda608349ea1182abc5b57c4bdcd36642a"
+        },
+        "spatial_penalty": {
+          "previous_returned_raw_paths": 1,
+          "sigma_m": 0.05,
+          "preprocessing_seconds": 0.08062538399826735,
+          "preprocessing_inside_original_search_deadline": false,
+          "search_plus_preprocessing_seconds": 0.09117155196145177,
+          "all_returned_paths_included_without_postcheck_filter": true,
+          "field_max": 1.0,
+          "field_sha256": "7d5cd3195599ef596afc0b689c397b0fc5be52f48a0a362b47d0dc7c793d7807",
+          "evaluated_free_vertices": 76623,
+          "field_bytes": 2145072
+        },
+        "slot": 1,
+        "path_materialization_resampling_seconds": 0.00019992899615317583,
+        "raw_point_count": 22,
+        "raw_original_grid_proxy_clear": false,
+        "h24_original_grid_proxy_clear": false,
+        "raw_original_grid_voxels_checked": 61,
+        "h24_original_grid_voxels_checked": 56,
+        "raw_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.022732619540462764,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.062024211045354605,
+          "ray_check": {
+            "passed": true,
+            "samples": 296,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 278,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 18,
+            "unknown_samples": 17,
+            "unknown_samples_admitted_only_by_original_contact": 17,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0009602009085938334,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "h24_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.022732619540462764,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.06888684595469385,
+          "ray_check": {
+            "passed": true,
+            "samples": 291,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 273,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 18,
+            "unknown_samples": 17,
+            "unknown_samples_admitted_only_by_original_contact": 17,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0009008799679577351,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "resampling_changed_visible_point_ray_proxy": false,
+        "exact_grid_path_duplicate": false,
+        "raw_length_m": 0.6565837225519466,
+        "h24_length_m": 0.6387658510878753,
+        "post_generation_checks_change_output": false
+      },
+      {
+        "expanded_nodes": 14396,
+        "neighbor_edges_examined": 374296,
+        "free_edges_examined": 344142,
+        "diagonal_supercover_voxels_examined": 1327952,
+        "virtual_start_edges": 16,
+        "virtual_goal_edges": 3,
+        "virtual_goal_edges_examined": 1,
+        "permission_start_edge_checks": 338,
+        "permission_target_edge_checks": 8,
+        "successful_route_grid_edges": 23,
+        "successful_route_virtual_edges": 2,
+        "successful_route_edges_in_start_permission": 1,
+        "successful_route_edges_in_target_permission": 0,
+        "selected_start_attachment": [
+          40,
+          30,
+          17
+        ],
+        "selected_goal_attachment": [
+          59,
+          25,
+          16
+        ],
+        "status": "path_found",
+        "search_seconds": 0.015091450070030987,
+        "complete_raw_paths_emitted": 1,
+        "maximum_expanded_nodes": 100000,
+        "search_deadline_seconds": 2.0,
+        "native": {
+          "protocol": "observed_astar_native_exact_graph_100k_v1",
+          "test_only": false,
+          "abi_version": 1,
+          "build_receipt_sha256": "5ec30db6ff31ca33d5eaaddf69ad3c23cbe7eca81ee5abc4907840e991da8d58",
+          "library_sha256": "295a5e662d1a8726a9960c7d786006940fd1a312494bde9b442869b67f22f8d1",
+          "original_neighbor_table_sha256": "7b94ff0252777a13b898644be94dfa331133f73224ed294913937eae851c290f",
+          "ctypes_preparation_seconds": 0.0022649900056421757,
+          "kernel_seconds": 0.012598349,
+          "ctypes_preparation_counts_toward_search_deadline": true,
+          "clock_check_interval_expanded_nodes": 64,
+          "abi_protocol": "observed_astar_native_exact_graph_v1",
+          "effective_search_config": {
+            "protocol": "observed_astar_native_exact_graph_100k_v1",
+            "maximum_expanded_nodes_per_candidate": 100000,
+            "search_deadline_seconds": 2.0,
+            "clock_check_interval_expanded_nodes": 64,
+            "historical_node_cap": 20000,
+            "node_budget_multiplier": 5,
+            "both_arms": true
+          },
+          "budget_adapter_sha256": "97243bfcc482786623faa9b26acbe8bda608349ea1182abc5b57c4bdcd36642a"
+        },
+        "spatial_penalty": {
+          "previous_returned_raw_paths": 2,
+          "sigma_m": 0.05,
+          "preprocessing_seconds": 0.15575088292825967,
+          "preprocessing_inside_original_search_deadline": false,
+          "search_plus_preprocessing_seconds": 0.17084233299829066,
+          "all_returned_paths_included_without_postcheck_filter": true,
+          "field_max": 1.968292591290456,
+          "field_sha256": "ee0de40c0d1b30195793f2f17489f810605a6d6faeb23891afdbb798b29bcc71",
+          "evaluated_free_vertices": 76623,
+          "field_bytes": 2145072
+        },
+        "slot": 2,
+        "path_materialization_resampling_seconds": 0.00018676393665373325,
+        "raw_point_count": 26,
+        "raw_original_grid_proxy_clear": false,
+        "h24_original_grid_proxy_clear": false,
+        "raw_original_grid_voxels_checked": 86,
+        "h24_original_grid_voxels_checked": 77,
+        "raw_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.07378667709417641,
+          "ray_check": {
+            "passed": true,
+            "samples": 355,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 345,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 13,
+            "unknown_samples": 0,
+            "unknown_samples_admitted_only_by_original_contact": 0,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0009142219787463546,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "h24_visible_point_ray_proxy": {
+          "passed": true,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.06651817203965038,
+          "ray_check": {
+            "passed": true,
+            "samples": 343,
+            "failed_samples": 0,
+            "ordinary_visible_free_samples": 333,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 12,
+            "unknown_samples": 0,
+            "unknown_samples_admitted_only_by_original_contact": 0,
+            "first_failed_sample_coordinates": [],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0007933289743959904,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "resampling_changed_visible_point_ray_proxy": false,
+        "exact_grid_path_duplicate": false,
+        "raw_length_m": 0.7863064279799018,
+        "h24_length_m": 0.777264581854017,
+        "post_generation_checks_change_output": false
+      },
+      {
+        "expanded_nodes": 31819,
+        "neighbor_edges_examined": 827294,
+        "free_edges_examined": 761958,
+        "diagonal_supercover_voxels_examined": 2933791,
+        "virtual_start_edges": 16,
+        "virtual_goal_edges": 3,
+        "virtual_goal_edges_examined": 1,
+        "permission_start_edge_checks": 338,
+        "permission_target_edge_checks": 10,
+        "successful_route_grid_edges": 28,
+        "successful_route_virtual_edges": 2,
+        "successful_route_edges_in_start_permission": 1,
+        "successful_route_edges_in_target_permission": 0,
+        "selected_start_attachment": [
+          38,
+          29,
+          16
+        ],
+        "selected_goal_attachment": [
+          57,
+          25,
+          16
+        ],
+        "status": "path_found",
+        "search_seconds": 0.027522850898094475,
+        "complete_raw_paths_emitted": 1,
+        "maximum_expanded_nodes": 100000,
+        "search_deadline_seconds": 2.0,
+        "native": {
+          "protocol": "observed_astar_native_exact_graph_100k_v1",
+          "test_only": false,
+          "abi_version": 1,
+          "build_receipt_sha256": "5ec30db6ff31ca33d5eaaddf69ad3c23cbe7eca81ee5abc4907840e991da8d58",
+          "library_sha256": "295a5e662d1a8726a9960c7d786006940fd1a312494bde9b442869b67f22f8d1",
+          "original_neighbor_table_sha256": "7b94ff0252777a13b898644be94dfa331133f73224ed294913937eae851c290f",
+          "ctypes_preparation_seconds": 0.002313957898877561,
+          "kernel_seconds": 0.024991676,
+          "ctypes_preparation_counts_toward_search_deadline": true,
+          "clock_check_interval_expanded_nodes": 64,
+          "abi_protocol": "observed_astar_native_exact_graph_v1",
+          "effective_search_config": {
+            "protocol": "observed_astar_native_exact_graph_100k_v1",
+            "maximum_expanded_nodes_per_candidate": 100000,
+            "search_deadline_seconds": 2.0,
+            "clock_check_interval_expanded_nodes": 64,
+            "historical_node_cap": 20000,
+            "node_budget_multiplier": 5,
+            "both_arms": true
+          },
+          "budget_adapter_sha256": "97243bfcc482786623faa9b26acbe8bda608349ea1182abc5b57c4bdcd36642a"
+        },
+        "spatial_penalty": {
+          "previous_returned_raw_paths": 3,
+          "sigma_m": 0.05,
+          "preprocessing_seconds": 0.24832638900261372,
+          "preprocessing_inside_original_search_deadline": false,
+          "search_plus_preprocessing_seconds": 0.2758492399007082,
+          "all_returned_paths_included_without_postcheck_filter": true,
+          "field_max": 2.9554479314499624,
+          "field_sha256": "0a4adec10947fda58b30685d3425c51e35ca7900d18aa06a7a5afe0c4674d713",
+          "evaluated_free_vertices": 76623,
+          "field_bytes": 2145072
+        },
+        "slot": 3,
+        "path_materialization_resampling_seconds": 0.00021427904721349478,
+        "raw_point_count": 31,
+        "raw_original_grid_proxy_clear": false,
+        "h24_original_grid_proxy_clear": false,
+        "raw_original_grid_voxels_checked": 88,
+        "h24_original_grid_voxels_checked": 72,
+        "raw_visible_point_ray_proxy": {
+          "passed": false,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.0862343420740217,
+          "ray_check": {
+            "passed": false,
+            "samples": 403,
+            "failed_samples": 6,
+            "ordinary_visible_free_samples": 387,
+            "original_start_permission_samples": 19,
+            "original_target_permission_samples": 10,
+            "unknown_samples": 10,
+            "unknown_samples_admitted_only_by_original_contact": 4,
+            "first_failed_sample_coordinates": [
+              [
+                -0.07930305957794193,
+                -0.05649631651965054,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.058769043792377816,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06104177106510509,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06331449833783237,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06558722561055964,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06785995288328692,
+                0.8721025848388673
+              ]
+            ],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0010086270049214363,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "h24_visible_point_ray_proxy": {
+          "passed": false,
+          "finite_point_cloud_segment_clear": true,
+          "complete_polyline_minimum_nonselected_observed_point_distance_m": 0.024987048307957727,
+          "observed_nontarget_points": 50028,
+          "exact_point_distance_seconds": 0.06495635199826211,
+          "ray_check": {
+            "passed": false,
+            "samples": 381,
+            "failed_samples": 8,
+            "ordinary_visible_free_samples": 363,
+            "original_start_permission_samples": 18,
+            "original_target_permission_samples": 10,
+            "unknown_samples": 12,
+            "unknown_samples_admitted_only_by_original_contact": 4,
+            "first_failed_sample_coordinates": [
+              [
+                -0.07521378619530067,
+                -0.05555282495355866,
+                0.8721025848388673
+              ],
+              [
+                -0.07623610454096098,
+                -0.057687569745351566,
+                0.8721025848388673
+              ],
+              [
+                -0.0772584228866213,
+                -0.05982231453714447,
+                0.8721025848388673
+              ],
+              [
+                -0.07828074123228161,
+                -0.06195705932893737,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06409180412073028,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06409180412073028,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06649011935413174,
+                0.8721025848388673
+              ],
+              [
+                -0.07930305957794193,
+                -0.06888843458753321,
+                0.8721025848388673
+              ]
+            ],
+            "step_m": 0.0025,
+            "continuous_visibility_certificate": false
+          },
+          "ray_check_seconds": 0.0008206620113924146,
+          "limitation": "finite visible points plus fixed-step depth proxy, not continuous hidden-solid or robot certificate"
+        },
+        "resampling_changed_visible_point_ray_proxy": false,
+        "exact_grid_path_duplicate": false,
+        "raw_length_m": 0.8825800058917399,
+        "h24_length_m": 0.8609640799430023,
+        "post_generation_checks_change_output": false
+      }
+    ],
+    "submitted_candidate_budget": 4,
+    "raw_complete_paths": 4,
+    "failed_slots": 0,
+    "request_generation_seconds": 1.2673463800456375,
+    "filtering_or_repair": false,
+    "original_mask_grid_clearance_and_contact_radii_unchanged": true,
+    "spatial_adapter": {
+      "protocol": "observed_two_row_spatial_penalty_v1",
+      "actual_astar_calls": 4,
+      "previous_complete_raw_paths": 4,
+      "sigma_m": 0.05,
+      "preprocessing_seconds": 0.48470451799221337,
+      "cost": "length * (1 + 4 * mean(endpoint field)); sum Gaussian exact-distance-to-each-prior-raw-polyline",
+      "virtual_edge_cost": "unchanged original exact edge reuse",
+      "evaluation_labels_used": false
+    }
+  },
+  "timing": {
+    "observation_io_hash_seconds": 0.0039080510614439845,
+    "backprojection_seconds": 0.002801721915602684,
+    "localization_grid_field_search_and_original_proxy_seconds": 1.2700283720623702,
+    "output_sealing_seconds": 0.0012664860114455223,
+    "observation_to_sealed_pool_seconds": 1.2784022920532152,
+    "label_io_and_two_row_check_seconds": 0.003365395008586347,
+    "observation_to_checked_pool_seconds": 1.2817689890507609
+  },
+  "prediction_sha256": "ea250390b7e02d94cc4379f7a50044bd2598d723edf4ed9c09f44c0c92da27eb",
+  "raw_paths_sha256": "64949f5793b6e45a4e53a19520e88ab3d4c51dfa9840a67225b5de2cdc8af593",
+  "source_files_sha256": {
+    "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1/parents/DEV_MODEL/two_row_reach_283265/two_row_reach_283265/front.png": "f0d46543539bb97366ad6e9eca0858c81290bcc39e7aa2b00d860c1d772ecfbb",
+    "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1/parents/DEV_MODEL/two_row_reach_283265/two_row_reach_283265/observation.npz": "f261f5a3b8742056476720045c13921be05043fa1f27bd6bdd2b88406452a011",
+    "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1/parents/DEV_MODEL/two_row_reach_283265/two_row_reach_283265/verification_only.npz": "be50b90c827f863b71ad8c8fe34d21b03f990a036f2e07cc23159f11de08401b",
+    "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1/parents/DEV_MODEL/two_row_reach_283265/route_configs/two_row_reach_283265.json": "62cf973a0d1f6c41927e4ec43eeb5567cf467226339d79c413c174871cb2be39"
+  },
+  "scored_after_sealed_pool": true,
+  "no_output_filtering_or_repair": true
+}

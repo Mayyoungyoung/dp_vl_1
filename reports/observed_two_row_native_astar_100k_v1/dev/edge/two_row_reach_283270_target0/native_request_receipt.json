@@ -1,0 +1,43 @@
+{
+  "id": "two_row_reach_283270_target0",
+  "parent_id": "two_row_reach_283270",
+  "split": "DEV_MODEL",
+  "arm": "edge",
+  "native_context_through_checked_pool_seconds": 0.7683455570368096,
+  "inner_observation_to_checked_pool_seconds": 0.764692533062771,
+  "includes_neighbor_table_setup_and_context_exit": true,
+  "build_receipt_sha256": "5ec30db6ff31ca33d5eaaddf69ad3c23cbe7eca81ee5abc4907840e991da8d58",
+  "library_sha256": "295a5e662d1a8726a9960c7d786006940fd1a312494bde9b442869b67f22f8d1",
+  "base_planner_config_historical": {
+    "voxel_m": 0.025,
+    "visible_surface_clearance_m": 0.02,
+    "train_workspace_margin_m": 0.06,
+    "maximum_grid_cells": 2000000,
+    "current_tip_contact_radius_m": 0.04,
+    "target_contact_depth_m": 0.03,
+    "target_contact_radius_rule": "half TRAIN prototype extent plus one voxel",
+    "maximum_expanded_nodes_per_candidate": 20000,
+    "search_deadline_seconds": 2.0,
+    "used_edge_penalty_multiplier": 4.0,
+    "candidates": 4,
+    "horizon": 24,
+    "unknown_policy": "blocked except recorded local current/target contact allowances",
+    "collision_scope": "discrete visible-free-space proxy, not a continuous 2cm physical-clearance certificate; depth projection and surface/grid quantization errors are not jointly bounded",
+    "diagonal_policy": "all touched neighbor voxels, including edge/corner ties, must be free",
+    "version": "v2_virtual_exact_endpoints",
+    "attachment_neighbor_extent_voxels": 1,
+    "attachment_ray_step_m": 0.0025,
+    "attachment_scope": "original neighboring free cells within unchanged start/target contact radii; target component unchanged",
+    "connector_collision_scope": "complete segment distance to finite nonselected visible points >= original 20mm plus fixed-step observed-ray/contact checks; not continuous solid/visibility certification"
+  },
+  "effective_search_config": {
+    "protocol": "observed_astar_native_exact_graph_100k_v1",
+    "maximum_expanded_nodes_per_candidate": 100000,
+    "search_deadline_seconds": 2.0,
+    "clock_check_interval_expanded_nodes": 64,
+    "historical_node_cap": 20000,
+    "node_budget_multiplier": 5,
+    "both_arms": true
+  },
+  "historical_node_cap_is_not_executed": true
+}

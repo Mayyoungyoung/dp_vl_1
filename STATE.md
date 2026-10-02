@@ -1,5 +1,27 @@
 # State — 2026-10-02
 
+## 最新实际快照 — 2026-10-02 22:41 UTC
+
+本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。
+
+两臂共同100k/2秒/K4的native传统对照，source42904f0，DEV均Tip96/144=66.67%、Any24/36；edge/spatial已分类不同有效数24/36=.6667、62/36=1.7222，已知类型覆盖.0319444/.0685185。全部36请求首路径相同；两臂均44附着失败+4有限错误目标、0节点上限/0超时。完整请求中位.707706/1.220680秒，共同body57.463680秒；更多类型保留了有效槽率，但请求耗时更高。它是标准传统规划的质量—覆盖—成本取舍，不是新学习核心、不比原20k同节点预算，也不构成固定端到端时间优势。完整100k归档由observation负责；原192edge等价证据保留，新100k不替代它。
+
+cosine同预算12000末步TRAIN Tip94.84%改善拟合，DEV26.39%低于constant43.06%；保留best/last全部结果，停止LR扩展。[完整结果](reports/observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md)。没有新核心方法胜利，也没有12000真实Qwen在线时延重测。formal116 reserved raw持续封存。
+
+下一步仅只读评估独立256TRAIN+32新DEV父的数据扩展成本/去重/最小实现，保留旧12DEV的reused性质；尚未授权采集或修改旧collector。数据规模控制本身不能称方法贡献。
+
+## Current checkpoint — cosine COMPLETE, actual exit 2026-10-02 22:21 UTC
+
+This block supersedes earlier running statements;22:15 JOBS/MAIN numbers below remain a dated historical snapshot.
+
+单次cosine普通控制已实际完成，source71e34850481b79bdbc828d1c1944f0de00329960，PID593217/593221于22:21:21.678075UTC退出0。91服务器测试均通过；初始化、完整384000抽样链及最终RNG/sampler严格同constant12000。两臂均1536000训练路径状态、48次DEV选择，只有LR日程变化。相同64请求TRAIN父中63可观测父/189输入，原缺失父不替换，DEV固定36输入。
+
+固定last12000 TRAIN Tip575/756=76.06%→717/756=94.84%，语义81.75%→98.68%，候选→最近正参考ADE2.791→.785cm；DEV Tip62/144=43.06%→38/144=26.39%、Any28/36→22/36、knownUnique.6389→.4444。cosine原规则best4250 DEV Tip52/144=36.11%、Any27/36、knownUnique.8611；constant best5500为59/144=40.97%、30/36、.8333。保留cosine best多1个跨条件求和已分类有效类型的取舍，不写全面优胜。严格配对支持训练拟合改善，不能支持DEV泛化改善或新集合贡献。
+
+已归档全部189TRAIN/36DEV best/last保存池、原始cost/LR/history/checkpoint hashes和12父全图，0新增forward完成配对与QA。DEV末步Tip有7条件改善/9相同/20下降，端点和线段净空均有缺口；cosine最后3000步DEV Tip26.39–31.25%，不只是最后一次偶发失败。停止schedule扩展，保留constant有效率更强的普通基线。base528.534秒/.146815GPU小时，外层542.291秒；没有重测12000完整Qwen在线时延。
+
+读取 reports/observed_two_row_prefix76_cosine_v1/COSINE_RESULTS.md。下一传统控制是两臂共同100k节点：root已从42904f0启动TRAIN门禁SSH66842，此处尚未记录其结果；不自动启DEV或更多节点档。它改变搜索预算，不是20k同预算或新学习机制。formal116仅机械完成，reserved raw仍封存；新核心方法优势未成立。MAIN/JOBS由root另行更新，不猜测最新计数。
+
 ## Current checkpoint — 2026-10-02 22:15 UTC
 
 实际快照22:15:44.071911UTC：MAIN263（原261所有字段不变），JOBS479、registry495；cosine PID593217/child593221于22:12:19.387085启动，SSH99280仍在，约4500步。此为该时刻running记录，不是完成状态。100k控制仅此一个档位，两臂共同变更、K4和2秒上限不改，尚未冻结或运行。
