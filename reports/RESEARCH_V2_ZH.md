@@ -1,5 +1,7 @@
 # 多路线研究 V2：实施进展与实测证据
 
+2026-10-02 18:10 UTC 更新：固定旧DEV12迁移完成，原best三seed宏ADE8.9879→8.5621cm但只2/3改善；固定末步8.9621→9.0961cm退化。辅助定位收益有限，不能升为核心贡献。v6四静态初态门禁全通过，原失败布局27槽得到23有效、14已知lateral、9unknown、4失败，初始化/恢复零规划调用；类型数5/7/2。[完整迁移](OBSERVATION_LEGACY_DEV_TRANSFER_RESULTS.md)、[v6实际结果](OBSERVED_TWO_ROW_CANONICAL_REPAIR_V6_RESULTS.md)保留所有失败。正式116窄ID父场景与普通K4强基线正在实现，尚未启动。
+
 2026-10-02 17:35 UTC 更新（后文较早状态为历史）：Qwen6000步续训完成，best NLL降至.416633；同8TRAIN贪心端点仍0/8在3cm内，均值23.391→27.769cm，停止这组扩训及DEV/K4扩展。四布局v5完成108请求槽，61条有效参考（49已知类型、12unknown）、20路线失败、27setup未尝试槽；6/12目标条件有≥5已知类型，但仅为DEV_COLLECTION局部布局可采性。详见[物理结果](OBSERVED_TWO_ROW_LAYOUT4_V5_RESULTS.md)、[续训结果](VLM_SFT_CONTINUATION_6000_RESULTS.md)。下一实际工作是有界静态初始化修复与已冻结三种子模型在另一批12父上的前瞻迁移；未得到这些新结果，核心A–H仍未完成。
 
 2026-10-02 16:50 UTC：新增物理 v4 单父九提案得到8条有效参考、5种不同侧向通道序列，九次严格初态恢复均通过。三条有效 unknown 和一条 raw/H24 类型不稳定失败均保留；这是超过 K=4 的可采性证据，尚无模型结果。另一方面，TRAIN768/3806次单门关闭发现传统几何/DPP已达到响应参考最优，停止该共同失效机制假设。真正 K2 普通训练已启动，不能以K4截断代替。Qwen6000步续训的真实CPU全状态恢复测试已通过，尚未启动GPU；原1500结果与新增预算分开。见[物理实测](OBSERVED_TWO_ROW_PILOT_V4_RESULTS.md)、[闭合审计](MULTIGATE_CLOSURE_OPPORTUNITY_RESULTS.md)。

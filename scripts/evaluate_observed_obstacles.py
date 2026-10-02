@@ -28,7 +28,8 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def scene_metrics(paths, opened, current, geometry, specification, reference_types, clearance=.02, scores=None):
+def scene_metrics(paths, opened, current, geometry, specification, reference_types, clearance=.02, scores=None,
+                  type_classifier=None):
     """Evaluate all submitted K slots, including nonfinite/invalid candidates."""
     paths = np.asarray(paths)
     if paths.ndim != 3 or paths.shape[-1] != 3 or paths.shape[1] < 2 or not len(paths):
@@ -62,7 +63,8 @@ def scene_metrics(paths, opened, current, geometry, specification, reference_typ
             start_ok = start_error <= .005
             clear = bool(tip_polyline_clear(path, centers, halfsizes, clearance))
             length = float(np.linalg.norm(np.diff(path, axis=0), axis=-1).sum())
-            mode = crossing_signature(path, centers, halfsizes, clearance)
+            mode = (crossing_signature(path, centers, halfsizes, clearance) if type_classifier is None
+                    else type_classifier(path))
         event_finite = opened is not None and bool(np.isfinite(opened[index]).all())
         if event_finite:
             events_ok = bool(np.all((opened[index] > .5) == expected_open))

@@ -1,0 +1,84 @@
+{
+  "arm": "ordinary",
+  "seed": 0,
+  "checkpoint_kind": "last",
+  "run": "/home/wzy/dpvlm/route_set_v1/runs/observed_multitask_prefix108_v1/free_offset_seed0",
+  "checkpoint": "last.pt",
+  "step": 1500,
+  "checkpoint_sha256": "fcb896248b8343593317f905f0eea0da561a190998f4e08a6c6b47ba65ac1a74",
+  "summary_sha256": "b4682689b47a83ed5a34cdcf4ebcb04cc1b082aa5b60416dcadc35c4bca296ee",
+  "config_sha256": "a43fe6e990fc2e72157e26ba9880acb1e77be7e389185b50aac73b8c11c11c54",
+  "training_commit": "6464b3fb329704a99d8f9076dd6a8c5ac6821363",
+  "original_selection_protocol": "task_parent_reference_ADE_v1",
+  "evaluation_protocol": "observation_eval_v2",
+  "registration_sha256": "f3426fb245de7ca28752792c65de3a1e9f229f64123642926378980a5dd3abd2",
+  "export_manifest_sha256": "0cc8217a5c3a9cf7b2341f267d71ecf0c18177c0730f2f9ee6dead76935532ca",
+  "cache_config_sha256": "a1aa6ba7027333c814ec0f8a80b798ddfdfd9205ed80b7412427ba478a108160",
+  "evaluation_dataset_fingerprint": "dcb7b13440656925861d8d8174418bcde33b7f6471d84bf4eb368370fa73f735",
+  "training_dataset_fingerprint": "9b7cd1f48c211ce8572b4dbaa1b869f84e3669e8e26aa264dbb538b434568108",
+  "prediction_sha256": "bdc4288f262beff77feff99b7ad1cd1808ee5afdf4291eb3c1c732439d60deaa",
+  "cpu_seconds": 0.6011104079661891,
+  "shared_preprocess_seconds": 0.34177778009325266,
+  "source_checkpoint_unchanged": true,
+  "runtime": {
+    "torch_threads": 1,
+    "cpu_affinity": [
+      0
+    ],
+    "omp_threads": "1",
+    "cuda_visible_devices": "-1"
+  },
+  "source_audit": {
+    "training_commit": "6464b3fb329704a99d8f9076dd6a8c5ac6821363",
+    "model_cache_source_sha256": {
+      "routeset/observed_geometry.py": "5bd25f43e780d0ec5ed1c9f336bbbe0b01361175f876eacd01fdeada1a9f8f9d",
+      "routeset/observed_route_head.py": "b67c38be821ad335d4080a6b9e55bc1f423451396bcd682459676da5de5d808b",
+      "routeset/observed_multitask.py": "b511642094b27d74e952ae0f85c532e4a6bcd6958a69c95ddd33404b4a39d769",
+      "scripts/train_observed_routes.py": "093f5aa6d79adb09c09c70f13a058f10b72e5dd0682e28f6cd82a401f8876c75",
+      "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8",
+      "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+      "routeset/observed_path_refinement.py": "48b46fc49d0f01d41a4b344d069894929b316465679b24fe499e9d45ba61ada3",
+      "scripts/observation_cache_qwen.py": "9b8121ec8c95e4e95d89e191c0fae3b9251db120c7b621bed18dad7fc820d4bf"
+    },
+    "original_trainer_sha256": "11b13bb999835546c646308223ea0782cf6940194052bdfaab4ec8a73940bfbd",
+    "runtime_trainer_sha256": "53d41e14fe34825171223df3465ac096dbecef6a24dcdbbc541971d056b3cf62",
+    "evaluation_functions_ast_identical": [
+      "checkpoint_selection_score",
+      "add_tip_evaluation",
+      "read_geometry",
+      "load_geometry",
+      "batch_inputs",
+      "evaluate"
+    ]
+  },
+  "cache_compatibility": {
+    "production": {
+      "model": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "processor": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "torch": "2.4.1+cu121",
+      "transformers": "4.57.1",
+      "model_parameter_count": 2127532032,
+      "model_trainable_parameter_count": 0,
+      "input_contract": [
+        "id",
+        "image",
+        "instruction",
+        "parent_id",
+        "split"
+      ],
+      "max_pixels": 262144,
+      "dtype": "torch.bfloat16",
+      "cache_scope": "frozen backbone only; invalid after LoRA/weight updates"
+    },
+    "pooling": "both",
+    "mean_hidden_dimension": 2048,
+    "last_hidden_dimension": 2048,
+    "output_dimension": 4096,
+    "pixel_stride": 2
+  },
+  "evaluator_sha256": "98036950d883d6ba394abcb78ba063cdd8a0992a764a4f8249dd3d6c2c973e79",
+  "evaluation_commit": "fe564531a0d66a95ca055f10a90a3f49e334bc37",
+  "additional_training_steps": 0,
+  "timing_scope": "Frozen real-Qwen cache + CPU head; actual cache encoding cost separately recorded"
+}

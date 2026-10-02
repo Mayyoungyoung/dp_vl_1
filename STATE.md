@@ -1,5 +1,14 @@
 # State — 2026-10-02
 
+## Current checkpoint — 18:10 UTC / 2026-10-03 02:10 China
+
+- All previously launched jobs are complete; JOBS snapshot18:06:51UTC has310records and no live running recorded jobs. Old6c formal collector completed144/144closed at17:38:07UTC,exit0; only mechanical closure inspected for locked roles, never contents.
+- Canonical-start v6 actual60a01ea:81tests passed;4/4 new static initial states pass full gates, initialization/restore planning entries0. Only283102 received27slots:23accepted,14knownlateral/9unknown,4failures. Target known counts5/7/2;27strict route restores pass.187.412s collector,187.881s process. Same DEV_COLLECTION geometry groups; new static start, not old dynamic replay or causal cross-version proof.
+- Fixed legacy12 transfer actualfe564:13server tests;12parents/36references/48actual Qwen inputs;all12fixed checkpoints completed with original bytes unchanged. Best three-seed ADE8.9879→8.5621cm (2/3 improve);fixedlast8.9621→9.0961cm (onlyseed0 improves). Best endpoint11.5124→10.6636cm;last11.3679→10.8122cm. Six/12parent mean ADE improve. Keep limited conventional auxiliary evidence, no new seed/tuning or core-method claim.
+- MAIN_RESULTS now244rows;12new CPU transfers incur zero training, shared actual encoding11.145s/0.003096GPUh counted once by shared_encoding_id. Saved candidate pools stay separate. Semantics/collision/execution/robot success null.
+- Actual next implementation:116new physical parents (64TRAIN/12DEV_MODEL/12DEV_SCORE/12CAL/16TEST_LOCKED), same canonical q and narrow v5 geometric ranges, all27slots/no replacement. First16TRAIN+all12DEV precede remainingTRAIN. Two CPU1 workers permitted after source/registration/tests frozen. Collector is NOT YET RUNNING.
+- Prepare closed-prefix export and ordinary peak/surface-anchor K4 saturation1500x32 baseline. First inspect TRAIN-only endpoint support/long-route quality; no unseen labels in forward. New two-row type evaluator preserves prior validity thresholds and actual reference classifier. No core mechanism starts before ordinary-model opportunity evidence.
+
 ## Current checkpoint — 17:35 UTC / 2026-10-03 01:35 China
 
 This block supersedes earlier running statements; actual job receipts remain authoritative.
