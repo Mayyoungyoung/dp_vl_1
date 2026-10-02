@@ -1,6 +1,26 @@
 # Direct-VLM depth interface: predeclared TRAIN-only audit
 
-Status: four fixed-source CPU tests passed; the first actual audit stopped at its metadata hash guard before opening raw observations or loading the processor. A minimally corrected plan is awaiting a new freeze. No training/evaluation source is modified. This is a diagnostic of the SFT input representation, not a new method or a claim that the representation caused a model failure.
+Status: actual pinned-processor audit completed on all eight TRAIN observations from `98f818eb97458dd5b1340cbd17528645cc3a9ad7`; CPU1, 5.1119 s internal elapsed, zero model forwards/GPU hours. The original metadata-guard failure is preserved below. No training/evaluation source is modified. This is a diagnostic of the SFT input representation, not a new method or a claim that the representation caused a model failure.
+
+## Actual findings
+
+All eight 224×224 depth inputs were resized to 256×256. All raw pixels were finite positive depth; all 524,288 processed blue values remained 255. There was no intermediate/unknown validity byte on this sample. Raw millimeter quantization error was at most 0.5 mm. The inverse patch/normalization reconstruction matched the actual uint8 resize with maximum 0.00000376 channel-unit discrepancy.
+
+Pooled decoded-byte depth versus the same-size float-metric bicubic comparator:
+
+| Absolute difference | Measured value |
+|---|---:|
+| Mean | 5.0974 mm |
+| Median | 0.3682 mm |
+| 95th percentile | 20.5556 mm |
+| Maximum | 258.7349 mm |
+| >1 mm | 72,450 / 524,288 (13.819%) |
+| >1 cm | 33,767 / 524,288 (6.441%) |
+| >10 cm | 9,757 / 524,288 (1.861%) |
+
+The corresponding mean difference to raw nearest-exact sampling is 13.2683 mm; ordinary float-metric bicubic versus raw nearest-exact already differs by 11.8879 mm. Therefore one must not label the full nearest-sample difference as byte corruption. The byte-versus-float-metric discrepancy specifically shows that the byte formula does not generally survive this image interface exactly. Normalization roundoff is negligible relative to that discrepancy. This establishes neither a geometric truth at interpolated pixels nor the cause of SFT endpoint errors, and it says nothing about a learned ViT decoder. The all-valid sample gives no evidence about unknown-depth edge behavior beyond the pure synthetic test.
+
+Original summary SHA: `a229be4376f2bd3fe994a58e9a2766d41828e5f6e39e48f14f29288bf714e823`. Ten original artifacts were copied and SHA-verified. Metadata, receipts and an explicitly derived pooled summary are in `reports/vlm_depth_interface_train8_v1/`; eight original NPZs are retained outside Git under local/server `runs/vlm_depth_interface_train8_v1/actual_processor_v2`. Actual run ID `actual_processor_source_hash_fix`, record PID382808 / child382809, exit0 at2026-10-02T14:50:32.722454+00:00. CPU slot was released immediately after completion. There is no proposed automatic depth-encoding change or training continuation.
 
 ## Fixed sample and information boundary
 
