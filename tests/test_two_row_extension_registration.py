@@ -1,0 +1,204 @@
+import copy
+import json
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+from scripts import register_two_row_extension as formal
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def inputs():
+    load=lambda name:json.loads((ROOT/'configs'/name).read_text(encoding='utf-8'))
+    return (load('observed_two_row_extension288_v1.json'),load('observed_two_row_pilot_v4.json'),
+            load('observed_two_row_extension288_exclusions_v1.json'))
+
+
+@pytest.fixture(scope='module')
+def registration():
+    return formal.build_registration(*inputs())
+
+
+def test_one_shot_registration_is_deterministic_and_does_not_mutate_inputs(registration):
+    original=inputs();saved=copy.deepcopy(original)
+    assert formal.build_registration(*original)==registration
+    assert original==saved
+    assert not registration['simulation_started'] and not registration['training_authorized']
+
+
+def test_all_roles_parents_and_requested_budget_are_preserved(registration):
+    plans=registration['parent_plan']
+    assert len(plans)==288 and len({p['parent_id'] for p in plans})==288
+    assert [p['seed'] for p in plans]==list(range(400000,400288))
+    assert Counter(p['role'] for p in plans)==dict(TRAIN=256,DEV_MODEL=32)
+    assert registration['requested_routes']==sum(p['config']['requested_route_proposals'] for p in plans)==7776
+    for p in plans:
+        assert p['role']==p['split']==p['config']['split']==formal.role_for_index(p['index'])
+        assert p['config']['selected_target_indices']==[0,1,2]
+        assert p['config']['entry_xyz']==[0.,0.,.865]
+        assert p['config']['requested_setup_actions']==0 and p['config']['preparation_xyz']==[]
+    assert not registration['reference_set_complete'] and registration['all_solution_count'] is None
+
+
+def test_execution_order_and_two_shards_do_not_reassign_roles(registration):
+    order=list(range(288))
+    ids=[registration['parent_plan'][i]['parent_id'] for i in order]
+    assert registration['execution_indices']==order and registration['execution_order']==ids
+    assert registration['shards']==[ids[::2],ids[1::2]]
+    assert set(registration['shards'][0]).isdisjoint(registration['shards'][1])
+    assert [x for pair in zip(*registration['shards']) for x in pair]==ids
+
+
+def test_exact_rng_draw_order_geometry_and_official_colors(registration):
+    spec,_,_=inputs();rng=np.random.RandomState(399999)
+    for p in registration['parent_plan']:
+        c=p['config'];sample=lambda bounds:float(rng.uniform(*bounds))
+        assert c['row_x']==[sample(b) for b in spec['row_x_ranges']]
+        assert c['post_y']==[[sample(b) for b in r] for r in spec['post_y_ranges']]
+        assert c['goal_xyz']==[[sample(spec['goal_x_range']),sample(b),.84] for b in spec['goal_y_ranges']]
+        idx=rng.choice(20,3,replace=False).tolist()
+        assert p['target_colors']==[formal.color_table()[i] for i in idx]
+        assert len(set(x['name'] for x in p['target_colors']))==3
+        assert c['post_size_xyz']==[.035,.035,.14]
+    assert spec['color_table_sha256']==formal.canonical_hash(formal.color_table())
+
+
+def test_mechanical_hashes_ignore_colors_and_seed_but_detect_geometry(registration):
+    p=registration['parent_plan'][0];c=p['config'];centers,halves=formal.batch.collector.geometry(c)
+    for suffix,q in [('exact',None),('1mm',.001)]:
+        assert p['registered_geometry_'+suffix+'_sha256']==formal.batch.scene_geometry_hash(centers,halves,c['goal_xyz'],q)
+    changed=centers.copy();changed[0,0]+=.004
+    assert formal.batch.scene_geometry_hash(changed,halves,c['goal_xyz'],.001)!=p['registered_geometry_1mm_sha256']
+
+
+def test_cross_split_duplicate_closes_both_members_and_retains_budgets(registration):
+    plans=copy.deepcopy(registration['parent_plan']);left,right=plans[0],plans[256]
+    for suffix in ('exact','1mm'):
+        right['registered_geometry_'+suffix+'_sha256']=left['registered_geometry_'+suffix+'_sha256']
+    gate=formal.apply_duplicate_gate(plans,[])
+    assert all(not p['usable_for_model'] and not p['collection_allowed'] for p in (left,right))
+    assert all(p['predeclared_unattempted_routes']==27 for p in (left,right))
+    assert {left['parent_id'],right['parent_id']}<=set(gate['blocked_parent_ids'])
+    assert any(g['cross_split'] for g in gate['duplicate_groups'])
+    assert len(plans)==288 and sum(p['config']['requested_route_proposals'] for p in plans)==7776
+
+
+def test_prior_geometry_match_is_closed_without_replacement(registration):
+    plans=copy.deepcopy(registration['parent_plan']);p=plans[2]
+    old=dict(parent_id='two_row_reach_283001',version='v4',source='public metadata',source_sha256='a'*64,
+        geometry_exact_sha256=p['registered_geometry_exact_sha256'],geometry_1mm_sha256=p['registered_geometry_1mm_sha256'])
+    gate=formal.apply_duplicate_gate(plans,[old])
+    assert p['parent_id'] in gate['blocked_parent_ids'] and len(gate['prior_geometry_hits'])==2
+    assert not p['usable_for_model'] and p['predeclared_unattempted_routes']==27
+
+
+def test_precheck_failure_does_not_redraw_geometry_colors_or_budget(registration,monkeypatch):
+    calls=[]
+    def failed(config):
+        calls.append(config['seed'])
+        return dict(passed=False,checked=0,error='synthetic fixed precheck failure')
+    monkeypatch.setattr(formal.batch,'geometry_precheck',failed)
+    result=formal.build_registration(*inputs())
+    assert calls==list(range(400000,400288))
+    assert result['predeclared_unattempted_routes']==7776
+    for old,new in zip(registration['parent_plan'],result['parent_plan']):
+        assert old['config']==new['config'] and old['target_colors']==new['target_colors']
+        assert old['registered_geometry_1mm_sha256']==new['registered_geometry_1mm_sha256']
+        assert new['registration_failure_reasons']==['geometry_precheck_failed']
+
+
+@pytest.mark.parametrize('key,value',[('layout_rng_seed',399998),('requested_route_proposals',7777),
+    ('post_height_m',.13),('setup_path_budget',1),('geometry_resampling_attempts',1)])
+def test_changed_registration_rejected_before_any_sampling(key,value,monkeypatch):
+    spec,base,excluded=inputs();spec[key]=value
+    def forbidden(*a,**kw):raise AssertionError('No drawing before validation')
+    monkeypatch.setattr(formal.np.random,'RandomState',forbidden)
+    with pytest.raises(ValueError,match='Extension288|registration changed'):formal.build_registration(spec,base,excluded)
+
+
+def test_old_pilot_dev_guard_remains_strict(registration):
+    config=registration['parent_plan'][0]['config']
+    with pytest.raises(ValueError,match='pilot role'):formal.batch.collector.validate_config(config)
+    compatibility=copy.deepcopy(config);compatibility.update(split='DEV_COLLECTION',requested_setup_actions=1)
+    formal.batch.collector.validate_config(compatibility)
+    assert config['split']=='TRAIN' and config['requested_setup_actions']==0
+
+
+def test_incomplete_tampered_or_locked_exclusions_rejected():
+    spec,base,excluded=inputs()
+    with pytest.raises(ValueError,match='All12'):formal.build_registration(spec,base,excluded['entries'][:-1])
+    bad=copy.deepcopy(excluded);bad['entries'][0]['role']='TEST_LOCKED'
+    with pytest.raises(ValueError,match='public development'):formal.build_registration(spec,base,bad)
+    bad=copy.deepcopy(excluded);bad['entries'][0]['geometry_1mm_sha256']='a'*64
+    with pytest.raises(ValueError,match='exclusion table changed'):formal.build_registration(spec,base,bad)
+
+
+def test_canonical_state_is_fixed_and_no_old_beforeworld_reference():
+    spec,base,excluded=inputs();spec['canonical_init']['canonical_arm_joints'][0]+=.001
+    with pytest.raises(ValueError,match='canonical static'):formal.build_registration(spec,base,excluded)
+    spec,base,excluded=inputs();spec['canonical_init']['before_world']='old_failed_scene'
+    with pytest.raises(ValueError,match='before-world'):formal.build_registration(spec,base,excluded)
+
+
+def test_cli_existing_registration_is_never_overwritten(tmp_path,monkeypatch):
+    existing=tmp_path/'registration.json';existing.write_text('original evidence')
+    monkeypatch.setattr('sys.argv',['register','--spec','never_read','--base-config','never_read',
+        '--excluded-hashes','never_read','--output',str(existing)])
+    with pytest.raises(FileExistsError,match='never overwrite'):formal.main()
+    assert existing.read_text()=='original evidence'
+
+
+def test_new_dev_is_collected_last_and_initially_sealed(registration):
+    assert registration['training_prefix_parent_counts']==[32,64,128,256]
+    assert registration['dev_pool_initially_sealed'] is True
+    assert registration['requires_all_train_closed_before_dev'] is True
+    assert all(not p['model_use_initially_sealed'] for p in registration['parent_plan'][:256])
+    assert all(p['model_use_initially_sealed'] for p in registration['parent_plan'][256:])
+    assert [len(x) for x in registration['shards']]==[144,144]
+    assert registration['execution_indices'][:256]==list(range(256))
+    assert registration['execution_indices'][256:]==list(range(256,288))
+
+
+def test_same_role_duplicate_is_not_an_independent_parent(registration):
+    plans=copy.deepcopy(registration['parent_plan']);a,b=plans[:2]
+    b['registered_geometry_1mm_sha256']=a['registered_geometry_1mm_sha256']
+    gate=formal.apply_duplicate_gate(plans,[])
+    assert not a['collection_allowed'] and not b['collection_allowed']
+    assert a['predeclared_unattempted_routes']==b['predeclared_unattempted_routes']==27
+    assert any(not x['cross_split'] for x in gate['duplicate_groups'])
+
+
+def test_all_locked_exclusions_remain_mechanical_hashes_only():
+    spec,base,excluded=inputs()
+    assert len(excluded['entries'])==128
+    locked=[r for r in excluded['entries'] if r['role']=='TEST_LOCKED']
+    assert len(locked)==16
+    formal.validate_exclusions(excluded['entries'])
+    altered=copy.deepcopy(excluded['entries']);altered[-1]['trajectory']=[[0,0,0]]
+    with pytest.raises(ValueError,match='only identity'):
+        formal.validate_exclusions(altered)
+    altered=copy.deepcopy(excluded['entries']);altered[-1]['role']='TRAIN'
+    with pytest.raises(ValueError,match='role/source'):
+        formal.validate_exclusions(altered)
+
+
+def test_registration_never_opens_excluded_raw_source_files(monkeypatch):
+    args=inputs()
+    def forbidden(*a,**k):raise AssertionError('Registration must not open source pointers or raw outcomes')
+    monkeypatch.setattr(Path,'open',forbidden)
+    result=formal.build_registration(*args)
+    assert result['requested_parents']==288
+
+
+@pytest.mark.parametrize('value',[-1,288,True,0.0,'0'])
+def test_bad_role_indices_refused(value):
+    with pytest.raises(ValueError):formal.role_for_index(value)
+
+
+def test_cross_shard_global_train_barrier_cannot_be_disabled():
+    spec,base,excluded=inputs();spec['requires_all_train_closed_before_dev']=False
+    with pytest.raises(ValueError,match='sealed DEV policy'):
+        formal.build_registration(spec,base,excluded)
