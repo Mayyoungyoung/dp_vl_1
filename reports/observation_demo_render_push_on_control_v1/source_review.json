@@ -1,0 +1,18 @@
+{
+  "review_kind": "read_only_installed_source",
+  "collector_source_commit": "7cb3aedef34b665c923b7427c1623867479fcd6e",
+  "sources": [
+    {"path": "/home/wzy/dpvlm/route_set_v1/.observation-deps/rlbench-pinned/rlbench/backend/scene.py", "sha256": "d95fe8c900d9a5f7efc77bf7cd3d8697514ddbc59d3fa885b60523b4695d690d", "reviewed": "get_observation, step callbacks, get_demo and final success loop"},
+    {"path": "/home/wzy/dpvlm/route_set_v1/.observation-deps/rlbench-pinned/rlbench/backend/task.py", "sha256": "02789876d0242afebbb282a9394d519d3af5d0e852e1ffd3b1f7abc9f95a5831", "reviewed": "default decorate_observation returns input observation"},
+    {"path": "/home/wzy/dpvlm/route_set_v1/.observation-deps/rlbench-pinned/rlbench/tasks/push_button.py", "sha256": "a13b76636cef786891a44180f5f2ac520caf7a069b6fad88e27e71e49612b203", "reviewed": "task initialization, joint success condition and color update, no observation override"},
+    {"path": "/home/wzy/dpvlm/route_set_v1/.observation-deps/pyrep-pinned/pyrep/robots/arms/arm.py", "sha256": "4c0d5e09aa777de145c184f05a24ac74bb770aedb534dc0c9501d726c17ebe5d", "reviewed": "get_path linear/fallback and solve_ik_via_sampling"},
+    {"path": "/home/wzy/dpvlm/route_set_v1/.observation-deps/pyrep-pinned/pyrep/backend/simAddOnScript_PyRep.lua", "sha256": "4b50063322c2220261717dee3a80796bdf3a2272efffbd99fef18b9ebbe24da3", "reviewed": "OMPL creation, algorithm selection and four-second compute budget"}
+  ],
+  "findings": [
+    "Collector resets Python and NumPy RNG states; the inspected IK/OMPL call chain does not explicitly set its random seed.",
+    "PyRep can use random IK sampling and SBL fallback, but this parent actual planning branch was not instrumented.",
+    "Scene step callback defaults to None; collector does not register a step callback or supply callable_each_step.",
+    "Inspected push task code does not use image observations for decisions. Internal simulator/plugin callbacks were not exhaustively inspected."
+  ],
+  "causal_conclusion": "Unknown. One on/on control also differs; original on/off difference alone cannot identify a rendering effect."
+}

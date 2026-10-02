@@ -28,4 +28,4 @@ root 已固定正式 launcher 版本 `c9b3f23` 并启动 `runs/observation_multi
 
 独立性能候选仅完成源码核验：已安装 RLBench `backend/scene.py` SHA256 为 `d95fe8c900d9a5f7efc77bf7cd3d8697514ddbc59d3fa885b60523b4695d690d`。逐步观测会根据当前相机开关执行 RGB-D 渲染，pose/open 则独立读取。可在严格初态图像核验后临时关闭 front RGB-D，并在下一次恢复校验前开启；不得调用会删除 sensor 的 `_set_camera_properties()`。正式默认尚未采用此优化；需要相同 TRAIN 父和提案的独立 on/off 实测及全部额外尝试预算后再决定。
 
-性能候选 harness 已实现为 `scripts/benchmark_demo_render.py`，仅在 proposal 0 的 `Scene.get_demo` 调用期间临时切换相机配置，初始／严格恢复图像以及 pose/open 采样语义保留。两臂单独输出、各多消耗一个真实采集提案；完整初态及原始轨迹／事件逐点比较，异常退出也恢复相机开关。三项本地开关测试通过，实际 on/off 模拟器验证尚未执行。它不覆盖自由前缀阶段，也不会自动采用到正式采集。
+性能候选 harness 已实现为 `scripts/benchmark_demo_render.py`，仅在 proposal 0 的 `Scene.get_demo` 调用期间临时切换相机配置，初始／严格恢复图像以及 pose/open 采样语义保留。固定 ed710 的 TRAIN 首父 on/off 实测已完成：初态精确相等、55 步 pose/open 逐值相等、两臂原任务均成功，worker 从 28.036 秒降至 10.532 秒。额外两提案独立归档。详细成本、源码与限制见 `RLBENCH_DEMO_RENDER_PERFORMANCE.md`。下一步已授权其余五个任务首 TRAIN 父各一组 on/off 验证，尚待固定新版本后运行。它不覆盖自由前缀阶段，也不会自动采用到正式采集。

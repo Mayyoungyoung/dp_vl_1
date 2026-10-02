@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -9,6 +10,7 @@ import pytest
 from scripts.observation_collect_multitask import (
     TASKS, acquire_lock, atomic_json, completed_records, digest, ensure_registration, ensure_source,
     export_role, parent_folder, pending_slots, registration, strict_input_difference, mechanical_summary,
+    demo_render_policy, worker_command,
 )
 
 
@@ -96,3 +98,44 @@ def test_all_worker_sessions_count_and_unfinished_cost_stays_upper_bound(tmp_pat
     assert row['requested_attempts']==row['unattempted_or_uncommitted_slots']==3
     assert row['unfinished_worker_elapsed_upper_bounds'][0]['elapsed_seconds_upper_bound']>=100.
     assert row['unfinished_worker_elapsed_upper_bounds'][0]['actual_compute_seconds'] is None
+
+
+def test_whitelist_policy_keeps_push_on_and_restores_after_failure():
+    camera=SimpleNamespace(rgb=True,depth=True,point_cloud=False,mask=False)
+    scene=SimpleNamespace(get_observation_config=lambda:SimpleNamespace(front_camera=camera))
+    for task in TASKS:
+        with demo_render_policy(scene,task,'on') as audit:
+            assert camera.rgb and camera.depth and not audit['rgbd_suppressed']
+        assert audit['flags_restored']
+        with pytest.raises(RuntimeError,match='demo failed'):
+            with demo_render_policy(scene,task,'validated-five-v1') as audit:
+                assert camera.rgb==camera.depth==(task=='push_button')
+                assert audit['rgbd_suppressed']==(task!='push_button')
+                raise RuntimeError('demo failed')
+        assert camera.rgb and camera.depth and audit['flags_restored']
+    camera.rgb=False
+    with pytest.raises(ValueError,match='RGB-D enabled'):
+        with demo_render_policy(scene,'reach_target','validated-five-v1'):pass
+
+
+def test_camera_policy_and_schedule_cannot_change_on_resume(tmp_path):
+    plan=ensure_registration(tmp_path,282000,'validated-five-v1','interleaved-early-dev-v1')
+    before=(tmp_path/'partition_manifest.json').read_bytes()
+    for policy,schedule in [('on','interleaved-early-dev-v1'),('validated-five-v1','task-major-v1')]:
+        with pytest.raises(ValueError,match='Registration mismatch'):
+            ensure_registration(tmp_path,282000,policy,schedule)
+    assert before==(tmp_path/'partition_manifest.json').read_bytes()
+    command=worker_command(tmp_path,plan,plan['parents'][0])
+    assert command[command.index('--camera-policy')+1]=='validated-five-v1'
+    assert command[command.index('--schedule')+1]=='interleaved-early-dev-v1'
+
+
+def test_interleaved_registration_preserves_roles_and_new_parent_identity():
+    plan=registration(282000,'validated-five-v1','interleaved-early-dev-v1')
+    original=registration(281000);same_seed=registration(282000)
+    assert {p['parent_id'] for p in plan['parents']}.isdisjoint(p['parent_id'] for p in original['parents'])
+    assert {p['seed'] for p in plan['parents']}.isdisjoint(p['seed'] for p in original['parents'])
+    assert {p['parent_id']:p for p in plan['parents']}=={p['parent_id']:p for p in same_seed['parents']}
+    assert [p['task'] for p in plan['parents'][:6]]==list(TASKS)
+    assert [p['parent_index'] for p in plan['parents'][:24:6]]==[0,16,1,17]
+    assert [p['split'] for p in plan['parents'][:24:6]]==['TRAIN','DEV_MODEL','TRAIN','DEV_MODEL']

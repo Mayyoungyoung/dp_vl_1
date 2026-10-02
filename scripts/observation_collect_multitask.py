@@ -6,6 +6,7 @@ Actual cross-process simulator reconstruction must pass the persisted reference;
 the filesystem self-test cannot establish that simulator property.
 """
 import argparse
+from contextlib import contextmanager
 import datetime
 import hashlib
 import importlib
@@ -19,11 +20,16 @@ import time
 import traceback
 
 import numpy as np
+from routeset.multitask_fingerprints import fingerprint, audit_fingerprints
 
 
 TASKS = ('reach_target','pick_and_lift','push_button','take_lid_off_saucepan','pick_up_cup','slide_block_to_target')
 ROLES = ('TRAIN',)*16+('DEV_MODEL',)*2+('DEV_SCORE',)*2+('CALIBRATION',)*2+('TEST_LOCKED',)*2
 VERSION = 'registered_six_task_parent_resume_v1'
+CAMERA_POLICIES = ('on','validated-five-v1')
+VALIDATED_RENDER_OFF_TASKS = ('reach_target','pick_and_lift','take_lid_off_saucepan','pick_up_cup','slide_block_to_target')
+SCHEDULES = ('task-major-v1','interleaved-early-dev-v1')
+EARLY_DEV_PARENT_ORDER = (0,16,1,17)+tuple(range(2,16))+tuple(range(18,24))
 
 
 def now():
@@ -62,22 +68,31 @@ def atomic_json(path, value):
     os.replace(temporary,path)
 
 
-def registration(seed):
+def registration(seed, camera_policy='on', schedule='task-major-v1'):
+    if camera_policy not in CAMERA_POLICIES or schedule not in SCHEDULES:
+        raise ValueError('Unknown explicit camera policy or scheduling protocol')
     parents=[]
     for task_index,task in enumerate(TASKS):
         for parent_index,role in enumerate(ROLES):
             parent_seed=seed+task_index*10000+parent_index
             parents.append(dict(parent_id=task+'_'+str(parent_seed),task=task,parent_index=parent_index,
                 seed=parent_seed,split=role,requested_attempts=3))
+    if schedule=='interleaved-early-dev-v1':
+        parents.sort(key=lambda row:(EARLY_DEV_PARENT_ORDER.index(row['parent_index']),TASKS.index(row['task'])))
     return dict(version=VERSION,seed=seed,tasks=list(TASKS),parents=parents,parents_requested=len(parents),
         attempts_requested=3*len(parents),strict_state_atol=0.,strict_rgb=True,render_warmup=True,
         image_size=224,proposal_scope='original demo or signed-y free-prefix, original task success flag',
         variation_rule='parent_index modulo task variation_count; role variation distributions may differ, no IID claim',
-        route_type_definition=None,full_motion_collision_certification=False)
+        route_type_definition=None,full_motion_collision_certification=False,
+        motion_camera_policy=camera_policy,schedule=schedule,
+        scheduled_parent_indices=list(EARLY_DEV_PARENT_ORDER) if schedule=='interleaved-early-dev-v1' else list(range(24)),
+        render_off_task_whitelist=list(VALIDATED_RENDER_OFF_TASKS) if camera_policy=='validated-five-v1' else [],
+        render_policy_scope='get_demo only; initial/restore/prefix RGB-D remain on',
+        render_policy_evidence='One exact on/off TRAIN parent/proposal for each whitelisted task; no all-parent equivalence claim')
 
 
-def ensure_registration(root, seed):
-    root.mkdir(parents=True,exist_ok=True);path=root/'partition_manifest.json';expected=registration(seed)
+def ensure_registration(root, seed, camera_policy='on', schedule='task-major-v1'):
+    root.mkdir(parents=True,exist_ok=True);path=root/'partition_manifest.json';expected=registration(seed,camera_policy,schedule)
     if path.exists():
         if json.loads(path.read_text()) != expected:
             raise ValueError('Registration mismatch; existing parents must not be reassigned')
@@ -88,6 +103,7 @@ def ensure_registration(root, seed):
 
 def ensure_source(root):
     source=dict(collector_sha256=digest(__file__),restore_helper_sha256=digest(Path(__file__).with_name('observation_collect_rlbench.py')),
+        fingerprint_helper_sha256=digest(Path(__file__).resolve().parents[1]/'routeset/multitask_fingerprints.py'),
         expected_rlbench_revision='02720bba4c73fe02eb75df946b8791b806028a9d',
         expected_pyrep_revision='8f420be8064b1970aae18a9cfbc978dfb15747ef')
     path=root/'source_manifest.json'
@@ -190,7 +206,15 @@ def mechanical_summary(root, plan):
     result=dict(timestamp_utc=now(),scope='mechanical scheduling and wall-time only; no success labels or locked sample contents',
         requested_parents=len(parents),closed_parent_markers=sum(row['closed'] for row in parents),
         finalized_worker_elapsed_seconds=sum(row['finalized_worker_elapsed_seconds'] for row in parents),parents=parents)
-    atomic_json(root/'mechanical_status.json',result);return result
+    atomic_json(root/'mechanical_status.json',result)
+    fingerprints=[];missing=[]
+    for spec in plan['parents']:
+        path=parent_folder(root,spec)/'mechanical_fingerprint.json'
+        if path.exists():fingerprints.append(dict(json.loads(path.read_text()),source_root=str(root)))
+        else:missing.append(spec['parent_id'])
+    audit=audit_fingerprints(fingerprints);audit['missing_fingerprint_parent_ids']=missing
+    atomic_json(root/'layout_usage_gate.json',audit)
+    return result
 
 
 def reference_data(observation):
@@ -202,6 +226,31 @@ def reference_data(observation):
 def restore(task,snapshot,core):
     core.restore_native_snapshot(task,snapshot);task.get_observation();core.restore_native_snapshot(task,snapshot)
     return task.get_observation()
+
+
+@contextmanager
+def demo_render_policy(scene, task_name, policy):
+    """No simulator steps or sensor removal; always restore the original flags."""
+    if policy not in CAMERA_POLICIES or task_name not in TASKS:
+        raise ValueError('Unregistered task or camera policy')
+    camera=scene.get_observation_config().front_camera
+    before=(camera.rgb,camera.depth,camera.point_cloud,camera.mask)
+    if before!=(True,True,False,False):
+        raise ValueError('Expected RGB-D enabled and no pointcloud/mask before demo')
+    suppress=policy=='validated-five-v1' and task_name in VALIDATED_RENDER_OFF_TASKS
+    audit=dict(policy=policy,task=task_name,rgbd_suppressed=suppress,flags_restored=False,
+        scope='get_demo only',initial_and_restore_rgbd_on=True)
+    try:
+        if suppress:camera.rgb=camera.depth=False
+        yield audit
+    finally:
+        camera.rgb,camera.depth,camera.point_cloud,camera.mask=before
+        audit['flags_restored']=(camera.rgb,camera.depth,camera.point_cloud,camera.mask)==before
+
+
+def worker_command(root, plan, spec):
+    return [sys.executable,str(Path(__file__).resolve()),'--output',str(root),'--seed',str(plan['seed']),
+        '--worker-parent',spec['parent_id'],'--camera-policy',plan['motion_camera_policy'],'--schedule',plan['schedule']]
 
 
 def worker(root, plan, spec, max_new_attempts=None):
@@ -254,6 +303,15 @@ def worker(root, plan, spec, max_new_attempts=None):
             reference=dict(descriptions=descriptions,world=actual_world,seed=spec['seed'],variation=task._variation_number if hasattr(task,'_variation_number') else spec['parent_index']%task.variation_count())
             atomic_json(ref_folder/'reference.json',reference)
             atomic_json(pointer,dict(directory=ref_folder.relative_to(folder).as_posix(),reference_sha256=digest(ref_folder/'reference.json'),observation_sha256=digest(ref_folder/'observation.npz'),image_sha256=digest(ref_folder/'front.png')))
+        # Mechanical-only metadata may later be compared across roles without
+        # opening images, simulator labels, trajectories or acceptance results.
+        fingerprint_path=folder/'mechanical_fingerprint.json'
+        current_fingerprint=fingerprint(actual_world,inputs,spec)
+        current_fingerprint['rgb_file_sha256']=digest(ref_folder/'front.png')
+        if fingerprint_path.exists():
+            if json.loads(fingerprint_path.read_text())!=current_fingerprint:
+                raise RuntimeError('resume_blocked: initial mechanical fingerprint changed')
+        else:atomic_json(fingerprint_path,current_fingerprint)
         accepted=[]
         for old in completed_records(folder):
             if old['success']:
@@ -268,7 +326,10 @@ def worker(root, plan, spec, max_new_attempts=None):
                 previous.update(status='interrupted_before_commit',recovered_utc=now(),elapsed_seconds_upper_bound=(datetime.datetime.now(datetime.timezone.utc)-datetime.datetime.fromisoformat(previous['started_utc'])).total_seconds(),exact_active_compute_seconds=None)
                 atomic_json(interrupted/('%04d.json'%ordinal),previous)
             atomic_json(inflight,dict(parent_id=spec['parent_id'],attempt=slot,started_utc=now(),pid=os.getpid(),status='running'))
-            tic=time.perf_counter();record=dict(parent_id=spec['parent_id'],attempt=slot,status='completed',success=False,route_type=None,guide_is_collection_only=True,started_utc=now())
+            tic=time.perf_counter();record=dict(parent_id=spec['parent_id'],attempt=slot,status='completed',success=False,route_type=None,guide_is_collection_only=True,started_utc=now(),
+                motion_camera_policy=plan['motion_camera_policy'],demo_render_audit=None,
+                collector_sha256=digest(__file__),restore_helper_sha256=digest(Path(__file__).with_name('observation_collect_rlbench.py')),
+                fingerprint_helper_sha256=digest(Path(__file__).resolve().parents[1]/'routeset/multitask_fingerprints.py'))
             try:
                 np.random.set_state(rng_before);random.setstate(python_rng_before)
                 restored_descriptions,_=task.reset();observed=restore(task,snapshot,core)
@@ -287,7 +348,10 @@ def worker(root, plan, spec, max_new_attempts=None):
                         observed=task.get_observation();poses.append(observed.gripper_pose);events.append(observed.gripper_open);steps+=1
                         if steps>1000:raise RuntimeError('Prefix exceeded step budget')
                     record['free_prefix_steps']=steps
-                demo=task._scene.get_demo();poses.extend(obs.gripper_pose for obs in demo);events.extend(obs.gripper_open for obs in demo)
+                with demo_render_policy(task._scene,spec['task'],plan['motion_camera_policy']) as audit:
+                    record['demo_render_audit']=audit
+                    demo=task._scene.get_demo()
+                poses.extend(obs.gripper_pose for obs in demo);events.extend(obs.gripper_open for obs in demo)
                 success,_=task._task.success()
                 if not success:raise RuntimeError('Original task success condition did not pass')
                 route=np.asarray(poses);opened=np.asarray(events);normalized=core.resample(route)
@@ -331,11 +395,13 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--seed',type=int,default=281000);parser.add_argument('--prepare-only',action='store_true')
     parser.add_argument('--resume',action='store_true',help='preserve a dead coordinator lock and continue unfinished parents')
+    parser.add_argument('--camera-policy',choices=CAMERA_POLICIES,default='on')
+    parser.add_argument('--schedule',choices=SCHEDULES,default='task-major-v1')
     parser.add_argument('--worker-parent');parser.add_argument('--max-parents',type=int)
     parser.add_argument('--max-new-attempts',type=int,help='worker-only deterministic stop after committed attempts, for actual resume validation')
     args=parser.parse_args()
     if args.max_new_attempts is not None and (not args.worker_parent or args.max_new_attempts<1):parser.error('--max-new-attempts requires a worker parent and positive count')
-    root=args.output.resolve();plan=ensure_registration(root,args.seed);ensure_source(root)
+    root=args.output.resolve();plan=ensure_registration(root,args.seed,args.camera_policy,args.schedule);ensure_source(root)
     if args.prepare_only:return
     if args.worker_parent:
         matches=[s for s in plan['parents'] if s['parent_id']==args.worker_parent]
@@ -355,7 +421,7 @@ def main():
             if (folder/'closed.json').exists():continue
             if args.max_parents is not None and dispatched>=args.max_parents:break
             folder.mkdir(parents=True,exist_ok=True);execution=len(list(folder.glob('worker_*.log')))
-            command=[sys.executable,str(Path(__file__).resolve()),'--output',str(root),'--seed',str(args.seed),'--worker-parent',spec['parent_id']]
+            command=worker_command(root,plan,spec)
             environment=os.environ.copy();release=Path(__file__).resolve().parents[1]
             environment['PYTHONPATH']=os.pathsep.join([str(release),str(release/'scripts'),environment.get('PYTHONPATH','')])
             tic=time.perf_counter()
