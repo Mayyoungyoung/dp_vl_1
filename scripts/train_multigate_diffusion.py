@@ -4,6 +4,7 @@ No locked evaluation, no PG strength sweep, and no claim of observation input.
 Invoke each arm in a separate recorded immutable-source job.
 """
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -154,6 +155,7 @@ def train_one(args):
         global_rng = np.random.default_rng(args.seed)
         start_step, best, elapsed_before, exposures, pool_access = 0, -float("inf"), 0., 0, 0
         history, losses = [], []
+        incremental_stream_digest = "0" * 64
         cost_origin = dict(prior_elapsed_s=0., prior_trajectory_exposures=0,
                            prior_reference_pool_access=0, start_step=0)
         if args.resume:
@@ -173,6 +175,7 @@ def train_one(args):
             exposures, pool_access = ck["trajectory_exposures"], ck["reference_pool_access"]
             history, losses = ck["history"], ck["loss_tail"]
             cost_origin = ck.get("cost_origin", cost_origin)
+            incremental_stream_digest = ck.get("incremental_stream_sha256", stream.digest)
             config["continue_from"] = ck["config"].get("continue_from")
             if "continuation" in ck["config"]:
                 config["continuation"] = ck["config"]["continuation"]
@@ -221,7 +224,17 @@ def train_one(args):
         started = synchronized_time(args.device)
         for step in range(start_step + 1, args.steps + 1):
             model.train()
-            ids, _, paths, times, noise = stream.draw(args.batch_size, args.candidates, args.diffusion_steps)
+            ids, selected, paths, times, noise = stream.draw(args.batch_size, args.candidates, args.diffusion_steps)
+            if cost_origin["start_step"]:
+                # Same audited byte protocol as the cumulative stream, but the
+                # continuation segment starts at zero and survives interruptions.
+                digest = hashlib.sha256(bytes.fromhex(incremental_stream_digest))
+                for array in (ids, selected, times.numpy(), noise.numpy()):
+                    digest.update(str((array.shape, array.dtype.str)).encode())
+                    digest.update(array.tobytes())
+                incremental_stream_digest = digest.hexdigest()
+            else:
+                incremental_stream_digest = stream.digest
             condition = torch.as_tensor(data["scenes"][ids], device=args.device)
             targets = encode_paths(torch.as_tensor(paths, device=args.device), condition)
             times, noise = times.to(args.device), noise.to(args.device)
@@ -253,6 +266,7 @@ def train_one(args):
                     history=history, loss_tail=losses, config=config, trajectory_exposures=exposures,
                     reference_pool_access=pool_access, elapsed_s=elapsed_before + synchronized_time(args.device) - started)
                 checkpoint.update(cost_origin=cost_origin,
+                    incremental_stream_sha256=incremental_stream_digest,
                     cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + checkpoint["elapsed_s"],
                     incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"],
                     incremental_reference_pool_access=pool_access - cost_origin["prior_reference_pool_access"])
@@ -290,6 +304,7 @@ def train_one(args):
             peak_cuda_memory_mb=torch.cuda.max_memory_allocated() / 2**20 if args.device.startswith("cuda") else 0.,
             cost_scope="training, intermediate DEV evaluation, final separate repeats and latency measurement; one real training seed")
         summary.update(cost_origin=cost_origin, incremental_elapsed_s=elapsed,
+            incremental_stream_sha256=incremental_stream_digest,
             cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + elapsed,
             incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"],
             incremental_reference_pool_access=pool_access - cost_origin["prior_reference_pool_access"],

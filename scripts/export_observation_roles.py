@@ -74,7 +74,48 @@ def write_rows(path,rows):
     Path(path).write_text(''.join(json.dumps(row,ensure_ascii=False)+'\n' for row in rows),encoding='utf-8')
 
 
-def build(root,reservation,collection,roles,output,targets=3,attempts_per_target=3):
+def selected_collection_rows(source,selected,targets,attempts_per_target,collection_format):
+    if collection_format=='natural_v1':
+        return {key:selected_rows(source/(key+'.jsonl'),selected)
+                for key in ('parents','observations','supervision','attempts')}
+    if collection_format!='obstacle_v3' or targets!=3 or attempts_per_target!=4:
+        raise ValueError('obstacle_v3 requires its original three targets and four proposals')
+    # The original obstacle collector has no parent ledger. A parent closes
+    # after all twelve recorded outcomes, or one explicit setup failure.
+    rows={key:selected_rows(source/(key+'.jsonl'),selected)
+          for key in ('observations','supervision','attempts')}
+    raw_attempts=rows['attempts']; rows['attempts']=[]; rows['parents']=[]
+    grouped=defaultdict(list)
+    for row in raw_attempts:grouped[row['parent_id']].append(row)
+    for parent in sorted(selected):
+        attempts=grouped[parent]
+        failures=[row for row in attempts if row.get('phase')=='parent_setup']
+        if failures:
+            if len(failures)!=1 or len(attempts)!=1 or failures[0].get('success',False):
+                raise ValueError('inconsistent original setup failure: '+parent)
+            failure=failures[0]
+            rows['parents'].append(dict(parent_id=parent,split=failure['split'],setup_success=False,
+                original_setup_failure=failure,closure='original setup failure; proposal slots unattempted'))
+            for target in range(targets):
+                for attempt in range(attempts_per_target):
+                    rows['attempts'].append(dict(parent_id=parent,split=failure['split'],
+                        input_id=parent+'_target'+str(target),attempt=attempt,attempted=False,
+                        success=False,phase='unattempted_after_parent_setup_failure',
+                        original_setup_failure_sha256=row_hash(failure)))
+        else:
+            expected={(parent+'_target'+str(target),attempt)
+                      for target in range(targets) for attempt in range(attempts_per_target)}
+            if len(attempts)!=len(expected) or {(r.get('input_id'),r.get('attempt')) for r in attempts}!=expected:
+                raise ValueError('all requested proposal outcomes must be recorded: '+parent)
+            splits={row['split'] for row in attempts}
+            if len(splits)!=1:raise ValueError('original parent split inconsistent: '+parent)
+            rows['parents'].append(dict(parent_id=parent,split=next(iter(splits)),setup_success=True,
+                closure='all original twelve proposal outcomes recorded'))
+            rows['attempts'].extend(attempts)
+    return rows
+
+
+def build(root,reservation,collection,roles,output,targets=3,attempts_per_target=3,collection_format='natural_v1'):
     root,reservation,output=Path(root).resolve(),Path(reservation).resolve(),Path(output).resolve()
     if not roles or len(set(roles))!=len(roles) or not set(roles)<=ALLOWED_ROLES:
         raise ValueError('only explicit unique TRAIN/DEV_MODEL roles are permitted; no locked/score/calibration export')
@@ -95,7 +136,7 @@ def build(root,reservation,collection,roles,output,targets=3,attempts_per_target
     if any(role not in entry['roles_inclusive'] for role in roles) or not selected:
         raise ValueError('requested role absent from reservation')
     streams=('parents','observations','supervision','attempts')
-    rows={key:selected_rows(source/(key+'.jsonl'),selected) for key in streams}
+    rows=selected_collection_rows(source,selected,targets,attempts_per_target,collection_format)
     source_row_hashes={key:row_hash(value) for key,value in rows.items()}
     grouped={key:defaultdict(list) for key in streams}
     for key,values in rows.items():
@@ -152,7 +193,8 @@ def build(root,reservation,collection,roles,output,targets=3,attempts_per_target
                                 source_row_hashes={key:row_hash(grouped[key][parent]) for key in streams},source_files_sha256=parent_files)
     # A live collector may append UNSELECTED parents. Selected rows and files
     # must be identical across the export; source files are never modified.
-    if any(row_hash(selected_rows(source/(key+'.jsonl'),selected))!=value for key,value in source_row_hashes.items()):
+    reread=selected_collection_rows(source,selected,targets,attempts_per_target,collection_format)
+    if any(row_hash(reread[key])!=value for key,value in source_row_hashes.items()):
         raise RuntimeError('selected source records changed during export')
     if any(digest(filename)!=expected for filename,expected in file_hashes.items()):
         raise RuntimeError('selected source files changed during export')
@@ -164,7 +206,7 @@ def build(root,reservation,collection,roles,output,targets=3,attempts_per_target
     write_rows(staging/'unavailable_observations.jsonl',unavailable)
     manifest=dict(protocol='observation_parent_reservation_v1',created_utc=datetime.now(timezone.utc).isoformat(),
         reservation_path=str(reservation),reservation_sha256=digest(reservation),registered_utc=registry['registered_utc'],
-        source_dataset=str(source),requested_roles=roles,requested_parent_ids=sorted(selected),
+        source_dataset=str(source),collection_format=collection_format,requested_roles=roles,requested_parent_ids=sorted(selected),
         requested_parent_counts={role:sum(value==role for value in selected.values()) for role in roles},
         initialized_parent_counts={role:sum(r['split']==role and r['setup_success'] for r in exported['parents']) for role in roles},
         setup_failed_parents=[r['parent_id'] for r in exported['parents'] if not r['setup_success']],
@@ -264,11 +306,12 @@ def main():
     parser.add_argument('--output',type=Path)
     parser.add_argument('--targets',type=int,default=3)
     parser.add_argument('--attempts-per-target',type=int,default=3)
+    parser.add_argument('--collection-format',choices=['natural_v1','obstacle_v3'],default='natural_v1')
     args=parser.parse_args()
     if args.self_test:self_test();return
     if not all((args.root,args.reservation,args.collection,args.roles,args.output)):
         parser.error('root/reservation/collection/explicit roles/output required')
-    print(json.dumps(build(args.root,args.reservation,args.collection,args.roles,args.output,args.targets,args.attempts_per_target)),flush=True)
+    print(json.dumps(build(args.root,args.reservation,args.collection,args.roles,args.output,args.targets,args.attempts_per_target,args.collection_format)),flush=True)
 
 
 if __name__=='__main__':main()

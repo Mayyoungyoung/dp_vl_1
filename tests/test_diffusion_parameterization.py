@@ -83,6 +83,7 @@ class DiffusionParameterizationTests(unittest.TestCase):
 
     def test_new_output_continuation_preserves_source_and_full_training_state(self):
         from routeset.common import sha256
+        from routeset.multigate_diffusion import PairedTrainingStream, load_development
         from scripts.train_multigate_diffusion import train_one
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -124,6 +125,16 @@ class DiffusionParameterizationTests(unittest.TestCase):
                     torch.testing.assert_close(value, b["optimizer"]["state"][parameter][key], atol=0, rtol=0)
             self.assertEqual(a["scheduler"], b["scheduler"])
             self.assertEqual(a["stream"]["digest"], b["stream"]["digest"])
+            source_checkpoint = torch.load(root / "source/last.pt", weights_only=False)
+            dataset, train_ids, _ = load_development(data)
+            segment = PairedTrainingStream(dataset, train_ids, common["seed"])
+            segment.load_state_dict(source_checkpoint["stream"])
+            segment.digest = "0" * 64
+            for _ in range(2):
+                segment.draw(common["batch_size"], common["candidates"], common["diffusion_steps"])
+            self.assertEqual(b["incremental_stream_sha256"], segment.digest)
+            self.assertNotEqual(b["incremental_stream_sha256"], b["stream"]["digest"])
+            self.assertEqual(a["incremental_stream_sha256"], a["stream"]["digest"])
             torch.testing.assert_close(a["stream"]["noise"], b["stream"]["noise"], atol=0, rtol=0)
             torch.testing.assert_close(a["rng"]["torch"], b["rng"]["torch"], atol=0, rtol=0)
             self.assertEqual(a["loss_tail"], b["loss_tail"])
