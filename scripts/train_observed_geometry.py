@@ -26,6 +26,70 @@ def validate_anchor_resume(current_config, saved_config):
         raise ValueError('resume config mismatch: anchor_mode')
 
 
+def validate_selection_resume(current_config, saved_config):
+    if current_config.get('checkpoint_selection','reference_ADE') != saved_config.get('checkpoint_selection','reference_ADE'):
+        raise ValueError('resume config mismatch: checkpoint_selection')
+
+
+def checkpoint_selection_score(metrics, selection_metric='reference_ADE'):
+    if selection_metric == 'reference_ADE':
+        return -metrics['candidate_matched_ADE_m']
+    if selection_metric == 'tip_unique_valid':
+        return metrics['UniqueClassifiedTipValidAtK'] + .05*metrics['TipValidAtK']
+    raise ValueError('unsupported checkpoint selection metric')
+
+
+def add_tip_evaluation(result, rows, predictions, events, data, ids, evaluation_sources):
+    """Read privileged box labels only after ALL model prediction calls finish.
+
+    This function returns metrics only. It cannot change paths, forward inputs,
+    gradients, training loss, candidate budgets or inference-time selection.
+    """
+    import sys
+    sibling=str(Path(__file__).resolve().parent)
+    if sibling not in sys.path:sys.path.insert(0,sibling)
+    from scripts.evaluate_observed_obstacles import scene_metrics,PROTOCOL
+    from scripts.export_observation_roles import selected_rows
+    if evaluation_sources is None:raise ValueError('tip selection requires explicit evaluation-only manifest paths')
+    observations,supervision=map(Path,evaluation_sources)
+    metadata_path=observations.parent/'manifest.json'
+    if not metadata_path.exists():
+        exported=json.loads((observations.parent/'export_manifest.json').read_text())
+        metadata_path=Path(exported['source_dataset'])/'manifest.json'
+    metadata=json.loads(metadata_path.read_text())
+    if metadata['acceptance']['tip_polyline_clearance_m']!=.02:
+        raise ValueError('tip selection uses the unchanged original 2cm protocol')
+    selected_parents=set(map(str,data['parent_ids'][ids]))
+    labels={row['id']:row for row in selected_rows(supervision,selected_parents)}
+    summaries=[];hashes={str(metadata_path):sha256(metadata_path)}
+    for row_number,idx in enumerate(ids):
+        identifier=str(data['scene_ids'][idx]);label=labels[identifier]
+        if label['parent_id']!=str(data['parent_ids'][idx]) or label['split']!=str(data['splits'][idx]):
+            raise ValueError('tip evaluation metadata identity/split mismatch')
+        if label['semantic_targets']['tolerance']!=.03:raise ValueError('unchanged 3cm semantic criterion required')
+        verification=supervision.parent/label['verification_only']
+        with np.load(verification,allow_pickle=False) as archive:
+            geometry={name:archive[name] for name in ('obstacle_centers','obstacle_halfsizes')}
+        hashes[str(verification)]=sha256(verification)
+        current=dict(gripper_pose=data['current'][idx,:7],gripper_open=data['current'][idx,7])
+        summary,candidates=scene_metrics(predictions[row_number],events[row_number],current,geometry,
+            label['semantic_targets'],label.get('route_types',[]),clearance=.02)
+        if summary['semantic_goal_accuracy']!=rows[row_number]['semantic_goal_accuracy']:
+            raise ValueError('tip helper semantic criterion differs from observation_eval_v2')
+        summaries.append(summary)
+        rows[row_number].update(tip_evaluation=summary,tip_candidates=candidates)
+    for key in ('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','UnknownTypeTipValidCount',
+                'DuplicateClassifiedTipValidCount','KnownReferenceTypeCoverageAtK','TipClearAtK','StartCorrectAtK','EventSequenceCorrectAtK'):
+        values=[summary[key] for summary in summaries if summary[key] is not None]
+        result[key]=float(np.mean(values)) if values else None
+    result.update(tip_evaluation_protocol=PROTOCOL,tip_evaluation_examples=len(ids),
+        tip_geometry_label_source_sha256=hashes,
+        tip_validity_scope='added physical-box tip segments at original2cm margin; no full-arm/environment/IK/execution certification',
+        checkpoint_selection_protocol='dev_tip_unique_valid_v1',
+        checkpoint_selection_criterion='UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK',
+        evaluation_geometry_use='after prediction only; no model input, training loss, inference repair or extra candidates')
+
+
 def read_geometry(image, observation, pixel_stride):
     """Whitelist current RGB/depth/camera; never flatten arbitrary NPZ fields."""
     with Image.open(image) as source:
@@ -82,7 +146,8 @@ def batch_inputs(data, geometry, ids, device, language_ids=None):
 
 
 @torch.no_grad()
-def evaluate(model, data, geometry, ids, device, output=None, batch_size=8):
+def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
+             selection_metric='reference_ADE', evaluation_sources=None):
     model.eval()
     predictions, events, anchors = [], [], []
     for start in range(0, len(ids), batch_size):
@@ -119,7 +184,9 @@ def evaluate(model, data, geometry, ids, device, output=None, batch_size=8):
             explanation='Only Qwen image-language feature changes; RGB-D/current remain identical')
     else:
         result['paired_language_control'] = None
-    result['selection_score'] = -result['candidate_matched_ADE_m']
+    if selection_metric == 'tip_unique_valid':
+        add_tip_evaluation(result,rows,predictions,events,data,ids,evaluation_sources)
+    result['selection_score'] = checkpoint_selection_score(result,selection_metric)
     if output is not None:
         output = Path(output)
         output.mkdir(parents=True, exist_ok=True)
@@ -173,6 +240,8 @@ def train(args):
         torch.cuda.set_per_process_memory_fraction(.35)
         torch.cuda.reset_peak_memory_stats()
     seed_all(args.seed)
+    selection_metric=getattr(args,'checkpoint_selection','reference_ADE')
+    selection_kwargs=dict(selection_metric=selection_metric,evaluation_sources=(args.observations,args.supervision))
     load_start = time.perf_counter()
     data = load_observed_dataset(args.observations, args.supervision, args.cache_dir, args.horizon, args.pooling)
     geometry = load_geometry(data, args.observations, args.supervision, args.pixel_stride)
@@ -192,7 +261,9 @@ def train(args):
         config = vars(args).copy()
         config.update(feature_dim=int(data['features'].shape[1]), dataset_fingerprint=geometry['fingerprint'],
             code_commit=os.environ.get('CODE_COMMIT', 'unrecorded'), source_script_sha256=sha256(Path(__file__)),
-            objective='saturation', selection_split='DEV_MODEL', selection_metric='negative candidate_matched_ADE_m',
+            objective='saturation', selection_split='DEV_MODEL',checkpoint_selection=selection_metric,
+            selection_metric='negative candidate_matched_ADE_m' if selection_metric=='reference_ADE' else 'UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK',
+            checkpoint_selection_protocol='reference_ADE_v1' if selection_metric=='reference_ADE' else 'dev_tip_unique_valid_v1',
             condition_fields=['frozen real-Qwen RGB+instruction hidden states', 'current gripper pose7/open1',
                               'current RGB pixels + metric depth + camera calibration'],
             endpoints='learned observed surface anchor + coordinatewise bounded residual; see endpoint_residual_bound; no given target',
@@ -212,6 +283,7 @@ def train(args):
         if args.resume:
             checkpoint = torch.load(out/'last.pt', map_location=args.device, weights_only=False)
             validate_anchor_resume(config, checkpoint['config'])
+            validate_selection_resume(config,checkpoint['config'])
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -257,7 +329,7 @@ def train(args):
                                      grounding_loss=float(np.mean(grounding_losses[-100:])),
                                      elapsed_s=elapsed_before+synchronized_time(args.device)-started)), flush=True)
             if step % args.eval_every == 0 or step == args.steps or step == args.stop_after:
-                metrics = evaluate(model, data, geometry, dev_ids, args.device)
+                metrics = evaluate(model, data, geometry, dev_ids, args.device,**selection_kwargs)
                 score = metrics['selection_score']; improved = score > best; best = max(best, score)
                 elapsed = elapsed_before+synchronized_time(args.device)-started
                 history.append(dict(step=step, loss=float(np.mean(losses[-100:])), dev_model=metrics))
@@ -272,9 +344,16 @@ def train(args):
                 if step == args.stop_after and step < args.steps:
                     write_json(out/'status.json', dict(status='interrupted_for_resume_check', step=step, exit_code=0))
                     return
+        last_metrics=None
+        if selection_metric=='tip_unique_valid':
+            # New protocol saves a separate complete final-step prediction set;
+            # default historical evaluation order/cost is left unchanged.
+            last_checkpoint=torch.load(out/'last.pt',map_location=args.device,weights_only=False)
+            model.load_state_dict(last_checkpoint['model'])
+            last_metrics=evaluate(model,data,geometry,dev_ids,args.device,out/'last_dev_model',**selection_kwargs)
         checkpoint = torch.load(out/'best.pt', map_location=args.device, weights_only=False)
         model.load_state_dict(checkpoint['model'])
-        metrics = evaluate(model, data, geometry, dev_ids, args.device, out/'dev_model')
+        metrics = evaluate(model, data, geometry, dev_ids, args.device, out/'dev_model',**selection_kwargs)
         train_metrics = evaluate(model, data, geometry, np.flatnonzero(data['splits'] == 'TRAIN'), args.device, out/'train')
         latency = measure_latency(model, data, geometry, int(dev_ids[0]), args.device, args.pixel_stride)
         elapsed = elapsed_before+synchronized_time(args.device)-started
@@ -287,6 +366,11 @@ def train(args):
             best_step=checkpoint['step'], best_checkpoint_sha256=sha256(out/'best.pt'),
             prediction_sha256=sha256(out/'dev_model'/'predictions.npz'),
             evidence_scope='frozen real-Qwen plus RGB-D ordinary set regression pilot; not mechanism or robot execution evidence')
+        if selection_metric=='tip_unique_valid':
+            summary.update(last_metrics=last_metrics,last_step=args.steps,last_checkpoint_sha256=sha256(out/'last.pt'),
+                last_prediction_sha256=sha256(out/'last_dev_model/predictions.npz'),
+                checkpoint_selection_protocol='dev_tip_unique_valid_v1',
+                checkpoint_selection_criterion='UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK')
         write_json(out/'summary.json', summary)
         write_json(out/'status.json', dict(status='completed', step=args.steps, exit_code=0))
         print(json.dumps(summary), flush=True)
@@ -310,6 +394,7 @@ def main():
     parser.add_argument('--pooling', choices=('mean', 'last', 'both'), default='both')
     parser.add_argument('--geometry-pooling', choices=('spatial',), default='spatial')
     parser.add_argument('--anchor-mode', choices=('soft', 'straight_through_peak'), default='soft')
+    parser.add_argument('--selection-metric',dest='checkpoint_selection',choices=('reference_ADE','tip_unique_valid'),default='reference_ADE')
     parser.add_argument('--point-width', type=int, default=64)
     parser.add_argument('--pixel-stride', type=int, default=2)
     parser.add_argument('--endpoint-residual-bound', type=float, default=.05)
