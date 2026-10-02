@@ -102,7 +102,17 @@ def scene_metrics(paths, opened, current, geometry, specification, reference_typ
 
 def evaluate(data_root, predictions_file, output, split="DEV_MODEL", allow_subset=False):
     data_root, predictions_file, output = map(Path, (data_root, predictions_file, output))
-    manifest = json.loads((data_root / "manifest.json").read_text(encoding="utf-8-sig"))
+    metadata_path=data_root/'manifest.json'
+    export_metadata=None
+    if not metadata_path.exists():
+        export_metadata=json.loads((data_root/'export_manifest.json').read_text())
+        if split not in export_metadata['requested_roles']:
+            raise ValueError('requested evaluation role was not explicitly exported')
+        for name,key in [('observations.jsonl','input_manifest_sha256'),('supervision.jsonl','supervision_manifest_sha256')]:
+            if sha256(data_root/name)!=export_metadata[key]:
+                raise ValueError('reserved export manifest changed: '+name)
+        metadata_path=Path(export_metadata['source_dataset'])/'manifest.json'
+    manifest = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
     observations = jsonl(data_root / "observations.jsonl")
     observation_by_id = {row["id"]: row for row in observations}
     if len(observation_by_id) != len(observations):
@@ -177,9 +187,14 @@ def evaluate(data_root, predictions_file, output, split="DEV_MODEL", allow_subse
         reference_policy="Coverage only of known classified positive reference types; no total-solution-count claim",
         selection_policy="optional scores rank the same submitted K; missing scores yield null, all nonfinite scores fail selection",
         paths_repaired_or_filtered=False, prediction_sha256=sha256(predictions_file), source_hashes=source_hashes,
-        manifest_sha256=sha256(data_root / "manifest.json"), supervision_sha256=sha256(data_root / "supervision.jsonl"))
+        manifest_sha256=sha256(metadata_path), supervision_sha256=sha256(data_root / "supervision.jsonl"))
     requested_parents = (manifest["dev_parents"] if split == "DEV_MODEL" else
                          manifest["parents_requested"] - manifest["dev_parents"] if split == "TRAIN" else None)
+    if export_metadata is not None:
+        requested_parents=export_metadata['requested_parent_counts'][split]
+        metrics.update(reserved_export_manifest_sha256=sha256(data_root/'export_manifest.json'),
+            collection_metadata_path=str(metadata_path),
+            reservation_sha256=export_metadata['reservation_sha256'])
     available_parents = len({row["parent_id"] for row in observations if row["split"] == split})
     metrics.update(requested_collection_parents_for_split=requested_parents,
                    available_observation_parents_for_split=available_parents,
