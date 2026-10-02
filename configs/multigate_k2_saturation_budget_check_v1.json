@@ -1,0 +1,28 @@
+{
+  "protocol": "multigate_k2_saturation_budget_check_v1",
+  "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+  "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+  "historical_k4_run": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0",
+  "prior_audit": "/home/wzy/dpvlm/route_set_v1/runs/multigate_closure_opportunity_train768_v1/audit",
+  "output": "/home/wzy/dpvlm/route_set_v1/runs/multigate_k2_saturation_budget_check_v1",
+  "training": {
+    "objective": "saturation",
+    "steps": 3000,
+    "batch_size": 64,
+    "candidates": 2,
+    "width": 192,
+    "depth": 3,
+    "lr": 0.0003,
+    "seed": 0,
+    "eval_every": 500,
+    "device": "cuda"
+  },
+  "selection": "unchanged static DEV_MODEL UniqueValid + .05*Valid every500; original best and last preserved; TRAIN closure audit cannot reselect",
+  "gradient_target_slots": 384000,
+  "training_example_exposures": 192000,
+  "comparison_scope": "A genuinely K2-trained conventional saturation baseline, not a new joint-risk objective. Same historical K4 updates/batch/lr/width/depth/data; half its generated/gradient path slots. Candidate count and query parameter count differ, so not a same-path-budget K4 comparison or an initialization-matched pair.",
+  "cpu_policy": "Launcher pins itself and all descendants to one allowed logical CPU, with explicit taskset on recorded subprocesses. OMP_NUM_THREADS=4 and historical trainer requests four torch threads, but affinity restricts actual CPU execution to one logical core. Do not compare CPU wall-time fairly against historical four-core runs.",
+  "gpu": {"physical_index": 1, "memory_fraction": 0.35, "uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab"},
+  "post_training": "CPU TRAIN768 all-present single-closure audit with exact same prior reference controls. No changed evaluator, no new constraint condition, no DEV closure evaluation.",
+  "research_decision": "Geometric selection already reaches the response upper bound. This run only tests ordinary learned small-budget behavior, regardless of its score; it cannot establish joint-risk innovation."
+}
