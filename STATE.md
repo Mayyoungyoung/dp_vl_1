@@ -1,5 +1,12 @@
 # State — 2026-10-02
 
+## Current checkpoint — 16:25 UTC / 2026-10-03 00:25 China
+
+- Fixed2c47c2a greedy TRAIN8 and static six-configuration diagnostics both completed exit0. GPU is free. Greedy reduces mean endpoint57.372→23.391cm, all8 improve but0/8 pass3cm; no decoding sweep. An explicit same-objective continuation1500→6000 is under implementation, not running, and must preserve complete state in a fresh tree with original/added exposure separately counted.
+- Static6 applied all saved configurations after two preserved API failures. All12 pre/post native-state checks pass;0 new IK/path/simulation-start calls. External hits are Panda_gripper against the registered posts in every configuration. Original dynamic instant is not reconstructed. One new independent physical pilot is being prepared:post height.16→.14m, central target9 proposals, unchanged strict route checks and all failures kept. It has not launched.
+- Sole new set hypothesis under audit: joint failure under single-opening closures. Only registered TRAIN768 will be inspected. K4 prefix2 is explicitly zero-adaptation, reference-pool optimum/geometry-DPP are privileged diagnostic controls; a genuinely trainedK2 ordinary model is mandatory before a paired learned-risk experiment. No new mechanism advantage is claimed.
+- Latest old-collector mechanical receipt16:17UTC:112/144 closed markers, coordinator285850 still running; closure is not success. New84ee144-parent collector remains complete. JOBS16:16 contains278 records, registry281; all locked sample contents/metrics stay unopened.
+
 ## Current checkpoint — 16:02 UTC / 2026-10-03 00:02 China
 
 This block supersedes older running statements. Actual status receipts and source hashes remain authoritative.

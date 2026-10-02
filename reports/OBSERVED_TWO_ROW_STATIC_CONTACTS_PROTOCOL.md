@@ -1,6 +1,6 @@
 # 六个冻结碰撞配置：静态对象定位预登记
 
-状态：原固定 release 的一次实跑在初始化父节点接口处失败，0/6 配置应用；[失败结果完整保留](OBSERVED_TWO_ROW_STATIC_CONTACTS_RESULTS.md)。只修根节点接口的版本已完成本地检查，尚未重跑。本诊断只处理前次 24-query 中实际碰撞的 query **5/7/13/15/21/23**；新 IK、路线提案和训练参考预算全部为 **0**。配置文件冻结原 manifest、24-query ledger、common world、NPZ 和 PNG 的五个 SHA256。记录被修改、缺少查询、返回配置不再对应原碰撞标签或 joint readback 非零时直接拒绝。
+状态：前两次分别因根节点接口与 unsafe mesh API 失败，均完整保留。移除 unsafe API 的固定 release 2c47 实跑已完成，6/6 配置应用，前后十二次严格恢复零差，0 IK/路线/物理开始；[完整静态矩阵与边界](OBSERVED_TWO_ROW_STATIC_CONTACTS_MESH_API_FIX2.md)。本诊断只处理前次 24-query 中实际碰撞的 query **5/7/13/15/21/23**；新 IK、路线提案和训练参考预算全部为 **0**。配置文件冻结原 manifest、24-query ledger、common world、NPZ 和 PNG 的五个 SHA256。记录被修改、缺少查询、返回配置不再对应原碰撞标签或 joint readback 非零时直接拒绝。
 
 ## 能复现什么，不能复现什么
 

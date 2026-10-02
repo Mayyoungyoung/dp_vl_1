@@ -1,6 +1,6 @@
 # One next control: same-checkpoint greedy constrained TRAIN8
 
-Status: root approved this one control; implementation and local pure tests are ready for source review/freeze. No generation or retraining has run for this control. The existing stochastic TRAIN8 outputs and completed nine-forward audit are retained unchanged.
+Status: completed from2c47c2a, one actual8-call run and independent paired analysis. All8 strict-format outputs remain0/8 within3cm, mean endpoint error57.372→23.391cm; the predeclared criterion below failed. See `VLM_SFT_GREEDY_TRAIN8_RESULTS_V1.md`. This card retains its predeclared hypothesis, budget and decision rule; no parameter sweep or retraining was part of this control.
 
 ## Hypothesis and choice
 
