@@ -82,6 +82,7 @@ def main():
     from routeset.common import seed_all,sha256,write_json
     from routeset.observed_route_head import QWEN_REVISION
     from scripts.train_observed_lora import install_lora,adapters,adapter_state,tensor_hash
+    from routeset.vlm_sft_loss import causal_chunked_loss
     if os.environ.get('CUDA_VISIBLE_DEVICES')!='1':raise ValueError('Only authorized GPU1')
     if transformers.__version__!='4.57.1' or not torch.__version__.startswith('2.4.1'):raise ValueError('Pinned .venv-qwen required')
     torch.set_num_threads(1);torch.cuda.set_per_process_memory_fraction(.35);torch.cuda.reset_peak_memory_stats()
@@ -106,8 +107,8 @@ def main():
     for step,k in enumerate((1,4,1,4),1):
         full=prepared[k][1].to('cuda');torch.cuda.synchronize();tic=time.perf_counter()
         optimizer.zero_grad(set_to_none=True)
-        output=model(**full,use_cache=False,return_dict=True)
-        loss=output.loss
+        output=model.model(**{key:value for key,value in full.items() if key!='labels'},use_cache=False,return_dict=True)
+        loss=causal_chunked_loss(output.last_hidden_state,full['labels'],model.lm_head,chunk_size=64)
         if not torch.isfinite(loss):raise RuntimeError('Nonfinite real SFT loss')
         loss.backward()
         norms={name:None if value.grad is None else float(value.grad.float().norm()) for name,value in params.items()}
@@ -116,6 +117,8 @@ def main():
         torch.nn.utils.clip_grad_norm_(list(params.values()),1.)
         optimizer.step();torch.cuda.synchronize()
         records.append(dict(step=step,k=k,loss=float(loss.detach()),gradient_norms=norms,wall_seconds=time.perf_counter()-tic))
+        write_json(args.output/'steps.json',records)
+        print(json.dumps(dict(step=step,k=k,loss=float(loss.detach()),wall_seconds=records[-1]['wall_seconds'])),flush=True)
         del full,output,loss
     after={name:tensor_hash(value) for name,value in params.items()}
     changed={name:before[name]!=after[name] for name in params}
@@ -124,12 +127,14 @@ def main():
         raise RuntimeError('Frozen projection weights changed')
     torch.save(adapter_state(model),args.output/'final_adapters.pt')
     sources=files+[Path(__file__),Path(__file__).resolve().parents[1]/'routeset/vlm_route_serialization.py',
-        Path(__file__).with_name('train_observed_lora.py'),args.model/'provenance.json']
+        Path(__file__).with_name('train_observed_lora.py'),args.model/'provenance.json',
+        Path(__file__).resolve().parents[1]/'routeset/vlm_sft_loss.py']
     summary=dict(protocol=PROTOCOL,status='actual_sft_boundary_gradient_memory_preflight_complete',
         code_commit=os.environ.get('CODE_COMMIT'),model_revision=QWEN_REVISION,train_scene_id=row['id'],train_parent_id=row['parent_id'],
         processor={str(k):item[2] for k,item in prepared.items()},records=records,adapter_modules=modules,
         adapter_parameters=sum(value.numel() for value in params.values()),adapter_hash_before=before,adapter_hash_after=after,
         all_adapter_tensors_updated=all(changed.values()),frozen_lora_projection_hashes_unchanged=True,
+        loss_implementation='exact answer-only causal cross entropy, 64-token vocabulary chunks with backward recomputation; no sequence/target truncation',
         peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated(),elapsed_seconds=time.perf_counter()-started,
         source_sha256={str(path):sha256(path) for path in sources},
         artifacts_sha256={path.name:sha256(path) for path in args.output.glob('*.pt')},

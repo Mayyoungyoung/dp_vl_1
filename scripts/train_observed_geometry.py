@@ -15,11 +15,30 @@ from routeset.observed_geometry import (backproject_rgbd, ObservedGeometryRouteH
                                        positive_endpoint_attention_loss)
 from routeset.observed_path_refinement import refinement_config,validate_refinement_resume
 from routeset.observed_route_head import load_observed_dataset
+from routeset.observed_multitask import (draw_observation_batch,aggregate_task_parent_reference,
+                                       validate_multitask_resume,check_multitask_model_gate)
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
 
 
 POINT_FIELDS = ('world_xyz', 'rgb', 'uv', 'depth', 'valid_mask')
+
+
+def validate_endpoint_training(config):
+    mode=config.get('endpoint_mode','surface_anchor')
+    if mode not in ('surface_anchor','free_offset'):raise ValueError('unsupported endpoint_mode')
+    if mode=='free_offset':
+        if config.get('grounding_weight',0.)!=0:
+            raise ValueError('free_offset uses no reach surface endpoint-attention supervision')
+        if config.get('checkpoint_selection','reference_ADE')!='reference_ADE':
+            raise ValueError('free_offset generic baseline selects reference ADE, not reach TipValid')
+        if config.get('refinement_mode','none')!='none':
+            raise ValueError('free_offset generic baseline has no draft refinement')
+
+
+def validate_endpoint_resume(current,saved):
+    if current.get('endpoint_mode','surface_anchor')!=saved.get('endpoint_mode','surface_anchor'):
+        raise ValueError('resume config mismatch: endpoint_mode')
 
 
 def validate_anchor_resume(current_config, saved_config):
@@ -152,7 +171,9 @@ def batch_inputs(data, geometry, ids, device, language_ids=None):
 
 @torch.no_grad()
 def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
-             selection_metric='reference_ADE', evaluation_sources=None):
+             selection_metric='reference_ADE', evaluation_sources=None,metric_aggregation='instruction'):
+    if metric_aggregation=='task_parent' and selection_metric!='reference_ADE':
+        raise ValueError('task-parent macro reporting requires reference-ADE selection')
     model.eval()
     predictions, events, anchors, drafts = [], [], [], []
     for start in range(0, len(ids), batch_size):
@@ -165,10 +186,16 @@ def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
     predictions, events, anchors = map(np.concatenate, (predictions, events, anchors))
     draft_array = np.concatenate(drafts) if drafts else None
     result, rows = observation_metrics(predictions, events, data, ids)
+    if metric_aggregation=='task_parent':
+        aggregate_task_parent_reference(result,rows,[data['tasks'][idx] for idx in ids])
+        result.update(checkpoint_selection_protocol='task_parent_reference_ADE_v1',
+            checkpoint_selection_criterion='negative macro task mean of parent-mean candidate_matched_ADE_m')
+    elif metric_aggregation!='instruction':raise ValueError('unsupported metric aggregation')
     # Strict semantic metrics retain the original identity and 3 cm criteria.
     # Anchor error uses recorded route endpoints only, never target coordinates.
     anchor_error = [float(np.linalg.norm(anchors[row]-data['paths'][idx, data['path_mask'][idx], -1], axis=-1).min())
-                    if data['path_mask'][idx].any() else None for row, idx in enumerate(ids)]
+                    if data['path_mask'][idx].any() and getattr(model,'endpoint_mode','surface_anchor')=='surface_anchor'
+                    else None for row, idx in enumerate(ids)]
     finite_anchor_error = [error for error in anchor_error if error is not None]
     result['learned_surface_anchor_reference_endpoint_error_m'] = float(np.mean(finite_anchor_error)) if finite_anchor_error else None
     for row, error in zip(rows, anchor_error):
@@ -195,6 +222,11 @@ def evaluate(model, data, geometry, ids, device, output=None, batch_size=8,
     if selection_metric == 'tip_unique_valid':
         add_tip_evaluation(result,rows,predictions,events,data,ids,evaluation_sources)
     result['selection_score'] = checkpoint_selection_score(result,selection_metric)
+    if getattr(model,'endpoint_mode','surface_anchor')=='free_offset':
+        result.update(endpoint_representation='learned unconstrained xyz offsets from current state',
+            geometry_validation='not measured; positive-reference reconstruction does not certify collision or robot task success',
+            generation_budget=dict(final_candidates=int(predictions.shape[1]),draft_complete_paths=0,updates=0,
+                total_complete_path_states=int(predictions.shape[1]),candidate_filtering=False))
     if draft_array is not None:
         result['generation_budget'] = dict(final_candidates=int(predictions.shape[1]),
             draft_complete_paths=int(predictions.shape[1]),updates=1,
@@ -254,8 +286,11 @@ def train(args):
         torch.cuda.set_per_process_memory_fraction(.35)
         torch.cuda.reset_peak_memory_stats()
     seed_all(args.seed)
+    validate_endpoint_training(vars(args))
+    model_gate=check_multitask_model_gate(args.observations,args.supervision,getattr(args,'multitask_snapshot_manifest',None))
     selection_metric=getattr(args,'checkpoint_selection','reference_ADE')
-    selection_kwargs=dict(selection_metric=selection_metric,evaluation_sources=(args.observations,args.supervision))
+    selection_kwargs=dict(selection_metric=selection_metric,evaluation_sources=(args.observations,args.supervision),
+                          metric_aggregation=getattr(args,'metric_aggregation','instruction'))
     load_start = time.perf_counter()
     data = load_observed_dataset(args.observations, args.supervision, args.cache_dir, args.horizon, args.pooling)
     geometry = load_geometry(data, args.observations, args.supervision, args.pixel_stride)
@@ -264,6 +299,8 @@ def train(args):
     dev_ids = np.flatnonzero(data['splits'] == 'DEV_MODEL')
     if not len(train_ids) or not len(dev_ids) or set(data['parent_ids'][train_ids]) & set(data['parent_ids'][dev_ids]):
         raise ValueError('nonempty parent-disjoint TRAIN and DEV_MODEL required')
+    if selection_metric=='reference_ADE' and not data['path_mask'][dev_ids].any():
+        raise ValueError('reference-ADE selection requires at least one DEV positive reference')
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     if (out/'last.pt').exists() and not args.resume:
@@ -280,16 +317,28 @@ def train(args):
             checkpoint_selection_protocol='reference_ADE_v1' if selection_metric=='reference_ADE' else 'dev_tip_unique_valid_v1',
             condition_fields=['frozen real-Qwen RGB+instruction hidden states', 'current gripper pose7/open1',
                               'current RGB pixels + metric depth + camera calibration'],
-            endpoints='learned observed surface anchor + coordinatewise bounded residual; see endpoint_residual_bound; no given target',
+            endpoints=('unbounded learned xyz offsets from current state; observed geometry is context, not an endpoint surface constraint'
+                if getattr(args,'endpoint_mode','surface_anchor')=='free_offset' else
+                'learned observed surface anchor + coordinatewise bounded residual; see endpoint_residual_bound; no given target'),
             target_coordinate_policy='semantic coordinates used only in evaluation; training supervision is recorded route and event',
             geometry_role='conventional spatial grounding baseline, not claimed core mechanism',
             train_examples=len(train_ids), dev_examples=len(dev_ids),
             train_parents=len(set(data['parent_ids'][train_ids])), dev_parents=len(set(data['parent_ids'][dev_ids])),
             skipped_supervision=data['skipped'], unreferenced_observations=data['unreferenced'],
             evaluation_protocol=data['evaluation_protocol'], cache_config=data['cache_config'], geometry_preprocessing=geometry['metadata'])
+        if config.get('metric_aggregation','instruction')=='task_parent':
+            if selection_metric!='reference_ADE':raise ValueError('task-parent macro reporting requires reference-ADE selection')
+            config.update(selection_metric='negative macro task mean of parent-mean candidate_matched_ADE_m',
+                checkpoint_selection_protocol='task_parent_reference_ADE_v1')
+        if config.get('sampling_mode','uniform')=='task_parent_language':
+            config['sampling_policy']='uniform task, uniform positive-reference TRAIN parent within task, uniform instruction within parent; task and parent IDs never enter forward'
+            config['sampling_population']={task:dict(parents=len({str(data['parent_ids'][idx]) for idx in train_ids if data['tasks'][idx]==task}),
+                instructions=sum(data['tasks'][idx]==task for idx in train_ids)) for task in sorted({data['tasks'][idx] for idx in train_ids})}
+        if model_gate is not None:config['multitask_model_use_gate']=model_gate
         model = ObservedGeometryRouteHead(config['feature_dim'], args.horizon, args.candidates, args.width,
                                           args.depth, args.point_width, args.endpoint_residual_bound,
-                                          anchor_mode=args.anchor_mode,**refinement_config(config)).to(args.device)
+                                          anchor_mode=args.anchor_mode,endpoint_mode=config.get('endpoint_mode','surface_anchor'),
+                                          **refinement_config(config)).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         rng, sampler = np.random.default_rng(args.seed), np.random.default_rng(args.seed+100000)
@@ -299,6 +348,8 @@ def train(args):
             validate_anchor_resume(config, checkpoint['config'])
             validate_selection_resume(config,checkpoint['config'])
             validate_refinement_resume(config,checkpoint['config'])
+            validate_endpoint_resume(config,checkpoint['config'])
+            validate_multitask_resume(config,checkpoint['config'])
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -312,12 +363,13 @@ def train(args):
             first_step, best, elapsed_before = checkpoint['step'], checkpoint['best'], checkpoint['elapsed_s']
             exposures, history = checkpoint['trajectory_exposures'], checkpoint['history']
         write_json(out/'config.json', config)
+        if model_gate is not None:write_json(out/'multitask_model_use_gate.json',model_gate)
         write_json(out/'source_hashes.json', dict(data['source_hashes'], **geometry['metadata']['source_hashes']))
         write_json(out/'status.json', dict(status='running', pid=os.getpid(), step=first_step))
         started, losses, path_losses, grounding_losses = synchronized_time(args.device), [], [], []
         for step in range(first_step+1, args.steps+1):
             model.train()
-            ids = sampler.choice(train_ids, args.batch_size, replace=True)
+            ids = draw_observation_batch(data,train_ids,sampler,args.batch_size,config.get('sampling_mode','uniform'))
             inputs = batch_inputs(data, geometry, ids, args.device)
             xyz, opened, details = model(**inputs)
             target_xyz = torch.as_tensor(data['paths'][ids], device=args.device)
@@ -360,7 +412,8 @@ def train(args):
                     write_json(out/'status.json', dict(status='interrupted_for_resume_check', step=step, exit_code=0))
                     return
         last_metrics=None
-        if selection_metric=='tip_unique_valid':
+        save_last=selection_metric=='tip_unique_valid' or config.get('endpoint_mode','surface_anchor')=='free_offset'
+        if save_last:
             # New protocol saves a separate complete final-step prediction set;
             # default historical evaluation order/cost is left unchanged.
             last_checkpoint=torch.load(out/'last.pt',map_location=args.device,weights_only=False)
@@ -369,7 +422,8 @@ def train(args):
         checkpoint = torch.load(out/'best.pt', map_location=args.device, weights_only=False)
         model.load_state_dict(checkpoint['model'])
         metrics = evaluate(model, data, geometry, dev_ids, args.device, out/'dev_model',**selection_kwargs)
-        train_metrics = evaluate(model, data, geometry, np.flatnonzero(data['splits'] == 'TRAIN'), args.device, out/'train')
+        train_metrics = evaluate(model, data, geometry, np.flatnonzero(data['splits'] == 'TRAIN'), args.device, out/'train',
+            metric_aggregation=config.get('metric_aggregation','instruction'))
         latency = measure_latency(model, data, geometry, int(dev_ids[0]), args.device, args.pixel_stride)
         elapsed = elapsed_before+synchronized_time(args.device)-started
         summary = dict(metrics=metrics, train_metrics=train_metrics, latency=latency, elapsed_s=elapsed,
@@ -381,11 +435,15 @@ def train(args):
             best_step=checkpoint['step'], best_checkpoint_sha256=sha256(out/'best.pt'),
             prediction_sha256=sha256(out/'dev_model'/'predictions.npz'),
             evidence_scope='frozen real-Qwen plus RGB-D ordinary set regression pilot; not mechanism or robot execution evidence')
-        if selection_metric=='tip_unique_valid':
+        if save_last:
             summary.update(last_metrics=last_metrics,last_step=args.steps,last_checkpoint_sha256=sha256(out/'last.pt'),
                 last_prediction_sha256=sha256(out/'last_dev_model/predictions.npz'),
-                checkpoint_selection_protocol='dev_tip_unique_valid_v1',
-                checkpoint_selection_criterion='UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK')
+                checkpoint_selection_protocol=config['checkpoint_selection_protocol'],
+                checkpoint_selection_criterion=config['selection_metric'])
+        if config.get('endpoint_mode','surface_anchor')=='free_offset':
+            summary.update(generation_budget=metrics['generation_budget'],
+                evidence_scope='ordinary multitask positive-reference path/event reconstruction; no semantic, collision, execution or task-success evaluation',
+                multitask_model_use_gate=model_gate)
         if config.get('refinement_mode','none')!='none':
             summary.update(generation_budget=metrics['generation_budget'],
                 complete_path_state_exposures=exposures*2,
@@ -416,6 +474,10 @@ def main():
     parser.add_argument('--pooling', choices=('mean', 'last', 'both'), default='both')
     parser.add_argument('--geometry-pooling', choices=('spatial',), default='spatial')
     parser.add_argument('--anchor-mode', choices=('soft', 'straight_through_peak'), default='soft')
+    parser.add_argument('--endpoint-mode',choices=('surface_anchor','free_offset'),default='surface_anchor')
+    parser.add_argument('--sampling-mode',choices=('uniform','task_parent_language'),default='uniform')
+    parser.add_argument('--metric-aggregation',choices=('instruction','task_parent'),default='instruction')
+    parser.add_argument('--multitask-snapshot-manifest',help='optional explicit path; automatically enforced when beside observations')
     parser.add_argument('--refinement-mode',choices=('none','local','global'),default='none')
     parser.add_argument('--refinement-sigma',type=float)
     parser.add_argument('--refinement-prefix-fraction',type=float)

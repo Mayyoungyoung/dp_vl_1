@@ -156,6 +156,7 @@ def load_observed_dataset(observations, supervision, cache_dir, horizon=24, pool
                 scene_ids=np.asarray([s["id"] for s in samples]), parent_ids=np.asarray([s["parent_id"] for s in samples]),
                 semantic_targets=[s["semantic_targets"] for s in samples], image_hashes=np.asarray([s["image_hash"] for s in samples]),
                 instructions=[s["instruction"] for s in samples], skipped=skipped, source_hashes=source_hashes,
+                tasks=[s['task'] for s in samples],
                 fingerprint=fingerprint, cache_config=cache_config, unreferenced=unreferenced,
                 evaluation_protocol=OBSERVATION_EVAL_PROTOCOL)
 

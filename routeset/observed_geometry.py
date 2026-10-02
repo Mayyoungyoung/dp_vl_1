@@ -150,19 +150,26 @@ class ObservedGeometryRouteHead(nn.Module):
     """Ordinary set regression with observed spatial context and learned endpoint.
 
     Uses the existing route-head modules unchanged. The geometric anchor is
-    predicted from pixels, and the endpoint can move by a bounded learned
-    residual. No route/target label enters this forward call.
+    predicted from pixels. The default endpoint has a bounded surface-anchor
+    residual; opt-in free_offset permits airborne task endpoints. No route or
+    target label enters this forward call.
     """
     def __init__(self, feature_dim, horizon=24, max_candidates=4, width=128,
                  depth=2, point_width=64, endpoint_residual_bound=.05,
                  geometry_pooling='spatial', anchor_mode='soft', refinement_mode='none',
-                 refinement_sigma=None, refinement_prefix_fraction=None, refinement_bound=None):
+                 refinement_sigma=None, refinement_prefix_fraction=None, refinement_bound=None,
+                 endpoint_mode='surface_anchor'):
         super().__init__()
         from .observed_route_head import ObservedRouteHead
         if geometry_pooling != 'spatial':
             raise NotImplementedError('only spatial pooling is currently implemented')
         if endpoint_residual_bound <= 0:
             raise ValueError('endpoint residual bound must be positive')
+        if endpoint_mode not in ('surface_anchor','free_offset'):
+            raise ValueError('endpoint_mode must be surface_anchor or free_offset')
+        if endpoint_mode=='free_offset' and refinement_mode!='none':
+            raise ValueError('free_offset baseline uses no draft refinement')
+        self.endpoint_mode=endpoint_mode
         self.geometry = ObservedGeometryEncoder(feature_dim, width, point_width, anchor_mode=anchor_mode)
         self.head = ObservedRouteHead(feature_dim, horizon, max_candidates, width, depth)
         self.endpoint_residual_bound = endpoint_residual_bound
@@ -188,9 +195,15 @@ class ObservedGeometryRouteHead(nn.Module):
             tokens = block(tokens, context)
         prediction = self.head.output(tokens).reshape(len(features), k, self.head.horizon-1, 4)
         fractions = torch.linspace(0, 1, self.head.horizon, device=features.device, dtype=features.dtype)[1:]
-        reference_line = current[:, None, None, :3] + fractions[None, None, :, None] * (geometry['anchor_xyz']-current[:, :3])[:, None, None]
-        intermediate = reference_line[:, :, :-1] + prediction[:, :, :-1, :3]
-        endpoint = geometry['anchor_xyz'][:, None, None] + self.endpoint_residual_bound * prediction[:, :, -1:, :3].tanh()
+        if self.endpoint_mode=='free_offset':
+            # Every point, including an airborne endpoint, is a learned offset
+            # from current state. Observed geometry contributes context only.
+            offsets=current[:,None,None,:3]+prediction[...,:3]
+            intermediate,endpoint=offsets[:,:,:-1],offsets[:,:,-1:]
+        else:
+            reference_line = current[:, None, None, :3] + fractions[None, None, :, None] * (geometry['anchor_xyz']-current[:, :3])[:, None, None]
+            intermediate = reference_line[:, :, :-1] + prediction[:, :, :-1, :3]
+            endpoint = geometry['anchor_xyz'][:, None, None] + self.endpoint_residual_bound * prediction[:, :, -1:, :3].tanh()
         first = current[:, None, None, :3].expand(-1, k, 1, -1)
         xyz = torch.cat([first, intermediate, endpoint], dim=2)
         first_open = current[:, None, None, 7].expand(-1, k, 1).clamp(0, 1)

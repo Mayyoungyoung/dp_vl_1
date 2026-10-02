@@ -11,3 +11,8 @@
 预期首个训练比较使用同一variable-K训练模型，显式包含K1与K4请求；避免只训K4后用未见K1提示当弱独立基线。同checkpoint独立四次K1与一次K4分别产生4候选，无池化/筛选/隐藏修复；多次随机重复分别计算再平均。序列的顺序仅是序列化选择，已知参考不等于全部解，参考不足时允许同类正例重复，不生成不存在标签。未来若比较两个独立训练SFT目标，需另行对齐实际目标路线曝光、训练token和计算，不以训练步数相同偷换公平预算。
 
 正式训练长度、K混合概率、采样温度、max_new_tokens与固定选模应在真实token/显存预检后一次性记录。恢复保存adapter、optimizer、scheduler、全部RNG、sampler、step、累计token/候选/耗时；不重复保存2B冻结基座。DEV仅负责开发，TEST_LOCKED/OOD不参与。当前已完成5项纯格式测试，实际训练、推理结果和成本均仍未测。
+# Actual preflight failure and equivalent-loss repair
+
+2026-10-02 13:14 UTC, immutable source `5fb74b15ee0b4b89f2900c63363e24434ec90ac5`: actual pinned Qwen loaded and the processor verified exact answer-free prefixes. The fixed TRAIN example required 776 prompt tokens; K1/K4 required 344/1361 supervised tokens (1120/2137 total). The full-vocabulary backward failed with CUDA OOM under the unchanged 35% GPU1 memory cap. This is a failed preflight, not completed SFT. Raw log, exit1 status and token audit are preserved in `vlm_route_sft_preflight_v1/`. CUDA logical device0 in that log maps to authorized physical GPU1.
+
+The next implementation computes the identical shifted causal cross entropy only at supervised answer positions, in 64-token vocabulary chunks, recomputing each chunk during backward. The vocabulary head stays frozen; no answer tokens, trajectory points or candidates are truncated. Dense-loss/input-gradient equality has a dedicated small CPU test; actual-model success remains unverified until the separate v2 job finishes. The initial/final adapter files remain on the server and outside ordinary Git.

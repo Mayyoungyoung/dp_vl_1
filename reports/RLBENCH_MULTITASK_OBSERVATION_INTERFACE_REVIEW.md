@@ -47,4 +47,6 @@
 
 新的 `snapshot_multitask_observations.py` 已按上述固定 24 请求父契约实现，加入 Py3.8 兼容的路径越界/符号链接检查、worker 最终会话计时闭合、前后两次机械 gate、初态及正参考完整 hash 核验；模型输入文件和 parent inventory/attempts 的 SHA 保存为 `snapshot_files_sha256`。跨角色重复会拒绝整份预注册快照并保存 blocked 诊断，不选择成功父替代。
 
-`audit_multitask_train_representation.py` 已准备，固定只读 12 个 TRAIN 请求父，调用现有真实 backprojection 与事件重采样函数，报告所有正参考的 H24 事件/阶段端点/长度及点到折线误差、末点到初始 stride-2 点云的 L2/L∞ 距离。5 cm 每轴支撑判据仅针对 hard selected-point anchor；soft weighted anchor 可以处于点间，不能据此声称其表示不可行。没有修改或筛选标签，也不读取 DEV 原始输入来定尺度。本地相关测试 8 通过、1 因 Windows 符号链接权限跳过，待固定源后在 Linux 补跑；尚未对真实快照执行此审计。
+`audit_multitask_train_representation.py` 固定只读 12 个 TRAIN 请求父，调用现有真实 backprojection 与事件重采样函数，报告所有正参考的 H24 事件/阶段端点/长度及点到折线误差、末点到初始 stride-2 点云的 L2/L∞ 距离。5 cm 每轴支撑判据仅针对 hard selected-point anchor；soft weighted anchor 可以处于点间，不能据此声称其表示不可行。没有修改或筛选标签，也不读取 DEV 原始输入来定尺度。
+
+固定源 `5fb74b15ee0b4b89f2900c63363e24434ec90ac5` 已在 Linux CPU1 实际完成全部 9 个测试（含符号链接），完成 `observation_multitask_prefix24_v1` 导出与 TRAIN 审计，三个操作均退出 0。24 请求父全部闭合，72/72 原始提案成功，96 条语言记录共享这些父场景；不是 96 个独立场景。TRAIN 的 36 条原始正参考全部保留事件序列与阶段边界，0 表示失败；其中 cup 和 lid 各 6 条、合计 12 条末点不能由任何实际可见采样点加每轴 ±5 cm 残差表示，支持采用不受该限制的普通 free endpoint 头。详见 [实际结果](RLBENCH_MULTITASK_PREFIX24_RESULTS.md)，不能据这项表示审计宣称生成路线或任务成功。
