@@ -1,0 +1,22 @@
+....F.                                                                   [100%]
+=================================== FAILURES ===================================
+___ test_unknown_language_keeps_four_failure_slots_in_actual_frozen_planner ____
+
+    def test_unknown_language_keeps_four_failure_slots_in_actual_frozen_planner():
+        pytest.importorskip('scipy')
+>       planner=control.dependencies()
+
+tests/test_two_row_astar_control.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def dependencies():
+        # Lazy imports keep schema/budget unit tests independent of SciPy.
+        from scripts import observation_multiroute_astar_v2 as planner
+        for name,expected in FROZEN_SOURCES.items():
+>           if digest(Path(__file__).with_name(name))!=expected:raise ValueError('Existing planner source changed: '+name)
+E           ValueError: Existing planner source changed: observation_multiroute_astar_v2.py
+
+scripts/evaluate_two_row_astar_v2.py:36: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_two_row_astar_control.py::test_unknown_language_keeps_four_failure_slots_in_actual_frozen_planner
+1 failed, 5 passed in 0.73s

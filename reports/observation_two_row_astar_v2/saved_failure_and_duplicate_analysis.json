@@ -1,0 +1,3561 @@
+{
+  "protocol": "two_row_astar_saved_failure_and_duplicate_audit_v1",
+  "groups": {
+    "all_four_tip_valid": 19,
+    "goal_attachment_failure": 9,
+    "unsupported_exact_instruction": 8
+  },
+  "metrics": {
+    "TipValidAtK": 0.5277777777777778,
+    "AnyTipValidAtK": 0.5277777777777778,
+    "UniqueClassifiedTipValidAtK": 0.5277777777777778,
+    "UnknownTypeTipValidCount": 0.2777777777777778,
+    "DuplicateClassifiedTipValidCount": 1.3055555555555556,
+    "KnownReferenceTypeCoverageAtK": 0.03194444444444444,
+    "semantic_goal_accuracy": 0.5277777777777778,
+    "AnySemanticGoalAtK": 0.5277777777777778,
+    "TipClearAtK": 0.5277777777777778,
+    "StartCorrectAtK": 0.5277777777777778,
+    "EventSequenceCorrectAtK": 1.0,
+    "endpoint_error_m": 0.025307566088013895,
+    "mean_path_length_m": 0.548311442748091,
+    "examples": 36,
+    "parents": 12,
+    "requested_dev_parents": 12,
+    "requested_dev_inputs": 36,
+    "unobserved_requested_dev_inputs": 0,
+    "candidates": 4,
+    "submitted_candidate_budget": 144,
+    "requested_candidate_slots": 144,
+    "unattempted_missing_input_slots": 0,
+    "raw_complete_paths": 76,
+    "failed_candidate_slots": 68,
+    "exact_grid_duplicate_slots": 0,
+    "unsupported_instruction_conditions": 8,
+    "reference_evaluation_examples": 36,
+    "examples_without_reference": 0,
+    "known_reference_coverage_evaluation_examples": 36,
+    "semantic_evaluation_examples": 36,
+    "evaluation_protocol": "observed_two_row_tip_eval_v1",
+    "request_latency_seconds": {
+      "first": 1.1920360820367932,
+      "median": 0.7798975675250404,
+      "p95": 1.5716407945146784,
+      "total": 23.640952045214362,
+      "scope": "Per-request image/current IO+hashes, backprojection, localization, grid, four bounded searches, original proxy checks, output sealing, label IO and unchanged two-row checking; no Qwen or robot execution"
+    },
+    "reference_ADE_m": null,
+    "SelectedTipValidAtK": null,
+    "full_robot_validity": null,
+    "missing_input_policy": "No fabricated input/prediction; missing requested conditions remain separate from failed generated slots."
+  },
+  "source_files_sha256": {
+    "runs\\observation_two_row_astar_v2\\dev_model\\report.json": "96b3b6317f36ff3f196d161a30e4bb5646b5c0b834d0380b64829a14490183ce",
+    "runs\\observation_two_row_astar_v2\\dev_model\\artifact_index.json": "a74afe42588c82b36bbf43d448fb5e76557096bb4dc6181e76586d3b11a92bb2",
+    ".bootstrap\\two_row_astar_actual743d\\input_metadata\\observations.jsonl": "4a3a3edd61151e997d89d19a3310bb96b85505f9aa19bb9541b4860af4c84383",
+    ".bootstrap\\two_row_astar_actual743d\\input_metadata\\supervision.jsonl": "22af4de78fabc1560b81ef910016a00a9247a61ecb95c90651b0de8ed16cf539",
+    ".bootstrap\\two_row_astar_actual743d\\input_metadata\\export_manifest.json": "5c14a6494d6f3ba887347f64767c72e8f1aa7c280cd4d43933063f42a53da484",
+    "F:\\dpvlm\\scripts\\analyze_two_row_astar_results.py": "d0edaeb555abbd9f344ae3d00e72144b4b6831dd92f3f3d0c0917cd0ce3c84c8",
+    "F:\\dpvlm\\scripts\\analyze_two_row_ordinary.py": "b753643e6298c7020b5eddc47869ef72ff94cbd5950276d7ac927b02954cbaaf"
+  },
+  "verified_actual_artifacts": 184,
+  "verified_condition_pools": 36,
+  "submitted_slots": 144,
+  "unsupported_exact_instruction_conditions": {
+    "Move the gripper to touch the teal sphere while avoiding the gray posts.": 2,
+    "Move the gripper to touch the gray sphere while avoiding the gray posts.": 1,
+    "Move the gripper to touch the red sphere while avoiding the gray posts.": 5
+  },
+  "goal_attachment_failures": [
+    {
+      "id": "two_row_reach_283264_target1",
+      "eligible_original_free_attachments": 0,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 0,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.8285899804263969,
+      "inferred_endpoint_semantic_correct": false,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283264_target2",
+      "eligible_original_free_attachments": 7,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 7,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025534889437235586,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283268_target2",
+      "eligible_original_free_attachments": 2,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 2,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025855861126192013,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283269_target2",
+      "eligible_original_free_attachments": 1,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 1,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025420274473128085,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283270_target2",
+      "eligible_original_free_attachments": 12,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 12,
+      "ray_rejected": 1,
+      "goal_center_error_m": 0.025437517444931782,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283271_target2",
+      "eligible_original_free_attachments": 11,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 11,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025676329141587455,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283272_target2",
+      "eligible_original_free_attachments": 5,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 5,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025715888760648425,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283273_target2",
+      "eligible_original_free_attachments": 2,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 2,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.02593090969387429,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    },
+    {
+      "id": "two_row_reach_283275_target2",
+      "eligible_original_free_attachments": 3,
+      "total_considered_attachments": 27,
+      "finite_point_rejected": 3,
+      "ray_rejected": 0,
+      "goal_center_error_m": 0.025561756858124028,
+      "inferred_endpoint_semantic_correct": true,
+      "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+    }
+  ],
+  "duplicate_diagnostic": {
+    "valid_conditions": 19,
+    "conditions_with_positive_duplicate_count_upper_bound": 19,
+    "valid_classified_duplicate_slots": 47,
+    "valid_unknown_slots_retained": 10,
+    "exact_grid_duplicate_slots": 0,
+    "valid_conditions_with_predicted_type_absent_from_known_reference": 14,
+    "replacement_count_upper_bound_sum": 43,
+    "existing_classified_types_sum": 19,
+    "counterfactual_total_classified_types": 62,
+    "counterfactual_unique_mean_over_all36": 1.7222222222222223,
+    "counterfactual_is_not_actual_prediction": true,
+    "definition": "For each already valid pool, min(duplicate classified valid slots, missing known positive types); invalid and unknown slots untouched. Privileged reference-count diagnosis, no retrieval/replacement executed.",
+    "warning": "No claim of attainable gain under the observation/search budget; known reference types are incomplete and may miss valid observed planner types."
+  },
+  "all_conditions": [
+    {
+      "id": "two_row_reach_283264_target0",
+      "parent_id": "two_row_reach_283264",
+      "instruction": "Move the gripper to touch the azure sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025016748177469895,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5558432327324867,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.1920360820367932,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283264_target1",
+      "parent_id": "two_row_reach_283264",
+      "instruction": "Move the gripper to touch the silver sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 2,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.15350217709783465,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283264_target1",
+        "eligible_original_free_attachments": 0,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 0,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.8285899804263969,
+        "inferred_endpoint_semantic_correct": false,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283264_target2",
+      "parent_id": "two_row_reach_283264",
+      "instruction": "Move the gripper to touch the rose sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.16537507297471166,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283264_target2",
+        "eligible_original_free_attachments": 7,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 7,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025534889437235586,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283265_target0",
+      "parent_id": "two_row_reach_283265",
+      "instruction": "Move the gripper to touch the purple sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.2,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025250374595197887,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5548213386781844,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.2100108150625601,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283265_target1",
+      "parent_id": "two_row_reach_283265",
+      "instruction": "Move the gripper to touch the blue sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.25,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025203325230179718,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5775985402074886,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.6571217100135982,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283265_target2",
+      "parent_id": "two_row_reach_283265",
+      "instruction": "Move the gripper to touch the teal sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.010264393058605492,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283266_target0",
+      "parent_id": "two_row_reach_283266",
+      "instruction": "Move the gripper to touch the green sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02528472795830618,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5938677838511404,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 6,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.5431471560150385,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283266_target1",
+      "parent_id": "two_row_reach_283266",
+      "instruction": "Move the gripper to touch the gray sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.010356192011386156,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283266_target2",
+      "parent_id": "two_row_reach_283266",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 6,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.010714343981817365,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283267_target0",
+      "parent_id": "two_row_reach_283267",
+      "instruction": "Move the gripper to touch the black sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025265227903793052,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5478990855521905,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.009737372980453,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283267_target1",
+      "parent_id": "two_row_reach_283267",
+      "instruction": "Move the gripper to touch the blue sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 1,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025219972423432515,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5860984378876486,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 3,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 1,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.7618700379971415,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283267_target2",
+      "parent_id": "two_row_reach_283267",
+      "instruction": "Move the gripper to touch the white sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02556563601231632,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5920068879055574,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 4,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.3980766140157357,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283268_target0",
+      "parent_id": "two_row_reach_283268",
+      "instruction": "Move the gripper to touch the violet sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02521500417271433,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5742554294841249,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 6,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.4044139770558104,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283268_target1",
+      "parent_id": "two_row_reach_283268",
+      "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.16666666666666666,
+        "known_reference_types": 6,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025202114881139662,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.49081772572873195,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.8213870369363576,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283268_target2",
+      "parent_id": "two_row_reach_283268",
+      "instruction": "Move the gripper to touch the lime sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.14591218810528517,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283268_target2",
+        "eligible_original_free_attachments": 2,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 2,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025855861126192013,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283269_target0",
+      "parent_id": "two_row_reach_283269",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.011148212011903524,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283269_target1",
+      "parent_id": "two_row_reach_283269",
+      "instruction": "Move the gripper to touch the blue sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025545491505105662,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5031795279872553,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 3,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.7845792940352112,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283269_target2",
+      "parent_id": "two_row_reach_283269",
+      "instruction": "Move the gripper to touch the lime sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.13971953792497516,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283269_target2",
+        "eligible_original_free_attachments": 1,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 1,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025420274473128085,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283270_target0",
+      "parent_id": "two_row_reach_283270",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "over",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.01154304703231901,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283270_target1",
+      "parent_id": "two_row_reach_283270",
+      "instruction": "Move the gripper to touch the azure sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 1,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02549022636647034,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.4956866138533174,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 1,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.7752158410148695,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283270_target2",
+      "parent_id": "two_row_reach_283270",
+      "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 4,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.18529878894332796,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283270_target2",
+        "eligible_original_free_attachments": 12,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 12,
+        "ray_rejected": 1,
+        "goal_center_error_m": 0.025437517444931782,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283271_target0",
+      "parent_id": "two_row_reach_283271",
+      "instruction": "Move the gripper to touch the orange sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02511660245380476,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5406039972269201,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.9766762559302151,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283271_target1",
+      "parent_id": "two_row_reach_283271",
+      "instruction": "Move the gripper to touch the teal sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 6,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.011868625995703042,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283271_target2",
+      "parent_id": "two_row_reach_283271",
+      "instruction": "Move the gripper to touch the violet sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 1,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 4,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.17871727491728961,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283271_target2",
+        "eligible_original_free_attachments": 11,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 11,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025676329141587455,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283272_target0",
+      "parent_id": "two_row_reach_283272",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 8,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.01055626489687711,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283272_target1",
+      "parent_id": "two_row_reach_283272",
+      "instruction": "Move the gripper to touch the cyan sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 2,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025233186621699173,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5196289783065202,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.0453197200549766,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283272_target2",
+      "parent_id": "two_row_reach_283272",
+      "instruction": "Move the gripper to touch the magenta sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.15046430204529315,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283272_target2",
+        "eligible_original_free_attachments": 5,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 5,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025715888760648425,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283273_target0",
+      "parent_id": "two_row_reach_283273",
+      "instruction": "Move the gripper to touch the rose sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 2,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02528019632055758,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5526027253748472,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 6,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.9183740270091221,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283273_target1",
+      "parent_id": "two_row_reach_283273",
+      "instruction": "Move the gripper to touch the yellow sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02530180714811373,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5309395842807865,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.1266742349835113,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283273_target2",
+      "parent_id": "two_row_reach_283273",
+      "instruction": "Move the gripper to touch the orange sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 4,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 7,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "over",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "over",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.14486568898428231,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283273_target2",
+        "eligible_original_free_attachments": 2,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 2,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.02593090969387429,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    },
+    {
+      "id": "two_row_reach_283274_target0",
+      "parent_id": "two_row_reach_283274",
+      "instruction": "Move the gripper to touch the maroon sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 2,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025091637815962645,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5774577899539393,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.2658081409754232,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283274_target1",
+      "parent_id": "two_row_reach_283274",
+      "instruction": "Move the gripper to touch the red sphere while avoiding the gray posts.",
+      "group": "unsupported_exact_instruction",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 2,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 4,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.01068118994589895,
+      "search_status_counts": {
+        "localization_failure": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283274_target2",
+      "parent_id": "two_row_reach_283274",
+      "instruction": "Move the gripper to touch the white sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 1,
+        "DuplicateClassifiedTipValidCount": 2,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 6,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025869939149660518,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5532810478482013,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 8,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 2,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 1,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.198210504022427,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283275_target0",
+      "parent_id": "two_row_reach_283275",
+      "instruction": "Move the gripper to touch the purple sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.2,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.02528596856769618,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5686378655435504,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 9,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "middle",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "negative_y"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 3,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 1.098569116089493,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283275_target1",
+      "parent_id": "two_row_reach_283275",
+      "instruction": "Move the gripper to touch the rose sphere while avoiding the gray posts.",
+      "group": "all_four_tip_valid",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 1.0,
+        "AnyTipValidAtK": 1.0,
+        "UniqueClassifiedTipValidAtK": 1,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 3,
+        "KnownReferenceTypeCoverageAtK": 0.3333333333333333,
+        "known_reference_types": 3,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 1.0,
+        "AnySemanticGoalAtK": 1.0,
+        "endpoint_error_m": 0.025405568368643966,
+        "TipClearAtK": 1.0,
+        "StartCorrectAtK": 1.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": 0.5026908198108347,
+        "format_failure_count": 0,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_predicted_types": [
+          [
+            "middle",
+            "middle"
+          ]
+        ],
+        "missing_known_types": [
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "negative_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 3,
+        "duplicate_replacement_count_upper_bound": 2,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 0,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 0,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.9538605340057984,
+      "search_status_counts": {
+        "path_found": 4
+      }
+    },
+    {
+      "id": "two_row_reach_283275_target2",
+      "parent_id": "two_row_reach_283275",
+      "instruction": "Move the gripper to touch the lime sphere while avoiding the gray posts.",
+      "group": "goal_attachment_failure",
+      "actual_metric": {
+        "candidates": 4,
+        "TipValidAtK": 0.0,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0,
+        "UnknownTypeTipValidCount": 0,
+        "DuplicateClassifiedTipValidCount": 0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "known_reference_types": 5,
+        "SelectedTipValidAtK": null,
+        "selected_index": null,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "endpoint_error_m": null,
+        "TipClearAtK": 0.0,
+        "StartCorrectAtK": 0.0,
+        "EventSequenceCorrectAtK": 1.0,
+        "mean_path_length_m": null,
+        "format_failure_count": 4,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "SelectedValidAtK": null,
+        "evaluation_protocol": "observed_two_row_tip_eval_v1",
+        "type_definition": "Ordered, consistent actual row passage relations; not guide IDs or homotopy equivalence",
+        "reference_policy": "Coverage of known positive types only; unobserved types are not negatives",
+        "unknown_type_policy": "Valid unknown routes count in TipValid, not in distinct classified types",
+        "validity_scope": "Correct target within3cm, start within5mm, unchanged reach events, physical-box tip segments with2cm clearance; no arm/IK/execution certificate",
+        "paths_repaired_or_filtered": false
+      },
+      "reference_count": 5,
+      "opportunity": {
+        "known_reference_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_predicted_types": [],
+        "missing_known_types": [
+          [
+            "middle",
+            "middle"
+          ],
+          [
+            "middle",
+            "positive_y"
+          ],
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "negative_y",
+            "positive_y"
+          ],
+          [
+            "positive_y",
+            "positive_y"
+          ]
+        ],
+        "valid_classified_duplicate_slots": 0,
+        "duplicate_replacement_count_upper_bound": 0,
+        "unknown_valid_slots": 0,
+        "nonexclusive_failure_counts": {
+          "finite_xyz": 4,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 4,
+          "starts_at_current_state": 4,
+          "tip_segments_clear": 4,
+          "event_state_sequence_correct": 0
+        },
+        "interpretation": "Count bound for replacing duplicate valid slots using known positives; not achievable gain or exhaustive solution count."
+      },
+      "exact_grid_duplicates": 0,
+      "request_seconds": 0.1488762750523165,
+      "search_status_counts": {
+        "no_admissible_virtual_goal_attachment": 4
+      },
+      "goal_attachment_diagnosis": {
+        "id": "two_row_reach_283275_target2",
+        "eligible_original_free_attachments": 3,
+        "total_considered_attachments": 27,
+        "finite_point_rejected": 3,
+        "ray_rejected": 0,
+        "goal_center_error_m": 0.025561756858124028,
+        "inferred_endpoint_semantic_correct": true,
+        "label_scope": "Post-generation diagnosis only, no target used to rerun or repair attachment."
+      }
+    }
+  ],
+  "actual_job": {
+    "code_commit": "743d9b269c27054b05c48cc5bab15017ab3fae55",
+    "pid": 516428,
+    "child_pid": 516435,
+    "exit_code": 0,
+    "wall_seconds": 26.155872,
+    "fit_seconds": 1.6617990121012554,
+    "report_seconds": 25.87733634794131,
+    "cpu_affinity": [
+      1
+    ],
+    "cpu_threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "gpu_hours": 0
+  },
+  "corrected_test_job": {
+    "run_id": "targeted_tests_corrected",
+    "pid": 516429,
+    "host": "wzy3090",
+    "command": [
+      "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/test_two_row_astar_control.py",
+      "-q"
+    ],
+    "resume_command": null,
+    "resume_strategy": "none",
+    "resume_note": null,
+    "cwd": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/743d9b269c27054b05c48cc5bab15017ab3fae55",
+    "log": "/home/wzy/dpvlm/route_set_v1/runs/observation_two_row_astar_v2/targeted_tests_corrected.log",
+    "code_commit": "743d9b269c27054b05c48cc5bab15017ab3fae55",
+    "gpu_uuid": null,
+    "start_utc": "2026-10-02T19:23:26.195849+00:00",
+    "status": "completed",
+    "child_pid": 516430,
+    "exit_code": 0,
+    "end_utc": "2026-10-02T19:23:27.092783+00:00"
+  },
+  "new_candidates_generated": 0,
+  "new_model_forwards": 0,
+  "thresholds_changed": false,
+  "source_report_modified": false
+}

@@ -1,5 +1,13 @@
 # State — 2026-10-02
 
+## Current checkpoint — 19:30 UTC / 2026-10-03 03:30 China
+
+- Prefix28 ordinary/cache/online/CPU diagnosis are COMPLETE, not running. Actualce548 ordinary1500x32/K4: best500 DEV Tip22.92%, Any44.44%, Unique.5833; last1500 Tip22.92%, Any55.56%, Unique.3611. Both zero valid classified duplicates. Source743 online36real Qwen requests reproduce decisions, median73.146ms/p9580.546/first656.477, 4.284GB peak allocation. All12parent plots reviewed and hashes retained.
+- Crucial actual743d9b2 fixed-last TRAIN48 diagnostic: Tip87.5%, Any100%, semantic96.35%, Unique1.4792, validunknown2.0208, duplicate0. Original best500 TRAIN24.48% must not be mistaken for last fit. Matched route ADE11.437→2.728cm and exact saturation loss.0050795→.00026637. Generalization, not inability to fit the training positives, is the current main gap.
+- Actual743d9b2 original observed A*v2 control COMPLETE:10server tests;36inputs/144slots,76TipValid/68failed, Any52.78%, Unique.5278, classified duplicate1.3056. Eight unsupported instruction conditions and nine no-goal-attachment conditions retained. CPU median779.898ms. Source0d730 first guard failure5pass/1fail preserved; only verified LF/CRLF exact byte forms were allowed after proving same old planner bytes. No planner/threshold change.
+- MAIN_RESULTS248rows retain four new DEV result rows; same training/checkpoint/cache costs explicitly deduplicated. Latest JOBS19:26:46 contains372records; only formal116 collection remains live, CPU2/3. GPU and CPU0/1 released. No locked raw/metrics opened.
+- Next actual implementation fixes first32TRAIN+same12DEV (prefix44), then64TRAIN+same12DEV (prefix76), same seed0/1500x32/K4/ordinary recipe. Exact registered identities, failure retention, TRAIN capacity and unchanged DEV arrays must pass before each run. No core module or novelty claim yet; do not mistake scaling for mechanism evidence.
+
 ## Current checkpoint — 19:12 UTC / 2026-10-03 03:12 China
 
 - Formal116 continues from2626487 on CPU2/3. First16 TRAIN and12 DEV are closed; no locked raw/metrics opened. TRAIN-only full432-slot analysis completed:285accepted/147failed,181known/104validunknown,14/48conditions have known R>4, all432strict restores pass. All48nine-slot plots reviewed; accepted lengths .574–5.895m remain unfiltered.
