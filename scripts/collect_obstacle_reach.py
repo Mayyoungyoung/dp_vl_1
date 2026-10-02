@@ -21,6 +21,44 @@ from observation_collect_rlbench import (array_hash, audit_difference,
 
 
 MODE_NAMES = ("negative_x", "positive_x", "negative_y", "positive_y")
+RANDOMIZED_V3 = dict(
+    region_centers=[[.08, .18, .84], [.28, .02, .84], [.44, -.05, .83]],
+    region_halfwidths=[[.04, .05, .012], [.045, .045, .012], [.04, .05, .012]],
+    box_xy_halfwidth=[.03, .04], box_z_offset_from_initial_tip=[-.27, -.23],
+    box_size_lower=[.12, .15, .05], box_size_upper=[.17, .21, .07],
+    object_to_region_mapping="independent random permutation of three target identities",
+    layout_prng="numpy.random.default_rng(parent_seed + 80000)")
+
+
+def randomized_layout(parent_seed, start_xyz):
+    """Declared v3 spatial distribution; labels never become model inputs."""
+    rng = np.random.default_rng(parent_seed + 80000)
+    offsets = rng.uniform(-1., 1., (3, 3)) * np.asarray(RANDOMIZED_V3["region_halfwidths"])
+    region_positions = np.asarray(RANDOMIZED_V3["region_centers"]) + offsets
+    permutation = rng.permutation(3)
+    goals = region_positions[permutation]
+    base_xy = .65 * np.asarray(start_xyz)[:2] + .35 * goals[:, :2].mean(axis=0)
+    center_xy = base_xy + rng.uniform(-1., 1., 2) * RANDOMIZED_V3["box_xy_halfwidth"]
+    height = start_xyz[2] + rng.uniform(*RANDOMIZED_V3["box_z_offset_from_initial_tip"])
+    sizes = rng.uniform(RANDOMIZED_V3["box_size_lower"], RANDOMIZED_V3["box_size_upper"])
+    return dict(goals=goals, centers=np.array([np.r_[center_xy, height]]), sizes=np.array([sizes]),
+                target_region_indices=permutation, region_positions=region_positions,
+                parent_seed=parent_seed, layout_prng_seed=parent_seed + 80000)
+
+
+def set_box_size(shape, desired):
+    """Scale a persistent box in place; never change the object inventory."""
+    bounds = np.asarray(shape.get_bounding_box()).reshape(3, 2)
+    current = bounds[:, 1] - bounds[:, 0]
+    desired = np.asarray(desired)
+    if not np.allclose(current, desired, atol=1e-7, rtol=0):
+        shape.scale_object(*(desired / current).tolist())
+    actual = np.asarray(shape.get_bounding_box()).reshape(3, 2)
+    if not np.allclose(actual[:, 1] - actual[:, 0], desired, atol=1e-6, rtol=0):
+        raise RuntimeError("physical obstacle dimensions differ from declared dimensions")
+    if not np.allclose(actual.sum(axis=1), 0, atol=1e-6, rtol=0):
+        raise RuntimeError("physical obstacle local bounding box is not centered")
+    return actual[:, 1] - actual[:, 0]
 
 
 def json_ready(value):
@@ -83,7 +121,8 @@ def serialization_check(folder):
                                 image=folder.name + "/front.png", instruction="Serialization fixture instruction.")
     fixtures = dict(manifest=manifest, observations=observation_manifest, restore_reference=reference, attempt_success=success,
                     attempt_failure=failure, supervision=supervision, summary=summary,
-                    all_actual_observation_arrays=observed, all_actual_verification_arrays=verification)
+                    all_actual_observation_arrays=observed, all_actual_verification_arrays=verification,
+                    randomized_layout_sampling=randomized_layout(271100, observed["gripper_pose"][:3]))
     hashes = {}
     import hashlib
     import tempfile
@@ -200,7 +239,9 @@ def full_snapshot(task, obstacles):
     return dict(core=native_snapshot(task),
                 obstacles=[dict(shape=shape, tree=shape.get_configuration_tree(), color=shape.get_color(),
                                 collidable=shape.is_collidable(), respondable=shape.is_respondable(),
-                                dynamic=shape.is_dynamic()) for shape in obstacles])
+                                dynamic=shape.is_dynamic(),
+                                size=np.diff(np.asarray(shape.get_bounding_box()).reshape(3, 2), axis=1).ravel())
+                           for shape in obstacles])
 
 
 def restore_full_snapshot(task, snapshot):
@@ -220,6 +261,7 @@ def restore_full_snapshot(task, snapshot):
     for shape, color in core["shape_colors"]:
         shape.set_color(color)
     for entry in snapshot["obstacles"]:
+        set_box_size(entry["shape"], entry["size"])
         task._pyrep.set_configuration_tree(entry["tree"])
         entry["shape"].set_color(entry["color"])
         entry["shape"].set_collidable(entry["collidable"])
@@ -264,6 +306,16 @@ def self_test():
     assert crossing_signature(np.array([[0., 0., 1.4], [0., 0., .6]]), centers, halfsizes) is None
     # Safe waypoints do not make a segment through the expanded box safe.
     assert not tip_polyline_clear(np.array([[-.2, 0., 1.], [.2, 0., 1.]]), centers, halfsizes)
+    samples = [randomized_layout(271100 + index, np.array([.28, .01, 1.47])) for index in range(128)]
+    assert len({json_text(sample) for sample in samples}) == 128
+    assert len({tuple(sample["target_region_indices"]) for sample in samples}) == 6
+    for index, sample in enumerate(samples):
+        assert json_text(sample) == json_text(randomized_layout(271100 + index, np.array([.28, .01, 1.47])))
+        delta = np.abs(sample["region_positions"] - RANDOMIZED_V3["region_centers"])
+        assert np.all(delta <= RANDOMIZED_V3["region_halfwidths"])
+        assert np.all(sample["sizes"] >= RANDOMIZED_V3["box_size_lower"])
+        assert np.all(sample["sizes"] <= RANDOMIZED_V3["box_size_upper"])
+        assert np.array_equal(sample["goals"], sample["region_positions"][sample["target_region_indices"]])
     print(json_text(dict(pure_geometry_self_test="passed", simulator_launched=False)))
 
 
@@ -274,7 +326,7 @@ def main():
     parser.add_argument("--dev-parents", type=int, default=1)
     parser.add_argument("--seed", type=int, default=271000)
     parser.add_argument("--obstacles", type=int, choices=(1, 2), default=1)
-    parser.add_argument("--target-layout", choices=("natural", "safe_lowered", "safe_low_all_v2"), default="safe_low_all_v2")
+    parser.add_argument("--target-layout", choices=("natural", "safe_lowered", "safe_low_all_v2", "safe_randomized_v3"), default="safe_low_all_v2")
     parser.add_argument("--passages", nargs="+", choices=MODE_NAMES,
                         help="predeclared proposal sides; v2 defaults to +/-x and +/-y, older layouts to +/-x")
     parser.add_argument("--image-size", type=int, default=224)
@@ -294,6 +346,8 @@ def main():
         return
     if args.output is None or args.output.exists() or args.parents < 1 or not 0 <= args.dev_parents <= args.parents:
         parser.error("new --output directory, positive parents and valid dev-parent count required")
+    if args.target_layout == "safe_randomized_v3" and args.obstacles != 1:
+        parser.error("safe_randomized_v3 currently declares exactly one physical obstacle")
     from pyrep.const import ObjectType, PrimitiveShape
     from pyrep.objects.shape import Shape
     from rlbench.action_modes.action_mode import MoveArmThenGripper
@@ -315,13 +369,14 @@ def main():
     config.task_low_dim_state = False
     env = Environment(MoveArmThenGripper(JointVelocity(), Discrete()), obs_config=config, headless=True)
     args.output.mkdir(parents=True)
-    sides = tuple(args.passages) if args.passages else (MODE_NAMES if args.target_layout == "safe_low_all_v2" else MODE_NAMES[:2])
+    sides = tuple(args.passages) if args.passages else (MODE_NAMES if args.target_layout in ("safe_low_all_v2", "safe_randomized_v3") else MODE_NAMES[:2])
     if len(set(sides)) != len(sides):
         parser.error("duplicate proposal side")
     proposals = list(itertools.product(sides, repeat=args.obstacles))
     layout_descriptions = dict(natural="unchanged original ReachTarget sphere placement; equally spaced vertical obstacle centers",
         safe_lowered="preserved v1: sphere centers near [.08,.18,.84], [.28,.02,.96], [.44,-.05,.83] with seeded offsets; equally spaced vertical obstacle centers",
-        safe_low_all_v2="new v2: middle sphere lowered from .96 to .84m, other centers preserved; single box centered .25m below initial tip; default four side proposals")
+        safe_low_all_v2="new v2: middle sphere lowered from .96 to .84m, other centers preserved; single box centered .25m below initial tip; default four side proposals",
+        safe_randomized_v3="new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals")
     manifest = dict(benchmark="RLBench-derived obstacle-passage multi-target reaching", original_benchmark_result=False,
                     setting_version=args.target_layout,
                     rlbench_revision="02720bba4c73fe02eb75df946b8791b806028a9d", pyrep_revision="8f420be8064b1970aae18a9cfbc978dfb15747ef",
@@ -339,10 +394,11 @@ def main():
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
                     target_layout_description=layout_descriptions[args.target_layout],
+                    randomized_layout_distribution=RANDOMIZED_V3 if args.target_layout == "safe_randomized_v3" else None,
                     not_a_matched_comparison_to_other_layout_versions=True)
     (args.output / "manifest.json").write_text(json_text(manifest, indent=2), encoding="utf-8")
     started = time.perf_counter()
-    total = successes = restores = classified = duplicate_types = parents_collected = 0
+    total = successes = restores = classified = duplicate_types = parents_collected = parent_setup_failures = 0
     env.launch()
     try:
         # Root shapes are created while stopped so native stop/start retains
@@ -371,9 +427,18 @@ def main():
             np.random.seed(args.seed + parent)
             task.set_variation(parent % task.variation_count())
             random_state = np.random.get_state()
+            layout_metadata = None
             try:
                 _, initial = task.reset()
                 targets = [task._task.target, task._task.distractor0, task._task.distractor1]
+                start_xyz = np.asarray(initial.gripper_pose[:3])
+                if args.target_layout == "safe_randomized_v3":
+                    layout_metadata = randomized_layout(args.seed + parent, start_xyz)
+                    for target, position in zip(targets, layout_metadata["goals"]):
+                        target.set_position(position.tolist())
+                    # Scaling is in-place and every native restore checks the
+                    # actual dimensions; no hidden object creation/deletion.
+                    sizes = [set_box_size(shape, size) for shape, size in zip(obstacles, layout_metadata["sizes"])]
                 if args.target_layout in ("safe_lowered", "safe_low_all_v2"):
                     # Original ReachTarget may place a sphere almost at the
                     # initial wrist height, leaving no room for this independent
@@ -386,14 +451,14 @@ def main():
                     for target, position in zip(targets, safe_positions):
                         target.set_position(position.tolist())
                 goals = np.asarray([target.get_position() for target in targets])
-                start_xyz = np.asarray(initial.gripper_pose[:3])
                 gap = start_xyz[2] - goals[:, 2].max()
                 if gap < (.28 if args.obstacles == 1 else .55):
                     raise RuntimeError("insufficient vertical workspace for the declared physical obstacle layout")
                 center_xy = .65 * start_xyz[:2] + .35 * goals[:, :2].mean(axis=0)
                 heights = (np.array([start_xyz[2] - .25]) if args.obstacles == 1 and args.target_layout == "safe_low_all_v2" else
                            np.linspace(start_xyz[2], goals[:, 2].max(), args.obstacles + 2)[1:-1])
-                centers = np.array([np.r_[center_xy, height] for height in heights])
+                centers = (layout_metadata["centers"] if layout_metadata is not None else
+                           np.array([np.r_[center_xy, height] for height in heights]))
                 halfsizes = np.asarray(sizes) / 2
                 for shape, center in zip(obstacles, centers):
                     shape.set_position(center.tolist())
@@ -401,6 +466,12 @@ def main():
                 snapshot = full_snapshot(task, obstacles)
                 restore_full_snapshot(task, snapshot)
                 initial = task.get_observation()
+                for shape, center, halfsize in zip(obstacles, centers, halfsizes):
+                    actual_bounds = np.asarray(shape.get_bounding_box()).reshape(3, 2)
+                    if not np.allclose(actual_bounds, np.stack([-halfsize, halfsize], axis=1), atol=1e-6, rtol=0):
+                        raise RuntimeError("initial restored physical box size differs from validation geometry")
+                    if not np.allclose(shape.get_position(), center, atol=1e-6, rtol=0):
+                        raise RuntimeError("initial restored physical box center differs from validation geometry")
                 reference = full_audit(task, obstacles)
                 visible = [int(np.sum(initial.front_mask == target.get_handle())) for target in targets]
                 if min(visible) < args.minimum_target_pixels:
@@ -416,11 +487,20 @@ def main():
                 if not gripper_shapes:
                     raise RuntimeError("no collidable gripper shapes were found for explicit collision validation")
             except Exception as exc:
-                record = dict(parent_id=parent_id, phase="parent_setup", success=False, error=repr(exc), traceback=traceback.format_exc())
+                parent_setup_failures += 1
+                record = dict(parent_id=parent_id, split=split, phase="parent_setup", success=False,
+                              requested_layout_supervision_only=layout_metadata,
+                              error=repr(exc), traceback=traceback.format_exc())
                 append_json(args.output / "attempts.jsonl", record)
                 print(json_text({key: value for key, value in record.items() if key != "traceback"}), flush=True)
                 continue
             parents_collected += 1
+            if layout_metadata is not None:
+                layout_metadata.update(actual_target_centers=goals, actual_obstacle_centers=centers,
+                                       actual_obstacle_sizes=np.asarray(sizes), target_visible_pixels=visible,
+                                       target_colors=[target.get_color() for target in targets],
+                                       parent_id=parent_id, split=split)
+                (folder / "layout_sampling_supervision_only.json").write_text(json_text(layout_metadata, indent=2), encoding="utf-8")
             Image.fromarray(initial.front_rgb).save(folder / "front.png")
             np.savez_compressed(folder / "observation.npz", depth=initial.front_depth,
                                 gripper_pose=initial.gripper_pose, gripper_open=initial.gripper_open,
@@ -540,6 +620,7 @@ def main():
     finally:
         env.shutdown()
     summary = dict(status="collection_finished", parents_requested=args.parents, parents_collected=parents_collected,
+                   parent_setup_failures=parent_setup_failures,
                    attempts=total, successes=successes, restore_passes=restores, classified_successes=classified,
                    duplicate_passage_type_successes=duplicate_types, elapsed_seconds=time.perf_counter() - started,
                    all_solution_count=None, continuous_whole_robot_collision_certified=False)
