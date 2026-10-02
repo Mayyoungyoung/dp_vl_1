@@ -84,3 +84,8 @@ saturation 的 batch=1 路径头中位延迟为 1.3405 ms、p95 为 1.3928 ms，
 随后两项实际结果均不支持继续该实现：72个观测边界审计全部单连通分支，放弃区域表示；等参数local/global草稿修正配对没有稳定质量—覆盖—成本优势，放弃局部更新。完整负结果见OBSERVED_DEPARTURE_REGION_AUDIT与OBSERVATION_REFINEMENT_PAIR。继续使用原普通peak和传统观测A*作为参照。当前下一机制尚在针对TRAIN预测中真实重复/缺失类型的诊断阶段，未声称已实现或有效。
 
 多任务普通头兼容工作与机制贡献分开：抓取/抬升/取盖任务的最终末端位置可能不在初始观测表面，不能直接沿用reach的表面±5cm终点约束与终点attention标签。正在增加可选的无表面终点限制表示、按任务/父场景均衡训练及宏平均参考指标。没有语义目标验收标签时保留null，不用示范终点接近替代任务成功。
+# Current implementation status — 2026-10-02 13:37 UTC
+
+Six-task ordinary regression is now actually trained with real frozen Qwen, current RGB-D/calibration and state, using free endpoint offsets and task-parent balanced supervision. This repairs representation capacity for lifted endpoints; it is not a new set mechanism. Best500 of1500 steps gives TRAIN/DEV macro ADE1.783/17.121cm on12/12 parents, so more representative training is required. All unsupported semantic/validity/execution metrics remain null. See `OBSERVATION_MULTITASK_BASELINE.md` and actual artifacts.
+
+TRAIN96 duplicate/reference diagnostics rule out same-scene repeated reference supervision as the current failure explanation. Only28 of288 instructions have valid duplicates plus known missing types; no mature MCL/facility-location reweighting is promoted to core novelty. Direct VLM whole-set/independent sampling is being built as a strong conventional baseline; real teacher-forced preflight is working after an equivalent chunked-loss memory repair, but full training and generation evidence are still pending.

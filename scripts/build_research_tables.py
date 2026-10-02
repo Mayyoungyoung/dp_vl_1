@@ -155,6 +155,7 @@ def main():
     observation_folders += [p.name for p in reports.glob('observed_online_geometry_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_anchor_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_natural_reserved*') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_multitask_prefix*') if p.is_dir()]
     for folder in observation_folders:
         for source in sorted((reports/folder).rglob('summary.json')):
             if not (source.parent/'config.json').is_file():
@@ -169,7 +170,8 @@ def main():
                     if not audit['predictions_match_at_1e_5']:raise ValueError('actual Qwen prediction drift')
                     full_latency=audit['all_requests_ms_median']
             rows.append(dict(tier='observed_RGBD_language_current' if 'geometry_role' in config or 'geometry_parameters' in config else 'observed_RGB_language_current',
-                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in config.get('observations',str(source.parent.relative_to(reports))) else 'RLBench_derived_reach_three_targets',
+                task=('RLBench_six_tasks_reference_only' if config.get('endpoint_mode')=='free_offset' else
+                      ('RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in config.get('observations',str(source.parent.relative_to(reports))) else 'RLBench_derived_reach_three_targets')),
                 protocol=metrics.get('evaluation_protocol','observation_eval_v1_reference_subset'),
                 checkpoint_selection_protocol=result.get('checkpoint_selection_protocol','original_DEV_ADE_best'),
                 method=folder+'_'+'_'.join(source.parent.relative_to(reports/folder).parts)+'_'+config.get('adapter_mode','frozen_cache'),
@@ -188,6 +190,9 @@ def main():
                 cost_scope=('online Qwen/head train and evaluation; gpu_hours includes setup; elapsed_s excludes setup; common head pretraining separate'
                     if 'online' in folder else 'head training/evaluation only; separate Qwen encoding is excluded'),
                 candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
+                reference_ADE_m=metrics['reference_matched_ADE_m'],
+                event_state_accuracy=metrics['event_state_accuracy'],event_sequence_accuracy=metrics['event_sequence_accuracy'],
+                metric_aggregation=metrics.get('metric_aggregation','instruction'),
                 semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
                 RGBD_Qwen_generation_ms=full_latency,
                 TipValidAtK=metrics.get('TipValidAtK'),AnyTipValidAtK=metrics.get('AnyTipValidAtK'),
@@ -195,7 +200,7 @@ def main():
                 KnownReferenceTypeCoverageAtK=metrics.get('KnownReferenceTypeCoverageAtK'),TipClearAtK=metrics.get('TipClearAtK'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
                 source=str(source.relative_to(root))))
-            if config.get('refinement_mode','none')!='none':
+            if config.get('refinement_mode','none')!='none' or config.get('endpoint_mode')=='free_offset':
                 final=result['last_metrics']
                 # Preserve the uniform final-step result, without double-counting
                 # the same training run's cost or changing its selected best.
@@ -207,9 +212,11 @@ def main():
                     cost_scope='same training run as best row; no additional training; final-step sensitivity retained')
                 for field in ('semantic_goal_accuracy','AnySemanticGoalAtK','TipValidAtK','AnyTipValidAtK',
                               'UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK'):
-                    last_row[field]=final[field]
+                    last_row[field]=final.get(field)
                 last_row.update(candidate_ADE_m=final['candidate_matched_ADE_m'],
-                                endpoint_error_m=final['candidate_endpoint_error_m'])
+                                endpoint_error_m=final['candidate_endpoint_error_m'],
+                                reference_ADE_m=final['reference_matched_ADE_m'],
+                                event_state_accuracy=final['event_state_accuracy'],event_sequence_accuracy=final['event_sequence_accuracy'])
                 rows.append(last_row)
     source=reports/'observed_obstacle_reserved96_analysis_v1/analysis.json'
     if source.exists():
@@ -288,6 +295,7 @@ def main():
           'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms','checkpoint_selection_protocol',
           'sampling_repeats','budget_status','observed_RGBD_plan_proxycheck_ms',
           'generated_complete_path_states','path_updates','complete_path_state_exposures',
+          'reference_ADE_m','event_state_accuracy','event_sequence_accuracy','metric_aggregation',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

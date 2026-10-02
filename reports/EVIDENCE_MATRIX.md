@@ -37,3 +37,8 @@
 | 白名单相机策略下跨进程恢复 | 新独立父实测通过 | observation_multitask_validated_resume_probe_v1：3/3成功，全部初态/输入/首slot hash保持，46.397s | 新144父批次已实际运行但未完成；五任务单父相机等价不外推所有父，push保持开启 |
 
 所有开发集bootstrap区间只描述已选择开发数据上的配对差异，不能作为最终锁定测试的确认性推断。未实测字段在MAIN_RESULTS中留空。
+# Latest six-task/direct-VLM boundary, 2026-10-02 13:37 UTC
+
+Sealed prefix24: six original tasks,24 parents/72 successful references,12 TRAIN and12 DEV parents; three source attempts per parent. Actual frozen Qwen96 encodings and ordinary free-endpoint head1500-step training completed from6bc2b8. TRAIN/DEV macro path ADE1.783/17.121cm shows a large generalization gap, not representative task success. Semantic, collision, UniqueValid and execution results remain null. Complete provenance: `observed_multitask_prefix24_v1/artifact_index.json`.
+
+Direct VLM SFT boundary: real2B preflight v1 failed memory, v2 passed exact-prefix masking and4 actual LoRA steps at4.839GB. This establishes a working memory-bounded training interface only; full SFT and independent-versus-whole-set generation have not completed. No new core advantage follows from either result.
