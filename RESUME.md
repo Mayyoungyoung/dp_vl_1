@@ -1,5 +1,11 @@
 # Resume
 
+## 2026-10-02 21:54 UTC：下一配对控制源码冻结准备
+
+证据e2f67751e05dec9986a15234b8492f773077d789已推送并核验。两臂共同native A*内核、三阶段runner/launcher及门禁测试已实现并独立复核；本地实际编译74 tests通过，Linux服务器编译/测试与真实请求尚未运行。生产沿用K4/20k节点/2秒/64节点计时，两臂共同使用同一库，原planner/空间场/评价器源码未改。首次tests stage必须有真实24项native差分及同编译器/flags/源码生产构建证明，root读后才能单独TRAIN12，再单独DEV36。
+
+实现审查已在真实请求前修复两处测试入口问题：其它测试不能替代24项native差分；单元测试的模拟build receipt不能被当作真实编译。一次本地测试临时目录错误设在源码内被既有保护拒绝，保留失败日志，移至OS temp重测，未放宽保护。新的cosine12000普通基线仍在独立实现，未启动。
+
 ## Latest actual checkpoint — 2026-10-02 21:41 UTC
 
 Root snapshot21:40:55UTC: MAIN261 (original258 fields unchanged), JOBS473 with no live PID, registry489. One fresh12000 cosine-LR ordinary control is now in implementation only, not launched. Same initialization/sample chain/189 inputs/48 DEV selections; constant-LR source remains unchanged, with no warmup, restart, LR sweep or new seed. Freeze and validate before any run; endpoint drift is motivation, not proof that LR caused it.
