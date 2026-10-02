@@ -154,3 +154,21 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 严格颜色身份和3cm阈值完全不变，DEV checkpoint选择仍基于原23条参考ADE。旧23条历史输出完整保留。CPU已用原冻结头best750权重重新评价：24条严格语义仍0%，23条参考ADE仍0.09965624m、终点误差仍0.19544326m。新增证据在 `reports/observation_eval_v2/observed_frozen_v1_seed0/`，包含metrics、逐场景、原checkpoint/config SHA、原训练release和实际评价源SHA；没有覆盖旧训练summary。该目录的TRAIN子目录保留71条有参考训练样本诊断；新geometry训练结束会另对完整72条TRAIN观测评价，参考指标分母71。
 
 新版loader/指标与geometry共12项CPU测试通过，特别验证无参考语义失败会降低完整分母、无参考ADE保持null、输入数量不减少。真实数据确认TRAIN监督71、DEV全部24，其中23有参考。新版geometry完整4步与中断恢复再次逐位相同，见 `reports/observation_geometry_validation_v2.json`。在线冻结/LoRA对照必须使用其实际骨干按同协议重评，不能用旧冻结缓存替代已微调骨干。
+
+### 图像必要性弱对照与固定失败可视化
+
+`scripts/observation_language_control.py` 只用TRAIN有参考指令的末端：先对一个父场景/指令的多条参考末端取平均，再按完全相同的instruction跨父场景平均，因此参考多的场景不会额外加权。该弱诊断不读RGB、深度或当前状态，也不生成完整路线。实际TRAIN监督71条，DEV全部24条，未见指令0条；DEV严格语义正确率0%，目标中心平均误差0.281939m，23条有参考的末端误差0.281923m。逐场景、训练均值和源码/数据hash保存在 `reports/observation_language_only_control.json`。这说明该数据中的语言位置先验不足，不证明任意语言模型都无法解决，也不将其作为强路线基线。
+
+几何版本 `runs/observed_geometry_v1/seed0/best.pt`（750步，SHA256 `a5260c2899298a2aabb8db60553805b9cb43b4250bd76eedd106b044eca5d706`）已由 `scripts/visualize_observed_geometry.py` 实际加载。固定选择按ID排序的前两个DEV父场景261024与261025，各三个目标，未依据结果选择。两张图包含全部6条指令的真实RGB/attention、预测终点投影、H24三维及俯视路线；目标坐标只用于可视化标记和既定评价。每条均为0/4严格命中，完整索引、逐场景误差、attention和预测见 `reports/observation_geometry_fixed6/`。
+
+这些固定例子中，目标中心4cm内的观测点仅获得8.3%–33.9%的attention质量，48.8%–55.5%的质量位于三个目标邻域之外；其余在多个目标之间分散，学习anchor常落在球之间。4cm仅为解释attention的诊断邻域，不是新的成功标准；仍使用原3cm终点标准。它支持下一步检查语言条件空间选择及anchor监督，而不能把未命中的平均位置描述为已完成开放词汇定位。
+
+### 自然布局256父数据扩展：试采通过，正式作业运行中
+
+`scripts/collect_derived_reach_fast.py` 保留原可靠native stop/start恢复与原任务自然随机布局，不创建障碍、不重定位目标。每父场景3种目标语言、每目标3个自由运动提案；不同欧氏路线不标为不同类型。每步读tip pose和真实gripper_open，并沿用 `collect_obstacle_reach.py` 的arm/gripper外部碰撞检查。初末均与固定RLBench版本 `Scene.get_observation` 的同名字段逐值比较，任何非零差值拒收。状态、完整对象inventory、RGB恢复要求严格零差；失败保存partial轨迹。父初始化失败单独记录，并为其9个未执行提案记录原因，不自动换种子补齐。原free-derived版本已经直接读取tip，因此本轮不声称未经实测的提速收益。
+
+固定release `bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3` 的试采 `observation_reach_fast_pilot_20261002` 使用独立seed261900、1个DEV父，实际耗时27.9879秒、9/9成功；9/9完整恢复零差，初末官方字段等价均通过，零近重复。独立保存轨迹审计9/9数值有限、9/9终点通过，平均终点误差0.691mm、最大1.178mm。见 `reports/observation_reach_fast_pilot_audit/` 与 `observation_reach_fast_pilot_summary.json`。
+
+正式作业 `observation_reach_fast256_20261002` 已于2026-10-02 08:45:32 UTC启动，PID159691，CPU线程1、软件渲染、无GPU。使用全新seed262000–262255，前192父为TRAIN、后64父为DEV_MODEL，全部开发用途；与旧32父及试采父不重叠。计划256父、768指令、2304提案不能写成已成功数量。启动后73秒的持久化快照仅有3父、27/27成功、零恢复/等价失败；最终结果待作业实际完成后审计。按单父试采粗估约2小时，不能保证此耗时。
+
+运行证据、PID、实际命令、源码hash和下一步审计见 `reports/observation_reach_fast256_job.json`；早期快照见 `observation_reach_fast256_progress_snapshot.json`。服务器每完成一父原子更新data目录summary，并逐尝试落盘。不要重复启动同run；若中断，保留父场景/attempt日志与已写数据，当前采集器会拒绝覆盖现有目录，不能盲目同命令重跑。会话后的后台进程只执行既定采集，不代表仍会自主分析或改代码。

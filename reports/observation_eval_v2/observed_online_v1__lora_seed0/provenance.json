@@ -1,0 +1,140 @@
+{
+  "run_id": "observed_online_v1__lora_seed0",
+  "run": "/home/wzy/dpvlm/route_set_v1/runs/observed_online_v1/lora_seed0",
+  "checkpoint_sha256": "68087896e95ffe6fcfce7fad4c0e4850803eeac5ef8e1ed5f74d65cbac2b1a03",
+  "checkpoint_step": 200,
+  "original_training_config": {
+    "self_test": false,
+    "model": "/home/wzy/dpvlm/route_set_v1/data/qwen3-vl-2b-instruct-89644892",
+    "observations": "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/observations.jsonl",
+    "supervision": "/home/wzy/dpvlm/route_set_v1/data/observation_derived_reach32_20261002/supervision.jsonl",
+    "output": "/home/wzy/dpvlm/route_set_v1/runs/observed_online_v1/lora_seed0",
+    "adapter_mode": "lora",
+    "rank": 8,
+    "alpha": 16.0,
+    "steps": 300,
+    "batch_size": 1,
+    "accumulation": 4,
+    "candidates": 4,
+    "horizon": 24,
+    "width": 128,
+    "depth": 2,
+    "pooling": "both",
+    "event_scale": 0.2,
+    "lr": 0.0003,
+    "lora_lr": 0.0001,
+    "seed": 0,
+    "eval_every": 100,
+    "max_pixels": 262144,
+    "threads": 2,
+    "device": "cuda",
+    "resume": false,
+    "stop_after": null,
+    "feature_dim": 4096,
+    "dataset_fingerprint": "529ed8875aa2162d63269e6db45e518e72507e3af4a8c4c2aafc8894196d238a",
+    "model_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "processor_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "model_provenance_sha256": "a001afb3ebdeceee3548ea9c8e58d5c9c4443b4d9a0ecdac004c85de3a691819",
+    "torch": "2.4.1+cu121",
+    "transformers": "4.57.1",
+    "code_commit": "6a4d719a91f5228fc2998e33f5bd10cfcaff4878",
+    "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+    "lora_modules": [
+      "model.language_model.layers.26.self_attn.q_proj",
+      "model.language_model.layers.26.self_attn.v_proj",
+      "model.language_model.layers.27.self_attn.q_proj",
+      "model.language_model.layers.27.self_attn.v_proj"
+    ],
+    "adapter_initialization_seed": 200000,
+    "lora_parameters": 114688,
+    "head_parameters": 910428,
+    "input_contract": [
+      "RGB",
+      "instruction",
+      "current gripper pose7",
+      "current gripper open1"
+    ],
+    "hidden_cache_used": false,
+    "gradient_explanation": "B initialized zero: A first-step gradient is zero; B must receive gradient, A can update after B changes; adapter weight decay is zero",
+    "objective": "saturation assignment on xyz and event_scale*open probability; same as frozen route head",
+    "effective_batch": 4,
+    "selection_split": "DEV_MODEL",
+    "selection_metric": "negative candidate_matched_ADE_m",
+    "train_examples": 71,
+    "dev_examples": 23,
+    "train_parents": 24,
+    "dev_parents": 8,
+    "skipped_supervision": [
+      {
+        "id": "derived_reach_261015_target2",
+        "reason": "missing_supervision_or_successful_routes"
+      },
+      {
+        "id": "derived_reach_261028_target2",
+        "reason": "missing_supervision_or_successful_routes"
+      }
+    ]
+  },
+  "original_config_file_sha256": "0b6a5fc2051c4719384bb176bccdcdb1009296bd05898ca81e6e5a88518189ed",
+  "original_training_source_commit": "6a4d719a91f5228fc2998e33f5bd10cfcaff4878",
+  "evaluation_source_commit": "b25ecb7b61cf53a6b029d4cc6c1174aac92fa4ce",
+  "evaluation_source_sha256": {
+    "/home/wzy/dpvlm/route_set_v1/research_v2/releases/b25ecb7b61cf53a6b029d4cc6c1174aac92fa4ce/scripts/reevaluate_observed_online.py": "91fa007a7d294303b696472504305dd538962ca513156a6bec7db3e3774e2695",
+    "scripts/train_observed_lora.py": "ce02085a9462bcdd4e20717b4a7e2a583ca001b475699a4ac08141ef908d7b70",
+    "scripts/train_observed_routes.py": "093f5aa6d79adb09c09c70f13a058f10b72e5dd0682e28f6cd82a401f8876c75",
+    "routeset/observed_route_head.py": "4453c785f5c7ad2e3162c9e325c6712184f8692b724053057049dd768db59fe3"
+  },
+  "evaluation_protocol": "observation_eval_v2",
+  "model_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "processor_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "model_provenance_sha256": "a001afb3ebdeceee3548ea9c8e58d5c9c4443b4d9a0ecdac004c85de3a691819",
+  "evaluation_dataset_fingerprint": "529ed8875aa2162d63269e6db45e518e72507e3af4a8c4c2aafc8894196d238a",
+  "input_manifest_sha256": "31fb89f7a68df597d059f8c0a5be5367395ed58873766cd8b87c3000243a0bb3",
+  "supervision_manifest_sha256": "2f91987415421ee41e04293a1fa7d27adcadcca37fbd5635a996e83a8750d421",
+  "head_state_sha256": "df9f78c98bac677a9e65ee3ce4ae27971212df09885bbfc598bad9c867198a6a",
+  "adapter_sha256": {
+    "model.language_model.layers.26.self_attn.q_proj.lora_A": "681074940ba5722b7c136d9acad1af7fdbeee002f67eb92835f38b61e4f99f2f",
+    "model.language_model.layers.26.self_attn.q_proj.lora_B": "0ca6cad739e7f053f231b8da1054cc8255d300aeda32206f5b1ea65ee75afb21",
+    "model.language_model.layers.26.self_attn.v_proj.lora_A": "b3fc5d96481e9a66383902c794fba14d2abd34a0208a1f34b006e9542df13533",
+    "model.language_model.layers.26.self_attn.v_proj.lora_B": "c8fb7e3eb73b0f2a78329f338cce11e3cd17af3ef8c2a9f224fd02bf953ca161",
+    "model.language_model.layers.27.self_attn.q_proj.lora_A": "3f1804b1816c6d1bca7174dd3674e86dcb1bddebd793b14e1b679aa786467188",
+    "model.language_model.layers.27.self_attn.q_proj.lora_B": "0dc1f27dff70c6ae66176ed9ddcb17776a2cfc0f9b26acfda88fe98e165189c3",
+    "model.language_model.layers.27.self_attn.v_proj.lora_A": "fbf43705e802c05d2d5a98f635c655b65868b65970e8000a6a38e3e1d7ddcdd6",
+    "model.language_model.layers.27.self_attn.v_proj.lora_B": "7e1cdaccb3d0414bb70eae725398ada5ab131cb157fa2d1cacd6adafca311c75"
+  },
+  "checkpoint_selection": "unchanged saved best.pt; no checkpoint reselection",
+  "examples": 24,
+  "reference_evaluation_examples": 23,
+  "semantic_evaluation_examples": 24,
+  "parents": 8,
+  "training_reference_examples": 71,
+  "unreferenced_observations": [
+    {
+      "id": "derived_reach_261015_target2",
+      "split": "TRAIN",
+      "reason": "no_successful_reference_routes"
+    },
+    {
+      "id": "derived_reach_261028_target2",
+      "split": "DEV_MODEL",
+      "reason": "no_successful_reference_routes"
+    }
+  ],
+  "threads": 1,
+  "device": "cuda",
+  "hidden_cache_used": false,
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "prediction_sha256": "e517460637b80a4e0f4c49f7f1c67cc3d1c698c70a4984f92cbc3978291350af",
+  "original_reference_agreement": {
+    "available": true,
+    "original_rows": 23,
+    "new_rows": 24,
+    "max_reference_metric_absolute_difference_m": 0.0,
+    "tolerance_m": 1e-05,
+    "original_per_scene_sha256": "a93490e73da17a5e54fc716432c55d7fc8260f32c1b575597e807c18780f19f6"
+  },
+  "elapsed_s_including_shared_setup_if_first": 2.9124715669313446,
+  "status": "completed",
+  "fresh_qwen_requests": 24,
+  "adapter_reset_before_run": true
+}

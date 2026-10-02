@@ -1,0 +1,1153 @@
+{
+  "scope": "Collection infrastructure and real simulated routes; not learned execution or method advantage",
+  "all_versions_retained": true,
+  "continuous_whole_robot_collision_certified": false,
+  "selected_notes": [
+    "safe_lowered and safe_low_all_v2 and safe_randomized_v3 are separate settings, not matched improvements",
+    "pilot4 initial rendering failure, insufficient double-restart repair and explicit-render repair all retained",
+    "formal128 remains running at this snapshot; no completion claim",
+    "Unknown route types remain accepted references; successful collection does not establish all solution count"
+  ],
+  "runs": [
+    {
+      "run_id": "obstacle_reach_pilot_20261002a",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002a",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_pilot_20261002a",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "105220",
+      "started_at": "2026-10-02T07:31:47Z",
+      "finished_at": "2026-10-02T07:31:55Z",
+      "source_sha256.txt": "075f8e74de29c708692777a8feec5fb5e0a8267a0e64c1e4ec3e68a3d929cc7d  runs/obstacle_reach_pilot_20261002a/source/collect_obstacle_reach.py\n0a86f823874381ba7dd822774a5324e4a550d6855f82a932b9f336b748d916c3  runs/obstacle_reach_pilot_20261002a/source/observation_collect_rlbench.py\n3157ff9224559c625d65721ec18c75d7836fba48805604f0ea07e3068b266cb8  runs/obstacle_reach_pilot_20261002a/source/observation_rlbench_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching v1",
+        "original_benchmark_result": false,
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "075f8e74de29c708692777a8feec5fb5e0a8267a0e64c1e4ec3e68a3d929cc7d",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "dev_parents": 1,
+        "seed": 271000,
+        "obstacles": 1
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 1,
+        "parents_collected": 0,
+        "attempts": 0,
+        "successes": 0,
+        "restore_passes": 0,
+        "classified_successes": 0,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 7.211685434915125,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 1,
+      "recorded_errors": {
+        "RuntimeError('insufficient vertical workspace for the declared physical obstacle layout')": 1
+      },
+      "accepted_records": 0
+    },
+    {
+      "run_id": "obstacle_reach_pilot_20261002b",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002b",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_pilot_20261002b",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "109838",
+      "started_at": "2026-10-02T07:35:41Z",
+      "finished_at": "2026-10-02T07:35:49Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/2b0da269dd394ef5a3a1112f1387355d7de8a4f4",
+      "source_sha256.txt": "30bdb3443f220d8d95103008aeb32ed4a30022db8923a5dc4e7119749dfd9078  /home/wzy/dpvlm/route_set_v1/research_v2/releases/2b0da269dd394ef5a3a1112f1387355d7de8a4f4/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/2b0da269dd394ef5a3a1112f1387355d7de8a4f4/scripts/observation_collect_rlbench.py\nde628c535a02ab48454d0314132e8b8a6379619ae6a6a61d381812388619d6ba  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002b/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching v1",
+        "original_benchmark_result": false,
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "30bdb3443f220d8d95103008aeb32ed4a30022db8923a5dc4e7119749dfd9078",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "dev_parents": 1,
+        "seed": 271000,
+        "obstacles": 1,
+        "target_layout": "safe_lowered",
+        "target_layout_description": "safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement"
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 1,
+        "parents_collected": 0,
+        "attempts": 0,
+        "successes": 0,
+        "restore_passes": 0,
+        "classified_successes": 0,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 7.6648844020674005,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 1,
+      "recorded_errors": {
+        "RuntimeError('The call failed on the V-REP side. Return value: -1')": 1
+      },
+      "accepted_records": 0
+    },
+    {
+      "run_id": "obstacle_reach_pilot_20261002c",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002c",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_pilot_20261002c",
+      "exists": true,
+      "status": "failed",
+      "exit_code": "1",
+      "pid": "118404",
+      "started_at": "2026-10-02T07:44:53Z",
+      "finished_at": "2026-10-02T07:45:06Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/6a4d719a91f5228fc2998e33f5bd10cfcaff4878",
+      "source_sha256.txt": "e1e7652859e0c078ed75971ff22c31ac40e30f914be63dcbcd29a6fab5de545a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/6a4d719a91f5228fc2998e33f5bd10cfcaff4878/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/6a4d719a91f5228fc2998e33f5bd10cfcaff4878/scripts/observation_collect_rlbench.py\n0d2a4ce492d5f2327785056c2041a3429fc35c83efecc180dcb684b773071b00  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002c/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching v1",
+        "original_benchmark_result": false,
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "e1e7652859e0c078ed75971ff22c31ac40e30f914be63dcbcd29a6fab5de545a",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "dev_parents": 1,
+        "seed": 271000,
+        "obstacles": 1,
+        "target_layout": "safe_lowered",
+        "target_layout_description": "safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement"
+      },
+      "failure_log_tail_collection.log": "ot supported\n  warnings.warn(\n/home/wzy/dpvlm/route_set_v1/.observation-deps/pyrep-pinned/pyrep/objects/object.py:687: UserWarning: Object (64, 'DefaultLightA') has ObjectType.LIGHT, which is not supported\n  warnings.warn(\n/home/wzy/dpvlm/route_set_v1/.observation-deps/pyrep-pinned/pyrep/objects/object.py:687: UserWarning: Object (65, 'DefaultLightB') has ObjectType.LIGHT, which is not supported\n  warnings.warn(\n[CoppeliaSim:loadinfo]   done.\nTraceback (most recent call last):\n  File \"/home/wzy/dpvlm/route_set_v1/research_v2/releases/6a4d719a91f5228fc2998e33f5bd10cfcaff4878/scripts/collect_obstacle_reach.py\", line 429, in <module>\n    main()\n  File \"/home/wzy/dpvlm/route_set_v1/research_v2/releases/6a4d719a91f5228fc2998e33f5bd10cfcaff4878/scripts/collect_obstacle_reach.py\", line 329, in main\n    (folder / \"restore_reference.json\").write_text(json.dumps(reference), encoding=\"utf-8\")\n                                                   ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/wzy/dpvlm/route_set_v1/.observation-deps/python311/lib/python3.11/json/__init__.py\", line 231, in dumps\n    return _default_encoder.encode(obj)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/wzy/dpvlm/route_set_v1/.observation-deps/python311/lib/python3.11/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/wzy/dpvlm/route_set_v1/.observation-deps/python311/lib/python3.11/json/encoder.py\", line 258, in iterencode\n    return _iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/wzy/dpvlm/route_set_v1/.observation-deps/python311/lib/python3.11/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type ndarray is not JSON serializable\n",
+      "failure_log_tail_launcher.log": ""
+    },
+    {
+      "run_id": "obstacle_reach_pilot_20261002d",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002d",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_pilot_20261002d",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "123471",
+      "started_at": "2026-10-02T07:51:20Z",
+      "finished_at": "2026-10-02T07:55:46Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/3b9d3b7cb13ad319d44d5288e74c35a7716f6a84",
+      "source_sha256.txt": "c72f4c26b5a159f06fc06cca59ed2339f04780c8a9a124508510c7656c026e92  /home/wzy/dpvlm/route_set_v1/research_v2/releases/3b9d3b7cb13ad319d44d5288e74c35a7716f6a84/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/3b9d3b7cb13ad319d44d5288e74c35a7716f6a84/scripts/observation_collect_rlbench.py\nd6daefe2e6821d16c799b22b15eb0cfa28e65481779c9caa487e2dfa94ca039c  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_pilot_20261002d/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching v1",
+        "original_benchmark_result": false,
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "c72f4c26b5a159f06fc06cca59ed2339f04780c8a9a124508510c7656c026e92",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "dev_parents": 1,
+        "seed": 271000,
+        "obstacles": 1,
+        "target_layout": "safe_lowered",
+        "target_layout_description": "safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement"
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 1,
+        "parents_collected": 1,
+        "attempts": 6,
+        "successes": 4,
+        "restore_passes": 6,
+        "classified_successes": 2,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 263.93418336403556,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 6,
+      "recorded_errors": {
+        "accepted": 4,
+        "ConfigurationPathError('Could not create path.')": 2
+      },
+      "accepted_records": 4
+    },
+    {
+      "run_id": "obstacle_reach_safe_low_all_v2_pilot_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_low_all_v2_pilot_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_low_all_v2_pilot_20261002",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "137156",
+      "started_at": "2026-10-02T08:11:01Z",
+      "finished_at": "2026-10-02T08:12:00Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/977b3271c050f38599004fa4d87f69aed75957d9",
+      "source_sha256.txt": "713b860070c3d6b3037a56acc3aab32d24c257d81fcc2cce90d59938eecf895e  /home/wzy/dpvlm/route_set_v1/research_v2/releases/977b3271c050f38599004fa4d87f69aed75957d9/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/977b3271c050f38599004fa4d87f69aed75957d9/scripts/observation_collect_rlbench.py\n0c6131548d103e495b80c8cbc44edaa2f1bbca04f77c45a8526de31c09577abb  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_low_all_v2_pilot_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_low_all_v2",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "713b860070c3d6b3037a56acc3aab32d24c257d81fcc2cce90d59938eecf895e",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "joint_state_traces_recorded": true,
+        "dev_parents": 1,
+        "seed": 271000,
+        "obstacles": 1,
+        "target_layout": "safe_low_all_v2",
+        "target_layout_description": "new v2: middle sphere lowered from .96 to .84m, other centers preserved; single box centered .25m below initial tip; default four side proposals",
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 1,
+        "parents_collected": 1,
+        "attempts": 12,
+        "successes": 7,
+        "restore_passes": 12,
+        "classified_successes": 5,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 57.41915577102918,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 12,
+      "recorded_errors": {
+        "accepted": 7,
+        "ConfigurationPathError('Could not create path.')": 3,
+        "RuntimeError('robot collision during simulated motion')": 1,
+        "RuntimeError('24-point reference resampling changed clearance or passage classification')": 1
+      },
+      "accepted_records": 7
+    },
+    {
+      "run_id": "obstacle_reach_safe_randomized_v3_pilot4_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_20261002",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "142314",
+      "started_at": "2026-10-02T08:18:16Z",
+      "finished_at": "2026-10-02T08:21:42Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/919e794de4c256f54ae082189483485d33caf1d7",
+      "source_sha256.txt": "a19dbf10391c526b39c3f899200cbd1dc2597e10ec69421569bed58421e39148  /home/wzy/dpvlm/route_set_v1/research_v2/releases/919e794de4c256f54ae082189483485d33caf1d7/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/919e794de4c256f54ae082189483485d33caf1d7/scripts/observation_collect_rlbench.py\n8ba9e7141595158fc3caadd23885f827973171414e2042b4e2f97faca255bc2a  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_randomized_v3",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "a19dbf10391c526b39c3f899200cbd1dc2597e10ec69421569bed58421e39148",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 4,
+        "joint_state_traces_recorded": true,
+        "dev_parents": 4,
+        "seed": 271100,
+        "obstacles": 1,
+        "target_layout": "safe_randomized_v3",
+        "target_layout_description": "new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals",
+        "randomized_layout_distribution": {
+          "region_centers": [
+            [
+              0.08,
+              0.18,
+              0.84
+            ],
+            [
+              0.28,
+              0.02,
+              0.84
+            ],
+            [
+              0.44,
+              -0.05,
+              0.83
+            ]
+          ],
+          "region_halfwidths": [
+            [
+              0.04,
+              0.05,
+              0.012
+            ],
+            [
+              0.045,
+              0.045,
+              0.012
+            ],
+            [
+              0.04,
+              0.05,
+              0.012
+            ]
+          ],
+          "box_xy_halfwidth": [
+            0.03,
+            0.04
+          ],
+          "box_z_offset_from_initial_tip": [
+            -0.27,
+            -0.23
+          ],
+          "box_size_lower": [
+            0.12,
+            0.15,
+            0.05
+          ],
+          "box_size_upper": [
+            0.17,
+            0.21,
+            0.07
+          ],
+          "object_to_region_mapping": "independent random permutation of three target identities",
+          "layout_prng": "numpy.random.default_rng(parent_seed + 80000)"
+        },
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 4,
+        "parents_collected": 4,
+        "parent_setup_failures": 0,
+        "attempts": 48,
+        "successes": 17,
+        "restore_passes": 36,
+        "classified_successes": 10,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 205.99919642496388,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 48,
+      "recorded_errors": {
+        "RuntimeError('full initial inventory/state/RGB equality failed')": 12,
+        "RuntimeError('robot collision during simulated motion')": 4,
+        "accepted": 17,
+        "ConfigurationPathError('Could not create path.')": 15
+      },
+      "accepted_records": 17
+    },
+    {
+      "run_id": "obstacle_reach_v3_restore_diagnostic_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_v3_restore_diagnostic_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_v3_restore_diagnostic_20261002",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "146947",
+      "started_at": "2026-10-02T08:24:54Z",
+      "finished_at": "2026-10-02T08:25:28Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/2be7d403b9b9e3be26131eb625de6c3679ac981e",
+      "source_sha256.txt": "82a70b02644e9127f1bf114d9a2e338fd2b0d85ed0d1b48f19a496dd8784d61a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/2be7d403b9b9e3be26131eb625de6c3679ac981e/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/2be7d403b9b9e3be26131eb625de6c3679ac981e/scripts/observation_collect_rlbench.py\n5ee25c1620b4450963a98f976a57159f36500847cf9bbba3bf0279e3db2d5182  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_v3_restore_diagnostic_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_randomized_v3",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "82a70b02644e9127f1bf114d9a2e338fd2b0d85ed0d1b48f19a496dd8784d61a",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 1,
+        "joint_state_traces_recorded": true,
+        "diagnostic_restores": 2,
+        "diagnostic_restores_do_not_replace_reference": true,
+        "dev_parents": 1,
+        "seed": 271100,
+        "obstacles": 1,
+        "target_layout": "safe_randomized_v3",
+        "target_layout_description": "new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals",
+        "randomized_layout_distribution": {
+          "region_centers": [
+            [
+              0.08,
+              0.18,
+              0.84
+            ],
+            [
+              0.28,
+              0.02,
+              0.84
+            ],
+            [
+              0.44,
+              -0.05,
+              0.83
+            ]
+          ],
+          "region_halfwidths": [
+            [
+              0.04,
+              0.05,
+              0.012
+            ],
+            [
+              0.045,
+              0.045,
+              0.012
+            ],
+            [
+              0.04,
+              0.05,
+              0.012
+            ]
+          ],
+          "box_xy_halfwidth": [
+            0.03,
+            0.04
+          ],
+          "box_z_offset_from_initial_tip": [
+            -0.27,
+            -0.23
+          ],
+          "box_size_lower": [
+            0.12,
+            0.15,
+            0.05
+          ],
+          "box_size_upper": [
+            0.17,
+            0.21,
+            0.07
+          ],
+          "object_to_region_mapping": "independent random permutation of three target identities",
+          "layout_prng": "numpy.random.default_rng(parent_seed + 80000)"
+        },
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 1,
+        "parents_collected": 1,
+        "parent_setup_failures": 0,
+        "attempts": 12,
+        "successes": 0,
+        "restore_passes": 0,
+        "classified_successes": 0,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 33.48207517503761,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 12,
+      "recorded_errors": {
+        "RuntimeError('full initial inventory/state/RGB equality failed')": 12
+      },
+      "accepted_records": 0
+    },
+    {
+      "run_id": "obstacle_reach_safe_randomized_v3_pilot4_fixed_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_fixed_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_fixed_20261002",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "150498",
+      "started_at": "2026-10-02T08:31:41Z",
+      "finished_at": "2026-10-02T08:35:22Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/fc795a20c82d82d405cd9f97011f157def7526c7",
+      "source_sha256.txt": "88786bac112bd9d5ad852db2070d1845f55dc7192e293606cc693a549a25bd03  /home/wzy/dpvlm/route_set_v1/research_v2/releases/fc795a20c82d82d405cd9f97011f157def7526c7/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/fc795a20c82d82d405cd9f97011f157def7526c7/scripts/observation_collect_rlbench.py\ncbe12475cdea26a33e083dd09dd1e211239d9273376a7707fbb867babdf8ae0e  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_fixed_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_randomized_v3",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "88786bac112bd9d5ad852db2070d1845f55dc7192e293606cc693a549a25bd03",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 4,
+        "joint_state_traces_recorded": true,
+        "diagnostic_restores": 0,
+        "diagnostic_restores_do_not_replace_reference": true,
+        "canonicalization_passes": 2,
+        "render_protocol_version": "native_double_restart_mesh_warmup_v2",
+        "renderer_consistency_check": "all segmentation-labelled box depth pixels within 1cm of the physical AABB; validation only",
+        "dev_parents": 4,
+        "seed": 271100,
+        "obstacles": 1,
+        "target_layout": "safe_randomized_v3",
+        "target_layout_description": "new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals",
+        "randomized_layout_distribution": {
+          "region_centers": [
+            [
+              0.08,
+              0.18,
+              0.84
+            ],
+            [
+              0.28,
+              0.02,
+              0.84
+            ],
+            [
+              0.44,
+              -0.05,
+              0.83
+            ]
+          ],
+          "region_halfwidths": [
+            [
+              0.04,
+              0.05,
+              0.012
+            ],
+            [
+              0.045,
+              0.045,
+              0.012
+            ],
+            [
+              0.04,
+              0.05,
+              0.012
+            ]
+          ],
+          "box_xy_halfwidth": [
+            0.03,
+            0.04
+          ],
+          "box_z_offset_from_initial_tip": [
+            -0.27,
+            -0.23
+          ],
+          "box_size_lower": [
+            0.12,
+            0.15,
+            0.05
+          ],
+          "box_size_upper": [
+            0.17,
+            0.21,
+            0.07
+          ],
+          "object_to_region_mapping": "independent random permutation of three target identities",
+          "layout_prng": "numpy.random.default_rng(parent_seed + 80000)"
+        },
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 4,
+        "parents_collected": 3,
+        "parent_setup_failures": 1,
+        "attempts": 36,
+        "successes": 16,
+        "restore_passes": 36,
+        "classified_successes": 12,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 220.9022406419972,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 37,
+      "recorded_errors": {
+        "RuntimeError('rendered obstacle depth is inconsistent with physical box: {\"object_name\": \"derived_passage_obstacle_0\", \"visible_pixels\": 1477, \"maximum_observed_distance_outside_box_m\": 2.9345492197371037, \"points_outside_one_cm\": 179}')": 1,
+        "accepted": 16,
+        "RuntimeError('robot collision during simulated motion')": 4,
+        "ConfigurationPathError('Could not create path.')": 15,
+        "RuntimeError('endpoint or continuous tip-polyline clearance failed')": 1
+      },
+      "accepted_records": 16
+    },
+    {
+      "run_id": "obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002",
+      "exists": true,
+      "status": "complete",
+      "exit_code": "0",
+      "pid": "156907",
+      "started_at": "2026-10-02T08:42:13Z",
+      "finished_at": "2026-10-02T08:47:20Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3",
+      "source_sha256.txt": "6856dc7c59d22753923433bbea09625c5338d0b6b1b4fcfe0408d84b8f865649  /home/wzy/dpvlm/route_set_v1/research_v2/releases/bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3/scripts/observation_collect_rlbench.py\ne97b2fbab4541904a191a2a4d94357a525f043ddff0c197e5020419bad56b533  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_pilot4_rendered_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_randomized_v3",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "6856dc7c59d22753923433bbea09625c5338d0b6b1b4fcfe0408d84b8f865649",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 4,
+        "joint_state_traces_recorded": true,
+        "diagnostic_restores": 0,
+        "diagnostic_restores_do_not_replace_reference": true,
+        "canonicalization_passes": 2,
+        "render_protocol_version": "native_double_restart_explicit_render_warmup_v3",
+        "render_warmup_observations_discarded": 1,
+        "renderer_consistency_check": "all segmentation-labelled box depth pixels within 1cm of the physical AABB; validation only",
+        "dev_parents": 4,
+        "seed": 271100,
+        "obstacles": 1,
+        "target_layout": "safe_randomized_v3",
+        "target_layout_description": "new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals",
+        "randomized_layout_distribution": {
+          "region_centers": [
+            [
+              0.08,
+              0.18,
+              0.84
+            ],
+            [
+              0.28,
+              0.02,
+              0.84
+            ],
+            [
+              0.44,
+              -0.05,
+              0.83
+            ]
+          ],
+          "region_halfwidths": [
+            [
+              0.04,
+              0.05,
+              0.012
+            ],
+            [
+              0.045,
+              0.045,
+              0.012
+            ],
+            [
+              0.04,
+              0.05,
+              0.012
+            ]
+          ],
+          "box_xy_halfwidth": [
+            0.03,
+            0.04
+          ],
+          "box_z_offset_from_initial_tip": [
+            -0.27,
+            -0.23
+          ],
+          "box_size_lower": [
+            0.12,
+            0.15,
+            0.05
+          ],
+          "box_size_upper": [
+            0.17,
+            0.21,
+            0.07
+          ],
+          "object_to_region_mapping": "independent random permutation of three target identities",
+          "layout_prng": "numpy.random.default_rng(parent_seed + 80000)"
+        },
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "summary": {
+        "status": "collection_finished",
+        "parents_requested": 4,
+        "parents_collected": 4,
+        "parent_setup_failures": 0,
+        "attempts": 48,
+        "successes": 20,
+        "restore_passes": 48,
+        "classified_successes": 17,
+        "duplicate_passage_type_successes": 0,
+        "elapsed_seconds": 306.27708472905215,
+        "all_solution_count": null,
+        "continuous_whole_robot_collision_certified": false
+      },
+      "observed_attempt_records": 48,
+      "recorded_errors": {
+        "accepted": 20,
+        "ConfigurationPathError('Could not create path.')": 21,
+        "RuntimeError('robot collision during simulated motion')": 7
+      },
+      "accepted_records": 20
+    },
+    {
+      "run_id": "obstacle_reach_safe_randomized_v3_128_20261002",
+      "server_run": "/home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_128_20261002",
+      "server_data": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002",
+      "exists": true,
+      "status": "running",
+      "pid": "163545",
+      "started_at": "2026-10-02T08:50:27Z",
+      "code_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/88887f2b3e6a91f076b2d8f277726b50653e5e04",
+      "source_sha256.txt": "994c38ce94e6016386439c6245807e9b9f9a00ff706fb80bd454b05b9ee60dcc  /home/wzy/dpvlm/route_set_v1/research_v2/releases/88887f2b3e6a91f076b2d8f277726b50653e5e04/scripts/collect_obstacle_reach.py\neda7a3bcfd2cc440c530c0639139771fe7efd674662e03f693288bed2cdc796a  /home/wzy/dpvlm/route_set_v1/research_v2/releases/88887f2b3e6a91f076b2d8f277726b50653e5e04/scripts/observation_collect_rlbench.py\nf4c07d2976c150dab37196ad52b3a35f068a2dfa56300fe69993f9f167fffe28  /home/wzy/dpvlm/route_set_v1/runs/obstacle_reach_safe_randomized_v3_128_20261002/frozen_job.sh",
+      "manifest": {
+        "benchmark": "RLBench-derived obstacle-passage multi-target reaching",
+        "original_benchmark_result": false,
+        "setting_version": "safe_randomized_v3",
+        "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+        "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+        "source_sha256": "994c38ce94e6016386439c6245807e9b9f9a00ff706fb80bd454b05b9ee60dcc",
+        "input_contract": [
+          "RGB",
+          "instruction",
+          "depth",
+          "camera",
+          "current gripper pose/open"
+        ],
+        "supervision_only": [
+          "physical obstacle truth",
+          "target coordinates",
+          "route labels",
+          "future trajectories",
+          "guide points",
+          "segmentation masks"
+        ],
+        "type_definition": "all crossings of each obstacle center-z plane agree on +/-x or +/-y; y-outside-span takes precedence; ordered high-to-low obstacles",
+        "proposed_type_sequences": [
+          [
+            "negative_x"
+          ],
+          [
+            "positive_x"
+          ],
+          [
+            "negative_y"
+          ],
+          [
+            "positive_y"
+          ]
+        ],
+        "reference_set_complete": false,
+        "number_of_all_continuous_solutions": null,
+        "acceptance": {
+          "endpoint_tolerance_m": 0.03,
+          "tip_polyline_clearance_m": 0.02,
+          "all_simulated_steps_arm_environment_collision": false,
+          "all_simulated_steps_gripper_external_collision": false,
+          "initial_state_max_abs_tolerance": 0.0,
+          "initial_rgb_max_difference": 0,
+          "global_object_inventory_must_match": true
+        },
+        "continuous_whole_robot_collision_certified": false,
+        "parents_requested": 128,
+        "joint_state_traces_recorded": true,
+        "diagnostic_restores": 0,
+        "diagnostic_restores_do_not_replace_reference": true,
+        "canonicalization_passes": 2,
+        "render_protocol_version": "native_double_restart_explicit_render_warmup_v3",
+        "render_warmup_observations_discarded": 1,
+        "renderer_consistency_check": "all segmentation-labelled box depth pixels within 1cm of the physical AABB surface, inside or outside; validation only",
+        "renderer_geometry_audit_version": "bidirectional_aabb_surface_v2",
+        "dev_parents": 32,
+        "seed": 272000,
+        "obstacles": 1,
+        "target_layout": "safe_randomized_v3",
+        "target_layout_description": "new v3: independently randomized continuous target locations in three declared regions, identity-region permutation, and variable box center/size; four side proposals",
+        "randomized_layout_distribution": {
+          "region_centers": [
+            [
+              0.08,
+              0.18,
+              0.84
+            ],
+            [
+              0.28,
+              0.02,
+              0.84
+            ],
+            [
+              0.44,
+              -0.05,
+              0.83
+            ]
+          ],
+          "region_halfwidths": [
+            [
+              0.04,
+              0.05,
+              0.012
+            ],
+            [
+              0.045,
+              0.045,
+              0.012
+            ],
+            [
+              0.04,
+              0.05,
+              0.012
+            ]
+          ],
+          "box_xy_halfwidth": [
+            0.03,
+            0.04
+          ],
+          "box_z_offset_from_initial_tip": [
+            -0.27,
+            -0.23
+          ],
+          "box_size_lower": [
+            0.12,
+            0.15,
+            0.05
+          ],
+          "box_size_upper": [
+            0.17,
+            0.21,
+            0.07
+          ],
+          "object_to_region_mapping": "independent random permutation of three target identities",
+          "layout_prng": "numpy.random.default_rng(parent_seed + 80000)"
+        },
+        "not_a_matched_comparison_to_other_layout_versions": true
+      },
+      "observed_attempt_records": 9,
+      "recorded_errors": {
+        "accepted": 3,
+        "ConfigurationPathError('Could not create path.')": 2,
+        "RuntimeError('robot collision during simulated motion')": 3,
+        "RuntimeError('endpoint or continuous tip-polyline clearance failed')": 1
+      },
+      "accepted_records": 3
+    }
+  ]
+}

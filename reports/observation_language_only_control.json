@@ -1,0 +1,781 @@
+{
+  "evaluation_protocol": "observation_eval_v2",
+  "model": "TRAIN instruction-mean endpoint control",
+  "scope": "weak diagnostic of spatial priors; no path generation, strong baseline or robot-validity claim",
+  "inputs": [
+    "instruction string only"
+  ],
+  "candidate_count": 1,
+  "train_supervised_examples": 71,
+  "train_parents": 24,
+  "examples": 24,
+  "semantic_evaluation_examples": 24,
+  "reference_evaluation_examples": 23,
+  "semantic_goal_accuracy": 0.0,
+  "goal_error_m": 0.28193873972113886,
+  "reference_endpoint_error_m": 0.28192334746565384,
+  "unseen_instruction_count": 0,
+  "estimator": "mean recorded terminal xyz per TRAIN observation, then mean across exact instruction; unseen instruction uses global TRAIN observation mean",
+  "evaluation_rule": "original nearest-target identity AND distance <= 0.03m; no threshold change",
+  "training_instruction_means": {
+    "Move the gripper to touch the red sphere.": {
+      "mean": [
+        0.19514232294427022,
+        0.176606567369567,
+        0.9417897462844849
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the orange sphere.": {
+      "mean": [
+        0.2138027230070697,
+        0.11363301032947169,
+        1.0351513425509136
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the yellow sphere.": {
+      "mean": [
+        0.23927056954966652,
+        0.02261328293631475,
+        0.9320520526833005
+      ],
+      "examples": 6
+    },
+    "Move the gripper to touch the maroon sphere.": {
+      "mean": [
+        0.3077818734778298,
+        0.16540473534001243,
+        0.8354276220003763
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the purple sphere.": {
+      "mean": [
+        0.24057972828547164,
+        -0.051783853769302376,
+        0.9039482514063517
+      ],
+      "examples": 5
+    },
+    "Move the gripper to touch the violet sphere.": {
+      "mean": [
+        0.29050538937250775,
+        -0.0053698298417859626,
+        1.011910385555691
+      ],
+      "examples": 6
+    },
+    "Move the gripper to touch the lime sphere.": {
+      "mean": [
+        0.23757903774579367,
+        -0.05745976004335615,
+        1.140292141172621
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the rose sphere.": {
+      "mean": [
+        0.20243658084008428,
+        0.09600492235687043,
+        1.02901785241233
+      ],
+      "examples": 6
+    },
+    "Move the gripper to touch the green sphere.": {
+      "mean": [
+        0.2789810337126255,
+        -0.09297068836167453,
+        1.1595168312390645
+      ],
+      "examples": 4
+    },
+    "Move the gripper to touch the cyan sphere.": {
+      "mean": [
+        0.34861792292859817,
+        0.13713408841027153,
+        0.9904672967063056
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the blue sphere.": {
+      "mean": [
+        0.28112213148011095,
+        0.07183462878068288,
+        0.8460120956103007
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the white sphere.": {
+      "mean": [
+        0.33804739912350973,
+        -0.1273114301264286,
+        1.0209616581598917
+      ],
+      "examples": 5
+    },
+    "Move the gripper to touch the silver sphere.": {
+      "mean": [
+        0.19204168890913328,
+        0.1582369226962328,
+        0.8592821657657623
+      ],
+      "examples": 2
+    },
+    "Move the gripper to touch the navy sphere.": {
+      "mean": [
+        0.2734335387746493,
+        -0.16151924431324005,
+        1.0199718922376633
+      ],
+      "examples": 4
+    },
+    "Move the gripper to touch the azure sphere.": {
+      "mean": [
+        0.2895706581572691,
+        -0.04107533705731234,
+        1.0322307695945103
+      ],
+      "examples": 4
+    },
+    "Move the gripper to touch the teal sphere.": {
+      "mean": [
+        0.246784643166595,
+        0.06680587016873889,
+        1.0907287597656248
+      ],
+      "examples": 3
+    },
+    "Move the gripper to touch the magenta sphere.": {
+      "mean": [
+        0.38522764046986896,
+        0.12120095019539198,
+        0.9951383272806804
+      ],
+      "examples": 2
+    },
+    "Move the gripper to touch the gray sphere.": {
+      "mean": [
+        0.09693189710378647,
+        -0.07326071957747142,
+        0.9799469709396362
+      ],
+      "examples": 2
+    },
+    "Move the gripper to touch the olive sphere.": {
+      "mean": [
+        0.23229877837002277,
+        -0.022668528060118348,
+        0.8235425154368082
+      ],
+      "examples": 2
+    },
+    "Move the gripper to touch the black sphere.": {
+      "mean": [
+        0.15464713548620543,
+        0.02579004814227422,
+        1.0272868871688843
+      ],
+      "examples": 2
+    }
+  },
+  "source_sha256": {
+    "data/observation_derived_reach32_20261002/observations.jsonl": "31fb89f7a68df597d059f8c0a5be5367395ed58873766cd8b87c3000243a0bb3",
+    "data/observation_derived_reach32_20261002/supervision.jsonl": "2f91987415421ee41e04293a1fa7d27adcadcca37fbd5635a996e83a8750d421",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target0_route0.npz": "685363c1322b1f26e87cdbd010e32c4b86c3baba5ebf7b400b0fc631517c5aa0",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target0_route1.npz": "ae7b41ead71bd7ce3a1cd05330a742e08bebcabf8a34a51df668c526453ca5c0",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target0_route2.npz": "5f160dd714c75a90905ef5f32ed0ddb798cbc3cf56c311d4d09f53ce212e1f25",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target1_route0.npz": "95ba6225476b838e54900a7e5db9d18ce0ad6dcfbe6fcb5e61bfcf83804d4573",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target1_route1.npz": "bdc6f5d639bee33ab8baecc0527c68011e356ef1c5d77674aa92ff95ab07d254",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target1_route2.npz": "d791ae9c82a58fb05d5ff912484cc234f6adfdc2881e2094273b524cbeb34e79",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target2_route0.npz": "ab55c810a65e94c0b704dfd009a258ee558851a7dd644f7faf463e7f48bbc930",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target2_route1.npz": "203683e922ec23d092fa8382738e11b6f7a684cfe139d7269817be929f286c06",
+    "data/observation_derived_reach32_20261002/derived_reach_261000/target2_route2.npz": "ad7a215278d479aecaaa69608fe953b6570f32d90683195677b3848cbb263e69",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target0_route0.npz": "26eed2920417c4b84d1115b4e27bcbf4cdcdaff4d70865f459eb7f45d214df80",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target0_route1.npz": "2a9d9ade181b2ae092c6a8dec598d4946ca4453c52304cb94d49df16ba6fa1a2",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target0_route2.npz": "4d6efabd0d967f468b60b751825ef7f686b8e01f7b075aecc904b6ce072a7956",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target1_route0.npz": "a5f7c0ff2715d06a7d53425cc21f4c7de168045e05c76db13251d36f6d248502",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target1_route1.npz": "0dca09b9834580e58dfdfeec25224871683875526bd63de349dcc73781e03dee",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target1_route2.npz": "77598574371982ed71caab7cd66da429d59bfb946e3da8d4387699e2b4d455cd",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target2_route0.npz": "1de3af238b944652eb91b05ff2529db0a146f373d6a02086642190782bd15245",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target2_route1.npz": "af4c71a0d4015d2c77d48accf38c55617352f0f3d7bdcc02e6c07acdb641c6ec",
+    "data/observation_derived_reach32_20261002/derived_reach_261001/target2_route2.npz": "018492e35781c7faa2a6d2c7b9bc4954e8e64b6d5000b7de4dc2dd13b4cf3aa3",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target0_route0.npz": "c7f5d23b413cea075487e35eba10503d2f96dd274e9a4ea7c025b7bed06c1108",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target0_route2.npz": "2c7c51ae5d6aaa2bfdc97332937ac04068794977a213954e776cfcad4d55c90a",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target1_route0.npz": "e7547461927de03bf76a95a84185b6c34fbda6fd7c491b6d7da2fda994d18078",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target1_route1.npz": "954d7e67a6ed26b7310d8246cdbf8a875faab602d139cd974c542699fb586455",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target1_route2.npz": "efdfc0da70e0a30cd749806f01117b781df4c59edbd3c53b4daba196c4a27752",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target2_route0.npz": "06702b8f0f87d410f1db957f28d6c39f688a828416ff2fec271ca1942c1d49a5",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target2_route1.npz": "dece678063b95309b228271a9c03d3d3dadbc4751e0d10310bcc78362fa03f98",
+    "data/observation_derived_reach32_20261002/derived_reach_261002/target2_route2.npz": "1d786bfdd8ae49799e735b4bf842415894aa70f073cbd217df54ec6762386a59",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target0_route0.npz": "1f9cf94e75bcda03dbf998415ad20d76289c880d9d38591b31837de583c0f6dd",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target0_route1.npz": "e36575ab713e042b9b8454beb1ea0f8584bc8fa6ced88cd9cb97df16ba7b1aa8",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target0_route2.npz": "d0f0f75e2cbae6fa1edc44198694c84d196c87344ed2b171afecbf216072ba9b",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target1_route0.npz": "5fd27f9c59933b1986b27adf017c64b82252c6b469d0379cddb6b87ac77e11c9",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target1_route1.npz": "2a10d88082178c64d4741d62173a7b01e4c75ae0d8feca1fd3034336a600ff73",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target1_route2.npz": "fc8462657309c6c02745bfa35b4f1095a8b5d8a9e5e209231aa621c300ac26d3",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target2_route0.npz": "b434cae83bd0315ebb7bff920f51ee93586f07182acf4e196053475d57b118c5",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target2_route1.npz": "d78f25784818e03db864358ce4e8baef80370bc14103102162f728d262d263ff",
+    "data/observation_derived_reach32_20261002/derived_reach_261003/target2_route2.npz": "6878da610c1af89814f1ac58c179ff66dc1fa3370923f15daab056d39e923aef",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target0_route0.npz": "65b85b574bd97f8b95d0eaf1c1055828a0e5593c666e8c7046f3fc5a5a4303b1",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target0_route1.npz": "26afb138af41375e3f5bec1f5df08604bab1857dbb51fe67bd564dfc8f7762c2",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target0_route2.npz": "8896efe866df4620db706f8e2a6055b1a267c44da599f785e1764ee26aa86bfd",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target1_route0.npz": "346c4ae3436a93d9fa52959ee3503aff07c939b6371fc479f2c5076732afbc88",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target2_route0.npz": "0473696b41e8b24b95de996dbf22bf8e57a3c55c9944e2325159b019cf53e214",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target2_route1.npz": "26e7707aadcbe412f928787791e10354677959fc9afaff9c7f289f030777ce0b",
+    "data/observation_derived_reach32_20261002/derived_reach_261004/target2_route2.npz": "f4a4e83c5752ba1c2f0611e51e37ea7d6a9831552b874c8fe5ce178ccb03ed94",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target0_route0.npz": "a588aa7a3eab565dd03ba9001fd20ce8db59eb4de65a2a8fdf37fe6879e3a91e",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target0_route1.npz": "9c5d4297cadb2d83f2dfc1dc208695f329462f1df4067089e52a3a681d141e48",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target0_route2.npz": "bf39ac59258c072a8bc87e8c2a7564b2bb249744a6377a4c3ae30c8cfada5a5c",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target1_route0.npz": "4d8712b0493e7eb5d5cb791e5ed78426fd8f00cbd9333739139daabbc7b694ea",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target1_route1.npz": "6f7bba9ae86584975ad8e7c1630a5d38f7da625b31b46b8d90976c3139a2af64",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target1_route2.npz": "31d73da1dd6a82d4584484520a6a53b2454f6dd2de518d869f9904626cd80652",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target2_route0.npz": "790af5265f7faa3065d4279dd42e9160c8c02c7fcb5b6192e45ad251807dd471",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target2_route1.npz": "c921df0244a2e88c8e89061776529d4677c51e77c8fceefa1cb7eda9611408b9",
+    "data/observation_derived_reach32_20261002/derived_reach_261005/target2_route2.npz": "0420860daf6e246b63c2c9a2a9eb942f95be8571f394c7e12e49cfabffa34439",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target0_route0.npz": "00d7c2e6130c9e7f292ff146bab894a99ac2d9591371a904e25e11be4bdda2ee",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target0_route1.npz": "5be88e7f308a81db4a7df2d77e6a8320e255a226debd555ec488d3d25c712a62",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target0_route2.npz": "62d94cb21c67c429b704ef9c40b6952a1fa308e7ee6bdd21a02e122c5cb7391e",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target1_route0.npz": "2b266257b4a07a905c98755aa7589e59e17c24ad42d136b9ee400c27be80aaf2",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target1_route1.npz": "70313cf9509ceaf942f2e8a60925f08083b11b8999582cc0a8e362552636d826",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target1_route2.npz": "e9ad1e84a43a1e59c6902a2e5be1f7134fcd09502729105dc32b749ec096e8a3",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target2_route0.npz": "e63d4bcdf83e7a6129a20bc91e86c2b657a4dbb3ca1c31bc915fd702c3d1afa2",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target2_route1.npz": "ac91e479ac84e1f0bde49bafc8d75867f1a45fb2d377c8995c735c824f24c8d9",
+    "data/observation_derived_reach32_20261002/derived_reach_261006/target2_route2.npz": "099e99426d3d5dff3d947610a7bf4f8699120c835517794d21966b9df02bf543",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target0_route0.npz": "0a86a8715fe074fbfcbe2ba859887c0aecf2ce03c598ccec524e31ca2d431cdc",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target0_route1.npz": "ec0863a7850976ea42a2e2f52f54edf61dc71849c4c1394fd3e0d0cc13f5a747",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target0_route2.npz": "266e7bbcab6556252b2852dbfe1cf88a8675f44121580e3aea59c83834ca6131",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target1_route0.npz": "00b45e030afce27713b2749340f74fc699401d45bb36eebc3cb2f94b2636f63d",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target1_route1.npz": "307b2df306169855793cfe57101ae5eb0e18ebbeae2c1d057e7fed7dadfb5271",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target1_route2.npz": "f3a3f1f900cdd2ab430e72a3a250c947adf9e3774923b25e3ea085a46d564d50",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target2_route0.npz": "e636fa392c016ae85c15d1da1fa57f24c0c27011e529c1c4bd8b453d9f7fb9c8",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target2_route1.npz": "9809ae1f164c7f2811eeca8ca3b912d566ee166dc446795f05403732072ae733",
+    "data/observation_derived_reach32_20261002/derived_reach_261007/target2_route2.npz": "728367d883650e0ebd6e9d018f380ef3ad7ba18af8a28fb68ce5bfde3de1fb07",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target0_route0.npz": "5e12583288e43028a14528785a76bf5a89606f2fb04f9b704ab5605c21492c75",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target0_route1.npz": "337d5455811656fa8fe850c2bb07c056692fa1f308bc96f831e4d8f6f74cf81f",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target0_route2.npz": "9666638becd6d35955c78f0f45d7a904575d448e28eaa8c0ad1014e2811a2524",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target1_route0.npz": "079131029dcd5db5d77eab33c9847d6d5d4d7da27bae27826e8b24911248836d",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target1_route1.npz": "c7ce94b2f8d655c3b435c60fb86dff3e78222ee5cb9ebd93560d255205cfe0be",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target1_route2.npz": "fad51d7fa7b478251b0804453560a626d87c9a1fce03dbab4a4d132831308da2",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target2_route0.npz": "0ae9129b60a64366cb8a946b38cb57ed1ff023f1fb25deda66b51e4cc624f38b",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target2_route1.npz": "1c47a9122c8fedb7f48b8021ccd25a3cd0c2cde5c2050151ce984d2439360e82",
+    "data/observation_derived_reach32_20261002/derived_reach_261008/target2_route2.npz": "e0e7b6c911a1d470d35553acc7580bbf542825ecda0f712dca05a2f04e24350e",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target0_route0.npz": "c9a8b69d733da820876714828acdb1373e434785492f109f4f8a192d6e34aafc",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target0_route1.npz": "ad519a5c0c473ce787d433a1063428e7f102cebfb0012534f2080405e0b9304f",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target0_route2.npz": "3d6ad2e1d4009b33ac8a9b47ba2aab9f990effacb61f1301ca74dd89782a95fb",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target1_route0.npz": "658e84204d0204ba9bbf454b97309ca8adadf733d3e710fa87f5da5383ba52ba",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target1_route1.npz": "daed3fbcf5429503ddc016a44d0584b0c0c698acc273af8188338b662446d237",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target1_route2.npz": "a5635b721959854b4b20cab8480d3aeb82c1fa97bdfcce324c15ed922c329c55",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target2_route0.npz": "6d45b67db6ae54f78a0affe0844f777ea611df322a85a0f8d0b17799805b2a18",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target2_route1.npz": "ece5ab387df60aa67ec837c4b879ec0839304ed730b6a2b7f80b4f9b0127458d",
+    "data/observation_derived_reach32_20261002/derived_reach_261009/target2_route2.npz": "144df559ecae251bdda8d498c6c646a27160823f0ed0c86ab1297ff0bac4f13d",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target0_route0.npz": "fbe57391364eef5980c6bbfa8bd6ab9492a4fa5e52c897a28a76d3bf4a293a67",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target0_route1.npz": "d8e3aaea04b06d030c6a2598a648f516ac73bb0b7f134a14dc5a7415f5aba439",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target0_route2.npz": "95b0dce1d4d9470e61a39171be84d78305982165f6ec4d7e0d9297087e573b4f",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target1_route0.npz": "3e61d5b50896c86a324faf433a0c3a765b9a71af47f84f2bff8c5a4fd39bc170",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target1_route1.npz": "14d1e20ddb052c694a531a5171579f6733d87b02e4ee06b1b4815e805aa3fffe",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target1_route2.npz": "4488b8654b2241ab8377ceec460b91a00c34e72d59a4898ab0c16091afece449",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target2_route0.npz": "322fff44f3a371a3bdcc18e062bb94dbd0c9b490429a5248adc408709eff2690",
+    "data/observation_derived_reach32_20261002/derived_reach_261010/target2_route2.npz": "c8df909909d9bdca96c2c1cd177dd27d3eceee70f05286e99d78c1b9535f7d9f",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target0_route0.npz": "ab98b486f19cfee66180b7a23df128fa13b399e94ea549989ff23075ce77fd8a",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target0_route1.npz": "4006dde5a8b635dcfc980b03dfb6649ab6425e8079935bf21837edcf73eec375",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target0_route2.npz": "927463714d8564b6d3b48088e079bf018d6e81a8ae1ae2df13ccd95e841d6e7e",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target1_route0.npz": "63804603a018217dd66ef0f6e518232cbfdacf2eff1bdde79a0cd4c2e94fd5b3",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target1_route1.npz": "c6dc1f2ecd9f2fb718547ce077636511068172779579e0722df718cdb159654b",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target1_route2.npz": "8de81f998bda465a4b9d18b1d20d8ae634ef7150fa10e96eeed54e264ef361a5",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target2_route0.npz": "6765f16aa14288295abf6ffac25cd12aa7fbd203378d409d3f40ef155f60d142",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target2_route1.npz": "7846550ee36a11f2221c2e170b89c190ccce6d8bc0128b90da7b4343171b4cf8",
+    "data/observation_derived_reach32_20261002/derived_reach_261011/target2_route2.npz": "143964f5e5034c7d2e70f97e702d6692562f2656d46dcccd9a45f8cd2f9f807c",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target0_route0.npz": "6f1bc30a8b7add6f1f0f1e5e154536997283047838e17b63a5aebfc7f01a0a36",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target0_route1.npz": "db638bab3b81fb90c7b4d2bc877203f869f63fe2aef3055723f0ed91e8189271",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target0_route2.npz": "f2c2b6a050d27ffea8febd2c4bd799f36ccfe9c0de538c515c2759ada31ab08e",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target1_route0.npz": "c97049f6c3de6474324350f501ee5750bb6a38ba94b5c96f5e9f8c4998dbdb93",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target1_route1.npz": "70e756b5fcfa8a039a02b13383907265fc494cf32db1742713b9d0a726f537aa",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target1_route2.npz": "cdda2677d4f4ecb9899e93f9a4d4207fb20cba5c9be984ec62702f3c72c7a4b0",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target2_route0.npz": "499f0039af327b238e4cad65c638205b24f64cc69d0c3d1a55a552b50868fc08",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target2_route1.npz": "78ae019ee4f639562842c8f19d4f7a4fa3455c7facb259b7f3e0374cacb2b646",
+    "data/observation_derived_reach32_20261002/derived_reach_261012/target2_route2.npz": "7bade1feef0414e38b691528b5aaba38edb87621862e8e49076ae7460a443f11",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target0_route0.npz": "6568d2c5c610796281d5563339f84a51c7eedb6308fb632288c626ce1b8f2211",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target0_route1.npz": "ee00aab9fc087140c2e2e6896161e5f98557966b5797167761fd87a17a7651e7",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target0_route2.npz": "221aa08877fbd7f4aa1f60882372fe17a53dba92608d7508dac7459e2742a77b",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target1_route0.npz": "3bc71556ed740c97f6c890778facab01a3bc576b2e9e4b6f10ad236ce6283fa6",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target1_route1.npz": "e64eb7d76e8c977f9a13111b8dc42fdb20495b75779b80d8adf99957d700cb12",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target1_route2.npz": "530810168b95130d21bb2210553539b8ecc06c84606f90257dd1fddbcc29ef34",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target2_route0.npz": "f2e76f92602c01b827296c86174bf4eb8e417a311b10816ca13df11b738bc020",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target2_route1.npz": "45d560b01d05ee4ce5272b7a4ae8637e26fd7bf92094c8162835d8a2ce0b48ad",
+    "data/observation_derived_reach32_20261002/derived_reach_261013/target2_route2.npz": "b2130edfbebd88bd6bda4387df2f02eb680e4434a828fc751832e37eb8e768db",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target0_route0.npz": "ed1621d60197a87eca5dc8309c47f3bc283dbbfaa229ee5ea87a356a73ef1a48",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target0_route1.npz": "c325a88d7eac33b16b31bf9f8ce4c8d7573d571f1ace3f0c4823c09882bca6a2",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target0_route2.npz": "bf04ed0dbac6273c50d2205cca7f63f7e426b780a5b2cd19fac158e76cdea5fa",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target1_route0.npz": "8a3975a13da47b03663338ba27ec0b841ebc2f0bf146ee2cf5a6245d0ac772ad",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target1_route1.npz": "e011717c6e5c8a44d60cecb90270863b237ccc0943dca2f449075fc10a948f8f",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target1_route2.npz": "41c93b6d925cb1d06642874f900ad571996ecebe85256707faea6f21c11cb128",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target2_route0.npz": "86a17c1f91986ec34ff79930f190cf66bf5ff834537e474f847e5b5816a6c374",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target2_route1.npz": "7f4e0d568d86aa3b0c46a83dd59b10f0550c07212f83a841015941365da6070e",
+    "data/observation_derived_reach32_20261002/derived_reach_261014/target2_route2.npz": "f0566f0bedd26c1f05821cf901037202267f2866bd7643c560c8d892234df97a",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target0_route0.npz": "c32fc0e7866660eb190af64cd82fa0076a6016b29d477a5ab94ab6ff17a63a0c",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target0_route1.npz": "f054e776dbb4fb79717b719dae7b6f290e7afc52711c5bd72ecc6b9e4dd22c8b",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target0_route2.npz": "32d9164935d0311c3dc71376901ac050c95a7bde1a2ec674dd70e694beaf103f",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target1_route0.npz": "eb73f82ff5e42db4830d102972f93c3fd90bb346227e30cca538907f97d6277d",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target1_route1.npz": "1004edb3a02d4ca2fdc25b1e90464312456c28cade28d410c14f083f6347bb52",
+    "data/observation_derived_reach32_20261002/derived_reach_261015/target1_route2.npz": "1cc496c6e1a40066c7a3d7a9ac929ea8371a3c954fdb64497ba961bdc8069d27",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target0_route0.npz": "44902bbe8c70e546aa669bffe8bc24ff0d1163b396520d11ff627d45e623fcb5",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target0_route1.npz": "ea41501dbc28d85d9b0c4233b6c6ca756dbe88411a2b63bca53f1392be8c970c",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target0_route2.npz": "11cee9966eab433f0d4283791d7fc6217659a5281c7c610e91bb47943fd0ed22",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target1_route0.npz": "3789083b0bf3bf600be2ceb6d80ada095951020adc739eef130d17730d6b103f",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target1_route1.npz": "292b30fa92592285ad7e66167529d2ca41b05ab38d9011fa484c4b605bbcfa50",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target1_route2.npz": "351c96d9b10f6dea3d5a9d67c4eadbcc00a8ae6c7926dc85b85d0b4a2ca9d212",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target2_route0.npz": "1764db41dc74a782c9052aed35e7af21ddc8b3bd7b3073f5eb2f6fe504487938",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target2_route1.npz": "b1812e0399eb1fad773a1ad5291340c5f02aad80b48c6784f01c8899d2776ffa",
+    "data/observation_derived_reach32_20261002/derived_reach_261016/target2_route2.npz": "004f7341526d420ece683194c221fcd10d5d75f90694d26995ad306f16f5c6c9",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target0_route0.npz": "6f9f8e2f1b60d5171f95ed82344f739f3a4768d7af06d1f22d50bd7d3609311b",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target0_route1.npz": "f079ffdd329ed12bfca7ae93b55dfe5539a555b2ea966a7657c12debdb179e69",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target0_route2.npz": "8fce42d559225e46f8b489f618f2b523da5a662b3fdb2049e609cdf9d6d8f1b3",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target1_route0.npz": "7f18a8673f7ccf9f69c4f2325d184037f0ec3127dcb4ce1c5595687f4d6f6c5a",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target1_route1.npz": "331e97ac55c83d1daf1dadc6fc34d12e274b78274260450c624d7eea3de94e5c",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target1_route2.npz": "fdfdb2b53d64ab64824ee33d68c7c71eb135de136608f02ed2f760577d8033d9",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target2_route0.npz": "a12cc555f7d69a0021f21f64af99d909c1c3657a33dcc5ce3d232ee787307877",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target2_route1.npz": "389ab7d84ff7058d85c6dd91c7217201468337c97cf06b4d8090a3ccacee9826",
+    "data/observation_derived_reach32_20261002/derived_reach_261017/target2_route2.npz": "2c933a10f3aeba9c9d5aa232fd5f48f2fb9e01ddfa9313d16f3bec1b9166c495",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target0_route0.npz": "cd9337aa64aeedd7a2202c7255d7c3ec46248756f20b706b3d26295dd1f8b62f",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target0_route1.npz": "c4d3a5e7edb4efb9397f863a4addad373c7a47c695f78c188564b244bc1a2b3c",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target0_route2.npz": "f96b9b6e5ffc83201edfb273c2d4c54b567f8ca26bb207cd073b29b6ad3ca02b",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target1_route0.npz": "e31cac55b50c41bc609fe66ad4be06258cdabe2cda1669a7e6fb6ad77d984c54",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target1_route1.npz": "e8e22cd0f2ff635b9624d0d8fde6259f42516769825661145ad66fc3ec002706",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target1_route2.npz": "1a2bea0842e3af2123e25812184a41c243181f7dd45c7fc362e86209f36aa944",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target2_route0.npz": "d3e6ea53604b8d9a66e4c116f2aeec085bf38939f4beacffed4d7beaada52146",
+    "data/observation_derived_reach32_20261002/derived_reach_261018/target2_route2.npz": "3cc1c67a46f3b1ef1ed7489ba1fa845a019e60a7cb2f3c76f450fb76bd526d64",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target0_route0.npz": "3bae86c152a8c8f592b5ffa1fdb8583041188130c57231b4a522c41464392862",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target0_route1.npz": "a432cc162691b7aa8cfe5e357c9468d88d9f821be42368002f3963f77ae5cb46",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target0_route2.npz": "577dcb5479c25fd55ec554b7b4bc1486ab20614d17bf4e3c3603cbddad5bbf9d",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target1_route0.npz": "a3e9dab95bc99c0ea75fc0c9643714900df5d47a5b98f3aad963f33348015917",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target1_route1.npz": "ee597cb43e2f14761987c0f90813c076fe161c32c74d9f04159679942799cab5",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target1_route2.npz": "aa70cafe3f346cf29ec6c80e4d9c6ad2ea07fc13a96485aef2f14aa9b4c13519",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target2_route0.npz": "099557b6e93983ff75f7ccc20b50de4289b9767d85e4b993d41cbbdd69562f4b",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target2_route1.npz": "aeb985d10682ddeba21b83e704ca761c6427f4766842ac0cf1171c014dafd2f0",
+    "data/observation_derived_reach32_20261002/derived_reach_261019/target2_route2.npz": "2efcf542696a92d19afce543c1bf120c2fff753a75c0de0bcb3f97e5e0ec4768",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target0_route0.npz": "e4146c37224145b49ae858e638197422f292d7dd5df0853d00b83bd836eac4ac",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target0_route1.npz": "5c397081500d13ff41ac8bf260ae115afd8abf5c46bfc2a374879ca1c138a8ae",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target0_route2.npz": "e389f1127197ec364df40365c366ae77ddd9ec74cb5c7cca98cbf8b46fb38b96",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target1_route0.npz": "27013a9ce3e53b7c9b168c53647fee5a4490682ea80c59ab435f260d21d1c966",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target1_route1.npz": "d9b9b0e7dcff9ae958ef4cd1aa332d45c34222da6a55e381da02c31bc0132fda",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target1_route2.npz": "80a19fa61c9678cafc0130ded2cdde101aa46ba191c510f1811f85d046864aef",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target2_route0.npz": "e649d835a83c845ab77977b1476eeb9cc98d83c4342c9792c4d210598c46b01e",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target2_route1.npz": "0a92a3278eafebcf138d973d73c78a5df55de1376c5dd80a7cf605f1c11f839e",
+    "data/observation_derived_reach32_20261002/derived_reach_261020/target2_route2.npz": "f434d754cbd6537bc2d0213d83bd9f2151061e4d36ff8d3843350b1563742713",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target0_route0.npz": "5bb4d372cfba5bf127b0631f475f515b8a373a38f604bc1c7b3c014d15f1a8a8",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target0_route1.npz": "62096b7111b701cb94cfec16cb96a91ea9b868908621b31ff95af615bc1f803d",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target0_route2.npz": "39096faaba6b3d6298fd04428f4d8f353b229a3021f6850972d4b830c2ab3798",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target1_route0.npz": "e37547ce4af346bf5f0d41665c5e6014d9c2fc845f2003c713e3cc6603a6841c",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target1_route1.npz": "1565afc51a7188d18c090c1d58a64aff90a4b931aeaf1c75394317efdca52dd1",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target1_route2.npz": "ea0c391d592bd426c7ff2d84f9ce8a463a55bbe23a51c1823a42b49aa416dc06",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target2_route0.npz": "142e1f9dd609909e331666f4de6cd29fe75011d8d50dca04c23a6b7b42106561",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target2_route1.npz": "ebf357d56c26166bff3b06ca8a4b092e1192aedf99631940b3ca8fe4f929556a",
+    "data/observation_derived_reach32_20261002/derived_reach_261021/target2_route2.npz": "766e24ace63312173aa8ce43f9086aabd03551dc785290f808baa0da6c0d7a52",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target0_route0.npz": "b8b922a158d55de6d8d81db56e67c0a5c0224288dc320c713bd3a6c0cc3e2e09",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target0_route1.npz": "6c856d1dd3cb54203acea7d7ea51cef29105dc9ba8bcd1e6d4719425ff8edc44",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target0_route2.npz": "90dafd971d3a67a63981d1b87c4d7db6c3713c73bbcbbebdfea39653d0eb88bb",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target1_route0.npz": "cd6db196de80b7856a6c24d6afc189da4e9bb91409e66fe843d53f7041516882",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target1_route1.npz": "cb6d4ce44bf6bd24c511cdd8ce1aeeb53467e953d2cd6b7b9652440e5984264e",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target1_route2.npz": "51c480b5acee4f5eff540b17bd1a44b71db683fe59188239e16c4913b7782dd7",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target2_route0.npz": "fc932637105d55b12c0fa2e3350ce871e6209e8f6b818a22ca4b210eb4c159ee",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target2_route1.npz": "cc1db0ef17ea6a02b720820e67534ba9d2061404f2fd2affb40328f779110efd",
+    "data/observation_derived_reach32_20261002/derived_reach_261022/target2_route2.npz": "41eab16e33e63e32287f24502a77f5457a8f5b43e8f6966a369550e00cd49bda",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target0_route0.npz": "cf13201aa56a81c0f0fa4bb50af6edf3b196a6e3d63a690e5e16bcbc670c7d68",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target0_route1.npz": "7c0ef4ccc7d003d26b4277428568035d61a602fd62f0e86d7b81fdfdd0bb7a74",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target0_route2.npz": "e7d8e95d1212a268a88f6567012d781b014090d2a8b00e5f4fef7791130e8ea5",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target1_route0.npz": "167efc24d63879ec11e9c44e4149d645617eb68cd48cb568eacdb3356f9bd9b5",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target1_route1.npz": "61bb3a01864a2b9b74bd9ffed4f60eaeec983598915e8976f32a6da0fadd96b4",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target1_route2.npz": "5f533f747a38f95d19124ffb21f860e3b74c9e84fc7c652995ab26923de11e85",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target2_route0.npz": "99f318a7959cf7a756f5895f85f8ff3be19c887d508f4fe90c8451874232e72a",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target2_route1.npz": "ed57c49b79c2dc7da3028b9d32b3e514a01dc1e6c575f8051dcae02ad4cdda91",
+    "data/observation_derived_reach32_20261002/derived_reach_261023/target2_route2.npz": "55edaefcbc404551e1e5cd2d4917a79814b5b3ed94d18af0065ea3276241de15"
+  },
+  "script_sha256": "ff3020b7e5e74292722d7fa874fe90186282bf87271bb5c217cc97c58c4561b4",
+  "per_scene": [
+    {
+      "id": "derived_reach_261024_target0",
+      "parent_id": "derived_reach_261024",
+      "instruction": "Move the gripper to touch the blue sphere.",
+      "prediction_endpoint": [
+        0.28112213148011095,
+        0.07183462878068288,
+        0.8460120956103007
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.13385195688940316,
+      "reference_endpoint_error_m": 0.1340940380940676,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261024_target1",
+      "parent_id": "derived_reach_261024",
+      "instruction": "Move the gripper to touch the green sphere.",
+      "prediction_endpoint": [
+        0.2789810337126255,
+        -0.09297068836167453,
+        1.1595168312390645
+      ],
+      "train_instruction_examples": 4,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.26598887104099694,
+      "reference_endpoint_error_m": 0.2655757238296774,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261024_target2",
+      "parent_id": "derived_reach_261024",
+      "instruction": "Move the gripper to touch the violet sphere.",
+      "prediction_endpoint": [
+        0.29050538937250775,
+        -0.0053698298417859626,
+        1.011910385555691
+      ],
+      "train_instruction_examples": 6,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.27598366331545027,
+      "reference_endpoint_error_m": 0.2754749626632738,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261025_target0",
+      "parent_id": "derived_reach_261025",
+      "instruction": "Move the gripper to touch the navy sphere.",
+      "prediction_endpoint": [
+        0.2734335387746493,
+        -0.16151924431324005,
+        1.0199718922376633
+      ],
+      "train_instruction_examples": 4,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.28755736397278836,
+      "reference_endpoint_error_m": 0.2877928867250833,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261025_target1",
+      "parent_id": "derived_reach_261025",
+      "instruction": "Move the gripper to touch the green sphere.",
+      "prediction_endpoint": [
+        0.2789810337126255,
+        -0.09297068836167453,
+        1.1595168312390645
+      ],
+      "train_instruction_examples": 4,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.44850410818724973,
+      "reference_endpoint_error_m": 0.4476920431208771,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261025_target2",
+      "parent_id": "derived_reach_261025",
+      "instruction": "Move the gripper to touch the teal sphere.",
+      "prediction_endpoint": [
+        0.246784643166595,
+        0.06680587016873889,
+        1.0907287597656248
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.13136467075471567,
+      "reference_endpoint_error_m": 0.1314690506988498,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261026_target0",
+      "parent_id": "derived_reach_261026",
+      "instruction": "Move the gripper to touch the yellow sphere.",
+      "prediction_endpoint": [
+        0.23927056954966652,
+        0.02261328293631475,
+        0.9320520526833005
+      ],
+      "train_instruction_examples": 6,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.22925873548538378,
+      "reference_endpoint_error_m": 0.22886133419439464,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261026_target1",
+      "parent_id": "derived_reach_261026",
+      "instruction": "Move the gripper to touch the maroon sphere.",
+      "prediction_endpoint": [
+        0.3077818734778298,
+        0.16540473534001243,
+        0.8354276220003763
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.3113109317485166,
+      "reference_endpoint_error_m": 0.3107949834395714,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261026_target2",
+      "parent_id": "derived_reach_261026",
+      "instruction": "Move the gripper to touch the lime sphere.",
+      "prediction_endpoint": [
+        0.23757903774579367,
+        -0.05745976004335615,
+        1.140292141172621
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.4255608491469304,
+      "reference_endpoint_error_m": 0.4251276029911973,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261027_target0",
+      "parent_id": "derived_reach_261027",
+      "instruction": "Move the gripper to touch the cyan sphere.",
+      "prediction_endpoint": [
+        0.34861792292859817,
+        0.13713408841027153,
+        0.9904672967063056
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.1486988360097144,
+      "reference_endpoint_error_m": 0.1487001948194129,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261027_target1",
+      "parent_id": "derived_reach_261027",
+      "instruction": "Move the gripper to touch the green sphere.",
+      "prediction_endpoint": [
+        0.2789810337126255,
+        -0.09297068836167453,
+        1.1595168312390645
+      ],
+      "train_instruction_examples": 4,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.5119872814118506,
+      "reference_endpoint_error_m": 0.5116547424721061,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261027_target2",
+      "parent_id": "derived_reach_261027",
+      "instruction": "Move the gripper to touch the maroon sphere.",
+      "prediction_endpoint": [
+        0.3077818734778298,
+        0.16540473534001243,
+        0.8354276220003763
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.32733424208991135,
+      "reference_endpoint_error_m": 0.3271136289382672,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261028_target0",
+      "parent_id": "derived_reach_261028",
+      "instruction": "Move the gripper to touch the magenta sphere.",
+      "prediction_endpoint": [
+        0.38522764046986896,
+        0.12120095019539198,
+        0.9951383272806804
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.3050086742069021,
+      "reference_endpoint_error_m": 0.3047959766527988,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261028_target1",
+      "parent_id": "derived_reach_261028",
+      "instruction": "Move the gripper to touch the olive sphere.",
+      "prediction_endpoint": [
+        0.23229877837002277,
+        -0.022668528060118348,
+        0.8235425154368082
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.15833402514461736,
+      "reference_endpoint_error_m": 0.1582484527129784,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261028_target2",
+      "parent_id": "derived_reach_261028",
+      "instruction": "Move the gripper to touch the cyan sphere.",
+      "prediction_endpoint": [
+        0.34861792292859817,
+        0.13713408841027153,
+        0.9904672967063056
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.2737213561165289,
+      "reference_endpoint_error_m": null,
+      "reference_count": 0
+    },
+    {
+      "id": "derived_reach_261029_target0",
+      "parent_id": "derived_reach_261029",
+      "instruction": "Move the gripper to touch the silver sphere.",
+      "prediction_endpoint": [
+        0.19204168890913328,
+        0.1582369226962328,
+        0.8592821657657623
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.3229478519509121,
+      "reference_endpoint_error_m": 0.3222792714446408,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261029_target1",
+      "parent_id": "derived_reach_261029",
+      "instruction": "Move the gripper to touch the violet sphere.",
+      "prediction_endpoint": [
+        0.29050538937250775,
+        -0.0053698298417859626,
+        1.011910385555691
+      ],
+      "train_instruction_examples": 6,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.32740336156129457,
+      "reference_endpoint_error_m": 0.3266289235055516,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261029_target2",
+      "parent_id": "derived_reach_261029",
+      "instruction": "Move the gripper to touch the red sphere.",
+      "prediction_endpoint": [
+        0.19514232294427022,
+        0.176606567369567,
+        0.9417897462844849
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.13537355584201688,
+      "reference_endpoint_error_m": 0.13535423434907973,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261030_target0",
+      "parent_id": "derived_reach_261030",
+      "instruction": "Move the gripper to touch the gray sphere.",
+      "prediction_endpoint": [
+        0.09693189710378647,
+        -0.07326071957747142,
+        0.9799469709396362
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.15964762941304697,
+      "reference_endpoint_error_m": 0.15904072069214797,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261030_target1",
+      "parent_id": "derived_reach_261030",
+      "instruction": "Move the gripper to touch the silver sphere.",
+      "prediction_endpoint": [
+        0.19204168890913328,
+        0.1582369226962328,
+        0.8592821657657623
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.372850336355915,
+      "reference_endpoint_error_m": 0.37194669947023623,
+      "reference_count": 2
+    },
+    {
+      "id": "derived_reach_261030_target2",
+      "parent_id": "derived_reach_261030",
+      "instruction": "Move the gripper to touch the lime sphere.",
+      "prediction_endpoint": [
+        0.23757903774579367,
+        -0.05745976004335615,
+        1.140292141172621
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.4147539173364888,
+      "reference_endpoint_error_m": 0.4137052950794006,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261031_target0",
+      "parent_id": "derived_reach_261031",
+      "instruction": "Move the gripper to touch the orange sphere.",
+      "prediction_endpoint": [
+        0.2138027230070697,
+        0.11363301032947169,
+        1.0351513425509136
+      ],
+      "train_instruction_examples": 3,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.16699266572963767,
+      "reference_endpoint_error_m": 0.16700009870272262,
+      "reference_count": 3
+    },
+    {
+      "id": "derived_reach_261031_target1",
+      "parent_id": "derived_reach_261031",
+      "instruction": "Move the gripper to touch the rose sphere.",
+      "prediction_endpoint": [
+        0.20243658084008428,
+        0.09600492235687043,
+        1.02901785241233
+      ],
+      "train_instruction_examples": 6,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.4571020066715112,
+      "reference_endpoint_error_m": 0.4562767621957181,
+      "reference_count": 2
+    },
+    {
+      "id": "derived_reach_261031_target2",
+      "parent_id": "derived_reach_261031",
+      "instruction": "Move the gripper to touch the black sphere.",
+      "prediction_endpoint": [
+        0.15464713548620543,
+        0.02579004814227422,
+        1.0272868871688843
+      ],
+      "train_instruction_examples": 2,
+      "unseen_instruction_fallback": false,
+      "semantic_goal_accuracy": 0.0,
+      "goal_error_m": 0.17499286292554977,
+      "reference_endpoint_error_m": 0.17460936491798615,
+      "reference_count": 3
+    }
+  ]
+}

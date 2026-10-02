@@ -1,0 +1,60 @@
+{
+  "summary": {
+    "status": "collection_finished",
+    "parents_requested": 4,
+    "parents_collected": 3,
+    "parent_setup_failures": 1,
+    "attempts": 36,
+    "successes": 16,
+    "restore_passes": 36,
+    "classified_successes": 12,
+    "duplicate_passage_type_successes": 0,
+    "elapsed_seconds": 220.9022406419972,
+    "all_solution_count": null,
+    "continuous_whole_robot_collision_certified": false
+  },
+  "source_release": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/fc795a20c82d82d405cd9f97011f157def7526c7",
+  "errors": {
+    "RuntimeError('rendered obstacle depth is inconsistent with physical box: {\"object_name\": \"derived_passage_obstacle_0\", \"visible_pixels\": 1477, \"maximum_observed_distance_outside_box_m\": 2.9345492197371037, \"points_outside_one_cm\": 179}')": 1,
+    "ok": 16,
+    "RuntimeError('robot collision during simulated motion')": 4,
+    "ConfigurationPathError('Could not create path.')": 15,
+    "RuntimeError('endpoint or continuous tip-polyline clearance failed')": 1
+  },
+  "input_depth_validations": {
+    "obstacle_reach_271101": {
+      "canonicalization_passes": 2,
+      "physical_obstacle_observed_depth": [
+        {
+          "object_name": "derived_passage_obstacle_0",
+          "visible_pixels": 1649,
+          "maximum_observed_distance_outside_box_m": 0.002065145399132555,
+          "points_outside_one_cm": 0
+        }
+      ]
+    },
+    "obstacle_reach_271103": {
+      "canonicalization_passes": 2,
+      "physical_obstacle_observed_depth": [
+        {
+          "object_name": "derived_passage_obstacle_0",
+          "visible_pixels": 1736,
+          "maximum_observed_distance_outside_box_m": 0.0022502741744638097,
+          "points_outside_one_cm": 0
+        }
+      ]
+    },
+    "obstacle_reach_271102": {
+      "canonicalization_passes": 2,
+      "physical_obstacle_observed_depth": [
+        {
+          "object_name": "derived_passage_obstacle_0",
+          "visible_pixels": 1888,
+          "maximum_observed_distance_outside_box_m": 0.0025096472793364613,
+          "points_outside_one_cm": 0
+        }
+      ]
+    }
+  },
+  "decision": "Double physics restart alone is insufficient without intervening explicit RGB-D render; retained as failed initialization repair, not merged into later data."
+}

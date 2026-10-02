@@ -40,8 +40,10 @@ def main():
             record['logs'] = [str(path) for path in sorted(folder.glob('*.log'))]
             record['resume_policy'] = ('Read the frozen launcher and collected parent manifests before restart; '
                                        'do not blindly rerun completed collection or append --resume to a cache command.')
-            if (folder/'frozen_job.sh').is_file():
-                record['frozen_launcher'] = str(folder/'frozen_job.sh')
+            for launcher in ('frozen_job.sh', 'launcher.sh', 'launch.sh'):
+                if (folder/launcher).is_file():
+                    record['frozen_launcher'] = str(folder/launcher)
+                    break
             if str(record.get('pid','')).isdigit():
                 record['pid'] = int(record['pid'])
                 try:

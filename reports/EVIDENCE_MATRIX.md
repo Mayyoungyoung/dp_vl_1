@@ -7,11 +7,13 @@
 | 随机K参考子集会造成路径平均 | 受控单种子支持 | v2_round1逐场景结果、配对区间、ROUND1_REVIEW.md | 已知多模态回归问题，不能单独作为创新 |
 | 类型不足K时应允许有效重复 | 受控单种子支持 | v2_round2/saturation_summary.json；精确饱和匹配与穷举测试 | 当前开发探针达到可覆盖类型上限；尚无独立任务结论 |
 | 补全覆盖记忆稳定优于普通attention | 未获支持 | COMPLETION_THREE_SEED.md；三种子新增有效类型差+0.1641/+0.0156/-0.0469 | seed2反转；父场景bootstrap不能代替训练种子稳定性；不提升为核心方法 |
-| 自产草稿补全优于一次联合生成 | 原配方不支持；修正正在训练 | v2_completion/rollout_seed0；严格总K4且不丢弃失败；selfdraft后期混合配对 | 初始2+2更慢且更差，不能只展示给定正确草稿的结果 |
+| 自产草稿补全优于一次联合生成 | 修正后仍未获支持 | v2_completion_selfdraft：attention2+2=3.3047/joint4=3.3125；coverage3.2813/3.3438 | 模型草稿混合确实修复大量失败，但双前向没有优势，保留joint4 |
 | 真正使用Qwen3-VL训练/推理 | 已实测 | 官方固定revision；96真实RGB+语言前向；observed_frozen_v1；observed_online_v1 | 不是CLIP替代；真正接入不等于路线质量已达标 |
 | 真实LoRA参数更新 | 已实测 | 末两层q/v共114688参数，8张量非零梯度+改变hash；observed_online_v1/lora_seed0 | 短训练无质量收益，不将“参数更新”解释为有效微调；缓存未复用 |
-| 观测语义目标精确定位 | 未达标 | 23 DEV指令/8父，冻结头终点19.54cm、严格3cm正确率0；observation_head_diagnostic | 最近目标身份诊断81.5%不能替代严格成功；正在补齐观测几何编码 |
+| 观测语义目标精确定位 | 部分积极开发证据 | OBSERVATION_GROUNDING_THREE_SEED：同RGBD头辅助监督使严格3cm均值1.04%→28.82%，终点18.92→14.51cm | 全24指令/8父，23参考；三种子一致但小DEV反复选优，常规基线修正不是核心创新 |
+| LoRA提升观测路线质量 | 尚未获支持 | 300步从零头及500步同头warm-start配对；后者两边均选step0 | 实际参数更新与有效微调分别报告；当前不能称充分训练的强LoRA基线 |
 | 同初态RLBench多路线采集 | 已完成小批实采 | derived32:275/288成功、32父、restore/RGB0差；4原任务12/12采集成功 | 采集成功不是模型执行；未据轨迹距离定义不同类型，连续全身碰撞未认证 |
+| 真障碍下可判别的多路线采集 | 小批通过并正在扩大 | explicit-render四父48尝试20路径17类型，48/48恢复0；实际每步arm/gripper碰撞审计 | RLBench-derived扩展；失败21规划+7碰撞保留；不是原benchmark或生成模型成功 |
 | 研究初版核心已成立 | 尚未成立 | REMAINING_EXPERIMENTS.md | 主要缺口是有效观测规划和稳定核心优势；剩余工作不只是扩大规模 |
 
 所有开发集bootstrap区间只描述已选择开发数据上的配对差异，不能作为最终锁定测试的确认性推断。未实测字段在MAIN_RESULTS中留空。
