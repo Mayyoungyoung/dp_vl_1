@@ -79,6 +79,26 @@ def test_proposal_budget_and_role_cannot_silently_change(config):
         validate_config(config)
 
 
+def test_v2_explicit_plane_guides_add_calls_without_changing_physical_or_type_rules(config):
+    path=Path(__file__).resolve().parents[1]/"configs/observed_two_row_pilot_v2.json"
+    changed=json.loads(path.read_text())
+    centers,halves=validate_config(changed)
+    assert all(changed[k]==value for k,value in config.items() if k!="protocol")
+    assert np.array_equal(geometry(config)[0],centers)
+    for goal in changed["goal_xyz"]:
+        for sequence in itertools.product(PASSAGES,repeat=2):
+            original=proposed_waypoints(goal,sequence,config)
+            waypoints=proposed_waypoints(goal,sequence,changed)
+            assert len(original)==7 and len(waypoints)==9
+            assert np.array_equal(waypoints[[0,2,3,4,5,7,8]],original)
+            xyz=np.vstack([changed["entry_xyz"],waypoints])
+            assert crossing_signature(xyz,changed)==sequence
+            assert collector.legacy.tip_polyline_clear(xyz,centers,halves,.02)
+            sampled=collector.legacy.resample(xyz,24)
+            assert crossing_signature(sampled,changed)==sequence
+            assert collector.legacy.tip_polyline_clear(sampled,centers,halves,.02)
+
+
 @pytest.mark.parametrize("failed_stage", ["planning", "simulation"])
 def test_failed_segment_records_actual_cost_without_filling_later_calls(config, monkeypatch, failed_stage):
     from types import SimpleNamespace

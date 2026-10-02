@@ -35,8 +35,11 @@ def geometry(config):
 
 
 def validate_config(config):
-    if config["protocol"] != "observed_two_row_low_posts_v1" or config["parents"] != 1:
+    versions = {"observed_two_row_low_posts_v1":False, "observed_two_row_low_posts_rowpoints_v2":True}
+    if config["protocol"] not in versions or config["parents"] != 1:
         raise ValueError("this version is a single registered feasibility parent")
+    if bool(config.get("row_plane_guides",False)) != versions[config["protocol"]]:
+        raise ValueError("row-plane guide policy differs from declared version")
     if config["split"] != "DEV_COLLECTION" or config["requested_route_proposals"] != 27:
         raise ValueError("pilot role and proposal budget are fixed")
     if np.asarray(config["goal_xyz"]).shape != (3, 3) or np.asarray(config["post_y"]).shape != (2, 2):
@@ -62,9 +65,14 @@ def proposed_waypoints(goal, sequence, config):
     y1, y2 = [config["corridor_guide_y"][i] for i in indices]
     offset, z = config["row_guide_x_offset"], config["route_height"]
     middle = (row1 + row2) / 2
-    return np.asarray([[row1-offset, y1, z], [row1+offset, y1, z],
-                       [middle, y1, z], [middle, y2, z],
-                       [row2-offset, y2, z], [row2+offset, y2, z], goal], dtype=float)
+    points = [[row1-offset, y1, z]]
+    if config.get("row_plane_guides",False):
+        points.append([row1,y1,z])
+    points.extend([[row1+offset,y1,z],[middle,y1,z],[middle,y2,z],[row2-offset,y2,z]])
+    if config.get("row_plane_guides",False):
+        points.append([row2,y2,z])
+    points.extend([[row2+offset,y2,z],goal])
+    return np.asarray(points,dtype=float)
 
 
 def crossing_signature(xyz, config):
@@ -239,7 +247,9 @@ def collect(config, config_path, output):
         proposed_sequences=list(itertools.product(PASSAGES, repeat=2)),
         reference_set_complete=False, all_solution_count=None, full_robot_continuous_certificate=False,
         initial_preparation="One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start",
-        planning_budget="27 route slots x 7 get_path calls maximum, plus 2 setup get_path calls; failed slots stop early. Internal IK/OMPL configuration searches are not counted as complete output trajectories and are not individually instrumented.",
+        planning_budget=dict(route_slots=27,maximum_calls_per_route=9 if config.get("row_plane_guides",False) else 7,
+            setup_maximum_calls=2,failed_slots_stop_early=True,
+            internal_search_scope="IK/OMPL configuration searches are not complete output trajectories and are not individually instrumented"),
         acceptance="strict full world/inventory/RGB/depth/camera/current restore; per-step arm/gripper collisions; 2cm tip segments; 3cm endpoint",
         type_definition="consistent actual crossings of both row-x planes in order; finite-height lateral corridors or explicit over; ambiguous unknown",
         camera_policy="initial and restore RGB-D enabled; trajectory state read directly; final RGB-D equivalence check",

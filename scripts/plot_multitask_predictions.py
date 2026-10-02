@@ -91,7 +91,9 @@ def main():
             right.scatter(*start,c='black',s=30,label='Current start')
             left.set_xlim(-.5,rgb.shape[1]-.5);left.set_ylim(rgb.shape[0]-.5,-.5);left.axis('off')
             left.set_title(label['task']+' / '+identifier+'\n'+textwrap.fill(obs['instruction'],65),fontsize=10)
-            right.set_xlabel('world x (m)');right.set_ylabel('world y (m)');right.set_zlabel('world z (m)')
+            right.set_xlabel('world x (m)');right.set_ylabel('world y (m)')
+            # Matplotlib 3D tight boxes can clip the rotated z label on export.
+            right.text2D(.88,.94,'world z (m)',transform=right.transAxes,fontsize=9,ha='center')
             for axis in (right.xaxis,right.yaxis,right.zaxis):axis.set_major_locator(MaxNLocator(3))
             right.tick_params(labelsize=8);right.view_init(elev=25,azim=-65)
             right.set_title('All K4 paths; grey = '+str(len(refs))+' recorded references',fontsize=10)
