@@ -1,0 +1,276 @@
+"""Geometry and evaluation for a small, grouped task-route benchmark.
+
+The three obstacle-relative passage classes are a controlled proxy for useful
+route diversity. They are not a claim about general 3-D homotopy classes.
+Scenes contain start, goal, AABB center and AABB half-size, in that order.
+"""
+
+import numpy as np
+
+
+WORKSPACE_MIN = np.array([-1.0, -1.0, 0.0], dtype=np.float64)
+WORKSPACE_MAX = np.array([1.0, 1.0, 1.4], dtype=np.float64)
+PASSAGE_NAMES = ("negative_y", "positive_y", "over_top")
+
+
+def segment_aabb_intersection(p0, p1, box_min, box_max):
+    """Exact closed-segment versus closed-AABB slab intersection.
+
+    Arrays broadcast on all axes except the final xyz axis. A stationary
+    segment inside the box and a segment touching a face count as collisions.
+    """
+    p0, p1 = np.asarray(p0, dtype=np.float64), np.asarray(p1, dtype=np.float64)
+    lower, upper = np.asarray(box_min), np.asarray(box_max)
+    direction = p1 - p0
+    moving = np.abs(direction) > 1e-12
+    static_outside = (~moving) & ((p0 < lower) | (p0 > upper))
+    t0 = np.full_like(direction, -np.inf)
+    t1 = np.full_like(direction, np.inf)
+    np.divide(lower - p0, direction, out=t0, where=moving)
+    np.divide(upper - p0, direction, out=t1, where=moving)
+    entry = np.max(np.minimum(t0, t1), axis=-1)
+    leave = np.min(np.maximum(t0, t1), axis=-1)
+    return ((entry <= leave) & (leave >= 0.0) & (entry <= 1.0)
+            & ~np.any(static_outside, axis=-1))
+
+
+def segment_aabb_distance(p0, p1, box_min, box_max):
+    """Exact Euclidean distance from each segment to an axis-aligned box.
+
+    The squared point-to-box distance is piecewise quadratic in the segment
+    parameter. The six face crossings partition it into at most seven pieces.
+    On each piece its constrained quadratic minimum is evaluated analytically.
+    """
+    p0, p1 = np.broadcast_arrays(np.asarray(p0, dtype=np.float64),
+                                 np.asarray(p1, dtype=np.float64))
+    shape = p0.shape[:-1]
+    a, b = p0.reshape(-1, 3), p1.reshape(-1, 3)
+    direction = b - a
+    lower = np.broadcast_to(np.asarray(box_min, dtype=np.float64), p0.shape).reshape(-1, 3)
+    upper = np.broadcast_to(np.asarray(box_max, dtype=np.float64), p0.shape).reshape(-1, 3)
+    moving = np.abs(direction) > 1e-12
+    face_lo, face_hi = np.zeros_like(a), np.ones_like(a)
+    np.divide(lower - a, direction, out=face_lo, where=moving)
+    np.divide(upper - a, direction, out=face_hi, where=moving)
+    breakpoints = np.sort(np.concatenate([
+        np.zeros((len(a), 1)), np.ones((len(a), 1)),
+        np.clip(face_lo, 0.0, 1.0), np.clip(face_hi, 0.0, 1.0)], axis=1), axis=1)
+    left, right = breakpoints[:, :-1], breakpoints[:, 1:]
+    midpoint = a[:, None, :] + direction[:, None, :] * ((left + right) * .5)[..., None]
+    below, above = midpoint < lower[:, None, :], midpoint > upper[:, None, :]
+    active = below | above
+    slope = np.where(active, direction[:, None, :], 0.0)
+    offset = np.where(below, a[:, None, :] - lower[:, None, :],
+                      np.where(above, a[:, None, :] - upper[:, None, :], 0.0))
+    denominator = np.sum(slope * slope, axis=-1)
+    numerator = -np.sum(slope * offset, axis=-1)
+    optimum = np.zeros_like(denominator)
+    np.divide(numerator, denominator, out=optimum, where=denominator > 0.0)
+    optimum = np.clip(optimum, left, right)
+    points = a[:, None, :] + optimum[..., None] * direction[:, None, :]
+    distance_vector = np.maximum(np.maximum(lower[:, None, :] - points,
+                                            points - upper[:, None, :]), 0.0)
+    distances = np.sqrt(np.sum(distance_vector ** 2, axis=-1))
+    return np.min(distances, axis=-1).reshape(shape)
+
+
+def path_validity(paths, scene, clearance=.035, endpoint_tol=.06,
+                  max_length_ratio=2.8):
+    """Validate complete polylines, including the space between waypoints.
+
+    ``paths`` has shape [..., H, 3], and ``scene`` has shape [12]. The clearance
+    collision test expands the box by ``clearance`` on each axis, a conservative
+    L-infinity clearance rule. ``clearance`` in the output reports the exact
+    minimum Euclidean distance to the original box. All outputs have the path
+    batch shape [...]. The workspace is x,y in [-1,1], z in [0,1.4].
+    """
+    paths = np.asarray(paths, dtype=np.float64)
+    scene = np.asarray(scene, dtype=np.float64)
+    if paths.ndim < 2 or paths.shape[-1] != 3 or paths.shape[-2] < 2:
+        raise ValueError("paths must have shape [..., H >= 2, 3]")
+    if scene.shape != (12,):
+        raise ValueError("scene must be a length-12 array")
+    start, goal, center, halfsize = scene.reshape(4, 3)
+    lower, upper = center - halfsize, center + halfsize
+    p0, p1 = paths[..., :-1, :], paths[..., 1:, :]
+    finite = np.all(np.isfinite(paths), axis=(-1, -2))
+    collision = np.any(segment_aabb_intersection(
+        p0, p1, lower - clearance, upper + clearance), axis=-1)
+    endpoint_error = np.maximum(np.linalg.norm(paths[..., 0, :] - start, axis=-1),
+                                np.linalg.norm(paths[..., -1, :] - goal, axis=-1))
+    lengths = np.sum(np.linalg.norm(p1 - p0, axis=-1), axis=-1)
+    straight_length = max(float(np.linalg.norm(goal - start)), 1e-8)
+    in_bounds = np.all((paths >= WORKSPACE_MIN) & (paths <= WORKSPACE_MAX), axis=(-1, -2))
+    min_clearance = np.min(segment_aabb_distance(p0, p1, lower, upper), axis=-1)
+    valid = (finite & ~collision & in_bounds & (endpoint_error <= endpoint_tol)
+             & (lengths <= max_length_ratio * straight_length))
+    return {"valid": valid, "collision": collision, "endpoint_error": endpoint_error,
+            "lengths": lengths, "clearance": min_clearance, "in_bounds": in_bounds,
+            "length_ratio": lengths / straight_length, "finite": finite}
+
+
+def route_modes(paths, scene):
+    """Classify the first crossing of the obstacle's center-x plane.
+
+    Returns 0 (negative-y passage), 1 (positive-y passage), 2 (above top),
+    or -1 (unclassified). Only valid routes have meaningful passage labels.
+    Over-top takes precedence if a crossing also lies to the side of the box.
+    """
+    paths, scene = np.asarray(paths), np.asarray(scene)
+    prefix = paths.shape[:-2]
+    flat = paths.reshape(-1, paths.shape[-2], 3)
+    center, halfsize = scene[6:9], scene[9:12]
+    x0, x1 = flat[:, :-1, 0], flat[:, 1:, 0]
+    crossing = ((x0 <= center[0]) & (x1 >= center[0])) | ((x1 <= center[0]) & (x0 >= center[0]))
+    index = np.argmax(crossing, axis=-1)
+    rows = np.arange(len(flat))
+    a, b = flat[rows, index], flat[rows, index + 1]
+    dx = b[:, 0] - a[:, 0]
+    fraction = np.zeros(len(flat), dtype=np.float64)
+    np.divide(center[0] - a[:, 0], dx, out=fraction, where=np.abs(dx) > 1e-12)
+    crossing_point = a + np.clip(fraction, 0.0, 1.0)[:, None] * (b - a)
+    labels = np.full(len(flat), -1, dtype=np.int64)
+    labels[crossing_point[:, 1] < center[1] - halfsize[1]] = 0
+    labels[crossing_point[:, 1] > center[1] + halfsize[1]] = 1
+    labels[crossing_point[:, 2] > center[2] + halfsize[2]] = 2
+    labels[~np.any(crossing, axis=-1)] = -1
+    labels[~np.all(np.isfinite(flat), axis=(-1, -2))] = -1
+    return labels.reshape(prefix)
+
+
+def route_metrics(paths, scenes, clearance=.035, endpoint_tol=.06,
+                  max_length_ratio=2.8):
+    """Evaluate [B,K,H,3] candidates under an identical candidate budget.
+
+    ``unique_valid`` is mean valid passage count (0..3), ``coverage`` is that
+    count / 3, ``validity`` is the valid-candidate fraction, and ``success`` is
+    the scene fraction with at least one valid route. In particular, geometric
+    noise within one passage never increases useful diversity. The per-scene
+    output provides candidate validity, passage labels, counts and lengths.
+    """
+    paths, scenes = np.asarray(paths), np.asarray(scenes)
+    if paths.ndim != 4 or scenes.shape != (len(paths), 12):
+        raise ValueError("expected paths [B,K,H,3] and scenes [B,12]")
+    checks = [path_validity(p, s, clearance, endpoint_tol, max_length_ratio)
+              for p, s in zip(paths, scenes)]
+    valid = np.stack([c["valid"] for c in checks])
+    modes = np.stack([route_modes(p, s) for p, s in zip(paths, scenes)])
+    present = np.stack([np.any(valid & (modes == mode), axis=1) for mode in range(3)], axis=1)
+    unique_count = np.sum(present, axis=1)
+    return {
+        "validity": float(np.mean(valid)), "valid_rate": float(np.mean(valid)),
+        "unique_valid": float(np.mean(unique_count)),
+        "coverage": float(np.mean(unique_count / 3.0)),
+        "success": float(np.mean(np.any(valid, axis=1))),
+        "collision_rate": float(np.mean(np.stack([c["collision"] for c in checks]))),
+        "unclassified_valid_rate": float(np.mean(valid & (modes < 0))),
+        "finite_rate": float(np.mean(np.stack([c["finite"] for c in checks]))),
+        "per_scene": {"valid": valid, "modes": np.where(valid, modes, -1),
+                      "unique_count": unique_count, "coverage": unique_count / 3.0,
+                      "lengths": np.stack([c["lengths"] for c in checks]),
+                      "clearance": np.stack([c["clearance"] for c in checks])},
+    }
+
+
+def camera_matrices(size=128):
+    """Return a known, calibrated pair of perspective projection matrices.
+
+    Matrices map world xyz coordinates to pixel homogeneous coordinates. The
+    two camera centers are (2.8,-3.5,2.5) and (2.8,3.5,2.5), looking at (0,0,.4).
+    """
+    intrinsic = np.array([[1.12 * size, 0., size / 2.],
+                          [0., 1.12 * size, size / 2.], [0., 0., 1.]])
+    projections = []
+    for eye in (np.array([2.8, -3.5, 2.5]), np.array([2.8, 3.5, 2.5])):
+        forward = np.array([0., 0., .4]) - eye
+        forward /= np.linalg.norm(forward)
+        right = np.cross(forward, np.array([0., 0., 1.]))
+        right /= np.linalg.norm(right)
+        down = np.cross(forward, right)
+        rotation = np.stack([right, down, forward])
+        extrinsic = np.concatenate([rotation, (-rotation.dot(eye))[:, None]], axis=1)
+        projections.append(intrinsic.dot(extrinsic))
+    return np.stack(projections)
+
+
+def project_points(points, matrices=None):
+    """Project [...,3] world points to [V,...,2] pixels (or [...,2] for one P)."""
+    points = np.asarray(points, dtype=np.float64)
+    matrices = camera_matrices() if matrices is None else np.asarray(matrices, dtype=np.float64)
+    homogeneous = np.concatenate([points, np.ones(points.shape[:-1] + (1,))], axis=-1)
+    if matrices.ndim == 2:
+        projected = np.einsum("ij,...j->...i", matrices, homogeneous)
+    else:
+        projected = np.einsum("vij,...j->v...i", matrices, homogeneous)
+    return projected[..., :2] / projected[..., 2:3]
+
+
+def triangulate_points(paired_points, matrices=None):
+    """DLT triangulation of corresponding [2,...,2] calibrated observations."""
+    paired_points = np.asarray(paired_points, dtype=np.float64)
+    matrices = camera_matrices() if matrices is None else np.asarray(matrices, dtype=np.float64)
+    if paired_points.shape[0] != 2 or paired_points.shape[-1] != 2 or matrices.shape != (2, 3, 4):
+        raise ValueError("expected paired points [2,...,2] and two [3,4] camera matrices")
+    rows = []
+    for view in range(2):
+        rows.extend([paired_points[view, ..., 0, None] * matrices[view, 2] - matrices[view, 0],
+                     paired_points[view, ..., 1, None] * matrices[view, 2] - matrices[view, 1]])
+    system = np.stack(rows, axis=-2)
+    _, _, vh = np.linalg.svd(system)
+    homogeneous = vh[..., -1, :]
+    if np.any(np.abs(homogeneous[..., 3]) < 1e-12):
+        raise ValueError("degenerate triangulation: a point lies at infinity")
+    return homogeneous[..., :3] / homogeneous[..., 3:4]
+
+
+def reprojection_error(points, paired_points, matrices=None):
+    """Per-point root mean square pixel error across calibrated views."""
+    residual = project_points(points, matrices) - np.asarray(paired_points)
+    return np.sqrt(np.mean(np.sum(residual ** 2, axis=-1), axis=0))
+
+
+def render_scene(scene, instruction=None, size=128):
+    """Render geometry-only paired RGB inputs [2,size,size,3] using Pillow.
+
+    Red denotes start and green denotes goal. No reference trajectories or
+    passage labels are rendered, preventing target leakage into model inputs.
+    ``instruction`` is accepted for call-site compatibility; instructions are
+    supplied separately as text and are never encoded as target annotations.
+    """
+    from PIL import Image, ImageDraw
+    scene = np.asarray(scene, dtype=np.float64)
+    start, goal, center, halfsize = scene.reshape(4, 3)
+    bits = np.array([[x, y, z] for x in (-1., 1.) for y in (-1., 1.) for z in (-1., 1.)])
+    corners = center + bits * halfsize
+    # Indices follow binary xyz ordering.
+    faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1),
+             (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    cameras = camera_matrices(size)
+    output = []
+    for view, projection in enumerate(cameras):
+        image = Image.new("RGB", (size, size), (244, 247, 250))
+        draw = ImageDraw.Draw(image)
+        def pixels(points):
+            return [tuple(v) for v in project_points(np.asarray(points), projection)]
+        floor = np.array([[-1., -1., 0.], [1., -1., 0.], [1., 1., 0.], [-1., 1., 0.]])
+        draw.polygon(pixels(floor), fill=(221, 229, 233), outline=(154, 165, 174))
+        for location in (-.5, 0., .5):
+            draw.line(pixels([[-1., location, 0.], [1., location, 0.]]), fill=(199, 208, 216), width=1)
+            draw.line(pixels([[location, -1., 0.], [location, 1., 0.]]), fill=(199, 208, 216), width=1)
+        # Perspective depth (the third homogeneous coordinate) sorts faces.
+        homogeneous = np.concatenate([corners, np.ones((8, 1))], axis=1)
+        depths = homogeneous.dot(projection[2])
+        for face_index in sorted(range(6), key=lambda i: np.mean(depths[list(faces[i])]), reverse=True):
+            face = faces[face_index]
+            shade = [123, 141, 130, 146, 113, 161][face_index]
+            draw.polygon(pixels(corners[list(face)]), fill=(shade, shade + 5, shade + 11),
+                         outline=(72, 78, 86))
+        radius = max(3, int(size / 30))
+        for point, color, label in [(start, (224, 64, 57), "S"), (goal, (36, 153, 93), "G")]:
+            px, py = project_points(point, projection)
+            draw.ellipse((px - radius, py - radius, px + radius, py + radius),
+                         fill=color, outline=(255, 255, 255), width=1)
+            draw.text((px + radius + 2, py - radius - 2), label, fill=(31, 42, 49))
+        draw.text((5, 4), "VIEW %d" % (view + 1), fill=(68, 82, 94))
+        output.append(np.asarray(image))
+    return np.stack(output)
