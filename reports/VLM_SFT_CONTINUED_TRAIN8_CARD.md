@@ -1,0 +1,22 @@
+# One bounded TRAIN8 greedy probe after completed continuation
+
+Status: implemented for review and source freezing, not run. The separate real-Qwen continuation is running from immutable5bb9087 to its fixed6000-step limit. This entry cannot run against an incomplete summary and does not authorize another training stage or DEV/K4 expansion.
+
+The sole question is whether more optimization under the unchanged original SFT objective materially reduces free-generation spatial error. Original1500 greedy scored0/8 within3cm, mean23.391cm. Its fixed eight TRAIN target0 inputs, K1, H24, grammar, coordinate/event protocol, greedy configuration, seed identities,512 tokens per call and180s request-loop boundary are unchanged. This is an exposure/optimization control, not a proposed novel method or an equal-training-budget comparison with regression.
+
+The new entry accepts only the completed registered5bb continuation, with original1500 `last.pt` SHA `d604b5a213bdf281e7976b460b7ceb2fc428488610b1b84670ddca04711cb00c`. It verifies all nine original source artifact hashes, exact original/new configuration except the declared step increase and registered trainer/helper, inherited data index/DEV plan/initial adapters/best, complete added adapter-gradient evidence, separate inherited/added/cumulative budgets, and actual selected checkpoint SHA plus internal config/step/lineage. Selection stays the original DEV-token-NLL rule. There is no choice between multiple generated checkpoints. If best is inherited, the entry rejects a new generation and the original measured greedy result is reused.
+
+Generation opens only the fixed TRAIN8 observed images/current-state records. It never opens reference paths, semantic target coordinates or collision geometry. One full request reencodes each observation; grammar compilation and masking are charged within request time. The180s limit is checked before requests, so an in-flight CUDA request can overshoot; remaining slots are recorded as failures without retries. All eight slots remain in denominators. The exact HF generation config is passed with `use_model_defaults=False`. Old same-checkpoint/SHA-locked code is unchanged.
+
+After all outputs are frozen, a separate CPU analyzer rehashes/reparses both pools, checks original greedy summary `228506dbb94b80cad93ce5cc9d23c3841123447b43fbb52dade7963a5f1cc4c2`, identical inputs/grammar/runtime helpers/effective decoding/request seeds, and completed training lineage. Only then it reads original target metadata for the eight requested target0 rows. It reports every parent, failure, endpoint error and identity, with no repaired points or added route search. Reference paths and collision geometry remain unopened. Pure tests cover lineage, original-cost comparison, changed helper/data/cadence, altered selected checkpoint state, and information/decoding drift; existing tests cover eight-call/failure/time-cap behavior.
+
+The previously declared useful-control criterion remains at least4/8 endpoints within3cm and an all-eight mean endpoint error at most15cm. A missing/nonfinite slot makes the all-eight mean undefined and fails that gate. Target identity is also reported separately. Passing this TRAIN gate only motivates proposing a later DEV check; it is not generalization evidence. Failing it stops this decoding/exposure branch at the declared bound without a temperature, beam, seed or step-count sweep.
+
+Proposed commands after freeze and queue scheduling:
+
+```bash
+python -m scripts.evaluate_vlm_sft_continued_train8 --run /home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_continuation_v1/seed0 --output /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/train8
+python -m scripts.analyze_vlm_sft_continued_train8 --run /home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_continuation_v1/seed0 --original-greedy /home/wzy/dpvlm/route_set_v1/runs/vlm_route_greedy_train8_v1/train8 --continued-greedy /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/train8 --supervision-metadata /home/wzy/dpvlm/route_set_v1/data/observation_obstacle_reserved_development_v1/supervision.jsonl --output /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/analysis
+```
+
+Actual wrappers will pin the release, environment, hashes and job receipts. Expected generation time is about80–90s from the earlier measured TRAIN8 calls; actual cost and any overshoot are authoritative. GPU1/35%, CPU1, at most eight new autoregressive calls. CPU tests and source freezing precede any launch.
