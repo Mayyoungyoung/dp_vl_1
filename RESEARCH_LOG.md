@@ -1,5 +1,15 @@
 # Research log
 
+## 2026-10-02 14:17 UTC — completed SFT; autoregression launched; data scaling improves ordinary baseline
+
+Hypothesis: real variable-K VLM serialization may preserve multiple route modes without a separate deterministic regression head. Completed ba984 real Qwen SFT1500 steps,3750 supervised route slots,1273081 answer tokens; DEV token NLL decreased .588300→.436727. Eight adapters updated,556.787s,4.834GB peak. This establishes actual training only. A failed pytest call in the Qwen runtime remains logged; the same fixed source passed15tests in the existing CPU runtime before training.
+
+Actual next execution:8356b09 fixed-source7tests passed and same-best-checkpoint independent4/whole4 autoregression launched, all24DEV instructions, no retry/repair, raw text and all failed/extra slots charged. GPU1/35%,CPU1, source and launcher fixed. Quality will be independently checked only after the generation artifacts are complete.
+
+In parallel, prospectively registered prefix60 contains48TRAIN+same12DEV parents,180/180 references. At identical1500x32 training exposure the ordinary free-endpoint head improved DEV macro ADE17.121→12.944cm and endpoint24.498→19.700cm; retrieval is15.393/25.895cm. Data enlargement helps but does not establish a mechanism. Complete source/init reconstruction and identical DEV audits before a paired causal description; task-validity and semantic correctness remain unmeasured.
+
+Two-row v1 accepted18/27 but produced at most3 distinct lateral types per target. v2 explicit row-plane guides accepted4/27, with20 planning failures; strict within-run restoration passed, but cross-run arm joints differ by2.88969rad. The guide comparison is confounded. Actual next decision is a strict initial-state reconstruction/readback gate, not relaxed collision checks or another unpaired retry. Full negatives and cost retained.
+
 ## Initial audit — 2026-10-02
 
 Read the attached brief and README, experiment, next_steps, demo candidates, model/trainer/geometry and manifests. No existing AGENTS.md found in project/parent or server project. Local Git was an unborn master branch with all source files untracked; preserved original source/reports in d0d97eb on codex/multiroute-v2. Server project exists and has historical checkpoints, logs and data; it has no Git repository. No remote exists locally.
