@@ -16,11 +16,89 @@ import traceback
 import numpy as np
 from PIL import Image
 
-from observation_collect_rlbench import (append_json, array_hash, audit_difference,
+from observation_collect_rlbench import (array_hash, audit_difference,
                                           native_snapshot, resample, world_audit)
 
 
 MODE_NAMES = ("negative_x", "positive_x", "negative_y", "positive_y")
+
+
+def json_ready(value):
+    """One strict serialization boundary for every collector JSON artifact."""
+    if isinstance(value, np.ndarray):
+        return json_ready(value.tolist())
+    if isinstance(value, np.generic):
+        return json_ready(value.item())
+    if isinstance(value, dict):
+        return {str(key): json_ready(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [json_ready(item) for item in value]
+    if isinstance(value, Path):
+        return str(value)
+    return value
+
+
+def json_text(value, indent=None):
+    return json.dumps(json_ready(value), ensure_ascii=False, allow_nan=False, indent=indent)
+
+
+def append_json(path, value):
+    text = json_text(value)
+    with Path(path).open("a", encoding="utf-8") as stream:
+        stream.write(text + "\n")
+
+
+def serialization_check(folder):
+    """Exercise every JSON schema using saved simulator arrays, without a sim.
+
+    Success/failure records below are serialization fixtures, not fabricated
+    collection results. Only a compact preflight report is emitted.
+    """
+    folder = Path(folder)
+    with np.load(folder / "observation.npz", allow_pickle=False) as archive:
+        observed = {key: archive[key] for key in archive.files}
+    with np.load(folder / "verification_only.npz", allow_pickle=False) as archive:
+        verification = {key: archive[key] for key in archive.files}
+    center, halfsize = verification["obstacle_centers"][0], verification["obstacle_halfsizes"][0]
+    reference = dict(state={"_robot": dict(gripper_pose=observed["gripper_pose"], gripper_open=observed["gripper_open"]),
+                           "_extra_obstacle": dict(pose=np.r_[center, [0., 0., 0., 1.]], color=np.array([.32, .34, .38]),
+                               bounding_box=np.ravel(np.stack([-halfsize, halfsize], axis=1)),
+                               velocity=np.zeros(6), flags=np.array([True, True, False]))},
+                     inventory=[("fixture_obstacle", np.int64(1), np.int32(0))])
+    restore = dict(max_abs=np.float64(0.), worst_field=None, same_object_inventory=np.bool_(True),
+                   global_inventory_equal=np.bool_(True), rgb_max_difference=np.int16(0))
+    success = dict(parent_id=folder.name, attempt=np.int64(0), success=np.bool_(True), restore=restore,
+                   actual_route_type=("negative_x",), collection_guides_supervision_only=verification["obstacle_centers"],
+                   endpoint_error_m=np.float32(0.), length_m=np.float64(1.), tip_polyline_clear=np.bool_(True),
+                   tip_polyline_24_clear=np.bool_(True), duplicate_passage_type=np.bool_(False), trajectory_sha256="fixture")
+    failure = dict(parent_id=folder.name, attempt=np.int64(0), success=np.bool_(False), error="serialization fixture",
+                   restore=restore, failed_partial_route=Path("fixture.npz"), traceback="fixture")
+    supervision = dict(id=folder.name + "_target0", parent_id=folder.name, split="DEV_MODEL", routes=["fixture.npz"],
+                        route_types=[("negative_x",), None], reference_set_complete=False,
+                        semantic_targets=dict(centers=verification["target_centers"], target_index=np.int64(0), tolerance=np.float32(.03)))
+    summary = dict(status="serialization_fixture_only", parents_requested=np.int64(1), successes=np.int64(0),
+                   elapsed_seconds=np.float64(0), all_solution_count=None, continuous_whole_robot_collision_certified=False)
+    manifest = json.loads((folder.parent / "manifest.json").read_text())
+    observation_manifest = dict(id=folder.name + "_target0", parent_id=folder.name, split="DEV_MODEL",
+                                image=folder.name + "/front.png", instruction="Serialization fixture instruction.")
+    fixtures = dict(manifest=manifest, observations=observation_manifest, restore_reference=reference, attempt_success=success,
+                    attempt_failure=failure, supervision=supervision, summary=summary,
+                    all_actual_observation_arrays=observed, all_actual_verification_arrays=verification)
+    hashes = {}
+    import hashlib
+    import tempfile
+    with tempfile.TemporaryDirectory() as temporary:
+        # Exercise both JSON and the same JSONL writer used by the real job.
+        destination = Path(temporary) / "schemas.jsonl"
+        for name, fixture in fixtures.items():
+            payload = json_text(fixture)
+            json.loads(payload)
+            append_json(destination, fixture)
+            hashes[name] = hashlib.sha256(payload.encode()).hexdigest()
+        assert len(destination.read_text().splitlines()) == len(fixtures)
+    print(json_text(dict(serialization_preflight="passed", simulator_launched=False, source=str(folder),
+                         schemas_checked=sorted(fixtures), fixture_hashes=hashes,
+                         actual_visible_target_pixels=verification["target_visible_pixels"])))
 
 
 def tip_polyline_clear(paths, centers, halfsizes, clearance=.02):
@@ -103,10 +181,11 @@ def full_audit(task, obstacles):
     state = world_audit(task)
     for obstacle in obstacles:
         linear, angular = obstacle.get_velocity()
-        state["_extra_" + obstacle.get_name()] = dict(
+        fields = dict(
             pose=obstacle.get_pose(), color=obstacle.get_color(), velocity=list(linear) + list(angular),
             bounding_box=obstacle.get_bounding_box(),
             flags=[int(obstacle.is_collidable()), int(obstacle.is_respondable()), int(obstacle.is_dynamic())])
+        state["_extra_" + obstacle.get_name()] = {key: np.asarray(value).tolist() for key, value in fields.items()}
     inventory = sorted((obj.get_name(), int(obj.get_handle()), int(obj.get_type().value))
                        for obj in task._pyrep.get_objects_in_tree(exclude_base=False))
     return dict(state=state, inventory=inventory)
@@ -180,7 +259,7 @@ def self_test():
     assert crossing_signature(np.array([[0., 0., 1.4], [0., 0., .6]]), centers, halfsizes) is None
     # Safe waypoints do not make a segment through the expanded box safe.
     assert not tip_polyline_clear(np.array([[-.2, 0., 1.], [.2, 0., 1.]]), centers, halfsizes)
-    print(json.dumps(dict(pure_geometry_self_test="passed", simulator_launched=False)))
+    print(json_text(dict(pure_geometry_self_test="passed", simulator_launched=False)))
 
 
 def main():
@@ -198,9 +277,13 @@ def main():
     parser.add_argument("--restore-atol", type=float, default=0.)
     parser.add_argument("--minimum-target-pixels", type=int, default=10)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--serialization-check", type=Path, help="saved parent folder; checks actual array types without starting simulation")
     args = parser.parse_args()
     if args.self_test:
         self_test()
+        return
+    if args.serialization_check:
+        serialization_check(args.serialization_check)
         return
     if args.output is None or args.output.exists() or args.parents < 1 or not 0 <= args.dev_parents <= args.parents:
         parser.error("new --output directory, positive parents and valid dev-parent count required")
@@ -241,7 +324,7 @@ def main():
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
                     target_layout_description="safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement")
-    (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (args.output / "manifest.json").write_text(json_text(manifest, indent=2), encoding="utf-8")
     started = time.perf_counter()
     total = successes = restores = classified = duplicate_types = parents_collected = 0
     env.launch()
@@ -317,7 +400,7 @@ def main():
             except Exception as exc:
                 record = dict(parent_id=parent_id, phase="parent_setup", success=False, error=repr(exc), traceback=traceback.format_exc())
                 append_json(args.output / "attempts.jsonl", record)
-                print(json.dumps({key: value for key, value in record.items() if key != "traceback"}), flush=True)
+                print(json_text({key: value for key, value in record.items() if key != "traceback"}), flush=True)
                 continue
             parents_collected += 1
             Image.fromarray(initial.front_rgb).save(folder / "front.png")
@@ -326,7 +409,7 @@ def main():
                                 camera_intrinsics=initial.misc["front_camera_intrinsics"], camera_extrinsics=initial.misc["front_camera_extrinsics"])
             np.savez_compressed(folder / "verification_only.npz", mask=initial.front_mask, obstacle_centers=centers,
                                 obstacle_halfsizes=halfsizes, target_centers=goals, target_visible_pixels=visible)
-            (folder / "restore_reference.json").write_text(json.dumps(reference), encoding="utf-8")
+            (folder / "restore_reference.json").write_text(json_text(reference), encoding="utf-8")
             palette = np.asarray([color[1] for color in colors])
             for target_index, target in enumerate(targets):
                 goal = goals[target_index]
@@ -409,7 +492,7 @@ def main():
                             record["failed_partial_route"] = filename
                     record["seconds"] = time.perf_counter() - tic
                     append_json(args.output / "attempts.jsonl", record)
-                    print(json.dumps({key: value for key, value in record.items() if key != "traceback"}), flush=True)
+                    print(json_text({key: value for key, value in record.items() if key != "traceback"}), flush=True)
                 append_json(args.output / "supervision.jsonl", dict(id=identifier, parent_id=parent_id, split=split,
                     observation=parent_id + "/observation.npz", routes=routes, route_types=route_types,
                     task="rlbench_derived_obstacle_multitarget_reach", reference_set_complete=False,
@@ -421,8 +504,8 @@ def main():
                    attempts=total, successes=successes, restore_passes=restores, classified_successes=classified,
                    duplicate_passage_type_successes=duplicate_types, elapsed_seconds=time.perf_counter() - started,
                    all_solution_count=None, continuous_whole_robot_collision_certified=False)
-    (args.output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    print(json.dumps(summary), flush=True)
+    (args.output / "summary.json").write_text(json_text(summary, indent=2), encoding="utf-8")
+    print(json_text(summary), flush=True)
 
 
 if __name__ == "__main__":
