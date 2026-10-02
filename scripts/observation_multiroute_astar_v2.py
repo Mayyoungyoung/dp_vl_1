@@ -9,6 +9,7 @@ import argparse
 from collections import Counter
 import heapq
 import itertools
+import json
 from pathlib import Path
 import time
 
@@ -106,7 +107,7 @@ def attachments(point, name, free, lower, radius, nonselected_points, ray_inputs
         records.append(record)
     return accepted, dict(kind=name, exact_endpoint=point.tolist(), rounded_index=center.tolist(),
         original_contact_radius_m=float(radius), neighboring_cells_considered=len(records), accepted_connections=len(accepted),
-        accepted_voxel_indices=[list(index) for index in accepted], candidates=records,
+        accepted_voxel_indices=[[int(value) for value in index] for index in accepted], candidates=records,
         attachment_seconds=time.perf_counter()-began, complete_route_proposals_emitted=0)
 
 
@@ -140,7 +141,7 @@ def astar_virtual(free, lower, exact_goal, starts, goals, used_edges, start_perm
             while previous[path[-1]] != start_virtual:
                 path.append(previous[path[-1]])
             path.reverse()
-            statistics.update(selected_start_attachment=list(path[0]), selected_goal_attachment=list(path[-1]),
+            statistics.update(selected_start_attachment=[int(value) for value in path[0]], selected_goal_attachment=[int(value) for value in path[-1]],
                 successful_route_grid_edges=len(path)-1, successful_route_virtual_edges=2,
                 successful_route_edges_in_start_permission=sum(bool(start_permission[a] or start_permission[b]) for a,b in zip(path,path[1:])),
                 successful_route_edges_in_target_permission=sum(bool(target_permission[a] or target_permission[b]) for a,b in zip(path,path[1:])))
@@ -262,7 +263,11 @@ def self_test():
     path,record=astar_virtual(free,lower,goal,starts,goals,Counter(),np.zeros_like(free),np.zeros_like(free))
     assert path is not None and record['complete_raw_paths_emitted']==1 and record['successful_route_virtual_edges']==2
     raw=np.vstack([current[:3],lower+np.asarray(path)*CONFIG['voxel_m'],goal])
-    assert visible_proxy(raw,nonselected,rays)['passed']
+    proxy=visible_proxy(raw,nonselected,rays)
+    assert proxy['passed']
+    # Actual grid indices originate in NumPy. Every successful nested record
+    # must serialize without a permissive fallback that hides nonfinite values.
+    json.dumps(dict(start=sa,goal=ga,search=record,proxy=proxy),allow_nan=False)
     missing,record=astar_virtual(free,lower,goal,starts,{},Counter(),np.zeros_like(free),np.zeros_like(free))
     assert missing is None and record['status']=='no_admissible_virtual_goal_attachment'
     # Goal connectors have costs: the first reached attachment need not be the
