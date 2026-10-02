@@ -36,11 +36,25 @@ def child_path(parent,relative):
     return path
 
 
-def select_prefix(plan):
+def select_prefix(plan,selection=None):
     expected=registration(282000,'validated-five-v1','interleaved-early-dev-v1')
     if plan!=expected:raise ValueError('Unexpected six-task seed/policy/schedule registration')
-    selected=[row for row in plan['parents'] if row['parent_index'] in (0,1,16,17)]
-    assert len(selected)==24 and {row['task'] for row in selected}==set(TASKS)
+    if selection is None:
+        selected=[row for row in plan['parents'] if row['parent_index'] in (0,1,16,17)]
+        assert len(selected)==24 and {row['task'] for row in selected}==set(TASKS)
+        return selected
+    if (selection.get('protocol')!='multitask_prefix60_prospective_selection_v1'
+            or selection.get('seed')!=282000 or selection.get('motion_camera_policy')!='validated-five-v1'
+            or selection.get('schedule')!='interleaved-early-dev-v1'
+            or selection.get('train_parent_indices')!=list(range(8))
+            or selection.get('dev_model_parent_indices')!=[16,17]
+            or selection.get('requested_parent_counts')!={'TRAIN':48,'DEV_MODEL':12}
+            or selection.get('requested_attempts')!=180):
+        raise ValueError('Unrecognized explicit prefix60 selection registration')
+    selected=[row for row in plan['parents'] if (row['split']=='TRAIN' and row['parent_index'] in range(8))
+              or (row['split']=='DEV_MODEL' and row['parent_index'] in (16,17))]
+    if selection.get('selected_requested_parents')!=selected:
+        raise ValueError('Requested parent list differs from fixed prefix60 registration')
     return selected
 
 
@@ -150,11 +164,23 @@ def read_parent(source,spec,source_manifest):
     return observations,supervision,records,inventory,hashes
 
 
-def build(source,compare_sources,output):
+def build(source,compare_sources,output,selection_registration=None):
     source=Path(source).resolve();compare_sources=[Path(value).resolve() for value in compare_sources];output=Path(output).resolve()
     staging=output.with_name(output.name+'.staging');blocked=output.with_name(output.name+'.blocked.json')
     if output.exists() or staging.exists() or blocked.exists():raise FileExistsError('Preserve existing snapshot, staging or blocked audit')
-    plan=json.loads((source/'partition_manifest.json').read_text());selected=select_prefix(plan)
+    plan=json.loads((source/'partition_manifest.json').read_text())
+    selection=None;selection_hashes={}
+    if selection_registration is not None:
+        selection_registration=Path(selection_registration).resolve()
+        selection=json.loads(selection_registration.read_text(encoding='utf-8'))
+        if (Path(selection['source_dataset']).resolve()!=source
+                or [Path(path).resolve() for path in selection['compare_sources']]!=compare_sources
+                or selection['source_partition_manifest_sha256']!=digest(source/'partition_manifest.json')):
+            raise ValueError('Prefix selection source/compare/registration hash mismatch')
+        if selection.get('output_dataset')!=output.name:
+            raise ValueError('Prefix selection requires the registered new dataset name')
+        selection_hashes[str(selection_registration)]=digest(selection_registration)
+    selected=select_prefix(plan,selection)
     missing=[row['parent_id'] for row in selected if not (source/row['split']/'parents'/row['parent_id']/'closed.json').exists()]
     if missing:raise ValueError('Registered prefix is not fully closed: '+','.join(missing))
     gates=gate(source,compare_sources)
@@ -163,7 +189,7 @@ def build(source,compare_sources,output):
         raise ValueError('Layout gate blocks pre-registered snapshot tasks: '+','.join(gates['blocked_tasks']))
     source_manifest=json.loads((source/'source_manifest.json').read_text())
     observations=[];supervision=[];attempts=[];parents=[]
-    hashes={str(source/'partition_manifest.json'):digest(source/'partition_manifest.json'),str(source/'source_manifest.json'):digest(source/'source_manifest.json')}
+    hashes=dict(selection_hashes,**{str(source/'partition_manifest.json'):digest(source/'partition_manifest.json'),str(source/'source_manifest.json'):digest(source/'source_manifest.json')})
     for spec in selected:
         obs,sup,records,parent,files=read_parent(source,spec,source_manifest)
         observations.extend(obs);supervision.extend(sup);attempts.extend(records);parents.append(parent);hashes.update(files)
@@ -179,7 +205,7 @@ def build(source,compare_sources,output):
     manifest=dict(protocol=PROTOCOL,created_at=datetime.now(timezone.utc).isoformat(),source_dataset=str(source),
         snapshot_script_sha256=digest(__file__),
         compare_sources=[str(path) for path in compare_sources],seed=282000,selected_requested_parents=selected,
-        requested_parents=24,requested_attempts=72,actual_attempt_records=len(attempts),
+        requested_parents=len(selected),requested_attempts=3*len(selected),actual_attempt_records=len(attempts),
         setup_failed_parents=sum(row['closure']['status']=='setup_failed' for row in parents),
         unattempted_slots=sum(row['closure'].get('unattempted_slots',0) for row in parents),
         total_proposal_executions=sum(row['closure'].get('total_proposal_executions',0) for row in parents),
@@ -192,6 +218,11 @@ def build(source,compare_sources,output):
         evaluation_scope='Positive-reference path/event reconstruction only; semantic targets, generated success/validity/types remain unknown',
         current_gate_required_before_model_use=True,model_input_keys=sorted(INPUT_KEYS),
         excluded_raw_roles=['DEV_SCORE','CALIBRATION','TEST_LOCKED'])
+    if selection is not None:
+        manifest.update(selection_registration=selection,selection_registration_path=str(selection_registration),
+            selection_registration_sha256=selection_hashes[str(selection_registration)],
+            requested_parent_counts=dict(selection['requested_parent_counts']),
+            reused_dev_policy='The same DEV parent indices16/17 were used in prefix24 model selection; no independent-test claim.')
     output.parent.mkdir(parents=True,exist_ok=True);staging.mkdir()
     for name,rows in [('observations',observations),('supervision',supervision),('attempts',attempts)]:
         (staging/(name+'.jsonl')).write_text(''.join(json.dumps(row,ensure_ascii=False,allow_nan=False)+'\n' for row in rows),encoding='utf-8')
@@ -206,5 +237,6 @@ def build(source,compare_sources,output):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',type=Path,required=True)
     parser.add_argument('--compare-source',type=Path,action='append',required=True);parser.add_argument('--output',type=Path,required=True)
-    args=parser.parse_args();result=build(args.source,args.compare_source,args.output)
+    parser.add_argument('--selection-registration',type=Path,help='explicit pre-registered prefix60 JSON; omitted preserves original prefix24 behavior')
+    args=parser.parse_args();result=build(args.source,args.compare_source,args.output,args.selection_registration)
     print(json.dumps({key:result[key] for key in ('protocol','requested_parents','actual_attempt_records','setup_failed_parents','parents_with_zero_reference','successful_reference_routes','observations')}))

@@ -15,14 +15,13 @@ def save_json(path,value):
     path.parent.mkdir(parents=True,exist_ok=True);write_json(path,value)
 
 
-@pytest.fixture
-def corpus(tmp_path):
+def make_corpus(tmp_path,selected=None):
     source=tmp_path/'source';other=tmp_path/'legacy';source.mkdir();other.mkdir()
     plan=registration(282000,'validated-five-v1','interleaved-early-dev-v1')
     write_json(source/'partition_manifest.json',plan);write_json(other/'partition_manifest.json',dict(parents=[]))
     manifest=dict(collector_sha256='collector',restore_helper_sha256='restore',fingerprint_helper_sha256='fingerprint')
     write_json(source/'source_manifest.json',manifest)
-    selected=select_prefix(plan)
+    selected=select_prefix(plan) if selected is None else selected
     for number,spec in enumerate(selected):
         folder=source/spec['split']/'parents'/spec['parent_id']
         save_json(folder/'sessions/one.json',dict(status='complete',elapsed_seconds=1.,worker_exit_code=0))
@@ -65,6 +64,11 @@ def corpus(tmp_path):
     locked_folder=source/'TEST_LOCKED'/'parents'/locked['parent_id'];locked_folder.mkdir(parents=True)
     for name in ('reference.json','front.png','observation.npz','closed.json'):(locked_folder/name).write_bytes(b'forbidden malformed raw data')
     return source,other,selected
+
+
+@pytest.fixture
+def corpus(tmp_path):
+    return make_corpus(tmp_path)
 
 
 def test_snapshot_retains_variable_language_zero_refs_and_failure_denominators(corpus,tmp_path):
