@@ -20,6 +20,7 @@ from routeset.observed_multitask import (draw_observation_batch,aggregate_task_p
 from routeset.observed_grounding_targets import (MODES as GROUNDING_TARGET_MODES,
     prepare_event_grounding_targets,validate_grounding_target_resume)
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
+from routeset.observed_training_audit import new_stream_audit, append_indices, restore_stream_audit
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
 
 
@@ -357,6 +358,8 @@ def train(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         rng, sampler = np.random.default_rng(args.seed), np.random.default_rng(args.seed+100000)
+        audit_enabled=bool(getattr(args,'sample_stream_audit',False))
+        stream_audit=(new_stream_audit(model,sampler.bit_generator.state,torch.get_rng_state()) if audit_enabled else None)
         first_step, best, elapsed_before, exposures, history = 0, -float('inf'), 0., 0, []
         if args.resume:
             checkpoint = torch.load(out/'last.pt', map_location=args.device, weights_only=False)
@@ -366,6 +369,8 @@ def train(args):
             validate_endpoint_resume(config,checkpoint['config'])
             validate_multitask_resume(config,checkpoint['config'])
             validate_grounding_target_resume(config,checkpoint['config'])
+            stream_audit=restore_stream_audit(audit_enabled,checkpoint['config'],checkpoint.get('sample_stream_audit'),
+                stream_audit,checkpoint['step'],args.batch_size)
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -387,6 +392,7 @@ def train(args):
         for step in range(first_step+1, args.steps+1):
             model.train()
             ids = draw_observation_batch(data,train_ids,sampler,args.batch_size,config.get('sampling_mode','uniform'))
+            if audit_enabled:stream_audit=append_indices(stream_audit,ids)
             inputs = batch_inputs(data, geometry, ids, args.device)
             xyz, opened, details = model(**inputs)
             target_xyz = torch.as_tensor(data['paths'][ids], device=args.device)
@@ -422,6 +428,7 @@ def train(args):
                 checkpoint = dict(model=model.state_dict(), optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict(),
                     scaler=None, step=step, config=config, rng=rng_state(rng), sampler_state=sampler.bit_generator.state,
                     best=best, history=history, elapsed_s=elapsed, trajectory_exposures=exposures)
+                if audit_enabled:checkpoint['sample_stream_audit']=dict(stream_audit)
                 atomic_checkpoint(out/'last.pt', checkpoint)
                 if improved:
                     atomic_checkpoint(out/'best.pt', checkpoint)
@@ -467,6 +474,7 @@ def train(args):
             summary.update(grounding_target_fingerprint=grounding_metadata['target_fingerprint'],
                 grounding_target_selection_sha256=sha256(out/'grounding_target_selection.json'),
                 grounding_target_preprocessing_s=grounding_metadata['preprocess_seconds'])
+        if audit_enabled:summary['sample_stream_audit']=dict(stream_audit)
         if config.get('refinement_mode','none')!='none':
             summary.update(generation_budget=metrics['generation_budget'],
                 complete_path_state_exposures=exposures*2,
@@ -500,6 +508,7 @@ def main():
     parser.add_argument('--endpoint-mode',choices=('surface_anchor','free_offset'),default='surface_anchor')
     parser.add_argument('--sampling-mode',choices=('uniform','task_parent_language'),default='uniform')
     parser.add_argument('--metric-aggregation',choices=('instruction','task_parent'),default='instruction')
+    parser.add_argument('--sample-stream-audit',action='store_true',help='Record actual sampled-index hash chain and initial state; persisted in checkpoints')
     parser.add_argument('--multitask-snapshot-manifest',help='optional explicit path; automatically enforced when beside observations')
     parser.add_argument('--refinement-mode',choices=('none','local','global'),default='none')
     parser.add_argument('--refinement-sigma',type=float)

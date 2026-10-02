@@ -1,0 +1,61 @@
+{
+  "protocol": "multitask_landmark_three_seed_replication_v1",
+  "registered_at": "2026-10-02T15:39:52.125846+00:00",
+  "decision_basis": "After measured seed0 macro improvement and task-level regressions; fixed replication only, not blind method preregistration.",
+  "dataset": "observation_multitask_prefix108_v1",
+  "snapshot_manifest_sha256": "b0f014ca2294ba863d1b75fc2e65d45f1c2e650687f09f320fd10f68230e998c",
+  "observations_sha256": "faf8bfe503d5458883725a7bf991221f78b14a5f318426b8bc8e77a6355cdce1",
+  "supervision_sha256": "71c0addab71f2f5ef0fa8818f9bde66aad8c3332cc72f94d55714df5f56a3dbe",
+  "output_family": "observed_multitask_landmark_replication_v1",
+  "seeds": [
+    1,
+    2
+  ],
+  "arms": {
+    "ordinary": {
+      "grounding_weight": 0.0,
+      "grounding_target": "endpoint"
+    },
+    "event_supported": {
+      "grounding_weight": 0.02,
+      "grounding_target": "event_supported"
+    }
+  },
+  "shared_training_arguments": {
+    "steps": 1500,
+    "batch_size": 32,
+    "candidates": 4,
+    "horizon": 24,
+    "width": 128,
+    "depth": 2,
+    "pooling": "both",
+    "geometry_pooling": "spatial",
+    "anchor_mode": "soft",
+    "endpoint_mode": "free_offset",
+    "sampling_mode": "task_parent_language",
+    "metric_aggregation": "task_parent",
+    "refinement_mode": "none",
+    "selection_metric": "reference_ADE",
+    "point_width": 64,
+    "pixel_stride": 2,
+    "event_scale": 0.2,
+    "lr": 0.0003,
+    "eval_every": 250,
+    "threads": 1,
+    "device": "cuda",
+    "grounding_sigma": 0.025,
+    "sample_stream_audit": true
+  },
+  "seed0_controls": {
+    "ordinary": "/home/wzy/dpvlm/route_set_v1/runs/observed_multitask_prefix108_v1/free_offset_seed0",
+    "event_supported": "/home/wzy/dpvlm/route_set_v1/runs/observed_multitask_landmark_aux_v1/event_supported_seed0"
+  },
+  "seed0_auxiliary_source": "aef39831c4429474c27acbc69152191cb345b454",
+  "grounding_target_fingerprint": "4204a5aefcb0cffd067d11ee54637fbfdac921a0f5e63a38d370d12196598aa2",
+  "per_run_observation_exposures": 48000,
+  "per_run_complete_path_states": 192000,
+  "sampling_rule": "Same seed pair records identical initial model / torch CPU RNG / sampler hashes and actual ordered index chain. Stream audit default off for historical compatibility; checkpoint resume restores chain.",
+  "resume_rule": "Explicit immutable launch script may resume a stopped run only from its own last checkpoint; completed runs validate config/artifact hashes then skip, never duplicate.",
+  "decision_rule": "Complete these four runs, report all three paired seeds best and fixed1500 with task/parent deltas. No seed searching, added modules or hyperparameter tuning if gains fail replication.",
+  "limitations": "Repeated 12-parent development set, reference-only metrics, no semantic/contact/collision/execution certification. Conventional auxiliary baseline repair, not paper core."
+}
