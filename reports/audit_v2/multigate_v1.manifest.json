@@ -1,0 +1,38 @@
+{
+  "version": "multigate_v1",
+  "seed": 2718,
+  "parent_counts": {
+    "TRAIN": 768,
+    "DEV_MODEL": 128,
+    "DEV_SCORE": 64,
+    "CALIBRATION": 64,
+    "TEST_LOCKED": 64,
+    "OOD_LOCKED": 64
+  },
+  "examples": 1152,
+  "variants_per_parent": 1,
+  "horizon": 24,
+  "sha256": "7259cd30218d44a668ce8ec8d4bec993b3efcc66f6b492cd304a1a9c94e7658a",
+  "oracle_geometry": true,
+  "observation_benchmark": false,
+  "reference_semantics": "one positive representative per opening pair; not total continuous solution count",
+  "split_unit": "independent parent layout; all goal variants remain together",
+  "model_features": "start3, goal3, two rows of [wall_x, halfwidth, opening_bounds8, mask4]",
+  "validation": {
+    "clearance": 0.02,
+    "endpoint_tolerance": 0.06,
+    "max_length_ratio": 3.5,
+    "collision": "all closed segments against all closed clearance-expanded AABBs"
+  },
+  "mode_count_histogram": {
+    "1": 70,
+    "2": 142,
+    "3": 152,
+    "4": 212,
+    "6": 146,
+    "8": 141,
+    "9": 85,
+    "12": 140,
+    "16": 64
+  }
+}

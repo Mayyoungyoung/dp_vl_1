@@ -8,5 +8,5 @@ Do not alter shared environments, stop others' jobs, use sudo, or create paid se
 Local workspace is the code/commit writer. Run server experiments from immutable commit exports.
 Use DEV_MODEL for research decisions; historical TEST/OOD are now historical/development evidence.
 Record failures, manifests, budgets, checkpoint/RNG state and actual commands. Never infer success from a launch command.
-No configured git remote existed on initial audit. Do not invent one.
+Authorized remote supplied during session: `git@github.com:Mayyoungyoung/dp_vl_1.git`. Use `codex/multiroute-v2`; do not force-push.
 Read STATE.md and RESUME.md before continuing. Update RESEARCH_LOG.md and experiments/registry.jsonl after material results.

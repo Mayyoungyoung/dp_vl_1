@@ -167,7 +167,6 @@ def main():
                        'gpu_uuid': os.environ.get('RESEARCH_GPU_UUID'),
                        'selection_split': 'DEV_MODEL', 'information': 'controlled true geometry and endpoints',
                        'supervision': 'same full positive reference pool; matching objective differs'})
-        write_json(out/'config.json', config)
         model = SetRegressor(config['cond_dim'], config['horizon'], args.candidates, args.width, args.depth).to(args.device)
         optim = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
         # Fixed schedule makes continuation transparent; no gradient scaler in FP32.
@@ -188,6 +187,8 @@ def main():
             start_step, best, elapsed_before, exposures = ck['step'], ck['best'], ck['elapsed_s'], ck['trajectory_exposures']
             reference_pool_access = ck.get('reference_pool_access', 0)
             history = ck['history']
+        # Preserve the original config if an incompatible resume is rejected.
+        write_json(out/'config.json', config)
         start = synchronized_time(args.device)
         losses = []
         for step in range(start_step+1, args.steps+1):
