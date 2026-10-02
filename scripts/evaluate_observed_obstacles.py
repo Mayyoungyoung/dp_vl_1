@@ -172,6 +172,7 @@ def evaluate(data_root, predictions_file, output, split="DEV_MODEL", allow_subse
         reference_coverage_evaluable_examples=sum(bool(row["known_reference_types"]) for row in per_scene),
         input_contract="saved predictions only; target and geometry opened exclusively for evaluation",
         validity_scope="TipValid requires correct target within original tolerance, current start within 5mm, constant reach event state, and exact full tip-segment checks against supplied physical boxes with original clearance; excludes full-arm/IK/execution validity",
+        unverified_geometry="The added physical boxes are checked. Table, walls, other environment bodies, arm volume and IK feasibility are not certified by this evaluator.",
         unknown_type_policy="Valid unclassified routes remain valid; they do not contribute invented types",
         reference_policy="Coverage only of known classified positive reference types; no total-solution-count claim",
         selection_policy="optional scores rank the same submitted K; missing scores yield null, all nonfinite scores fail selection",
