@@ -28,6 +28,10 @@
 | v参数化解决扩散路线失效 | 未获支持 | DIFFUSION_MULTIGATE_V3_RESULTS：12000步ind/set Unique1.21354/1.09375，Valid40.17%/33.72% | 单训练seed；累计曝光为回归4倍，仍在改善不能称收敛；停止此支线 |
 | 错误参考或H24重采样导致观测碰撞 | 当前TRAIN诊断不支持 | OBSERVATION_TRAIN_GEOMETRY_DIAGNOSTIC：181/181原始与H24正参考通过固定检查 | seed0模型前段碰撞仍多；不以此证明未观察几何/整臂安全 |
 | 模拟器跨进程同父恢复 | 已实测通过 | observation_multitask_resume_probe_v1：world/RGB-D/camera/language精确一致，首记录hash未变，3/3任务成功 | 只有恢复机制证据；不等于六任务已完成或路线类型可判别 |
+| 新96障碍普通定位头有积极结果 | 单种子配对支持 | OBSERVATION_OBSTACLE_RESERVED96_PAIR：新8父/24DEV，soft/peak最佳Tip44.79%/52.08%、Unique.75/1.125 | 常规修复；peak末步Tip43.75%退化；同数据A*87.5%/1.25仍强，非新核心 |
+| 缓存头质量对应真实在线Qwen推理 | 实测一致 | 同24请求的路径最大差<=1.431e-6m；全链生成中位61.73/77.20ms | 包含读取/processor/Qwen/RGB-D/head，评分、碰撞验收和执行不在计时内 |
+| 观测球形边界提供可分配路线分支 | 被当前TRAIN审计否定 | OBSERVED_DEPARTURE_REGION_AUDIT：24指令×3半径全部J1、无失败或预算耗尽 | 放弃此表示，不外推场景只有一条路线；不实现分配器 |
+| 早段碰撞附近有局部可见几何支持 | TRAIN诊断支持 | OBSERVED_LOCAL_SUPPORT_AUDIT：33首次精确接触的10cm邻域均有点，前半弧长覆盖30/33 | 可见点支持不是已知自由空间；680参考前缀点仍有遮挡/画外，更新界限未证明充分 |
 | 研究初版核心已成立 | 尚未成立 | REMAINING_EXPERIMENTS.md | 主要缺口是有效观测规划和稳定核心优势；剩余工作不只是扩大规模 |
 
 所有开发集bootstrap区间只描述已选择开发数据上的配对差异，不能作为最终锁定测试的确认性推断。未实测字段在MAIN_RESULTS中留空。

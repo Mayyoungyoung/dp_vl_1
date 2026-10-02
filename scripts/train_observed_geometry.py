@@ -30,6 +30,10 @@ def validate_anchor_resume(current_config, saved_config):
 def validate_selection_resume(current_config, saved_config):
     if current_config.get('checkpoint_selection','reference_ADE') != saved_config.get('checkpoint_selection','reference_ADE'):
         raise ValueError('resume config mismatch: checkpoint_selection')
+    # Keep the same DEV selection opportunities when restoring best/history.
+    # Missing legacy fields use the trainer's historical 250-step default.
+    if current_config.get('eval_every',250) != saved_config.get('eval_every',250):
+        raise ValueError('resume config mismatch: eval_every')
 
 
 def checkpoint_selection_score(metrics, selection_metric='reference_ADE'):

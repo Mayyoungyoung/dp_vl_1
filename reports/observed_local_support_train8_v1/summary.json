@@ -1,0 +1,2600 @@
+{
+  "config": {
+    "radii_m": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "reference_prefix_arc_fraction": 0.25,
+    "prefix_samples_per_reference": 17,
+    "reference_sampling": "17 equal normalized arc positions from0 to0.25 inclusive",
+    "vertex_fraction_definition": "raw positive-record vertex index for references; H24 predicted vertex index for collision queries; not interchangeable",
+    "visibility_depth_tolerance_m": 0.02,
+    "maximum_depth_m": 10.0,
+    "collision_clearance_m": 0.02,
+    "collision_query": "exact first closed-AABB contact at original2cm expansion; label-only query selection",
+    "clouds": [
+      "all_valid_depth_pixels",
+      "exact_original_head_pixel_stride"
+    ],
+    "visibility": "projection into current depth: front, near_surface, occluded, outside, invalid_depth, behind_camera",
+    "absence": "no nearby visible point does not imply free space",
+    "scope": "predeclared old32 TRAIN parents272000-272007/all24 instructions; no DEV or locked inputs"
+  },
+  "code_commit": "5501c5f464b61ae1a34e34c5381bbded306bf4ed",
+  "total_seconds": 0.9503005509031937,
+  "parents": 8,
+  "instructions": 24,
+  "positive_references": 40,
+  "prediction_candidates": 96,
+  "collision_candidates": 33,
+  "noncollision_candidates": 63,
+  "all_queries": {
+    "positive_reference_prefix": {
+      "queries": 680,
+      "observations": 23,
+      "parents": 8,
+      "visibility": {
+        "in_front_of_measured_surface": 643,
+        "occluded": 32,
+        "outside_image": 5
+      },
+      "clouds": {
+        "all_valid_depth_pixels": {
+          "nearest_distance_m": {
+            "min": 0.024207228612914918,
+            "p10": 0.04151237739161113,
+            "median": 0.11130847168491104,
+            "p90": 0.14423176807080326,
+            "max": 0.4187373325009137
+          },
+          "radii": {
+            "0.05": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 0.0,
+                "median": 0.0,
+                "p90": 20.0,
+                "max": 27.0
+              },
+              "supported_queries": 112,
+              "unsupported_queries": 568,
+              "coverage": 0.16470588235294117
+            },
+            "0.1": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 0.0,
+                "median": 0.0,
+                "p90": 44.0,
+                "max": 44.0
+              },
+              "supported_queries": 237,
+              "unsupported_queries": 443,
+              "coverage": 0.34852941176470587
+            },
+            "0.2": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 44.0,
+                "median": 447.0,
+                "p90": 1072.2,
+                "max": 1276.0
+              },
+              "supported_queries": 655,
+              "unsupported_queries": 25,
+              "coverage": 0.9632352941176471
+            }
+          }
+        },
+        "exact_original_head_pixel_stride": {
+          "nearest_distance_m": {
+            "min": 0.028650689233635947,
+            "p10": 0.04208565986282088,
+            "median": 0.11349680591131786,
+            "p90": 0.14833248647093256,
+            "max": 0.4188789342778872
+          },
+          "radii": {
+            "0.05": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 0.0,
+                "median": 0.0,
+                "p90": 4.0,
+                "max": 6.0
+              },
+              "supported_queries": 99,
+              "unsupported_queries": 581,
+              "coverage": 0.14558823529411766
+            },
+            "0.1": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 0.0,
+                "median": 0.0,
+                "p90": 10.0,
+                "max": 10.0
+              },
+              "supported_queries": 231,
+              "unsupported_queries": 449,
+              "coverage": 0.3397058823529412
+            },
+            "0.2": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 10.0,
+                "median": 112.0,
+                "p90": 263.20000000000005,
+                "max": 318.0
+              },
+              "supported_queries": 655,
+              "unsupported_queries": 25,
+              "coverage": 0.9632352941176471
+            }
+          }
+        }
+      },
+      "by_visibility": {
+        "in_front_of_measured_surface": {
+          "queries": 643,
+          "observations": 23,
+          "parents": 8,
+          "visibility": {
+            "in_front_of_measured_surface": 643
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.024207228612914918,
+                "p10": 0.041511931840775375,
+                "median": 0.11039880220793052,
+                "p90": 0.13831632538757227,
+                "max": 0.4081032906325467
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 20.0,
+                    "max": 27.0
+                  },
+                  "supported_queries": 112,
+                  "unsupported_queries": 531,
+                  "coverage": 0.17418351477449456
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 237,
+                  "unsupported_queries": 406,
+                  "coverage": 0.36858475894245724
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 44.0,
+                    "median": 478.0,
+                    "p90": 1089.0000000000005,
+                    "max": 1276.0
+                  },
+                  "supported_queries": 623,
+                  "unsupported_queries": 20,
+                  "coverage": 0.968895800933126
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.028650689233635947,
+                "p10": 0.04208130334646084,
+                "median": 0.1118471925708431,
+                "p90": 0.13976156495465653,
+                "max": 0.41043045406782797
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 99,
+                  "unsupported_queries": 544,
+                  "coverage": 0.15396578538102643
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 231,
+                  "unsupported_queries": 412,
+                  "coverage": 0.359253499222395
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 10.0,
+                    "median": 116.0,
+                    "p90": 267.80000000000007,
+                    "max": 318.0
+                  },
+                  "supported_queries": 623,
+                  "unsupported_queries": 20,
+                  "coverage": 0.968895800933126
+                }
+              }
+            }
+          }
+        },
+        "occluded": {
+          "queries": 32,
+          "observations": 7,
+          "parents": 6,
+          "visibility": {
+            "occluded": 32
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.10489069057580495,
+                "p10": 0.11226603616734486,
+                "median": 0.13249860906372568,
+                "p90": 0.15833782884230474,
+                "max": 0.1686479550868636
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 32,
+                  "coverage": 0.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 32,
+                  "coverage": 0.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 148.0,
+                    "p10": 186.6,
+                    "median": 267.0,
+                    "p90": 349.7,
+                    "max": 399.0
+                  },
+                  "supported_queries": 32,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.10493882602394235,
+                "p10": 0.11557868198702612,
+                "median": 0.13864862298831132,
+                "p90": 0.16635928123611707,
+                "max": 0.17735883039725978
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 32,
+                  "coverage": 0.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 32,
+                  "coverage": 0.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 31.0,
+                    "p10": 43.0,
+                    "median": 71.0,
+                    "p90": 92.0,
+                    "max": 106.0
+                  },
+                  "supported_queries": 32,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "outside_image": {
+          "queries": 5,
+          "observations": 2,
+          "parents": 2,
+          "visibility": {
+            "outside_image": 5
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.2171425540879062,
+                "p10": 0.2194242050431878,
+                "median": 0.32277403729906917,
+                "p90": 0.3994738227006559,
+                "max": 0.4187373325009137
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.21770448581369195,
+                "p10": 0.21976136407865926,
+                "median": 0.32277403729906917,
+                "p90": 0.39955878376684,
+                "max": 0.4188789342778872
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 0.0
+                  },
+                  "supported_queries": 0,
+                  "unsupported_queries": 5,
+                  "coverage": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      "arc_fraction": {
+        "min": 0.0,
+        "p10": 0.015625,
+        "median": 0.125,
+        "p90": 0.234375,
+        "max": 0.25
+      },
+      "vertex_fraction": {
+        "min": 0.0,
+        "p10": 0.048690260260575935,
+        "median": 0.1711050021522166,
+        "p90": 0.34386784474393983,
+        "max": 0.5461211921796583
+      },
+      "physical_distance_from_current_m": {
+        "min": 0.0,
+        "p10": 0.024269573840894513,
+        "median": 0.1593500189631104,
+        "p90": 0.3649675852812502,
+        "max": 0.6460711067711467
+      },
+      "per_parent": {
+        "obstacle_reach_272000": {
+          "queries": 68,
+          "observations": 2,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 64,
+            "occluded": 4
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.028785501199196914,
+                "p10": 0.04150530291237493,
+                "median": 0.10804483064969891,
+                "p90": 0.12862345821604668,
+                "max": 0.18027109475231498
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 20.0,
+                    "max": 27.0
+                  },
+                  "supported_queries": 13,
+                  "unsupported_queries": 55,
+                  "coverage": 0.19117647058823528
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 26,
+                  "unsupported_queries": 42,
+                  "coverage": 0.38235294117647056
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 141.70000000000002,
+                    "median": 585.5,
+                    "p90": 1150.9,
+                    "max": 1266.0
+                  },
+                  "supported_queries": 68,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.033316930866380864,
+                "p10": 0.042090498008434035,
+                "median": 0.11031685508256815,
+                "p90": 0.13479258152979454,
+                "max": 0.18471366139312498
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 11,
+                  "unsupported_queries": 57,
+                  "coverage": 0.16176470588235295
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 26,
+                  "unsupported_queries": 42,
+                  "coverage": 0.38235294117647056
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 10.0,
+                    "p10": 31.7,
+                    "median": 139.5,
+                    "p90": 279.3,
+                    "max": 309.0
+                  },
+                  "supported_queries": 68,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272001": {
+          "queries": 102,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 94,
+            "occluded": 6,
+            "outside_image": 2
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.028394316639395394,
+                "p10": 0.04173594285108806,
+                "median": 0.11784623726101781,
+                "p90": 0.22528305982680089,
+                "max": 0.4081032906325467
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 19.50000000000003,
+                    "max": 27.0
+                  },
+                  "supported_queries": 16,
+                  "unsupported_queries": 86,
+                  "coverage": 0.1568627450980392
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 34,
+                  "unsupported_queries": 68,
+                  "coverage": 0.3333333333333333
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 377.0,
+                    "p90": 707.0,
+                    "max": 818.0
+                  },
+                  "supported_queries": 89,
+                  "unsupported_queries": 13,
+                  "coverage": 0.8725490196078431
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.032969628779405215,
+                "p10": 0.04235658932323246,
+                "median": 0.12183636523508003,
+                "p90": 0.22528305982680089,
+                "max": 0.41043045406782797
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 14,
+                  "unsupported_queries": 88,
+                  "coverage": 0.13725490196078433
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 69,
+                  "coverage": 0.3235294117647059
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 89.0,
+                    "p90": 175.0,
+                    "max": 202.0
+                  },
+                  "supported_queries": 89,
+                  "unsupported_queries": 13,
+                  "coverage": 0.8725490196078431
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272002": {
+          "queries": 68,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 63,
+            "occluded": 5
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.029771648297574924,
+                "p10": 0.04147763055308268,
+                "median": 0.11286749245235597,
+                "p90": 0.1360144395906289,
+                "max": 0.16742972498501388
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 17.200000000000017,
+                    "max": 27.0
+                  },
+                  "supported_queries": 12,
+                  "unsupported_queries": 56,
+                  "coverage": 0.17647058823529413
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 28,
+                  "unsupported_queries": 40,
+                  "coverage": 0.4117647058823529
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 44.0,
+                    "median": 353.0,
+                    "p90": 644.4000000000002,
+                    "max": 738.0
+                  },
+                  "supported_queries": 68,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.03446577535077579,
+                "p10": 0.04244090792311875,
+                "median": 0.11286749245235597,
+                "p90": 0.1364198518227871,
+                "max": 0.16742972498501388
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 11,
+                  "unsupported_queries": 57,
+                  "coverage": 0.16176470588235295
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 27,
+                  "unsupported_queries": 41,
+                  "coverage": 0.39705882352941174
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 10.0,
+                    "p10": 10.0,
+                    "median": 91.5,
+                    "p90": 165.20000000000005,
+                    "max": 190.0
+                  },
+                  "supported_queries": 68,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272003": {
+          "queries": 85,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 80,
+            "occluded": 5
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.02758331822595548,
+                "p10": 0.04151164845118759,
+                "median": 0.11049221320024959,
+                "p90": 0.13944361702653454,
+                "max": 0.22763389635070225
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 20.0,
+                    "max": 27.0
+                  },
+                  "supported_queries": 17,
+                  "unsupported_queries": 68,
+                  "coverage": 0.2
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 52,
+                  "coverage": 0.38823529411764707
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 44.0,
+                    "median": 557.0,
+                    "p90": 786.4000000000001,
+                    "max": 846.0
+                  },
+                  "supported_queries": 82,
+                  "unsupported_queries": 3,
+                  "coverage": 0.9647058823529412
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.03214707771874109,
+                "p10": 0.042056492595955744,
+                "median": 0.1118471925708431,
+                "p90": 0.14033825677065498,
+                "max": 0.22763389635070225
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 17,
+                  "unsupported_queries": 68,
+                  "coverage": 0.2
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 52,
+                  "coverage": 0.38823529411764707
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 10.0,
+                    "median": 142.0,
+                    "p90": 198.0,
+                    "max": 212.0
+                  },
+                  "supported_queries": 82,
+                  "unsupported_queries": 3,
+                  "coverage": 0.9647058823529412
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272004": {
+          "queries": 85,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 82,
+            "occluded": 3
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.02537136679355437,
+                "p10": 0.041503879575383575,
+                "median": 0.10407436093745027,
+                "p90": 0.12150027947249915,
+                "max": 0.13161846027792962
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 20.0,
+                    "max": 27.0
+                  },
+                  "supported_queries": 19,
+                  "unsupported_queries": 66,
+                  "coverage": 0.2235294117647059
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 39,
+                  "unsupported_queries": 46,
+                  "coverage": 0.4588235294117647
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 187.8,
+                    "median": 512.0,
+                    "p90": 905.8000000000002,
+                    "max": 966.0
+                  },
+                  "supported_queries": 85,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.02962811974141967,
+                "p10": 0.04208130334646084,
+                "median": 0.11194324832138437,
+                "p90": 0.12919164847177647,
+                "max": 0.1420961596306263
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 4.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 15,
+                  "unsupported_queries": 70,
+                  "coverage": 0.17647058823529413
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 37,
+                  "unsupported_queries": 48,
+                  "coverage": 0.43529411764705883
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 10.0,
+                    "p10": 47.8,
+                    "median": 122.0,
+                    "p90": 221.00000000000006,
+                    "max": 236.0
+                  },
+                  "supported_queries": 85,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272005": {
+          "queries": 102,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 99,
+            "outside_image": 3
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.030130973148138125,
+                "p10": 0.04164533001538325,
+                "median": 0.11190838981770213,
+                "p90": 0.15400772900493281,
+                "max": 0.4187373325009137
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 19.30000000000004,
+                    "max": 27.0
+                  },
+                  "supported_queries": 16,
+                  "unsupported_queries": 86,
+                  "coverage": 0.1568627450980392
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 34,
+                  "unsupported_queries": 68,
+                  "coverage": 0.3333333333333333
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 44.0,
+                    "median": 468.5,
+                    "p90": 1157.0,
+                    "max": 1243.0
+                  },
+                  "supported_queries": 97,
+                  "unsupported_queries": 5,
+                  "coverage": 0.9509803921568627
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.03487517441350975,
+                "p10": 0.042374364676301304,
+                "median": 0.1119424938933107,
+                "p90": 0.15425731843972335,
+                "max": 0.4188789342778872
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 3.9000000000000057,
+                    "max": 6.0
+                  },
+                  "supported_queries": 15,
+                  "unsupported_queries": 87,
+                  "coverage": 0.14705882352941177
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 69,
+                  "coverage": 0.3235294117647059
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 10.0,
+                    "median": 120.0,
+                    "p90": 284.0,
+                    "max": 307.0
+                  },
+                  "supported_queries": 97,
+                  "unsupported_queries": 5,
+                  "coverage": 0.9509803921568627
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272006": {
+          "queries": 85,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 76,
+            "occluded": 9
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.024207228612914918,
+                "p10": 0.044976752307360215,
+                "median": 0.11744978108982776,
+                "p90": 0.16826215131928593,
+                "max": 0.24793729619920024
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 6.400000000000034,
+                    "max": 27.0
+                  },
+                  "supported_queries": 10,
+                  "unsupported_queries": 75,
+                  "coverage": 0.11764705882352941
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 20,
+                  "unsupported_queries": 65,
+                  "coverage": 0.23529411764705882
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 44.0,
+                    "median": 368.0,
+                    "p90": 742.4000000000001,
+                    "max": 1021.0
+                  },
+                  "supported_queries": 82,
+                  "unsupported_queries": 3,
+                  "coverage": 0.9647058823529412
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.028650689233635947,
+                "p10": 0.04946477553191332,
+                "median": 0.11744978108982776,
+                "p90": 0.16989390531071355,
+                "max": 0.24829266214329906
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.6000000000000085,
+                    "max": 6.0
+                  },
+                  "supported_queries": 9,
+                  "unsupported_queries": 76,
+                  "coverage": 0.10588235294117647
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 20,
+                  "unsupported_queries": 65,
+                  "coverage": 0.23529411764705882
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 10.0,
+                    "median": 96.0,
+                    "p90": 190.0,
+                    "max": 258.0
+                  },
+                  "supported_queries": 82,
+                  "unsupported_queries": 3,
+                  "coverage": 0.9647058823529412
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272007": {
+          "queries": 85,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 85
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.03259561227946101,
+                "p10": 0.05175713371888152,
+                "median": 0.1086871922435927,
+                "p90": 0.1346358499247871,
+                "max": 0.2196974690231199
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.6000000000000085,
+                    "max": 27.0
+                  },
+                  "supported_queries": 9,
+                  "unsupported_queries": 76,
+                  "coverage": 0.10588235294117647
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 23,
+                  "unsupported_queries": 62,
+                  "coverage": 0.27058823529411763
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 44.0,
+                    "median": 762.0,
+                    "p90": 1205.0,
+                    "max": 1276.0
+                  },
+                  "supported_queries": 84,
+                  "unsupported_queries": 1,
+                  "coverage": 0.9882352941176471
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.0369639110841538,
+                "p10": 0.054537139519888436,
+                "median": 0.10990607087559343,
+                "p90": 0.13654088165627745,
+                "max": 0.2224112479377192
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 0.0,
+                    "max": 6.0
+                  },
+                  "supported_queries": 7,
+                  "unsupported_queries": 78,
+                  "coverage": 0.08235294117647059
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 0.0,
+                    "median": 0.0,
+                    "p90": 10.0,
+                    "max": 10.0
+                  },
+                  "supported_queries": 22,
+                  "unsupported_queries": 63,
+                  "coverage": 0.25882352941176473
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 10.0,
+                    "median": 186.0,
+                    "p90": 304.0,
+                    "max": 318.0
+                  },
+                  "supported_queries": 84,
+                  "unsupported_queries": 1,
+                  "coverage": 0.9882352941176471
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "prediction_first_contact": {
+      "queries": 33,
+      "observations": 15,
+      "parents": 7,
+      "visibility": {
+        "in_front_of_measured_surface": 33
+      },
+      "clouds": {
+        "all_valid_depth_pixels": {
+          "nearest_distance_m": {
+            "min": 0.018317399830575364,
+            "p10": 0.01842739277604167,
+            "median": 0.01900283560293522,
+            "p90": 0.03123180148165189,
+            "max": 0.056260390583744976
+          },
+          "radii": {
+            "0.05": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 31.2,
+                "median": 76.0,
+                "p90": 163.0,
+                "max": 251.0
+              },
+              "supported_queries": 32,
+              "unsupported_queries": 1,
+              "coverage": 0.9696969696969697
+            },
+            "0.1": {
+              "point_count": {
+                "min": 119.0,
+                "p10": 169.0,
+                "median": 305.0,
+                "p90": 845.0,
+                "max": 1090.0
+              },
+              "supported_queries": 33,
+              "unsupported_queries": 0,
+              "coverage": 1.0
+            },
+            "0.2": {
+              "point_count": {
+                "min": 1000.0,
+                "p10": 1156.2,
+                "median": 1378.0,
+                "p90": 1661.4,
+                "max": 1675.0
+              },
+              "supported_queries": 33,
+              "unsupported_queries": 0,
+              "coverage": 1.0
+            }
+          }
+        },
+        "exact_original_head_pixel_stride": {
+          "nearest_distance_m": {
+            "min": 0.018317399830575364,
+            "p10": 0.01868477884861542,
+            "median": 0.022198755906223572,
+            "p90": 0.035517737429618106,
+            "max": 0.058709424296634616
+          },
+          "radii": {
+            "0.05": {
+              "point_count": {
+                "min": 0.0,
+                "p10": 8.0,
+                "median": 22.0,
+                "p90": 44.2,
+                "max": 63.0
+              },
+              "supported_queries": 32,
+              "unsupported_queries": 1,
+              "coverage": 0.9696969696969697
+            },
+            "0.1": {
+              "point_count": {
+                "min": 29.0,
+                "p10": 44.0,
+                "median": 72.0,
+                "p90": 210.0,
+                "max": 275.0
+              },
+              "supported_queries": 33,
+              "unsupported_queries": 0,
+              "coverage": 1.0
+            },
+            "0.2": {
+              "point_count": {
+                "min": 252.0,
+                "p10": 297.4,
+                "median": 336.0,
+                "p90": 430.2,
+                "max": 434.0
+              },
+              "supported_queries": 33,
+              "unsupported_queries": 0,
+              "coverage": 1.0
+            }
+          }
+        }
+      },
+      "by_visibility": {
+        "in_front_of_measured_surface": {
+          "queries": 33,
+          "observations": 15,
+          "parents": 7,
+          "visibility": {
+            "in_front_of_measured_surface": 33
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.018317399830575364,
+                "p10": 0.01842739277604167,
+                "median": 0.01900283560293522,
+                "p90": 0.03123180148165189,
+                "max": 0.056260390583744976
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 31.2,
+                    "median": 76.0,
+                    "p90": 163.0,
+                    "max": 251.0
+                  },
+                  "supported_queries": 32,
+                  "unsupported_queries": 1,
+                  "coverage": 0.9696969696969697
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 119.0,
+                    "p10": 169.0,
+                    "median": 305.0,
+                    "p90": 845.0,
+                    "max": 1090.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1000.0,
+                    "p10": 1156.2,
+                    "median": 1378.0,
+                    "p90": 1661.4,
+                    "max": 1675.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.018317399830575364,
+                "p10": 0.01868477884861542,
+                "median": 0.022198755906223572,
+                "p90": 0.035517737429618106,
+                "max": 0.058709424296634616
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 8.0,
+                    "median": 22.0,
+                    "p90": 44.2,
+                    "max": 63.0
+                  },
+                  "supported_queries": 32,
+                  "unsupported_queries": 1,
+                  "coverage": 0.9696969696969697
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 29.0,
+                    "p10": 44.0,
+                    "median": 72.0,
+                    "p90": 210.0,
+                    "max": 275.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 252.0,
+                    "p10": 297.4,
+                    "median": 336.0,
+                    "p90": 430.2,
+                    "max": 434.0
+                  },
+                  "supported_queries": 33,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        }
+      },
+      "arc_fraction": {
+        "min": 0.11957302064636147,
+        "p10": 0.12479510985444821,
+        "median": 0.23661476778555574,
+        "p90": 0.44940436247957866,
+        "max": 0.7313677576704958
+      },
+      "vertex_fraction": {
+        "min": 0.1059769589036158,
+        "p10": 0.12134184809352351,
+        "median": 0.21453684329034595,
+        "p90": 0.39613648759274145,
+        "max": 0.7586423153240246
+      },
+      "physical_distance_from_current_m": {
+        "min": 0.19382690621806037,
+        "p10": 0.1991792413722752,
+        "median": 0.21364389005559675,
+        "p90": 0.25210546021726826,
+        "max": 0.3383536084706919
+      },
+      "per_parent": {
+        "obstacle_reach_272000": {
+          "queries": 6,
+          "observations": 2,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 6
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.018317399830575364,
+                "p10": 0.01837071971032469,
+                "median": 0.018566767541501904,
+                "p90": 0.02614754000294376,
+                "max": 0.033496520638307915
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 29.0,
+                    "p10": 64.0,
+                    "median": 120.5,
+                    "p90": 194.0,
+                    "max": 247.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 200.0,
+                    "p10": 252.0,
+                    "median": 354.5,
+                    "p90": 724.5,
+                    "max": 852.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1291.0,
+                    "p10": 1329.5,
+                    "median": 1374.0,
+                    "p90": 1380.0,
+                    "max": 1380.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.018317399830575364,
+                "p10": 0.01837910267524383,
+                "median": 0.018745644465335554,
+                "p90": 0.034234606275989496,
+                "max": 0.046270456645755416
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 5.0,
+                    "p10": 13.5,
+                    "median": 29.0,
+                    "p90": 49.0,
+                    "max": 62.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 57.0,
+                    "median": 82.5,
+                    "p90": 174.5,
+                    "max": 206.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 309.0,
+                    "p10": 318.5,
+                    "median": 329.0,
+                    "p90": 331.0,
+                    "max": 331.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272001": {
+          "queries": 0,
+          "observations": 0,
+          "parents": 0,
+          "visibility": {},
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": null,
+              "radii": {
+                "0.05": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                },
+                "0.1": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                },
+                "0.2": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": null,
+              "radii": {
+                "0.05": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                },
+                "0.1": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                },
+                "0.2": {
+                  "point_count": null,
+                  "supported_queries": 0,
+                  "unsupported_queries": 0,
+                  "coverage": null
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272002": {
+          "queries": 1,
+          "observations": 1,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 1
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.024272638059977678,
+                "p10": 0.024272638059977678,
+                "median": 0.024272638059977678,
+                "p90": 0.024272638059977678,
+                "max": 0.024272638059977678
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 30.0,
+                    "p10": 30.0,
+                    "median": 30.0,
+                    "p90": 30.0,
+                    "max": 30.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 164.0,
+                    "p10": 164.0,
+                    "median": 164.0,
+                    "p90": 164.0,
+                    "max": 164.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1147.0,
+                    "p10": 1147.0,
+                    "median": 1147.0,
+                    "p90": 1147.0,
+                    "max": 1147.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.02685752092510849,
+                "p10": 0.02685752092510849,
+                "median": 0.02685752092510849,
+                "p90": 0.02685752092510849,
+                "max": 0.02685752092510849
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 8.0,
+                    "p10": 8.0,
+                    "median": 8.0,
+                    "p90": 8.0,
+                    "max": 8.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 44.0,
+                    "median": 44.0,
+                    "p90": 44.0,
+                    "max": 44.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 299.0,
+                    "p10": 299.0,
+                    "median": 299.0,
+                    "p90": 299.0,
+                    "max": 299.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272003": {
+          "queries": 5,
+          "observations": 2,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 5
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.018832818762805962,
+                "p10": 0.01885073235192373,
+                "median": 0.01900283560293522,
+                "p90": 0.021162941089675737,
+                "max": 0.021291195955501798
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 36.0,
+                    "p10": 39.2,
+                    "median": 53.0,
+                    "p90": 66.8,
+                    "max": 76.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 166.0,
+                    "p10": 174.0,
+                    "median": 208.0,
+                    "p90": 241.2,
+                    "max": 260.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1129.0,
+                    "p10": 1157.4,
+                    "median": 1268.0,
+                    "p90": 1349.4,
+                    "max": 1401.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.018832818762805962,
+                "p10": 0.01885073235192373,
+                "median": 0.02037432441145542,
+                "p90": 0.0233509439776431,
+                "max": 0.024937867435447406
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 11.0,
+                    "p10": 11.4,
+                    "median": 14.0,
+                    "p90": 19.2,
+                    "max": 22.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 44.0,
+                    "p10": 46.4,
+                    "median": 55.0,
+                    "p90": 62.8,
+                    "max": 68.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 285.0,
+                    "p10": 291.4,
+                    "median": 319.0,
+                    "p90": 338.0,
+                    "max": 350.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272004": {
+          "queries": 1,
+          "observations": 1,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 1
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.025768153936728894,
+                "p10": 0.025768153936728894,
+                "median": 0.025768153936728894,
+                "p90": 0.025768153936728894,
+                "max": 0.025768153936728894
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 48.0,
+                    "p10": 48.0,
+                    "median": 48.0,
+                    "p90": 48.0,
+                    "max": 48.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 257.0,
+                    "p10": 257.0,
+                    "median": 257.0,
+                    "p90": 257.0,
+                    "max": 257.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1594.0,
+                    "p10": 1594.0,
+                    "median": 1594.0,
+                    "p90": 1594.0,
+                    "max": 1594.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.036527845660754975,
+                "p10": 0.036527845660754975,
+                "median": 0.036527845660754975,
+                "p90": 0.036527845660754975,
+                "max": 0.036527845660754975
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 9.0,
+                    "p10": 9.0,
+                    "median": 9.0,
+                    "p90": 9.0,
+                    "max": 9.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 58.0,
+                    "p10": 58.0,
+                    "median": 58.0,
+                    "p90": 58.0,
+                    "max": 58.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 385.0,
+                    "p10": 385.0,
+                    "median": 385.0,
+                    "p90": 385.0,
+                    "max": 385.0
+                  },
+                  "supported_queries": 1,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272005": {
+          "queries": 6,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 6
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.018447294163334148,
+                "p10": 0.020504487941329353,
+                "median": 0.03012496947917345,
+                "p90": 0.045144356628170804,
+                "max": 0.056260390583744976
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 15.5,
+                    "median": 34.0,
+                    "p90": 66.0,
+                    "max": 70.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 1,
+                  "coverage": 0.8333333333333334
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 119.0,
+                    "p10": 136.5,
+                    "median": 206.5,
+                    "p90": 452.0,
+                    "max": 492.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1000.0,
+                    "p10": 1050.5,
+                    "median": 1247.0,
+                    "p90": 1341.5,
+                    "max": 1349.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.021521406817034523,
+                "p10": 0.023232686954893868,
+                "median": 0.030475735037354852,
+                "p90": 0.047730085928205365,
+                "max": 0.058709424296634616
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 0.0,
+                    "p10": 4.0,
+                    "median": 9.0,
+                    "p90": 18.5,
+                    "max": 20.0
+                  },
+                  "supported_queries": 5,
+                  "unsupported_queries": 1,
+                  "coverage": 0.8333333333333334
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 29.0,
+                    "p10": 34.5,
+                    "median": 55.5,
+                    "p90": 114.5,
+                    "max": 124.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 252.0,
+                    "p10": 263.5,
+                    "median": 313.0,
+                    "p90": 334.0,
+                    "max": 336.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272006": {
+          "queries": 8,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 8
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.018338968276921417,
+                "p10": 0.01837498988137266,
+                "median": 0.0187767874871492,
+                "p90": 0.02692988691534685,
+                "max": 0.030592265825562737
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 35.0,
+                    "p10": 44.8,
+                    "median": 113.0,
+                    "p90": 136.5,
+                    "max": 147.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 215.0,
+                    "p10": 215.7,
+                    "median": 370.0,
+                    "p90": 497.0,
+                    "max": 546.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1373.0,
+                    "p10": 1376.5,
+                    "median": 1653.0,
+                    "p90": 1672.2,
+                    "max": 1675.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.018638823901814542,
+                "p10": 0.018669600989541842,
+                "median": 0.02070873056848618,
+                "p90": 0.02704313681739953,
+                "max": 0.030691082240136103
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 10.0,
+                    "p10": 14.200000000000001,
+                    "median": 31.0,
+                    "p90": 34.0,
+                    "max": 34.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 57.0,
+                    "p10": 59.8,
+                    "median": 98.5,
+                    "p90": 130.1,
+                    "max": 142.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 354.0,
+                    "p10": 355.4,
+                    "median": 427.5,
+                    "p90": 432.6,
+                    "max": 434.0
+                  },
+                  "supported_queries": 8,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle_reach_272007": {
+          "queries": 6,
+          "observations": 3,
+          "parents": 1,
+          "visibility": {
+            "in_front_of_measured_surface": 6
+          },
+          "clouds": {
+            "all_valid_depth_pixels": {
+              "nearest_distance_m": {
+                "min": 0.01865532108389566,
+                "p10": 0.018686168995736097,
+                "median": 0.018991497920567015,
+                "p90": 0.02736048678041727,
+                "max": 0.02879265955018363
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 93.0,
+                    "p10": 104.5,
+                    "median": 148.0,
+                    "p90": 250.0,
+                    "max": 251.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 461.0,
+                    "p10": 548.5,
+                    "median": 921.0,
+                    "p90": 1064.0,
+                    "max": 1090.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 1410.0,
+                    "p10": 1415.0,
+                    "median": 1422.0,
+                    "p90": 1422.0,
+                    "max": 1422.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            },
+            "exact_original_head_pixel_stride": {
+              "nearest_distance_m": {
+                "min": 0.018717016907576534,
+                "p10": 0.019709904583237604,
+                "median": 0.02157782484591888,
+                "p90": 0.02736048678041727,
+                "max": 0.02879265955018363
+              },
+              "radii": {
+                "0.05": {
+                  "point_count": {
+                    "min": 24.0,
+                    "p10": 27.0,
+                    "median": 41.5,
+                    "p90": 63.0,
+                    "max": 63.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.1": {
+                  "point_count": {
+                    "min": 113.0,
+                    "p10": 136.0,
+                    "median": 234.0,
+                    "p90": 268.0,
+                    "max": 275.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                },
+                "0.2": {
+                  "point_count": {
+                    "min": 351.0,
+                    "p10": 351.0,
+                    "median": 351.0,
+                    "p90": 351.0,
+                    "max": 351.0
+                  },
+                  "supported_queries": 6,
+                  "unsupported_queries": 0,
+                  "coverage": 1.0
+                }
+              }
+            }
+          }
+        }
+      },
+      "semantic_correct": {
+        "queries": 33,
+        "observations": 15,
+        "parents": 7,
+        "visibility": {
+          "in_front_of_measured_surface": 33
+        },
+        "clouds": {
+          "all_valid_depth_pixels": {
+            "nearest_distance_m": {
+              "min": 0.018317399830575364,
+              "p10": 0.01842739277604167,
+              "median": 0.01900283560293522,
+              "p90": 0.03123180148165189,
+              "max": 0.056260390583744976
+            },
+            "radii": {
+              "0.05": {
+                "point_count": {
+                  "min": 0.0,
+                  "p10": 31.2,
+                  "median": 76.0,
+                  "p90": 163.0,
+                  "max": 251.0
+                },
+                "supported_queries": 32,
+                "unsupported_queries": 1,
+                "coverage": 0.9696969696969697
+              },
+              "0.1": {
+                "point_count": {
+                  "min": 119.0,
+                  "p10": 169.0,
+                  "median": 305.0,
+                  "p90": 845.0,
+                  "max": 1090.0
+                },
+                "supported_queries": 33,
+                "unsupported_queries": 0,
+                "coverage": 1.0
+              },
+              "0.2": {
+                "point_count": {
+                  "min": 1000.0,
+                  "p10": 1156.2,
+                  "median": 1378.0,
+                  "p90": 1661.4,
+                  "max": 1675.0
+                },
+                "supported_queries": 33,
+                "unsupported_queries": 0,
+                "coverage": 1.0
+              }
+            }
+          },
+          "exact_original_head_pixel_stride": {
+            "nearest_distance_m": {
+              "min": 0.018317399830575364,
+              "p10": 0.01868477884861542,
+              "median": 0.022198755906223572,
+              "p90": 0.035517737429618106,
+              "max": 0.058709424296634616
+            },
+            "radii": {
+              "0.05": {
+                "point_count": {
+                  "min": 0.0,
+                  "p10": 8.0,
+                  "median": 22.0,
+                  "p90": 44.2,
+                  "max": 63.0
+                },
+                "supported_queries": 32,
+                "unsupported_queries": 1,
+                "coverage": 0.9696969696969697
+              },
+              "0.1": {
+                "point_count": {
+                  "min": 29.0,
+                  "p10": 44.0,
+                  "median": 72.0,
+                  "p90": 210.0,
+                  "max": 275.0
+                },
+                "supported_queries": 33,
+                "unsupported_queries": 0,
+                "coverage": 1.0
+              },
+              "0.2": {
+                "point_count": {
+                  "min": 252.0,
+                  "p10": 297.4,
+                  "median": 336.0,
+                  "p90": 430.2,
+                  "max": 434.0
+                },
+                "supported_queries": 33,
+                "unsupported_queries": 0,
+                "coverage": 1.0
+              }
+            }
+          }
+        }
+      },
+      "earliest_quarter_count": 17
+    }
+  },
+  "point_clouds": {
+    "obstacle_reach_272000": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "5428c215ce45e1254061fb26f808c10b38b0cc3406372b9d975f60e2c425a9f1",
+      "image_sha256": "6453375a4fd03c191fe3dcc060628b22b058821d148b8ddd7b4942acdc123759"
+    },
+    "obstacle_reach_272001": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "c1e96e46b45a798be0dcaa0af838908afb30aacd1f8b35cd90fc3417ee6318aa",
+      "image_sha256": "108c7f516bfdf3aefd96386b38beca4ea6ceeb344fac58b75b1e08035b2a7f65"
+    },
+    "obstacle_reach_272002": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "eaab9cc7bb765e032cfc3ddd05bb5ee4497a0ef136dd49c917afe710c3fdaf5a",
+      "image_sha256": "5f135fce6661c93569d2c3fb8a1c5feac196bcde73284f3c53715a035dae2974"
+    },
+    "obstacle_reach_272003": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "c373855be3e46fbdf095fb5cd9a123f50d1b240e751cbbdafc2ad77b62a97ab5",
+      "image_sha256": "321f24ac915d8569a25379d10084a990e5b86525ad36e2951720ae6bc0f28488"
+    },
+    "obstacle_reach_272004": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "a42236ed6d26c3ed4d1ed0d52e58fcbb5b53eb130be60fb386728fc6ec8e42f4",
+      "image_sha256": "43a4c11adc5f17e4b81507ca14123d3b66076fb50e46374e5d67d3ddedeb7a58"
+    },
+    "obstacle_reach_272005": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "a5d7fee66e0d75c21623ec370bfc3853944102b9ba38cb2add23d21bc7269061",
+      "image_sha256": "0aef8a6d19f9740844c37acbf838e5295a77133048c747c098d6870f4dfb8098"
+    },
+    "obstacle_reach_272006": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "430e9218945ac702830a3e32d9857208fc1cd9817f4c58f7484519f0971b566c",
+      "image_sha256": "964502918c433fbcf44bc93cf6756a4e56f528e37497df681e1055c2bfa97b9b"
+    },
+    "obstacle_reach_272007": {
+      "valid_points": {
+        "all_valid_depth_pixels": 50176,
+        "exact_original_head_pixel_stride": 12544
+      },
+      "pixel_stride": 2,
+      "observation_sha256": "602957cb343416db99abf227df1a4056bde09e52d79493196edade917869d104",
+      "image_sha256": "119f8487759446a45ea67ff0fd390543db058f4e701be3d482d18dee205e2e03"
+    }
+  },
+  "original_prediction": {
+    "prediction_source": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_train_geometry_v1/peak_seed0_last1000_train_predictions.npz",
+    "prediction_sha256": "58fb8e350c044f93f8aaf8f7824e7acb0c58c9ab7df992ad097da68396d70b62",
+    "checkpoint_sha256": "f0a48bfa64d8ba834966bfda520de488b3db4422f3da1db56542a4d9daac6dad",
+    "checkpoint_step": 1000,
+    "source_run": "/home/wzy/dpvlm/route_set_v1/runs/observed_anchor_peak_v1/obstacle32_seed0",
+    "source_config_sha256": "46eae37f78d1ae31294634291b87658de64a6957ffadda3d909f944b9b910363",
+    "source_commit": "2dc026b8a34fecbb3688d26ff544165835ebd938"
+  },
+  "diagnostic_sha256": "2e3420bb5e99b61f63c481aec381d7d665ae6fcf62ac94e9ef69831354642ebf",
+  "source_sha256": {
+    "script": "67350b08f0c66ae7f22e836fdabdbfaa3750eb6cb2637f31ba2e49119acee9b0",
+    "point_extraction": "1d2e0596f2e64493888afafc69b8148f8a78008463032ed9e6ef4dac41ded524",
+    "selected_rows": "23a6a11cd19375a7eeb602cc7507f0490ab756708cb955207f6fc0e1e5a88287",
+    "box_predicate": "9e7e6e63c3bef6c8bf9b1036f3661f01f5fe6b31f8eef19253c1de99096494e3"
+  },
+  "raw_train_source_sha256": {
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/front.png": "6453375a4fd03c191fe3dcc060628b22b058821d148b8ddd7b4942acdc123759",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/observation.npz": "5428c215ce45e1254061fb26f808c10b38b0cc3406372b9d975f60e2c425a9f1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target0_route0.npz": "cfc7f73b1380f3406d4cdf732dbcce5022bf5ac2710892544c4dbb554db5ec25",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target0_route1.npz": "d946dec27d5445bc38cf13574049a486c517cc07e5778dfe03433ce66f05a9e2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/verification_only.npz": "6780b9a852e04f7a612997ae9ce78c7a14034635cc7b32d6702f1c33722e5d97",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target2_route0.npz": "803205d601cded897b658c298ea6df2fe78c39d265a16dd4fe745732ecd4a1ab",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/target2_route3.npz": "834b784368196c5f644bdd693d29e2dba4da7a840df6a3ac35e781003a712a9c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/front.png": "108c7f516bfdf3aefd96386b38beca4ea6ceeb344fac58b75b1e08035b2a7f65",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/observation.npz": "c1e96e46b45a798be0dcaa0af838908afb30aacd1f8b35cd90fc3417ee6318aa",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target0_route0.npz": "d924255bfbf28b0e7f42a9b066f64327bc3717da394cad474024bd4dfcf87b2f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target0_route3.npz": "5718eb88354c0add7b8ecb46946d1f64537b3dcef7811c2879e7b410b5e09f37",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/verification_only.npz": "5aff6945839ed89e4b7832f53e11a031803b56cd588c70720a8d5e0a657cf115",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target1_route0.npz": "f8f03483cd5fcaf6725593cf5d8ccc4d2803223c2bf214e2a2d91d20a31efdfd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target1_route3.npz": "a6148597d63262d381f400f6d8fbd67adfd763c4d5e4da1e7e0da491a4945243",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target2_route0.npz": "b4cd8c28029722fac83e0016137d967bac1a8757cd7cfd96f3fadce2f0e759d5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272001/target2_route3.npz": "6ad4b29ca94d594084ae28f36b9bc453c2d6e5769bb31ac27720efef79cd4342",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/front.png": "5f135fce6661c93569d2c3fb8a1c5feac196bcde73284f3c53715a035dae2974",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/observation.npz": "eaab9cc7bb765e032cfc3ddd05bb5ee4497a0ef136dd49c917afe710c3fdaf5a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target0_route0.npz": "60945607abc18d5fe6b3e336da73a993c0e7cae8647031aa30c94e73062bdcf0",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/verification_only.npz": "d41bb484363df17f0946f692a0ab17834f0395ea71eaa086894b8dd312f13770",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target1_route0.npz": "8d7b948699121fc9bbabe34fcaaf5059dc84173347267b0868df59b91461cd59",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target1_route3.npz": "b8e3a9127329478fa9a8621422fb7a3e4840745b868f9e936e81d9616a202443",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272002/target2_route0.npz": "627c9d62a317a03f3e4f4b49a21866e18c914d0baecb0da51749b2eafdaaa1f5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/front.png": "321f24ac915d8569a25379d10084a990e5b86525ad36e2951720ae6bc0f28488",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/observation.npz": "c373855be3e46fbdf095fb5cd9a123f50d1b240e751cbbdafc2ad77b62a97ab5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target0_route0.npz": "0cadf7e8c03702e60e4f91efbc41700981dec0ae108f5dc0978caa8ff15657d6",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target0_route3.npz": "e9e2b4f85232975126cec84280884e2202f6393939b7f41a7e9598ed6a6b62c5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/verification_only.npz": "574f3f945f2262cd6e65506da33fdd8904023d4304be75adbdae027856261808",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target1_route3.npz": "3ef6eb3069d45716c4656b1f9f04c2c06047385518b891a72e6e5fcd04b2e4e4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target2_route0.npz": "0bc3836db4d8e906a6b641357d63d74319afe04366a90b325a316546cf94c494",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272003/target2_route3.npz": "55000251114cbadcff6b92851661a2bdf743085d507326ded14da7e90f940ba1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/front.png": "43a4c11adc5f17e4b81507ca14123d3b66076fb50e46374e5d67d3ddedeb7a58",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/observation.npz": "a42236ed6d26c3ed4d1ed0d52e58fcbb5b53eb130be60fb386728fc6ec8e42f4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target0_route0.npz": "5677374bf82d1b3c5c4aa73913917b2fbb59e53559172bfab184646149c4573e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target0_route3.npz": "1c30561b071dbd613548023fb3d7335ad03f89f35490d2c46981fac50b74f270",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/verification_only.npz": "ebee8232337fdc3e4c09f44ed8bdf09d4942d6a723c3bb368fcb574da25732cd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target1_route0.npz": "74e71e5dcddebaaf9ee8a8ad708d67e80b4aa9078509f9076bb7e5df520af31e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target1_route3.npz": "0109d7d61998218e35acbef6575710a97e18d8e1af87f5acb55eeaba7ff88d18",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272004/target2_route0.npz": "47d483b02c92ef6eb02115b6b981cccd406f5a3da2303df831f5fa907fc2283b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/front.png": "0aef8a6d19f9740844c37acbf838e5295a77133048c747c098d6870f4dfb8098",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/observation.npz": "a5d7fee66e0d75c21623ec370bfc3853944102b9ba38cb2add23d21bc7269061",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target0_route1.npz": "f5fc4862f9773e3ed72c1bda007979ece2332d8459b445915466c206ca68257d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target0_route3.npz": "061480f9c11b8205dcd8b42cac452a9432497f50019ff2d2a1d0a2a0dfb2accd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/verification_only.npz": "27d50d67fdde4f6260650d7645bba2d5a6eaf40e517d9a63e7b2f9531ae091cb",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route0.npz": "fcb5d568332782a5614b4d164cf7597dbcca4e5c6bc6ea3efa682dc07e7f9886",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route1.npz": "beb64de7456727f10ce3d9d4cd6ccbc9fa5ac0de409780496c291670600a78da",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target1_route3.npz": "645bb3fed2151028302d78e6d74db3c304d763a97c8cef96c40a7cf31ec11793",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272005/target2_route1.npz": "a1457218db1fc9c430653fdc458a6e4fde25d537ccee938fcd6a67921d4988dd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/front.png": "964502918c433fbcf44bc93cf6756a4e56f528e37497df681e1055c2bfa97b9b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/observation.npz": "430e9218945ac702830a3e32d9857208fc1cd9817f4c58f7484519f0971b566c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target0_route0.npz": "469e29fb52e02f3fef7c454b0aa45190de2baf51bf12c8a5f4ef7bd1f5734607",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target0_route3.npz": "fdda313bebe61da5f9bcb10087ceac4e58e06576832f6d9c6209700c0eaf84df",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/verification_only.npz": "38a489382198b214d19c38283b3a7bb4912901927a65ac8cc656bd305d40db0f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target1_route0.npz": "5b1e151edf601ca56e796dd2f465730f4bad2a1c41cf61e7df3010162b328bb0",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target2_route0.npz": "f1a33fcb1066505f05068f422b98844ea0d10e5d2ff9583505d56ffecd898a4a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272006/target2_route3.npz": "8cc241204f70eed361fdf13566fd6e7afdc54c08f6fcd8fb70b9ef0e10a5f98f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/front.png": "119f8487759446a45ea67ff0fd390543db058f4e701be3d482d18dee205e2e03",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/observation.npz": "602957cb343416db99abf227df1a4056bde09e52d79493196edade917869d104",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route0.npz": "194da266b172a380291d3afc0782f39a54e5f6c0da4adba7df755755dbd3c073",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route1.npz": "7a7b7e8e2c820a57bdb26fee0f1a27cde29dbce137e35b2a059f98dc403aa277",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target0_route3.npz": "f765c9e2808530ea5c9bdf28708aa85106c9a6c85887a0cbf13f5e36b9302c2a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/verification_only.npz": "3526df4761f7892a29bc2d5c2dc520bedbd1bc9ab5b55dcb80b302139a7f1f73",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target1_route1.npz": "7f31622d1547889ea555e121122e2af57a021304bda8ece6d60233d7b38235d1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272007/target2_route1.npz": "0a2e11d36f0ba68a59bf1b76f70e4e903b2eb67769f66035ef72ee55915ecbfc"
+  },
+  "observation_manifest_sha256": "878ae1935499a5c5e6e64c4922f2d7cd6c1ffb80a0b0329af6e3b37efd914dfe",
+  "supervision_manifest_sha256": "e7aa3be20b14bee36e91104e6de330595de0abe53f0b93730ac1713625c6cf84",
+  "artifact_sha256": {
+    "queries.npz": "f3e4beac818335b5b142deb7a3887c118b9b8a7e0669483cd80c4304870c9237",
+    "per_query.json": "91653276a4bd5631eec2a8e6f1e97f50fc2dac7b17d037b3215a572c890b66ea"
+  },
+  "limitation": "Query-level statistics are correlated within route/parent; no nearby visible point is not free; projected front depth is not collision certification; scale evidence only on TRAIN"
+}

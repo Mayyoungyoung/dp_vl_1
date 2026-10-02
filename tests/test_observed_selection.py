@@ -100,3 +100,16 @@ def test_selection_resume_rejects_changed_protocol_and_accepts_history():
         validate_selection_resume({'checkpoint_selection':'reference_ADE'}, {'checkpoint_selection':'tip_unique_valid'})
     with pytest.raises(ValueError,match='unsupported'):
         checkpoint_selection_score({},'unregistered')
+
+
+def test_selection_resume_rejects_changed_evaluation_interval():
+    for protocol in ('reference_ADE','tip_unique_valid'):
+        saved=dict(checkpoint_selection=protocol,eval_every=250)
+        validate_selection_resume(dict(saved),saved)
+        validate_selection_resume(saved,dict(checkpoint_selection=protocol))
+        for interval in (100,500):
+            with pytest.raises(ValueError,match='eval_every'):
+                validate_selection_resume(dict(saved,eval_every=interval),saved)
+            with pytest.raises(ValueError,match='eval_every'):
+                validate_selection_resume(dict(checkpoint_selection=protocol,eval_every=interval),
+                                          dict(checkpoint_selection=protocol))
