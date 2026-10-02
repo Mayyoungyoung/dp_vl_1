@@ -16,7 +16,7 @@ def main():
     for folder in sorted((root/'runs').iterdir()):
         if not folder.is_dir() or not folder.name.startswith(('v2_', 'observ', 'obstacle_')):
             continue
-        paths = set(folder.rglob('*.status.json')) | set(folder.glob('status.json'))
+        paths = set(folder.rglob('*.status.json')) | set(folder.glob('*status.json'))
         for path in sorted(paths):
             record = json.loads(path.read_text())
             record['record_path'] = str(path)
@@ -24,6 +24,28 @@ def main():
             if isinstance(pid, int):
                 try:
                     os.kill(pid, 0)
+                    record['recorded_pid_exists_at_snapshot'] = True
+                except ProcessLookupError:
+                    record['recorded_pid_exists_at_snapshot'] = False
+                except PermissionError:
+                    record['recorded_pid_exists_at_snapshot'] = 'permission_denied'
+            jobs.append(record)
+        if (folder/'status').is_file():
+            record = dict(run_id=folder.name, record_path=str(folder/'status'))
+            for name in ('status', 'pid', 'exit_code', 'started_at', 'finished_at', 'source_commit',
+                         'code_release', 'source_sha256.txt', 'lifecycle_error.txt'):
+                path = folder/name
+                if path.is_file():
+                    record[name] = path.read_text().strip()
+            record['logs'] = [str(path) for path in sorted(folder.glob('*.log'))]
+            record['resume_policy'] = ('Read the frozen launcher and collected parent manifests before restart; '
+                                       'do not blindly rerun completed collection or append --resume to a cache command.')
+            if (folder/'frozen_job.sh').is_file():
+                record['frozen_launcher'] = str(folder/'frozen_job.sh')
+            if str(record.get('pid','')).isdigit():
+                record['pid'] = int(record['pid'])
+                try:
+                    os.kill(record['pid'], 0)
                     record['recorded_pid_exists_at_snapshot'] = True
                 except ProcessLookupError:
                     record['recorded_pid_exists_at_snapshot'] = False

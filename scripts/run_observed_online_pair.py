@@ -12,6 +12,9 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--steps', type=int, default=300)
     parser.add_argument('--threads', type=int, default=2)
+    parser.add_argument('--head-init')
+    parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--lora-lr', type=float, default=1e-4)
     args = parser.parse_args()
     root, dataset, output = Path(args.root), Path(args.dataset), Path(args.output)
     failed = 0
@@ -22,7 +25,10 @@ def main():
                    '--observations', str(dataset/'observations.jsonl'),
                    '--supervision', str(dataset/'supervision.jsonl'),
                    '--output', str(output/(mode+'_seed0')), '--adapter-mode', mode,
-                   '--steps', str(args.steps), '--eval-every', '100', '--threads', str(args.threads)]
+                   '--steps', str(args.steps), '--eval-every', '100', '--threads', str(args.threads),
+                   '--lr', str(args.lr), '--lora-lr', str(args.lora_lr)]
+        if args.head_init:
+            command += ['--head-init', str(Path(args.head_init).resolve())]
         failed += subprocess.call(command) != 0
     sys.exit(int(failed > 0))
 

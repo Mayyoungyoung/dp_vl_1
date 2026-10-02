@@ -83,6 +83,47 @@ def load_adapters(backbone, state):
             parameter.copy_(state[name].to(parameter))
 
 
+def head_state_hash(head):
+    payload = {name: tensor_hash(value) for name, value in head.state_dict().items()}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+
+
+def load_head_initialization(head, path, expected, observations, supervision):
+    """Strictly initialize from the same-data, frozen-Qwen ordinary route head."""
+    path = Path(path)
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    source_config = checkpoint.get("config", {})
+    for key in ("feature_dim", "horizon", "candidates", "width", "depth", "pooling", "event_scale"):
+        if source_config.get(key) != expected[key]:
+            raise ValueError("Head initialization architecture/target mismatch: " + key)
+    cache = source_config.get("cache_config", {})
+    if (cache.get("model") != "Qwen/Qwen3-VL-2B-Instruct" or cache.get("revision") != QWEN_REVISION
+            or cache.get("processor") != QWEN_REVISION or cache.get("model_trainable_parameter_count") != 0
+            or cache.get("max_pixels") != expected["max_pixels"]):
+        raise ValueError("Head initialization requires matching frozen Qwen/processor/pixel provenance")
+    if cache.get("manifest_sha256") != sha256(observations):
+        raise ValueError("Head initialization uses different observation manifest")
+    source_hash_path = path.parent / "source_hashes.json"
+    source_hashes = json.loads(source_hash_path.read_text(encoding="utf-8"))
+    if (source_hashes.get(source_config.get("observations")) != sha256(observations)
+            or source_hashes.get(source_config.get("supervision")) != sha256(supervision)):
+        raise ValueError("Head initialization observation/supervision hashes differ")
+    state = checkpoint.get("model")
+    expected_state = head.state_dict()
+    if not isinstance(state, dict) or set(state) != set(expected_state):
+        raise ValueError("Head initialization must contain the ordinary route head state only")
+    if any(state[name].shape != value.shape for name, value in expected_state.items()):
+        raise ValueError("Head initialization parameter shapes do not match")
+    if any(not torch.isfinite(value).all() for value in state.values()):
+        raise ValueError("Head initialization contains non-finite parameters")
+    head.load_state_dict(state, strict=True)
+    return dict(path=str(path.resolve()), sha256=sha256(path), source_config=source_config,
+                source_hashes_sha256=sha256(source_hash_path), source_step=checkpoint["step"],
+                source_trajectory_exposures=checkpoint.get("trajectory_exposures"),
+                head_state_sha256=head_state_hash(head), same_observation_and_supervision_hashes=True,
+                initialization_scope="head weights only; both online methods reset optimizer and new adapter B=0")
+
+
 def begin_audit(backbone):
     return {name: dict(initial_sha256=tensor_hash(value), shape=list(value.shape),
                        ever_nonzero_gradient=False, max_gradient_abs=0., first_gradient_abs=None)
@@ -283,6 +324,10 @@ def train(args):
         # start from the same route-head parameters for the same seed.
         seed_all(args.seed)
         head = ObservedRouteHead(feature_dim, args.horizon, args.candidates, args.width, args.depth).to(args.device)
+        head_init = None
+        if args.head_init:
+            head_init = load_head_initialization(head, args.head_init, dict(vars(args), feature_dim=feature_dim),
+                                                args.observations, args.supervision)
         adapter_params = list(adapters(backbone).values())
         trainable = list(head.parameters()) + adapter_params
         if set(name for name, parameter in backbone.named_parameters() if parameter.requires_grad) != set(adapters(backbone)):
@@ -294,6 +339,8 @@ def train(args):
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.)
         audit = begin_audit(backbone)
         config = dict(vars(args), feature_dim=feature_dim, dataset_fingerprint=data["fingerprint"],
+            head_initialization=head_init, head_init_sha256=None if head_init is None else head_init["sha256"],
+            initial_head_state_sha256=head_state_hash(head),
             model_revision=QWEN_REVISION, processor_revision=QWEN_REVISION,
             model_provenance_sha256=sha256(model_path / "provenance.json"), torch=torch.__version__, transformers=transformers.__version__,
             code_commit=os.environ.get("CODE_COMMIT", "unrecorded"), gpu_uuid=os.environ.get("RESEARCH_GPU_UUID"),
@@ -309,8 +356,8 @@ def train(args):
         first, best, elapsed_before, setup_before, exposures, requests, history = 0, -float("inf"), 0., 0., 0, 0, []
         if args.resume:
             checkpoint = torch.load(out / "last.pt", map_location=args.device, weights_only=False)
-            for key in ("dataset_fingerprint", "model_provenance_sha256", "feature_dim", "adapter_mode", "rank", "alpha", "horizon", "candidates", "width", "depth", "steps", "seed", "lr", "lora_lr", "batch_size", "accumulation", "pooling", "event_scale", "max_pixels"):
-                if config[key] != checkpoint["config"][key]:
+            for key in ("dataset_fingerprint", "model_provenance_sha256", "feature_dim", "adapter_mode", "rank", "alpha", "horizon", "candidates", "width", "depth", "steps", "seed", "lr", "lora_lr", "batch_size", "accumulation", "pooling", "event_scale", "max_pixels", "head_init_sha256"):
+                if config[key] != checkpoint["config"].get(key):
                     raise ValueError("Resume config mismatch: " + key)
             head.load_state_dict(checkpoint["head"])
             load_adapters(backbone, checkpoint["adapters"])
@@ -324,9 +371,27 @@ def train(args):
         setup_seconds = synchronized_time(args.device) - setup_start
         setup_total = setup_before + setup_seconds
         write_json(out / "config.json", config)
+        if head_init:
+            write_json(out / "head_initialization.json", head_init)
         write_json(out / "source_hashes.json", data["source_hashes"])
         write_json(out / "status.json", dict(status="running", run_id=out.name, pid=os.getpid(), step=first, resume_command="rerun the exact command with --resume"))
         started, losses = synchronized_time(args.device), []
+        if args.head_init and not args.resume:
+            # Include the common pretrained starting point in DEV selection;
+            # a harmful fine-tune must not silently replace its stronger head.
+            metrics = evaluate(backbone, processor, head, data, dev_ids, args)
+            best = metrics["selection_score"]
+            elapsed = synchronized_time(args.device) - started
+            history.append(dict(step=0, loss=None, dev_model=metrics, role="shared pretrained head before new updates"))
+            checkpoint = dict(head=head.state_dict(), adapters=adapter_state(backbone), optimizer=optimizer.state_dict(),
+                scheduler=scheduler.state_dict(), scaler=None, step=0, config=config, rng=rng_state(rng),
+                sampler_state=sampler.bit_generator.state, best=best, history=history, adapter_audit=audit,
+                elapsed_s=elapsed, setup_seconds_total=setup_total, trajectory_exposures=0, online_train_requests=0)
+            atomic_checkpoint(out / "last.pt", checkpoint)
+            atomic_checkpoint(out / "best.pt", checkpoint)
+            write_json(out / "initial_metrics.json", metrics)
+            write_json(out / "history.json", history)
+            print(json.dumps(history[-1]), flush=True)
         for step in range(first + 1, args.steps + 1):
             head.train()
             optimizer.zero_grad(set_to_none=True)
@@ -493,6 +558,7 @@ def main():
     parser.add_argument("--observations")
     parser.add_argument("--supervision")
     parser.add_argument("--output")
+    parser.add_argument("--head-init", help="same-data frozen-Qwen ordinary head checkpoint; verifies structure and provenance")
     parser.add_argument("--adapter-mode", choices=("lora", "frozen"), default="lora")
     parser.add_argument("--rank", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=16.)
