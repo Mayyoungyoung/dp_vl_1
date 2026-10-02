@@ -77,12 +77,18 @@ def observed_box_depth_audit(observation, obstacles, centers, halfsizes):
         pixels = np.stack([xx, yy, np.ones_like(xx)], axis=-1)
         camera_xyz = (pixels @ np.linalg.inv(intrinsics).T) * observation.front_depth[yy, xx, None]
         world_xyz = camera_xyz @ extrinsics[:3, :3].T + extrinsics[:3, 3]
-        distance = np.linalg.norm(np.maximum(np.abs(world_xyz - center) - halfsize, 0.), axis=-1)
+        relative = np.abs(world_xyz - center) - halfsize
+        distance = np.linalg.norm(np.maximum(relative, 0.), axis=-1)
+        # A stale smaller mesh can lie entirely INSIDE the actual box. Check
+        # distance to its surface as well as exterior distance.
+        surface_distance = np.abs(distance + np.minimum(relative.max(axis=-1), 0.))
         record = dict(object_name=obstacle.get_name(), visible_pixels=len(xx),
                       maximum_observed_distance_outside_box_m=float(distance.max()),
-                      points_outside_one_cm=int(np.sum(distance > .01)))
+                      points_outside_one_cm=int(np.sum(distance > .01)),
+                      maximum_observed_distance_to_box_surface_m=float(surface_distance.max()),
+                      points_off_surface_one_cm=int(np.sum(surface_distance > .01)))
         audits.append(record)
-        if not np.isfinite(distance).all() or record["points_outside_one_cm"]:
+        if not np.isfinite(surface_distance).all() or record["points_off_surface_one_cm"]:
             raise RuntimeError("rendered obstacle depth is inconsistent with physical box: " + json_text(record))
     return audits
 
@@ -152,7 +158,8 @@ def serialization_check(folder):
                     canonical_restore_diagnostic=dict(difference_from_original=restore, audit=reference),
                     observation_validation=dict(canonicalization_passes=2, physical_obstacle_observed_depth=[dict(
                         object_name="fixture_obstacle", visible_pixels=np.int64(1477),
-                        maximum_observed_distance_outside_box_m=np.float32(.002), points_outside_one_cm=np.int64(0))]))
+                        maximum_observed_distance_outside_box_m=np.float32(.002), points_outside_one_cm=np.int64(0),
+                        maximum_observed_distance_to_box_surface_m=np.float32(.002), points_off_surface_one_cm=np.int64(0))]))
     hashes = {}
     import hashlib
     import tempfile
@@ -370,14 +377,21 @@ def self_test():
     observed = SimpleNamespace(front_mask=np.full((4, 4), 7), front_depth=np.ones((4, 4)),
         misc=dict(front_camera_intrinsics=np.array([[-8., 0., 1.5], [0., -8., 1.5], [0., 0., 1.]]),
                   front_camera_extrinsics=np.eye(4)))
-    assert observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.]], [[.25, .25, .02]])[0]["points_outside_one_cm"] == 0
+    assert observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.02]], [[.25, .25, .02]])[0]["points_off_surface_one_cm"] == 0
     observed.front_depth[0, 0] = 3.
     try:
-        observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.]], [[.25, .25, .02]])
+        observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.02]], [[.25, .25, .02]])
     except RuntimeError as error:
         assert "rendered obstacle depth" in str(error)
     else:
         raise AssertionError("stale/wrong depth must be rejected by the geometry auditor")
+    observed.front_depth[:] = 1.02
+    try:
+        observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.02]], [[.25, .25, .02]])
+    except RuntimeError as error:
+        assert "rendered obstacle depth" in str(error)
+    else:
+        raise AssertionError("stale smaller mesh strictly inside the physical box must be rejected")
     events = []
     original_restore = globals()["restore_full_snapshot"]
     try:
@@ -475,7 +489,8 @@ def main():
                     render_protocol_version=("native_double_restart_explicit_render_warmup_v3" if args.canonicalization_passes == 2 else
                                              "native_single_restart_v1"),
                     render_warmup_observations_discarded=max(0, args.canonicalization_passes - 1),
-                    renderer_consistency_check="all segmentation-labelled box depth pixels within 1cm of the physical AABB; validation only",
+                    renderer_consistency_check="all segmentation-labelled box depth pixels within 1cm of the physical AABB surface, inside or outside; validation only",
+                    renderer_geometry_audit_version="bidirectional_aabb_surface_v2",
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
                     target_layout_description=layout_descriptions[args.target_layout],
