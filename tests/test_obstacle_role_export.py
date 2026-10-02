@@ -23,7 +23,9 @@ class ObstacleRoleExportTests(unittest.TestCase):
                 identifier=parent+'_target'+str(target); routes=[]
                 for attempt in range(4):
                     success=target!=2 and attempt==0
-                    row=dict(parent_id=parent,split='RAW',input_id=identifier,attempt=attempt,success=success)
+                    # Original successful-parent attempt rows have no split;
+                    # their observation/supervision rows carry the original role.
+                    row=dict(parent_id=parent,input_id=identifier,attempt=attempt,success=success)
                     if success:
                         filename=parent+'/route%d_%d.npz'%(target,attempt)
                         (source/filename).write_bytes(b'route');routes.append(filename);row['route_file']=filename

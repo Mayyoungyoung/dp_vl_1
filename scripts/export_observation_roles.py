@@ -107,7 +107,9 @@ def selected_collection_rows(source,selected,targets,attempts_per_target,collect
                       for target in range(targets) for attempt in range(attempts_per_target)}
             if len(attempts)!=len(expected) or {(r.get('input_id'),r.get('attempt')) for r in attempts}!=expected:
                 raise ValueError('all requested proposal outcomes must be recorded: '+parent)
-            splits={row['split'] for row in attempts}
+            splits={row['split'] for key in ('observations','supervision')
+                    for row in rows[key] if row['parent_id']==parent}
+            splits.update(row['split'] for row in attempts if 'split' in row)
             if len(splits)!=1:raise ValueError('original parent split inconsistent: '+parent)
             rows['parents'].append(dict(parent_id=parent,split=next(iter(splits)),setup_success=True,
                 closure='all original twelve proposal outcomes recorded'))
