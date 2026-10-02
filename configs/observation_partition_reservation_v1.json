@@ -1,0 +1,47 @@
+{
+  "protocol": "observation_parent_reservation_v1",
+  "registered_utc": "2026-10-02T10:10:31Z",
+  "status": "prospective reservation; not a claim of completed collection or locked-test results",
+  "raw_collection_manifests": "Preserved unchanged. The following parent mapping is applied only to separate derived exports.",
+  "parent_rule": "All trajectories, views, language variants and constraint variants of one parent inherit its role.",
+  "existing_development": {
+    "natural": "derived_reach_261024 through derived_reach_261031 remain reused DEV_MODEL",
+    "obstacle": "obstacle_reach_271100 through obstacle_reach_271103 remain reused DEV_MODEL"
+  },
+  "collections": [
+    {
+      "source": "data/observation_reach_fast256_20261002",
+      "parent_prefix": "derived_reach_",
+      "roles_inclusive": {
+        "TRAIN": [262000, 262191],
+        "DEV_MODEL": [262192, 262207],
+        "DEV_SCORE": [262208, 262223],
+        "CALIBRATION": [262224, 262239],
+        "TEST_LOCKED": [262240, 262255]
+      }
+    },
+    {
+      "source": "data/obstacle_reach_safe_randomized_v3_128_20261002",
+      "parent_prefix": "obstacle_reach_",
+      "roles_inclusive": {
+        "TRAIN": [272000, 272095],
+        "DEV_MODEL": [272096, 272103],
+        "DEV_SCORE": [272104, 272111],
+        "CALIBRATION": [272112, 272119],
+        "TEST_LOCKED": [272120, 272127]
+      }
+    }
+  ],
+  "OOD_LOCKED": {
+    "status": "not collected or assigned",
+    "rule": "Requires a genuinely changed layout/task/observation distribution declared before inspection; do not relabel IID parents as OOD."
+  },
+  "access_policy": {
+    "development_exports": "Contain only explicitly requested nonlocked parent roles. Never train or evaluate directly on the entire raw collector directory.",
+    "TEST_LOCKED": "No image, target, trajectory, per-scene result or aggregate model metric may be inspected for method selection. Export separately after closure; open only under a frozen final evaluation protocol.",
+    "DEV_SCORE": "Reserved for scorer development, not generator method selection.",
+    "CALIBRATION": "Reserved for fitting calibration after fixing generator and scorer configurations.",
+    "collection_audits": "Mechanical state-restore/format/hash audits and total collection failure bookkeeping are allowed without model-based selection or replacing failed parents.",
+    "failures": "Keep each requested parent in its assigned role; never replace it with a later successful parent."
+  }
+}

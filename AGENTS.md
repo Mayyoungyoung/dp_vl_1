@@ -11,3 +11,4 @@ Use DEV_MODEL for research decisions; historical TEST/OOD are now historical/dev
 Record failures, manifests, budgets, checkpoint/RNG state and actual commands. Never infer success from a launch command.
 Authorized remote supplied during session: `git@github.com:Mayyoungyoung/dp_vl_1.git`. Use `codex/multiroute-v2`; do not force-push.
 Read STATE.md and RESUME.md before continuing. Update RESEARCH_LOG.md and experiments/registry.jsonl after material results.
+Observe configs/observation_partition_reservation_v1.json: never inspect reserved TEST_LOCKED images/routes/labels/model metrics for method selection. Keep score/calibration roles separate, and never train/evaluate the entire raw collector directory. Existing old DEV parents stay reused development evidence.
