@@ -43,18 +43,20 @@ def select_prefix(plan,selection=None):
         selected=[row for row in plan['parents'] if row['parent_index'] in (0,1,16,17)]
         assert len(selected)==24 and {row['task'] for row in selected}==set(TASKS)
         return selected
-    if (selection.get('protocol')!='multitask_prefix60_prospective_selection_v1'
-            or selection.get('seed')!=282000 or selection.get('motion_camera_policy')!='validated-five-v1'
+    train_count={'multitask_prefix60_prospective_selection_v1':8,
+                 'multitask_prefix108_prospective_selection_v1':16}.get(selection.get('protocol'))
+    if train_count is None:raise ValueError('Unrecognized explicit prefix selection registration')
+    if (selection.get('seed')!=282000 or selection.get('motion_camera_policy')!='validated-five-v1'
             or selection.get('schedule')!='interleaved-early-dev-v1'
-            or selection.get('train_parent_indices')!=list(range(8))
+            or selection.get('train_parent_indices')!=list(range(train_count))
             or selection.get('dev_model_parent_indices')!=[16,17]
-            or selection.get('requested_parent_counts')!={'TRAIN':48,'DEV_MODEL':12}
-            or selection.get('requested_attempts')!=180):
-        raise ValueError('Unrecognized explicit prefix60 selection registration')
-    selected=[row for row in plan['parents'] if (row['split']=='TRAIN' and row['parent_index'] in range(8))
+            or selection.get('requested_parent_counts')!={'TRAIN':6*train_count,'DEV_MODEL':12}
+            or selection.get('requested_attempts')!=3*(6*train_count+12)):
+        raise ValueError('Unrecognized explicit prefix selection registration')
+    selected=[row for row in plan['parents'] if (row['split']=='TRAIN' and row['parent_index'] in range(train_count))
               or (row['split']=='DEV_MODEL' and row['parent_index'] in (16,17))]
     if selection.get('selected_requested_parents')!=selected:
-        raise ValueError('Requested parent list differs from fixed prefix60 registration')
+        raise ValueError('Requested parent list differs from fixed prefix registration')
     return selected
 
 

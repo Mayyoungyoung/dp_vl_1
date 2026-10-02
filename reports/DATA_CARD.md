@@ -1,5 +1,7 @@
 # 数据卡：受控几何与观测任务分层
 
+最新实测补充（2026-10-02）：六任务prefix24/prefix60快照均已封存，分别12/48TRAIN父与完全相同的12DEV父，72/180条正参考，96/240个语言输入。父划分遵守原注册和跨批次机械布局门禁，全部选中请求父保留；无语义、类型或模型执行标签时相应评价为null。每父语言改写不跨角色。collector用parent_index对应variation，因此扩TRAIN同时增加颜色/variation，固定DEV不是IID样本；不得把普通头误差变化归因于纯数据量。详见[学习曲线](OBSERVATION_MULTITASK_LEARNING_CURVE.md)。两排低柱仍是DEV_COLLECTION单父可采性试验：v1/v2各自27槽，18/4接受，跨版本关节初态不同，不能当作54个独立父或配对机制证据。原始采集失败、未知类型和全部预算见[第二轮报告](OBSERVED_TWO_ROW_PILOT_V2_RESULTS.md)。
+
 更新：2026-10-02。本文记录实际已有数据与当前建设边界；参考集条数不作为连续规划的真实解总数。观测采集状态以 [OBSERVATION_READINESS.md](OBSERVATION_READINESS.md) 及对应原始日志为准。
 
 ## 历史受控数据（回归检查）
