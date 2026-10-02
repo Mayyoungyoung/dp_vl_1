@@ -1,0 +1,111 @@
+{
+  "protocol": "two_row_last_train_source_bytes_v1",
+  "code_commit": "743d9b269c27054b05c48cc5bab15017ab3fae55",
+  "runtime_report": {
+    "sha256": "76c75588a8efeed438b1a981ad8147f4983a10091464e70457f8980e02c73184",
+    "bytes": 538092
+  },
+  "artifact_index_original": {
+    "sha256": "05146909431111e7d871773e912b886d4d4f641dd64e4a6a35c916edebb06b5d",
+    "bytes": 700
+  },
+  "original_artifacts_verified": [
+    {
+      "relative": "analysis/report.json",
+      "sha256": "76c75588a8efeed438b1a981ad8147f4983a10091464e70457f8980e02c73184",
+      "bytes": 538092,
+      "verified": true,
+      "binary_ignored": false
+    },
+    {
+      "relative": "analysis/last_train/paired_language_predictions.npz",
+      "sha256": "5f94f9bc3734cb4c07553c8548423f55c6c5a1b63d1e8f862f8a8d6c4ea3d4de",
+      "bytes": 43427,
+      "verified": true,
+      "binary_ignored": true
+    },
+    {
+      "relative": "analysis/last_train/per_scene.json",
+      "sha256": "c3215ed9483f21bed203ba29a15ada2142a098189fe41a967e1357784be35e40",
+      "bytes": 197067,
+      "verified": true,
+      "binary_ignored": false
+    },
+    {
+      "relative": "analysis/last_train/metrics.json",
+      "sha256": "d5f5c1ee69fdfdb7730f1f077f8cc73d4d74e0cfd236c1e8590bcc89e4815985",
+      "bytes": 9408,
+      "verified": true,
+      "binary_ignored": false
+    },
+    {
+      "relative": "analysis/last_train/predictions.npz",
+      "sha256": "b669af164ecd7d70df8df46133d79144f133b2518476461992976d19a52aeb1b",
+      "bytes": 64375,
+      "verified": true,
+      "binary_ignored": true
+    }
+  ],
+  "source": {
+    "path": "scripts/audit_two_row_last_train.py",
+    "runtime_reported_sha256": "34e4706f2d96b756f9f87ca49014b0f58d5edd5cd4f005d347ca91d8f5095731",
+    "git_blob_lf": {
+      "sha256": "5814dade62afb5c976a8078a5f547f13b42c1ddf49e4b0b68b19294383bb37c9",
+      "bytes": 6676
+    },
+    "git_blob_crlf": {
+      "sha256": "34e4706f2d96b756f9f87ca49014b0f58d5edd5cd4f005d347ca91d8f5095731",
+      "bytes": 6772
+    },
+    "git_blob_crlf_matches_runtime_report": true,
+    "scope": "CRLF conversion of the immutable Git LF blob exactly reproduces the runtime hash. Current mutable working-tree source is excluded from this historical-source audit. No source edit, source copy, server re-execution or additional server download."
+  },
+  "wrapper": {
+    "original_local_path": ".bootstrap/two_row_last_train_743d9b2.sh",
+    "copy": "frozen_wrapper.sh",
+    "sha256": "dbb692c2409bda02a201a4c808d5a628395a697812c81d80a452aa1ebdabb6cd",
+    "bytes": 947,
+    "copy_exact": true,
+    "scope": "Exact copy of existing local launch wrapper; server wrapper not re-fetched by this audit."
+  },
+  "original_training_source_bindings": [
+    {
+      "server_path": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_prefix28_v1/peak_seed0/config.json",
+      "sha256": "d729419886fe226a5d7617d2d6618349d35d96b72eb30f08d810d65f6944a216",
+      "bytes": 16132,
+      "prior_sync_entry_matches": true,
+      "local_byte_read": true,
+      "local_path": "reports/observed_two_row_prefix28_v1/training/peak_seed0/config.json"
+    },
+    {
+      "server_path": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_prefix28_v1/peak_seed0/summary.json",
+      "sha256": "4942f68df0637ccd7797fa8edde1163cebd98fc9876cc4f0a1f2bbed042363e8",
+      "bytes": 40004,
+      "prior_sync_entry_matches": true,
+      "local_byte_read": true,
+      "local_path": "reports/observed_two_row_prefix28_v1/training/peak_seed0/summary.json"
+    },
+    {
+      "server_path": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_prefix28_v1/peak_seed0/last.pt",
+      "sha256": "7020190139bc712a98cb463d3b9f6f45255cb1e5354f4028fbde76aa6c44ef85",
+      "bytes": 14913196,
+      "prior_sync_entry_matches": true,
+      "local_byte_read": false,
+      "verification_scope": "Original server sync SHA agrees with this runtime receipt; checkpoint not downloaded or re-read locally."
+    },
+    {
+      "server_path": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_prefix28_v1/peak_seed0/train/predictions.npz",
+      "sha256": "c9ffd28aede212f1d046dfd1756ad56f0a8a431940d4c941435c37b101abd381",
+      "bytes": 63701,
+      "prior_sync_entry_matches": true,
+      "local_byte_read": true,
+      "local_path": "runs/synced_two_row_prefix28_v1/training/peak_seed0/train/predictions.npz"
+    }
+  ],
+  "prior_sync_index": {
+    "path": "reports/observed_two_row_prefix28_v1/SYNC_SHA256_INDEX.json",
+    "sha256": "41f89e048bf0ee205a1b664197805516cad1a225d1c8d20f18429c583bade85a",
+    "bytes": 69348
+  },
+  "source_outputs_unchanged_check": "Runtime script re-hashed source files at end; local audit verified original config/summary/TRAIN predictions against recorded hashes."
+}

@@ -55,7 +55,9 @@ def observation_contract(row):
     return dict(row)
 
 
-def select_observations(rows):
+def select_observations(rows, train_parents=16):
+    if train_parents not in (16,32,64):raise ValueError('Only registered TRAIN prefix sizes accepted')
+    allowed_train={'two_row_reach_%d'%s for s in range(283200,283200+train_parents)}
     selected = {}; seen = set()
     for row in rows:
         if set(row) != INPUT_KEYS or row['id'] in seen:
@@ -63,7 +65,8 @@ def select_observations(rows):
         seen.add(row['id'])
         if row['split'] == 'DEV_MODEL':
             selected[row['id']] = observation_contract(row)
-        elif row['split'] != 'TRAIN' or row['parent_id'] not in ['two_row_reach_%d' % s for s in range(283200, 283216)]:
+        elif (row['split'] != 'TRAIN' or row['parent_id'] not in allowed_train
+                or row['id'] not in [row['parent_id']+'_target%d'%t for t in range(3)]):
             raise ValueError('Unexpected non-prefix role or parent')
     return selected
 
@@ -350,7 +353,8 @@ def preflight(args):
     manifest, gate = verify_export(data)  # Mechanical metadata and integrity bytes, no label-array deserialization.
     selection_guard(manifest['selection'])
     if config['two_row_export_sha256'] != digest(data/'export_manifest.json'): raise ValueError('Training export changed')
-    rows = select_observations([json.loads(line) for line in (data/'observations.jsonl').read_text().splitlines() if line.strip()])
+    rows = select_observations([json.loads(line) for line in (data/'observations.jsonl').read_text().splitlines() if line.strip()],
+        manifest['selection']['requested_parents']['TRAIN'])
     input_hashes = {}
     for row in rows.values():
         for path in input_paths(row,manifest['source_files_sha256']): input_hashes[str(path)] = digest(path)

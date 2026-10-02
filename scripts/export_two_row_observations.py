@@ -15,22 +15,39 @@ from scripts.snapshot_multitask_observations import child_path,digest,write_json
 PROTOCOL='observed_two_row_closed_prefix_export_v1'
 INPUT_KEYS={'id','parent_id','split','image','instruction'}
 SELECTED=list(range(16))+list(range(64,76))
+PREFIX_TRAIN_COUNTS={
+    'observed_two_row_prefix28_development_v1':16,
+    'observed_two_row_prefix44_development_v1':32,
+    'observed_two_row_prefix76_development_v1':64,
+}
 OUTPUT_FILES=('observations.jsonl','supervision.jsonl','attempts.jsonl','parent_inventory.json')
 
 
 def selection_guard(selection):
-    if (selection.get('protocol')!='observed_two_row_prefix28_development_v1'
-            or selection.get('selected_indices')!=SELECTED or selection.get('roles')!=['TRAIN','DEV_MODEL']
-            or selection.get('requested_parents')!={'TRAIN':16,'DEV_MODEL':12}
-            or selection.get('failed_parent_replacements')!=0 or selection.get('allow_public_development_parents') is not False):
-        raise ValueError('Only the prospectively fixed16 TRAIN +12 DEV parents are permitted')
+    count=PREFIX_TRAIN_COUNTS.get(selection.get('protocol'))
+    indices=selection.get('selected_indices',[])
+    quality=selection.get('train_quality_audit',{})
+    if (count is None or selection.get('formal_protocol')!='observed_two_row_formal116_registration_v1'
+            or indices!=list(range(count))+list(range(64,76)) or any(type(i) is not int for i in indices)
+            or selection.get('roles')!=['TRAIN','DEV_MODEL'] or selection.get('allowed_raw_roles')!=['TRAIN','DEV_MODEL']
+            or selection.get('requested_parents')!={'TRAIN':count,'DEV_MODEL':12}
+            or selection.get('requested_inputs')!=(count+12)*3
+            or selection.get('requested_route_proposals')!=(count+12)*27
+            or selection.get('require_all_selected_parents_closed') is not True
+            or selection.get('failed_parent_replacements')!=0 or selection.get('allow_public_development_parents') is not False
+            or quality.get('indices')!=list(range(count)) or quality.get('use_dev') is not False
+            or quality.get('exclude_or_truncate_long_routes') is not False
+            or quality.get('horizon')!=24 or quality.get('pixel_stride')!=2 or quality.get('endpoint_axis_bound_m')!=.05):
+        raise ValueError('Only the prospectively fixed16 TRAIN, fixed32 TRAIN or fixed64 TRAIN +12 DEV prefixes are permitted')
+    return count
 
 
 def closed_prefix(source,selection):
     source=Path(source).resolve();selection_guard(selection)
     registration,manifest=collector.verify_corpus(source)
-    plans=[registration['parent_plan'][i] for i in SELECTED]
-    if any(p['role'] not in ('TRAIN','DEV_MODEL') for p in plans):raise ValueError('Forbidden raw role')
+    plans=[registration['parent_plan'][i] for i in selection['selected_indices']]
+    if any(p['index']!=i or p['role']!=('TRAIN' if i<64 else 'DEV_MODEL')
+           for i,p in zip(selection['selected_indices'],plans)):raise ValueError('Forbidden raw role or registration identity')
     closures=[];missing=[]
     for p in plans:
         path=source/'closures'/('%03d.json'%p['index'])
@@ -167,7 +184,8 @@ def build(source,selection,output):
         (staging/(name+'.jsonl')).write_text(''.join(json.dumps(r,ensure_ascii=False,allow_nan=False)+'\n' for r in rows),encoding='utf-8')
     write_json(staging/'parent_inventory.json',parents)
     manifest=dict(protocol=PROTOCOL,created_at=datetime.now(timezone.utc).isoformat(),selection=selection,source_dataset=str(source),
-        registration_sha256=corpus['registration_sha256'],requested_parents=28,requested_inputs=84,requested_routes=756,
+        registration_sha256=corpus['registration_sha256'],requested_parents=len(plans),
+        requested_inputs=len(plans)*3,requested_routes=len(plans)*27,
         actual_inputs=len(inputs),positive_references=sum(p['positive_references'] for p in parents),
         unobserved_requested_inputs=sum(p['unobserved_requested_inputs'] for p in parents),
         actual_attempt_records=len(attempts),source_files_sha256=hashes,
@@ -179,6 +197,9 @@ def build(source,selection,output):
 def verify_export(output):
     output=Path(output).resolve();m=json.loads((output/'export_manifest.json').read_text())
     if m.get('protocol')!=PROTOCOL:raise ValueError('Explicit two-row export protocol required')
+    selection_guard(m['selection']);count=len(m['selection']['selected_indices'])
+    if (m['requested_parents'],m['requested_inputs'],m['requested_routes'])!=(count,count*3,count*27):
+        raise ValueError('Export requested denominators differ from fixed registration')
     if set(m['output_files_sha256'])!=set(OUTPUT_FILES):raise ValueError('Incomplete export hashes')
     for name,value in m['output_files_sha256'].items():
         if digest(output/name)!=value:raise ValueError('Export changed')

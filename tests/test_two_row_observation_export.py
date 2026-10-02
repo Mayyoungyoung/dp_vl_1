@@ -104,3 +104,50 @@ def test_live_duplicate_or_post_export_source_corruption_refuses_use(corpus):
 
 def test_success_reference_restore_cannot_be_weakened():
     assert not exporter.strict_restore(dict(strict_restore=dict(passed=True,world=dict(max_abs=.000001))))
+
+
+def scaling_selection(count):
+    return json.loads((Path(__file__).resolve().parents[1]/f'configs/observed_two_row_prefix{count+12}_selection_v1.json').read_text())
+
+
+@pytest.mark.parametrize('count',[16,32,64])
+def test_only_three_registered_prefixes_and_unchanged_training(count):
+    selection=scaling_selection(count)
+    assert exporter.selection_guard(selection)==count
+    assert selection['ordinary_training']==scaling_selection(16)['ordinary_training']
+    assert exporter.SELECTED==list(range(16))+list(range(64,76))
+
+
+@pytest.mark.parametrize('count',[32,64])
+@pytest.mark.parametrize('mutation',['locked','subset','reorder','count','quality_dev','quality_subset','replace','unclosed_allowed'])
+def test_scaling_registration_rejects_arbitrary_or_leaking_selection(count,mutation):
+    selection=scaling_selection(count)
+    if mutation=='locked':selection['selected_indices'][-1]=100
+    elif mutation=='subset':selection['selected_indices'][0]=count
+    elif mutation=='reorder':selection['selected_indices'].reverse()
+    elif mutation=='count':selection['requested_inputs']+=3
+    elif mutation=='quality_dev':selection['train_quality_audit']['indices'][-1]=64
+    elif mutation=='quality_subset':selection['train_quality_audit']['indices'].pop()
+    elif mutation=='replace':selection['failed_parent_replacements']=1
+    elif mutation=='unclosed_allowed':selection['require_all_selected_parents_closed']=False
+    with pytest.raises(ValueError,match='prospectively fixed'):exporter.selection_guard(selection)
+
+
+@pytest.mark.parametrize('count',[32,64])
+def test_scaling_waits_all_registered_closures_and_preserves_failed_denominators(corpus,count):
+    root,_,plans,_,out=corpus;selection=scaling_selection(count)
+    *_,missing=exporter.closed_prefix(root,selection)
+    assert set(missing)=={p['parent_id'] for p in plans[16:count]}
+    with pytest.raises(ValueError,match='not fully closed'):exporter.build(root,selection,out)
+    for index in range(16,count):
+        c=json.loads((root/'closures/000.json').read_text())
+        c.update(parent_id=plans[index]['parent_id'],index=index)
+        write(root/'closures'/('%03d.json'%index),c)
+    m=exporter.build(root,selection,out)
+    assert (m['requested_parents'],m['requested_inputs'],m['requested_routes'])==(count+12,(count+12)*3,(count+12)*27)
+    assert m['actual_inputs']==0 and m['unobserved_requested_inputs']==(count+12)*3
+    inventory=json.loads((out/'parent_inventory.json').read_text())
+    assert [p['index'] for p in inventory]==list(range(count))+list(range(64,76))
+    exporter.verify_export(out)
+    m['requested_routes']-=27;write(out/'export_manifest.json',m)
+    with pytest.raises(ValueError,match='denominators'):exporter.verify_export(out)

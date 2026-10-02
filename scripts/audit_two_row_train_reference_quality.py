@@ -9,6 +9,27 @@ from PIL import Image
 from scripts import export_two_row_observations as exporter
 
 
+def registered_train_scope(selection):
+    count=exporter.selection_guard(selection)
+    indices=selection['train_quality_audit']['indices']
+    return indices,{f'two_row_reach_{283200+i}' for i in indices}
+
+
+def train_rows(selection,observations,supervision):
+    """Select every recorded TRAIN input without filling failed parent inputs."""
+    _,selected=registered_train_scope(selection)
+    rows=[r for r in observations if r['split']=='TRAIN']
+    labels=[r for r in supervision if r['split']=='TRAIN']
+    inputs={r['id']:r for r in rows}
+    label_ids=[r['id'] for r in labels]
+    if (len(inputs)!=len(rows) or len(set(label_ids))!=len(labels) or set(inputs)!=set(label_ids)
+            or any(r['parent_id'] not in selected or r['id'] not in [r['parent_id']+'_target%d'%i for i in range(3)]
+                   for r in rows+labels)
+            or any(inputs[r['id']]['parent_id']!=r['parent_id'] for r in labels)):
+        raise ValueError('Fixed TRAIN identities and every recorded input required')
+    return inputs,labels
+
+
 def trajectory_statistics(xyz):
     xyz=np.asarray(xyz,dtype=float)
     if xyz.ndim!=2 or xyz.shape[1]!=3 or len(xyz)<2 or not np.isfinite(xyz).all():raise ValueError('Finite reference polyline required')
@@ -38,13 +59,12 @@ def audit(data_root,output):
     for name,value in m['output_files_sha256'].items():
         if exporter.digest(data_root/name)!=value:raise ValueError('Export metadata changed')
     gate=exporter.collector.live_layout_gate(Path(m['source_dataset']))
-    selected={f'two_row_reach_{283200+i}' for i in range(16)}
+    indices,selected=registered_train_scope(m['selection'])
     if selected&set(gate['blocked_parent_ids']):raise ValueError('TRAIN layout gate blocked')
     # Parse manifest rows to select roles, then open only selected TRAIN raw files.
-    inputs={r['id']:r for r in [json.loads(x) for x in (data_root/'observations.jsonl').read_text().splitlines()]
-            if r['split']=='TRAIN'}
-    labels=[r for r in [json.loads(x) for x in (data_root/'supervision.jsonl').read_text().splitlines()] if r['split']=='TRAIN']
-    if any(r['parent_id'] not in selected for r in labels) or set(inputs)!={r['id'] for r in labels}:raise ValueError('Fixed TRAIN identities required')
+    inputs,labels=train_rows(m['selection'],
+        [json.loads(x) for x in (data_root/'observations.jsonl').read_text().splitlines()],
+        [json.loads(x) for x in (data_root/'supervision.jsonl').read_text().splitlines()])
     hashes={};points={};references=[];conditions=[]
     def checked(path):
         path=Path(path);actual=exporter.digest(path)
@@ -76,7 +96,8 @@ def audit(data_root,output):
     if any(exporter.digest(path)!=value for path,value in hashes.items()):raise ValueError('TRAIN sources changed during audit')
     errors=[r for r in references if not r['endpoint_support']['axis_bound_representable']]
     passed=bool(references) and not errors
-    result=dict(protocol='two_row_train_endpoint_capacity_and_reference_quality_v1',registered_train_parents=16,
+    result=dict(protocol='two_row_train_endpoint_capacity_and_reference_quality_v1',registered_train_parents=len(selected),
+        registered_train_indices=indices,requested_train_inputs=len(selected)*3,requested_train_route_proposals=len(selected)*27,
         source_export_manifest_sha256=exporter.digest(data_root/'export_manifest.json'),
         train_input_ids=sorted(inputs),train_reference_counts={r['id']:len(r['routes']) for r in labels},
         observed_train_parents=len(points),observed_train_inputs=len(labels),positive_references=len(references),

@@ -35,6 +35,16 @@ def test_missing_inputs_are_retained_not_replaced():
     with pytest.raises(ValueError):online.select_observations([observation(),observation()])
 
 
+@pytest.mark.parametrize('count',(16,32,64))
+def test_registered_scaling_keeps_identical_dev_and_rejects_extra_train(count):
+    parent='two_row_reach_%d'%(283200+count-1)
+    train=dict(observation(),id=parent+'_target2',parent_id=parent,split='TRAIN')
+    assert online.select_observations([train,observation()],count)=={observation()['id']:observation()}
+    wrong=dict(train,parent_id='two_row_reach_%d'%(283200+count))
+    with pytest.raises(ValueError):online.select_observations([wrong],count)
+    with pytest.raises(ValueError):online.select_observations([dict(train,id=parent+'_target3')],count)
+
+
 def test_strict_current_path_hashes_and_no_label_pointer(tmp_path):
     row=observation();folder=tmp_path/row['parent_id'];folder.mkdir()
     image=folder/'front.png';image.write_bytes(b'image')
