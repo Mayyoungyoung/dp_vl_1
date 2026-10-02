@@ -1,6 +1,6 @@
 """RLBench-derived visible-target reaching around physical obstacle boxes.
 
-Default pilot: one parent, three visible language targets, two proposed side
+Default v2 pilot: one parent, three visible language targets, four proposed side
 routes each. Opening types are obstacle-relative plane-crossing relations,
 never clusters of trajectory perturbations. Simulator state/obstacle geometry,
 collection guides and verification masks are supervision-only artifacts.
@@ -178,6 +178,8 @@ def collection_waypoints(goal, centers, halfsizes, signature, side_margin=.10, v
 
 def full_audit(task, obstacles):
     """Include root obstacles and the actual complete simulator inventory."""
+    from pyrep.backend import sim
+    from pyrep.const import ObjectType
     state = world_audit(task)
     for obstacle in obstacles:
         linear, angular = obstacle.get_velocity()
@@ -186,8 +188,11 @@ def full_audit(task, obstacles):
             bounding_box=obstacle.get_bounding_box(),
             flags=[int(obstacle.is_collidable()), int(obstacle.is_respondable()), int(obstacle.is_dynamic())])
         state["_extra_" + obstacle.get_name()] = {key: np.asarray(value).tolist() for key, value in fields.items()}
-    inventory = sorted((obj.get_name(), int(obj.get_handle()), int(obj.get_type().value))
-                       for obj in task._pyrep.get_objects_in_tree(exclude_base=False))
+    # PyRep's object-wrapper iterator silently skips unsupported object types
+    # (e.g. lights). Raw simulator handles preserve the ENTIRE inventory.
+    handles = sim.simGetObjectsInTree(sim.sim_handle_scene, ObjectType.ALL.value, 0)
+    inventory = sorted((sim.simGetObjectName(handle), int(handle), int(sim.simGetObjectType(handle)))
+                       for handle in handles)
     return dict(state=state, inventory=inventory)
 
 
@@ -269,7 +274,9 @@ def main():
     parser.add_argument("--dev-parents", type=int, default=1)
     parser.add_argument("--seed", type=int, default=271000)
     parser.add_argument("--obstacles", type=int, choices=(1, 2), default=1)
-    parser.add_argument("--target-layout", choices=("natural", "safe_lowered"), default="safe_lowered")
+    parser.add_argument("--target-layout", choices=("natural", "safe_lowered", "safe_low_all_v2"), default="safe_low_all_v2")
+    parser.add_argument("--passages", nargs="+", choices=MODE_NAMES,
+                        help="predeclared proposal sides; v2 defaults to +/-x and +/-y, older layouts to +/-x")
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--side-margin", type=float, default=.10)
     parser.add_argument("--tip-clearance", type=float, default=.02)
@@ -308,8 +315,15 @@ def main():
     config.task_low_dim_state = False
     env = Environment(MoveArmThenGripper(JointVelocity(), Discrete()), obs_config=config, headless=True)
     args.output.mkdir(parents=True)
-    proposals = list(itertools.product(("negative_x", "positive_x"), repeat=args.obstacles))
-    manifest = dict(benchmark="RLBench-derived obstacle-passage multi-target reaching v1", original_benchmark_result=False,
+    sides = tuple(args.passages) if args.passages else (MODE_NAMES if args.target_layout == "safe_low_all_v2" else MODE_NAMES[:2])
+    if len(set(sides)) != len(sides):
+        parser.error("duplicate proposal side")
+    proposals = list(itertools.product(sides, repeat=args.obstacles))
+    layout_descriptions = dict(natural="unchanged original ReachTarget sphere placement; equally spaced vertical obstacle centers",
+        safe_lowered="preserved v1: sphere centers near [.08,.18,.84], [.28,.02,.96], [.44,-.05,.83] with seeded offsets; equally spaced vertical obstacle centers",
+        safe_low_all_v2="new v2: middle sphere lowered from .96 to .84m, other centers preserved; single box centered .25m below initial tip; default four side proposals")
+    manifest = dict(benchmark="RLBench-derived obstacle-passage multi-target reaching", original_benchmark_result=False,
+                    setting_version=args.target_layout,
                     rlbench_revision="02720bba4c73fe02eb75df946b8791b806028a9d", pyrep_revision="8f420be8064b1970aae18a9cfbc978dfb15747ef",
                     source_sha256=__import__("hashlib").sha256(Path(__file__).read_bytes()).hexdigest(),
                     input_contract=["RGB", "instruction", "depth", "camera", "current gripper pose/open"],
@@ -321,9 +335,11 @@ def main():
                                     initial_state_max_abs_tolerance=args.restore_atol, initial_rgb_max_difference=0,
                                     global_object_inventory_must_match=True),
                     continuous_whole_robot_collision_certified=False, parents_requested=args.parents,
+                    joint_state_traces_recorded=True,
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
-                    target_layout_description="safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement")
+                    target_layout_description=layout_descriptions[args.target_layout],
+                    not_a_matched_comparison_to_other_layout_versions=True)
     (args.output / "manifest.json").write_text(json_text(manifest, indent=2), encoding="utf-8")
     started = time.perf_counter()
     total = successes = restores = classified = duplicate_types = parents_collected = 0
@@ -358,13 +374,14 @@ def main():
             try:
                 _, initial = task.reset()
                 targets = [task._task.target, task._task.distractor0, task._task.distractor1]
-                if args.target_layout == "safe_lowered":
+                if args.target_layout in ("safe_lowered", "safe_low_all_v2"):
                     # Original ReachTarget may place a sphere almost at the
                     # initial wrist height, leaving no room for this independent
                     # obstacle setting. Explicit derived layouts retain object
                     # identities/colors and change only their physical poses.
                     layout_rng = np.random.default_rng(args.seed + parent + 80000)
-                    safe_positions = np.array([[.08, .18, .84], [.28, .02, .96], [.44, -.05, .83]])
+                    middle_height = .96 if args.target_layout == "safe_lowered" else .84
+                    safe_positions = np.array([[.08, .18, .84], [.28, .02, middle_height], [.44, -.05, .83]])
                     safe_positions += layout_rng.uniform([-.012, -.012, -.008], [.012, .012, .008], (3, 3))
                     for target, position in zip(targets, safe_positions):
                         target.set_position(position.tolist())
@@ -374,7 +391,8 @@ def main():
                 if gap < (.28 if args.obstacles == 1 else .55):
                     raise RuntimeError("insufficient vertical workspace for the declared physical obstacle layout")
                 center_xy = .65 * start_xyz[:2] + .35 * goals[:, :2].mean(axis=0)
-                heights = np.linspace(start_xyz[2], goals[:, 2].max(), args.obstacles + 2)[1:-1]
+                heights = (np.array([start_xyz[2] - .25]) if args.obstacles == 1 and args.target_layout == "safe_low_all_v2" else
+                           np.linspace(start_xyz[2], goals[:, 2].max(), args.obstacles + 2)[1:-1])
                 centers = np.array([np.r_[center_xy, height] for height in heights])
                 halfsizes = np.asarray(sizes) / 2
                 for shape, center in zip(obstacles, centers):
@@ -424,7 +442,7 @@ def main():
                     tic = time.perf_counter()
                     record = dict(parent_id=parent_id, input_id=identifier, attempt=attempt, success=False,
                                   proposed_type_supervision_only=proposed, actual_route_type=None, simulated_steps=0)
-                    poses, opens = [], []
+                    poses, opens, arm_joint_trace, gripper_joint_trace = [], [], [], []
                     try:
                         np.random.set_state(random_state)
                         task.reset()
@@ -437,8 +455,16 @@ def main():
                         restores += 1
                         arm = task._robot.arm
                         tip = np.asarray(arm.get_tip().get_pose())
+                        direct_open = 1.0 if task._robot.gripper.get_open_amount()[0] > .9 else 0.0
+                        record["direct_state_initial_equivalence"] = dict(
+                            pose_max_abs=float(np.abs(tip - np.asarray(restored.gripper_pose)).max()),
+                            open_abs=abs(direct_open - float(restored.gripper_open)))
+                        if any(record["direct_state_initial_equivalence"].values()):
+                            raise RuntimeError("direct current-state read differs from Scene observation")
                         poses.append(tip)
                         opens.append(restored.gripper_open)
+                        arm_joint_trace.append(np.asarray(arm.get_joint_positions()))
+                        gripper_joint_trace.append(np.asarray(task._robot.gripper.get_joint_positions()))
                         waypoints = collection_waypoints(goal, centers, halfsizes, proposed, args.side_margin,
                                                          .07 if args.obstacles == 1 else .035)
                         record["collection_guides_supervision_only"] = [point.tolist() for point in waypoints[:-1]]
@@ -448,9 +474,13 @@ def main():
                             for step in range(1000):
                                 done = path.step()
                                 task._scene.step()
-                                observed = task.get_observation()
-                                poses.append(np.asarray(observed.gripper_pose))
-                                opens.append(observed.gripper_open)
+                                # Read the identical state fields directly;
+                                # rendering RGB/depth/masks at every physics
+                                # step is unnecessary for trajectory labels.
+                                poses.append(np.asarray(arm.get_tip().get_pose()))
+                                opens.append(1.0 if task._robot.gripper.get_open_amount()[0] > .9 else 0.0)
+                                arm_joint_trace.append(np.asarray(arm.get_joint_positions()))
+                                gripper_joint_trace.append(np.asarray(task._robot.gripper.get_joint_positions()))
                                 record["simulated_steps"] += 1
                                 collision = robot_collision_check(task, gripper_shapes, external_shapes)
                                 if collision:
@@ -461,6 +491,12 @@ def main():
                             if not done:
                                 raise RuntimeError("segment exceeded 1000 simulation steps")
                         xyz = np.asarray(poses)[:, :3]
+                        final_observation = task.get_observation()
+                        record["direct_state_final_equivalence"] = dict(
+                            pose_max_abs=float(np.abs(np.asarray(poses[-1]) - np.asarray(final_observation.gripper_pose)).max()),
+                            open_abs=abs(float(opens[-1]) - float(final_observation.gripper_open)))
+                        if any(record["direct_state_final_equivalence"].values()):
+                            raise RuntimeError("direct final-state read differs from Scene observation")
                         record["endpoint_error_m"] = float(np.linalg.norm(xyz[-1] - goal))
                         record["length_m"] = float(np.linalg.norm(np.diff(xyz, axis=0), axis=1).sum())
                         record["tip_polyline_clear"] = bool(tip_polyline_clear(xyz, centers, halfsizes, args.tip_clearance))
@@ -478,7 +514,9 @@ def main():
                             duplicate_types += int(duplicate)
                             accepted_types.add(actual)
                         filename = parent_id + "/target%d_route%d.npz" % (target_index, attempt)
-                        np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens), xyz_64=resample(np.asarray(poses)), xyz_24=xyz_24)
+                        np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens),
+                                            arm_joint_positions=np.asarray(arm_joint_trace), gripper_joint_positions=np.asarray(gripper_joint_trace),
+                                            xyz_64=resample(np.asarray(poses)), xyz_24=xyz_24)
                         routes.append(filename)
                         route_types.append(actual)
                         successes += 1
@@ -488,7 +526,8 @@ def main():
                         record.update(error=repr(exc), traceback=traceback.format_exc())
                         if poses:
                             filename = parent_id + "/failed_target%d_attempt%d.npz" % (target_index, attempt)
-                            np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens))
+                            np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens),
+                                                arm_joint_positions=np.asarray(arm_joint_trace), gripper_joint_positions=np.asarray(gripper_joint_trace))
                             record["failed_partial_route"] = filename
                     record["seconds"] = time.perf_counter() - tic
                     append_json(args.output / "attempts.jsonl", record)
