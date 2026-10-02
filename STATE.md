@@ -1,5 +1,12 @@
 # State — 2026-10-02
 
+## Current checkpoint — 16:42 UTC / 2026-10-03 00:42 China
+
+- Actual7b496e TRAIN768 closure audit completed:3806 changes,3424 solvable,720 evaluable parents. Geometric farthest/DPP K2 and fixed response oracle all reach100% conditional AnyValid; opportunity gap0. Stop the joint-risk module in this setting. K4 prefix2 is not a trainedK2 baseline; an actual K2 ordinary budget control is being registered separately.
+- Actual7b496e physical v4 completed9 proposals/9 strict restores:8 valid,5 distinct lateral sequences,3 valid unknown,1 rejected H24 type instability. No planning or execution collision failure. Total62.996s; same single central-target parent only, not method evidence. Fixed-height four-layout/three-target pilot is being prepared; no post-hoc label rescue or height sweep.
+- Qwen explicit1500-to6000 continuation source is frozen for server CPU recovery tests, not yet GPU launched. Original run unchanged; added11250 TRAIN route slots and original3750 are accounted separately. Real tiny-loop restore test must pass before launch. GPU queue: short genuineK2 then this bounded continuation. No extension beyond6000 authorized by the experiment card.
+- Old formal collector remains the only previously running job at the latest mechanical check; inspect fresh process/closure receipts before action. Locked images/routes/metrics stay unopened. Core-paper A–H remains incomplete.
+
 ## Current checkpoint — 16:25 UTC / 2026-10-03 00:25 China
 
 - Fixed2c47c2a greedy TRAIN8 and static six-configuration diagnostics both completed exit0. GPU is free. Greedy reduces mean endpoint57.372→23.391cm, all8 improve but0/8 pass3cm; no decoding sweep. An explicit same-objective continuation1500→6000 is under implementation, not running, and must preserve complete state in a fresh tree with original/added exposure separately counted.

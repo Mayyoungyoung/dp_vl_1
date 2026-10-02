@@ -23,6 +23,8 @@ from routeset.vlm_sft_data import (TRAINING_PROTOCOL, alternating_k, fixed_devel
     reference_indices, sample_parent_language, validate_resume_config,
     exclusive_training_output, validate_reserved_observation_manifest)
 from routeset.vlm_sft_loss import causal_chunked_loss
+from routeset.vlm_sft_continuation import (prepare_continuation_files, verify_continuation_source,
+                                         continuation_accounting, validate_continuation_config)
 from scripts.train_observed_lora import (adapter_state, adapters, audit_gradients, begin_audit,
     finish_audit, install_lora, load_adapters, tensor_hash)
 
@@ -35,7 +37,8 @@ def source_receipt():
     root = Path(__file__).resolve().parents[1]
     files = ['scripts/train_vlm_route_sft.py', 'routeset/vlm_sft_data.py', 'routeset/vlm_sft_loss.py',
              'routeset/vlm_route_serialization.py', 'scripts/train_observed_lora.py',
-             'routeset/observed_route_head.py', 'routeset/train_v2.py', 'routeset/common.py']
+             'routeset/observed_route_head.py', 'routeset/train_v2.py', 'routeset/common.py',
+             'routeset/vlm_sft_continuation.py']
     return {name: sha256(root / name) for name in files}
 
 
@@ -67,7 +70,7 @@ def _event_totals(events):
 
 
 def _run_training_locked(model, processor, data, config, output, device='cuda', resume=False,
-                 stop_after=None, startup_seconds=0., loss_function=item_loss):
+                 stop_after=None, startup_seconds=0., loss_function=item_loss, continue_from=None):
     """Actual shared training loop, also used by the tiny CPU resume test.
 
     A successful request is journaled before checkpointing. On resume, journal
@@ -75,6 +78,8 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
     Checkpoint trajectory state/history is restored from last.pt exactly.
     """
     output = Path(output)
+    if resume and continue_from is not None:
+        raise ValueError('Strict resume and explicit continuation are mutually exclusive')
     if resume and not (output / 'last.pt').is_file():
         raise FileNotFoundError('SFT resume requires original last.pt')
     if stop_after is not None and not 0 < stop_after <= config['steps']:
@@ -97,10 +102,18 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
     step, best_step, best_nll = 0, None, float('inf')
     history, events, gradient_audit = [], [], begin_audit(model)
     cumulative_before, checkpoint_event_count, segments = 0., 0, []
+    lineage, best_is_inherited, added_gradient_audit = None, False, None
+    restoring = resume or continue_from is not None
     base_hashes = {name: tensor_hash(value) for name, value in model.named_parameters() if '.base.weight' in name}
-    if resume:
-        saved = torch.load(output / 'last.pt', map_location='cpu', weights_only=False)
-        validate_resume_config(config, saved['config'])
+    if restoring:
+        saved = torch.load(Path(continue_from) if continue_from is not None else output/'last.pt', map_location='cpu', weights_only=False)
+        if continue_from is not None:
+            lineage = prepare_continuation_files(continue_from, output, saved, config)
+            best_is_inherited = True
+        else:
+            validate_resume_config(config, saved['config'])
+            lineage = saved.get('continuation')
+            best_is_inherited = saved.get('best_is_inherited', False)
         if saved['step'] >= config['steps']:
             raise ValueError('SFT run already reached its planned limit; do not restart completed training')
         if stop_after is not None and stop_after <= saved['step']:
@@ -111,6 +124,8 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
         step, best_step, best_nll = saved['step'], saved['best_step'], saved['best_nll']
         history, gradient_audit = saved['history'], saved['gradient_audit']
         cumulative_before, checkpoint_event_count = saved['elapsed_seconds'], saved['journal_event_count']
+        if continue_from is not None:
+            cumulative_before = lineage['inherited_elapsed_seconds']
         segments = saved['segments']
         if base_hashes != saved['frozen_lora_projection_sha256']:
             raise ValueError('Frozen base projections changed since checkpoint')
@@ -126,6 +141,8 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
             raise ValueError('Committed request journal changed')
         if not (output / 'best.pt').is_file() or sha256(output / 'best.pt') != saved['best_checkpoint_sha256']:
             raise ValueError('Selected best checkpoint missing or changed')
+        if lineage is not None:
+            added_gradient_audit = begin_audit(model) if continue_from is not None else saved['added_gradient_audit']
     else:
         write_json(output / 'config.json', config)
         write_json(output / 'data_source_hashes.json', data['source_sha256'])
@@ -134,7 +151,7 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
         torch.save(adapter_state(model), output / 'initial_adapters.pt')
     # Include already logged but uncheckpointed work in actual exposure/cost,
     # while restoring the original optimizer/RNG trajectory, never skipping it.
-    replay_events = events[checkpoint_event_count:] if resume else []
+    replay_events = events[checkpoint_event_count:] if restoring else []
     replay_wall = sum(event['wall_seconds'] for event in replay_events)
     cumulative_before += replay_wall
     segment = dict(number=len(segments), restored_step=step, code_commit=os.environ.get('CODE_COMMIT'),
@@ -174,6 +191,10 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
             gradient_audit=gradient_audit, exposure=_event_totals(events), elapsed_seconds=elapsed(),
             segments=segments, journal_event_count=len(events), journal_prefix_sha256=digest_json(events),
             frozen_lora_projection_sha256=base_hashes)
+        if lineage is not None:
+            payload.update(continuation=lineage, best_is_inherited=best_is_inherited,
+                           added_gradient_audit=added_gradient_audit,
+                           continuation_accounting=continuation_accounting(lineage,payload['exposure'],payload['elapsed_seconds']))
         if selected:
             atomic_checkpoint(output / 'best.pt', payload)
         payload['best_checkpoint_sha256'] = sha256(output / 'best.pt')
@@ -182,11 +203,15 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
         write_json(output / 'progress.json', dict(step=step, planned_steps=config['steps'], best_step=best_step,
             best_dev_token_nll=best_nll, exposure=payload['exposure'], elapsed_seconds=payload['elapsed_seconds'],
             journal_event_count=len(events), source_commit=os.environ.get('CODE_COMMIT')))
-    if not resume:
+    if not restoring:
         best_nll = evaluate(); best_step = 0
         history.append(dict(step=0, dev_token_nll=best_nll, selected=True))
         save_checkpoint(selected=True)
         print(json.dumps(dict(step=0, dev_token_nll=best_nll, selected=True)), flush=True)
+    elif continue_from is not None:
+        # A real recovery point in the new output exists before its first step;
+        # do not spend another DEV evaluation or advance either sampler/RNG.
+        save_checkpoint(selected=False)
     end = config['steps'] if stop_after is None else stop_after
     while step < end:
         next_step = step + 1
@@ -199,6 +224,8 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
         if not torch.isfinite(loss):
             raise RuntimeError('Nonfinite TRAIN causal loss')
         loss.backward(); audit_gradients(model, gradient_audit)
+        if added_gradient_audit is not None:
+            audit_gradients(model, added_gradient_audit)
         torch.nn.utils.clip_grad_norm_(list(parameters.values()), config['gradient_clip'])
         optimizer.step(); scheduler.step(); step = next_step
         wall = synchronized_time(device)-tic
@@ -211,6 +238,7 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
             row.update(dev_token_nll=nll, selected=selected)
             if selected:
                 best_nll, best_step = nll, step
+                best_is_inherited = False
         history.append(row)
         if selected or step % config['checkpoint_every'] == 0 or step == end:
             save_checkpoint(selected)
@@ -230,15 +258,25 @@ def _run_training_locked(model, processor, data, config, output, device='cuda', 
               'Journal includes successful replay requests beyond restored checkpoints; failed/in-flight requests remain job-log limitations.')
     summary['gpu_hours_reserved'] = summary['elapsed_seconds']/3600 if str(device).startswith('cuda') else 0.
     summary['gpu_hours_scope'] = 'Reserved wall time including startup and teacher-forced DEV; not autoregressive latency or utilization-normalized GPU hours.'
+    if lineage is not None:
+        verify_continuation_source(lineage)
+        summary['continuation'] = lineage
+        summary['continuation_accounting'] = continuation_accounting(lineage,summary['exposure'],summary['elapsed_seconds'])
+        summary['added_gpu_hours_reserved'] = summary['continuation_accounting']['added_elapsed_seconds']/3600 if str(device).startswith('cuda') else 0.
+        summary['inherited_gpu_hours_reserved'] = lineage['inherited_elapsed_seconds']/3600 if str(device).startswith('cuda') else 0.
+        summary['original_source_files_unchanged'] = True
+        summary['best_is_inherited'] = best_is_inherited
+        summary['added_gradient_audit'] = finish_audit(model,added_gradient_audit,require_update=step > lineage['restored_step'])
+        summary['selected_checkpoint_origin'] = str(Path(lineage['source_run'])/'best.pt') if best_is_inherited else str(output/'best.pt')
     write_json(output / 'summary.json', summary)
     return summary
 
 
 def run_training(model, processor, data, config, output, device='cuda', resume=False,
-                 stop_after=None, startup_seconds=0., loss_function=item_loss):
+                 stop_after=None, startup_seconds=0., loss_function=item_loss, continue_from=None):
     with exclusive_training_output(output, resume):
         return _run_training_locked(model, processor, data, config, output, device, resume,
-                                    stop_after, startup_seconds, loss_function)
+                                    stop_after, startup_seconds, loss_function, continue_from)
 
 
 def main():
@@ -255,7 +293,10 @@ def main():
     parser.add_argument('--checkpoint-every', type=int, default=25)
     parser.add_argument('--log-every', type=int, default=25)
     parser.add_argument('--chunk-size', type=int, default=64)
-    parser.add_argument('--resume', action='store_true')
+    restore = parser.add_mutually_exclusive_group()
+    restore.add_argument('--resume', action='store_true')
+    restore.add_argument('--continue-from', type=Path,
+        help='Explicitly extend completed original last.pt into a fresh output; all objective/data settings locked')
     parser.add_argument('--stop-after', type=int)
     args = parser.parse_args()
     if args.batch_size != 1 or min(args.steps,args.eval_every,args.checkpoint_every,args.log_every,args.chunk_size) < 1:
@@ -266,6 +307,8 @@ def main():
         raise FileExistsError('Preserve previous SFT output')
     if args.resume and not (args.output/'last.pt').is_file():
         raise FileNotFoundError('Original last.pt required to resume')
+    if args.continue_from is not None and (args.continue_from.name != 'last.pt' or not args.continue_from.is_file()):
+        raise ValueError('Explicit continuation requires an existing original last.pt')
     validate_reserved_observation_manifest(args.observations)
     if os.environ.get('CUDA_VISIBLE_DEVICES') != '1':
         raise ValueError('Only authorized physical GPU1 is allowed')
@@ -296,12 +339,17 @@ def main():
     config['dev_plan_sha256'] = digest_json(fixed_development_plan(data['samples'], config['dev_plan_seed']))
     if args.resume:
         validate_resume_config(config, json.loads((args.output/'config.json').read_text()))
+    if args.continue_from is not None:
+        preview = torch.load(args.continue_from, map_location='cpu', weights_only=False)
+        validate_continuation_config(config,preview['config'])
+        del preview
     processor = AutoProcessor.from_pretrained(model_path, local_files_only=True, min_pixels=65536, max_pixels=65536)
     model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, local_files_only=True,
         torch_dtype=torch.bfloat16, attn_implementation='sdpa', device_map={'':'cuda'})
     install_lora(model, rank=8, alpha=16.)
     summary = run_training(model, processor, data, config, args.output, resume=args.resume,
-                           stop_after=args.stop_after, startup_seconds=time.perf_counter()-started)
+                           stop_after=args.stop_after, startup_seconds=time.perf_counter()-started,
+                           continue_from=args.continue_from)
     print(json.dumps({key:summary[key] for key in ('status','step','best_step','best_dev_token_nll',
         'exposure','elapsed_seconds','peak_cuda_allocated_bytes')}), flush=True)
 

@@ -1,6 +1,6 @@
 # v4：较低柱体、中央目标九提案预登记
 
-状态：配置、最小入口扩展与测试已准备，尚未运行。固定文件 `configs/observed_two_row_pilot_v4.json`，协议 `observed_two_row_lower_posts_central_v4`；等固定 release 与唯一 CPU1 授权后，使用全新 data/run 与不可变 launcher。不运行额外静态配置扫描，不自动重试或扩采。本地合并 **48 passed / 0.73 s**；新增七项检查覆盖唯一物理修改、原三个实体球不变/只选中央目标、九条几何 raw/H24/原 guide 坐标、unknown/重复/over 与旧门槛分离、拒绝未登记的目标/预算/策略更改。纯几何通过不是实际机器人可行性证据。
+状态：固定 7b496e 的唯一实跑已完成，48 项服务器测试通过，九槽得到八条有效参考、五种实际 lateral 类型、三条有效 unknown，一条 H24 类型不一致被拒绝；[完整结果](OBSERVED_TWO_ROW_PILOT_V4_RESULTS.md)。固定文件 `configs/observed_two_row_pilot_v4.json`，协议 `observed_two_row_lower_posts_central_v4`。没有额外静态配置扫描、重试或自动扩采。本地合并 **48 passed / 0.73 s**；新增七项检查覆盖唯一物理修改、原三个实体球不变/只选中央目标、九条几何 raw/H24/原 guide 坐标、unknown/重复/over 与旧门槛分离、拒绝未登记的目标/预算/策略更改。纯几何通过不是实际机器人可行性证据。
 
 ## 证据与唯一几何修改
 

@@ -1,6 +1,6 @@
 # 单门关闭共同失效：TRAIN机会审计预注册
 
-2026-10-03。状态：**实现与9项本地测试完成；尚未在正式TRAIN768执行，无新训练或GPU任务。** 这是下一步方法决策的低成本否证，不是方法结果。父线程冻结源码后才允许CPU1正式运行。
+2026-10-03。状态：**固定7b496e2正式TRAIN768审计已完成，9项服务器测试通过，CPU审计exit0；无新训练或GPU任务。** 传统几何最远对/DPP与响应最优在720个可评价父上全部同为100% AnyValid，主5pp机会门槛被否定。详细实测、预算及逐父证据见[结果报告](MULTIGATE_CLOSURE_OPPORTUNITY_RESULTS.md)。下文保留原预注册设置，不以结果调整条件。
 
 ## 问题和先前证据
 
@@ -59,4 +59,4 @@ CUDA_VISIBLE_DEVICES=-1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS
   --output /home/wzy/dpvlm/route_set_v1/runs/multigate_closure_opportunity_train768_v1/audit
 ```
 
-以上命令待冻结后执行，不是已经完成的复现记录。实际物理路径以配置为准，不使用新任务语言、真实观测或机器人执行的表述。
+上述命令现已从7b496e24a85512f23fe448d50288c14b27ed6f12正式执行，实际wrapper/job/source与退出记录见结果报告。复算须更换fresh输出目录。实际物理路径以配置为准，不使用新任务语言、真实观测或机器人执行的表述。
