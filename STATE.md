@@ -1,5 +1,13 @@
 # State — 2026-10-02
 
+## Current checkpoint — 20:05 UTC / 2026-10-03 04:05 China
+
+- Actual9e0094a fixed32 requested TRAIN /31 observed parents ordinary pipeline is COMPLETE:140 server tests, TRAIN556/556 endpoint-capacity/H24 references pass, 129 real Qwen encodings, same36DEV input/feature arrays and initial weights,1500x32/K4=192000 training states. Missing parent283220 retains3 unavailable inputs/27 unattempted slots. No filtered long/unknown positives.
+- Prefix44 best1000 DEV Tip31/144=21.53%,Any24/36=66.67%,knownUnique.5;last1500 sameTip/Unique,Any17/36. Sixteen-parent best was22.92%/44.44%/.5833: higherAny alone is not overall quality improvement. Online all36actualQwen requests completed; original decisions reproduced, timing/cost in original receipts.
+- Actual fixedlast TRAIN93:Tip134/372=36.02%,Any70/93,semantic304/372=81.72%,loss.00298756. Sixteen-parent last fit87.5% does NOT justify attributing all32-parent errors to generalization. Next ordinary convergence control is prospectively bounded fresh6000, gated on exact original1500 model/optimizer/RNG/sampler replay, then a separate finish. Implementation only; not launched.
+- Fixed64TRAIN+same12DEV/1500-step scaling remains scheduled after all64TRAIN closures; do not change this exposure or data based on32results. Mechanical19:58:54 had51TRAIN+12DEV closed; JOBS19:59 has403records and only formal116 live onCPU2/3. All prefix44 GPU/CPU analysis jobs have completed. Never inspect locked raw or replay completed stages.
+- MAIN_RESULTS251rows now includes best/last/online with costs deduplicated. First16TRAIN-only cross-goal positive-correspondence opportunity audit is under implementation; not a core method or verified causal explanation. Paper criteria remain unmet.
+
 ## Current checkpoint — 19:30 UTC / 2026-10-03 03:30 China
 
 - Prefix28 ordinary/cache/online/CPU diagnosis are COMPLETE, not running. Actualce548 ordinary1500x32/K4: best500 DEV Tip22.92%, Any44.44%, Unique.5833; last1500 Tip22.92%, Any55.56%, Unique.3611. Both zero valid classified duplicates. Source743 online36real Qwen requests reproduce decisions, median73.146ms/p9580.546/first656.477, 4.284GB peak allocation. All12parent plots reviewed and hashes retained.
