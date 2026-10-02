@@ -1,6 +1,6 @@
 # 两排低柱 v3：重建 v1 已记录状态，逐位审计后才允许采集
 
-状态：仅实现、测试和预登记，尚未启动 v3 模拟器。v1/v2 的全部负结果与“不属于严格配对”的判断保持不变。v3 配置为 `configs/observed_two_row_pilot_v3.json`，角色仍为同父 DEV_COLLECTION；物理布局、seed、九个通道提案、v2 九点引导和全部评价阈值不变。
+状态：以下为执行前预登记；现已按固定源执行一次，严格门禁失败、27 槽未尝试，见 [实际结果](OBSERVED_TWO_ROW_PILOT_V3_RESULTS.md)。v1/v2 的全部负结果与“不属于严格配对”的判断保持不变。v3 配置为 `configs/observed_two_row_pilot_v3.json`，角色仍为同父 DEV_COLLECTION；物理布局、seed、九个通道提案、v2 九点引导和全部评价阈值不变。
 
 ## 可用与缺失的恢复证据
 

@@ -2,7 +2,9 @@
 
 v1 在固定源 `a91427bc58ccad5fb80e3c1ad24d859dc0205585` 完成一次 CPU1 单父采集，退出 0，配置未修改、27 个槽均无重试。低位初态准备成功，27/27 恢复通过严格世界、inventory、RGB、depth、相机和当前状态检查；18/27 路线通过既定逐模拟步机器人碰撞与连续 tip 段/目标/H24 检查。但是三个目标分别只有 3、1、1 个不同的有效侧向通道序列，尚未达到本 pilot 要求的任一目标 >4 门槛，不扩为预算机制正式数据。
 
-![实际低位初态](observed_two_row_pilot_v1/data/two_row_reach_283000/front.png)
+![实际低位初态](observed_two_row_pilot_v1/front_initial.png)
+
+初态图为原始 PNG 的逐字节副本，校验见 [SHA256](observed_two_row_pilot_v1/front_initial.sha256)。
 
 | 目标 | 接受参考 | 全部已分类不同类型（含 over） | 不同有效侧向序列 |
 |---|---:|---:|---:|

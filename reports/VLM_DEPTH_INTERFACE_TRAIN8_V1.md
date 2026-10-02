@@ -1,6 +1,6 @@
 # Direct-VLM depth interface: predeclared TRAIN-only audit
 
-Status: script and four pure interface tests are ready; actual pinned processor audit has not run. No training/evaluation source is modified. This is a diagnostic of the SFT input representation, not a new method or a claim that the representation caused a model failure.
+Status: four fixed-source CPU tests passed; the first actual audit stopped at its metadata hash guard before opening raw observations or loading the processor. A minimally corrected plan is awaiting a new freeze. No training/evaluation source is modified. This is a diagnostic of the SFT input representation, not a new method or a claim that the representation caused a model failure.
 
 ## Fixed sample and information boundary
 
@@ -30,6 +30,8 @@ Reversing patch permutation/normalization recovers the **processed** image, not 
 ## Validation and reproduction
 
 Local NumPy/Pillow tests: four passed in 0.39 s. They verify the patch/normalization inverse, identity quantization and unknown handling, a clearly labeled synthetic byte-carry/intermediate-validity case, and exact eight-TRAIN first-observation selection with role/count rejection. These tests do not claim actual processor execution.
+
+Actual first execution from `6464b3fb329704a99d8f9076dd6a8c5ac6821363`: all four tests passed in 0.12 s. The subsequent `.venv-qwen` audit failed at `Registered parent reservation changed` before Torch import or any raw observation read. Its plan incorrectly expected the LF Git blob SHA `be14ab549554e587bfd77c18172e5ba4b187dca41d4e67efd4889e1f4978bf5a`; the actual deployed reservation preserves CRLF and has SHA `d9a8112d6f68efd13e785134fcd5435306e4e570fefbaf1c6c31468a9a8ca2e8`, identical to the original export receipt. Converting that Git blob's LF to CRLF reproduces the deployed hash exactly. The minimal correction changes only this expected byte hash. The original release, launcher, `runs/vlm_depth_interface_train8_v1` statuses and failure log remain unchanged; a retry requires a newly frozen plan and distinct job/output.
 
 After root freezes a new immutable release, run the tests in existing `.venv` and the actual processor in existing `.venv-qwen` (`pytest` is absent there). Both jobs require `record_job`, GPU hidden and CPU1; do not install packages or launch a model. Example argument body, with `$SOURCE` set to that newly frozen release:
 

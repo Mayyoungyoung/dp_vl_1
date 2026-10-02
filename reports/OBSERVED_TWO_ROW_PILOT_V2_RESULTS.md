@@ -4,7 +4,9 @@ v2 固定源 `41df2d783c72bf551af6d9ae2884a27f993fa1ed`、原物理配置和 see
 
 **这不是严格配对的 v1/v2 初态比较。** 新流程按要求复核实际输入，发现虽然相机/物理配置一致，setup 后末端 pose 最大分量差只有 0.000496，机器人关节最大差却为 **2.889690 rad**；RGB 最大像素差 244、depth 最大差 3.150224 m。两个运行各自 27/27 的严格恢复都通过，但恢复的是不同的机器人全身初态。不能把 v1 的 18/27 与 v2 的 4/27 的差归因于插入 guide，也不能把这些同布局实例当作独立父场景跨划分。
 
-![v2 实际初态](observed_two_row_pilot_v2/data/two_row_reach_283000/front.png)
+![v2 实际初态](observed_two_row_pilot_v2/front_initial.png)
+
+初态图为原始 PNG 的逐字节副本，校验见 [SHA256](observed_two_row_pilot_v2/front_initial.sha256)。
 
 ## 实际失败集中于明确的 row-plane 姿态
 

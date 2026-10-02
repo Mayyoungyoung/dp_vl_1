@@ -1,0 +1,74 @@
+{
+  "parent_id": "two_row_reach_283000",
+  "phase": "setup",
+  "success": false,
+  "simulated_steps": 0,
+  "initialization": "reconstruct_then_exact_readback",
+  "new_setup_ik_calls": 0,
+  "reconstruction_source": "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v1",
+  "canonicalization_steps": 20,
+  "v1_recorded_state_readback": {
+    "protocol": "strict_v1_recorded_state_readback_v1",
+    "passed": false,
+    "source": "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v1",
+    "source_files_sha256": {
+      "manifest.json": "9a8b427f8bfd4f05a65a855098045882b636cbbe2473446ce9c2cc21c6822f75",
+      "two_row_reach_283000/preparation_trace.npz": "a730f8d09dee5455dbf352c47f8520ae22a5126f4c7b43180cf895d300bc6520",
+      "two_row_reach_283000/restore_reference.json": "7c3ff03e9fd964d95d81981b41e3347337432759f3cfe66fa7291c64a74486e0",
+      "two_row_reach_283000/observation.npz": "540fd66f6418d178a28fc57090afdc46a41c81446a623ef0859d9040fd214fd0",
+      "two_row_reach_283000/front.png": "70090cd318f250d8e6782cbb15bbdb55858627a559dab15cd7fea1d868581035"
+    },
+    "inventory_equal": true,
+    "missing_or_mismatched_fields": [],
+    "all_world_values_finite": true,
+    "world_max_abs": 2.0,
+    "worst_world_field": "_global_pose_waypoint0.pose",
+    "observation_fields": {
+      "front_rgb": {
+        "equal": false,
+        "max_abs_difference": 125.0
+      },
+      "front_depth": {
+        "equal": false,
+        "max_abs_difference": 2.6004836559295654
+      },
+      "gripper_pose": {
+        "equal": false,
+        "max_abs_difference": 0.0001419559121131897
+      },
+      "gripper_open": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      },
+      "front_camera_intrinsics": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      },
+      "front_camera_extrinsics": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      }
+    },
+    "arbitrary_hidden_dynamic_state_equivalence": null,
+    "unrecorded_v1_fields": [
+      "joint target positions read back at canonical initial state",
+      "joint target velocities read back",
+      "gripper joint measured velocities",
+      "joint forces/torques",
+      "per-link dynamic velocities",
+      "contact/solver warm-start state",
+      "controller internal state",
+      "native task/arm/gripper configuration-tree buffers"
+    ],
+    "boundary": "Exact equality of every recorded field only; zero is required, including small nonzero measured arm velocities"
+  },
+  "error": "RuntimeError('v1 recorded initial-state reconstruction differed; all 27 route slots remain unattempted')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/wzy/dpvlm/route_set_v1/research_v2/releases/41238b1b67fb7e3084c32d8f30d6ec5c5f24c3d3/scripts/collect_observed_two_row_pilot.py\", line 347, in collect\n    raise RuntimeError(\"v1 recorded initial-state reconstruction differed; all 27 route slots remain unattempted\")\nRuntimeError: v1 recorded initial-state reconstruction differed; all 27 route slots remain unattempted\n",
+  "seconds": 4.463594218948856,
+  "trajectory": {
+    "file": "preparation_trace.npz",
+    "sha256": "c6916edd3eaff615572449aa36c378666b9c81db2a3272da4bcfa93fff96c8f6",
+    "pose_array_sha256": "54a172cb6d394a2e3aec34c8187872b70b1ceb32e26329f27f309b0793df48b5",
+    "samples": 1
+  }
+}
