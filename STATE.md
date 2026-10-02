@@ -1,5 +1,12 @@
 # State — 2026-10-02
 
+## Current checkpoint — 19:12 UTC / 2026-10-03 03:12 China
+
+- Formal116 continues from2626487 on CPU2/3. First16 TRAIN and12 DEV are closed; no locked raw/metrics opened. TRAIN-only full432-slot analysis completed:285accepted/147failed,181known/104validunknown,14/48conditions have known R>4, all432strict restores pass. All48nine-slot plots reviewed; accepted lengths .574–5.895m remain unfiltered.
+- Sourcece548 export completed19:10UTC:28parents/84actual inputs/490positive references. TRAIN-only endpoint capacity passes285/285 and modelH24 tip checks285/285; no reference deletion or threshold change. Actual83 related server tests passed, including full-state training recovery; source743 real-request timing14tests passed.
+- Actual frozen-Qwen cache then ordinary K4 seed0/1500x32 pipeline is RUNNING fromce548f43ab22e804a8b70dea2f8bf297e20c8b84, SSH7878, runs/observed_two_row_prefix28_v1. CPU0, GPU1/35%. Read stages before any recovery; never replay the fresh-only whole launcher. This is the ordinary baseline, not a new mechanism.
+- Same-data original observed A*v2 adapter has6localtests and independent source/label/budget review; server tests and actual evaluation are next. No A* result yet. After baseline completes, run sealed-pool diagnosis and actual Qwen online36-request timing; decide the next intervention from measured failure/coverage evidence. Core-paper criteria remain unmet.
+
 ## Current checkpoint — 18:33 UTC / 2026-10-03 02:33 China
 
 - Formal116 is ACTUALLY RUNNING from immutable262648796fd47b25a2051cc227b6838515b651c6, session runs/observed_two_row_formal116_v1/sessions/20261002T183023Z_485548, outer PID485548/SSH85859. Server111tests passed7.88s and registration_prepare exit0. First0/1 workers485599/485598 started18:30:34UTC, affinity2/3, one thread each, GPUhidden.
