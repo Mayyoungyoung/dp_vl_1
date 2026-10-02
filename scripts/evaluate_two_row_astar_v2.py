@@ -7,6 +7,7 @@ has been saved and hashed; fitting sees only TRAIN positive-reference fields.
 """
 import argparse
 from collections import Counter
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -24,16 +25,34 @@ FROZEN_SOURCES={
     'observation_multiroute_astar_v2.py':'197366fb638a102cc4ed04f84df407e3f805e841523c4dc5a3a3e29c521839cc',
     'observation_multiroute_astar.py':'cf487a91b5825c50ace087f5ebd29c1a7ca2b91607ccc8ff98af0e6a21991c93',
     'observation_prototype_grounding.py':'2f3046ea2ebeb9c5f3b27921a8fa7f19655a91cbc7621e36321c27a3dbaaf0c2'}
+FROZEN_CRLF_SOURCES={
+    'observation_multiroute_astar_v2.py':'d0166218effb7f576318052ab79cefaa9b8a418b22f0b7d907a54ac5fde82edc',
+    'observation_multiroute_astar.py':'95d71e2f708e1e2c534b297f81f555980e685081ebf6d7cdb228d682dc37cd39',
+    'observation_prototype_grounding.py':'fdeafdbc22f2e0351477e11ea597400d3037d5571369c150a1c70879a1f0a565'}
 METRICS=('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','UnknownTypeTipValidCount',
     'DuplicateClassifiedTipValidCount','KnownReferenceTypeCoverageAtK','semantic_goal_accuracy','AnySemanticGoalAtK',
     'TipClearAtK','StartCorrectAtK','EventSequenceCorrectAtK','endpoint_error_m','mean_path_length_m')
 
 
+def verify_frozen_source(path):
+    """Accept only the two audited exact-byte forms, then check LF content too."""
+    path=Path(path);name=path.name
+    if name not in FROZEN_SOURCES:raise ValueError('Unregistered planner source: '+name)
+    raw=path.read_bytes();actual=hashlib.sha256(raw).hexdigest()
+    canonical=hashlib.sha256(raw.replace(b'\r\n',b'\n')).hexdigest()
+    if actual not in (FROZEN_SOURCES[name],FROZEN_CRLF_SOURCES[name]) or canonical!=FROZEN_SOURCES[name]:
+        raise ValueError('Existing planner source changed beyond the two exact LF/CRLF forms: '+name)
+    return dict(actual_sha256=actual,canonical_lf_sha256=canonical,
+        exact_byte_form='LF' if actual==FROZEN_SOURCES[name] else 'CRLF',
+        accepted_exact_sha256=[FROZEN_SOURCES[name],FROZEN_CRLF_SOURCES[name]],
+        policy='Only registered uniform LF/CRLF forms; no whitespace, mixed-newline or code normalization')
+
+
 def dependencies():
-    # Lazy imports keep schema/budget unit tests independent of SciPy.
+    # Verify bytes before importing the reused planner. Lazy imports keep
+    # schema/budget unit tests independent of SciPy.
+    for name in FROZEN_SOURCES:verify_frozen_source(Path(__file__).with_name(name))
     from scripts import observation_multiroute_astar_v2 as planner
-    for name,expected in FROZEN_SOURCES.items():
-        if digest(Path(__file__).with_name(name))!=expected:raise ValueError('Existing planner source changed: '+name)
     if (planner.CONFIG['candidates'],planner.CONFIG['horizon'],planner.CONFIG['maximum_expanded_nodes_per_candidate'],
             planner.CONFIG['search_deadline_seconds'])!=(4,24,20000,2.):raise ValueError('Frozen K4 search limits changed')
     return planner
@@ -184,7 +203,8 @@ def run(data,output):
     if set(fit['parents'])&{r['parent_id'] for r in dev}:raise ValueError('TRAIN/DEV parent overlap')
     output.mkdir(parents=True)
     write_json(output/'fitted_train_model.json',dict(prototype=model,workspace=prior,fit=fit))
-    source={str(Path(__file__).with_name(name)):value for name,value in FROZEN_SOURCES.items()}
+    planner_source_audit={name:verify_frozen_source(Path(__file__).with_name(name)) for name in FROZEN_SOURCES}
+    source={str(Path(__file__).with_name(name)):receipt['actual_sha256'] for name,receipt in planner_source_audit.items()}
     source.update({str(Path(__file__).with_name(name)):digest(Path(__file__).with_name(name)) for name in (
         'evaluate_observed_two_row.py','evaluate_observed_obstacles.py','export_two_row_observations.py',
         'collect_observed_two_row_pilot.py','collect_obstacle_reach.py')})
@@ -214,6 +234,7 @@ def run(data,output):
         source_export_manifest_sha256=digest(data/'export_manifest.json'),requested_total_inputs=84,
         actual_total_inputs=manifest['actual_inputs'],requested_total_parents=28,
         planner_config=planner.CONFIG,prototype_config=planner.prototype.CONFIG,fit=fit,
+        frozen_planner_source_integrity=planner_source_audit,
         fitting_seconds=fit['elapsed_seconds'],elapsed_seconds=time.perf_counter()-started,
         cpu_threads={key:os.environ.get(key) for key in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS')},
         cpu_affinity=sorted(os.sched_getaffinity(0)) if hasattr(os,'sched_getaffinity') else None,

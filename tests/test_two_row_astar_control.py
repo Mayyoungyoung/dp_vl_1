@@ -123,3 +123,23 @@ def test_source_guard_and_input_label_whitelist(tmp_path,monkeypatch):
         control.load_current(dict(row,target_xyz=[1,2,3]),manifest,{},planner)
     (data/'p/front.png').write_bytes(b'changed')
     with pytest.raises(ValueError,match='Closed source changed'):control.load_current(row,manifest,{},planner)
+
+
+@pytest.mark.parametrize('name',list(control.FROZEN_SOURCES))
+def test_only_registered_lf_and_crlf_source_bytes_are_accepted(tmp_path,name):
+    source=Path(control.__file__).with_name(name).read_bytes().replace(b'\r\n',b'\n')
+    path=tmp_path/name
+    for form,content in [('LF',source),('CRLF',source.replace(b'\n',b'\r\n'))]:
+        path.write_bytes(content);receipt=control.verify_frozen_source(path)
+        assert receipt['actual_sha256']==control.digest(path) and receipt['exact_byte_form']==form
+        assert receipt['canonical_lf_sha256']==control.FROZEN_SOURCES[name]
+
+
+def test_source_guard_rejects_mixed_newlines_whitespace_and_changed_code(tmp_path):
+    name='observation_multiroute_astar_v2.py'
+    source=Path(control.__file__).with_name(name).read_bytes().replace(b'\r\n',b'\n')
+    path=tmp_path/name
+    for content in [source.replace(b'\n',b'\r\n',1),source+b' ',source.replace(b'2.5mm',b'3.5mm',1)]:
+        assert content!=source
+        path.write_bytes(content)
+        with pytest.raises(ValueError,match='two exact LF/CRLF forms'):control.verify_frozen_source(path)
