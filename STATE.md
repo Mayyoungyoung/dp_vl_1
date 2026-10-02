@@ -1,5 +1,11 @@
 # State — 2026-10-02
 
+## 2026-10-02 22:04 UTC：同预算cosine普通控制准备
+
+独立五文件已实现、复审无阻断；本地13pass/3因无Torch而skip。下一步在冻结源码上通过实际Torch恢复等价/历史回归门禁，之后单独启动fresh12000。相同真实Qwen缓存、初始化、189 TRAIN输入完整抽样链、K4/H24、损失、1536000路径状态和48次DEV选择；仅替换为无warmup/restart/floor的单周期cosine。原constant12000记录保持不变。不因新DEV选择更多步/曲线/seed。
+
+native b184060的Linux74测试、TRAIN24请求96槽和DEV72请求288槽均实际完成退出0。DEV edge Tip96/144、Unique24/36；spatial Tip74/144、Unique52/36；Any均24/36。spatial24节点上限失败全部20000节点、搜索中位18.434ms，无超时。历史Python/native edge全部192槽raw/H24/events/确定性搜索计数及checker决定一致。全归档/逐图QA正在收尾，MAIN尚未加入这两新行。此为标准传统对照的质量覆盖成本取舍，不是新集合贡献。
+
 ## 2026-10-02 21:54 UTC：下一配对控制源码冻结准备
 
 证据e2f67751e05dec9986a15234b8492f773077d789已推送并核验。两臂共同native A*内核、三阶段runner/launcher及门禁测试已实现并独立复核；本地实际编译74 tests通过，Linux服务器编译/测试与真实请求尚未运行。生产沿用K4/20k节点/2秒/64节点计时，两臂共同使用同一库，原planner/空间场/评价器源码未改。首次tests stage必须有真实24项native差分及同编译器/flags/源码生产构建证明，root读后才能单独TRAIN12，再单独DEV36。
