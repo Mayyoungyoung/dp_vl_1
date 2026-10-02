@@ -91,18 +91,36 @@ def main():
                 code_commit=config['code_commit'],source=str(source.relative_to(root))))
     prototype_sources = sorted((reports/'observation_prototype_v1').glob('*.json'))
     prototype_sources += sorted(reports.glob('observation_prototype_obstacle_*/report.json'))
+    prototype_sources += sorted((reports/'observation_prototype_fresh_dev_v1').glob('fixed_old64.json'))
     for source in prototype_sources:
         result=json.loads(source.read_text())
         obstacle = 'obstacle_' in source.parent.name
+        fresh = 'fresh_dev' in source.parent.name
         run_id = str(source.parent.relative_to(reports))+'/'+source.stem
         rows.append(dict(tier='observed_RGBD_task_specific_endpoint',
-            task='RLBench_derived_obstacle_reach_three_targets' if obstacle else 'RLBench_derived_reach_three_targets',
+            task='RLBench_derived_obstacle_reach_three_targets' if obstacle else ('RLBench_derived_reach_three_targets_fresh16DEV' if fresh else 'RLBench_derived_reach_three_targets'),
             protocol=result['evaluation_protocol'],method='TRAIN_color_prototype_'+(source.parent.name if obstacle else source.stem),split='DEV_MODEL',K=1,
             run_id=run_id,semantic_goal_accuracy=result['semantic_goal_accuracy'],
             endpoint_error_m=result['reference_endpoint_error_m_conditional_on_prediction'],
             center_endpoint_error_m=result['goal_error_m_conditional_on_prediction'],
             reference_evaluation_examples=result['reference_evaluation_examples'],semantic_evaluation_examples=result['semantic_evaluation_examples'],
             cpu_endpoint_ms=result['cpu_latency_ms']['median'],cost_scope='one endpoint only; no path, Qwen, scorer or execution; reference and center error denominators differ',
+            source=str(source.relative_to(root))))
+    for source in sorted(reports.glob('observation_astar_obstacle_new32_v*/dev_model/report.json')):
+        result=json.loads(source.read_text())
+        metrics=json.loads((source.parent/'tip_evaluation/metrics.json').read_text())
+        aggregate=source.parent.parent/'aggregate_analysis.json'
+        analysis=json.loads(aggregate.read_text()) if aggregate.exists() else {}
+        rows.append(dict(tier='observed_RGBD_closed_instruction_planner',task='RLBench_derived_obstacle_reach_three_targets',
+            protocol=metrics['evaluation_protocol'],method=result['baseline'],seed=None,split='DEV_MODEL',K=metrics['candidates'],
+            run_id=str(source.parent.relative_to(reports)),TipValidAtK=metrics['TipValidAtK'],
+            AnyTipValidAtK=metrics['AnyTipValidAtK'],UniqueClassifiedTipValidAtK=metrics['UniqueClassifiedTipValidAtK'],
+            KnownReferenceTypeCoverageAtK=metrics['KnownReferenceTypeCoverageAtK'],TipClearAtK=metrics['TipClearAtK'],
+            semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+            center_endpoint_error_m=metrics['endpoint_error_m'],semantic_evaluation_examples=metrics['examples'],
+            observed_RGBD_plan_proxycheck_ms=analysis.get('request_seconds_quantiles',{}).get('median',0)*1000 if analysis else None,
+            code_commit=analysis.get('source_release'),
+            cost_scope='current RGBD + closed TRAIN instruction prototype + exactly K searches + observed proxy checks; failed slots retained; no Qwen/scorer/full robot execution',
             source=str(source.relative_to(root))))
     tip_sources = sorted(reports.glob('obstacle_new*_evaluation/tip_evaluation_v1/*/dev_model/metrics.json'))
     tip_sources += sorted(reports.glob('obstacle_new*_evaluation/hard_tip_evaluation_v1/dev_model/metrics.json'))
@@ -213,7 +231,7 @@ def main():
           'extra_training_draft_forwards','forward_passes','cost_scope','elapsed_s','gpu_hours',
           'cumulative_elapsed_s','cumulative_gpu_hours','incremental_training_exposures','center_endpoint_error_m','cpu_endpoint_ms',
           'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms','checkpoint_selection_protocol',
-          'sampling_repeats','budget_status',
+          'sampling_repeats','budget_status','observed_RGBD_plan_proxycheck_ms',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

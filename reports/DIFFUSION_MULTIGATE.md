@@ -1,6 +1,6 @@
-# Multigate扩散强基线：实现前协议
+# Multigate扩散基线：原始协议与执行状态
 
-状态：新增实现已完成，固定提交 `f78460795b2658c1767848533d9117a29ccc64c7` 上必要CPU测试实际通过（5 passed in 2.75s），尚无新扩散训练结果；GPU启动由根线程控制。现有普通集合回归是强基线，新扩散不是预设主方法。
+状态：原epsilon两臂已从固定 `f78460795b2658c1767848533d9117a29ccc64c7` 完成3000步；诊断后标准v两臂从固定 `7f27f93514850973fba93260e8569f2a7fec27ea` 完成同预算训练。各次必要CPU测试分别5项/9项通过。四臂实际stream相同，主结果与失败见 [DIFFUSION_MULTIGATE_RESULTS.md](DIFFUSION_MULTIGATE_RESULTS.md)、[DIFFUSION_PARAMETERIZATION_RESULTS.md](DIFFUSION_PARAMETERIZATION_RESULTS.md)。当前扩散有效性仍低，不称已充分收敛的强基线，PG未执行。以下保留原始实施前协议与启动失败记录。
 
 ## 复用边界
 

@@ -3,8 +3,10 @@
   "host": "wzy3090",
   "pid": 159691,
   "started_at": "2026-10-02T08:45:32Z",
-  "status_at_recording": "running",
-  "exit_code": null,
+  "status_at_recording": "complete",
+  "exit_code": 0,
+  "finished_at": "2026-10-02T10:30:58Z",
+  "final_mechanical_summary_sha256": "359bcd6dbd1c5f720657a4787962c549b095df94901b556fb6a0d278eb730d58",
   "source_commit": "bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3",
   "source_script_sha256": "a11b56ee2f64cc826aa5fe491dcfb3f3ce5390e47ec629c7d920858561149259",
   "launcher_sha256": "2c876bdfcc269406582bf683d11b9320012b80c6159977990394513e7d41e8f0",
@@ -14,7 +16,9 @@
   "seed_start": 262000,
   "seed_end": 262255,
   "train_parents_requested": 192,
-  "dev_model_parents_requested": 64,
+  "raw_dev_model_parents_requested": 64,
+  "reserved_roles": {"TRAIN": [262000, 262191], "DEV_MODEL": [262192, 262207], "DEV_SCORE": [262208, 262223], "CALIBRATION": [262224, 262239], "TEST_LOCKED": [262240, 262255]},
+  "reservation_manifest": "configs/observation_partition_reservation_v1.json",
   "proposals_requested": 2304,
   "log": "/home/wzy/dpvlm/route_set_v1/runs/observation_reach_fast256_20261002/collection.log",
   "status_file": "/home/wzy/dpvlm/route_set_v1/runs/observation_reach_fast256_20261002/status",
@@ -22,5 +26,5 @@
   "progress": "/home/wzy/dpvlm/route_set_v1/data/observation_reach_fast256_20261002/summary.json",
   "launch_command_executed": "bash /home/wzy/dpvlm/route_set_v1/runs/derived_reach_fast_preflight/launch.sh bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3 observation_reach_fast256_20261002 --parents 256 --dev-parents 64 --seed 262000",
   "recovery_note": "Check existing PID/status/log first. Collector rejects an existing output directory to prevent duplicate or overwritten data. If interrupted, preserve the partial dataset and parent/attempt ledgers; do not blindly rerun this command against the same output. Resume future analysis from the written manifest and completed records.",
-  "next_analysis": "After collection exits, run pinned scripts/observation_audit_dataset.py on this exact data directory, inspect every failure and strict restore/equivalence counters, then schedule real Qwen caches on authorized GPU1. No autonomous analysis is promised after the active session ends."
+  "next_analysis": "Apply the preregistered parent-role map through export_observation_roles.py and export only explicit TRAIN/DEV_MODEL for current research. Never run whole-source inventory, training or evaluation against this raw collector directory. Keep failed parents and zero-reference inputs; do not inspect reserved score/calibration/locked images, targets or trajectories for method selection. Genuine Qwen cache and subsequent evaluation require the main task GPU queue. Total mechanical collection/restore counts are saved separately."
 }

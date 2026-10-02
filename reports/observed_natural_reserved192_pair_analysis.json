@@ -1,0 +1,2502 @@
+{
+  "evaluation_protocol": "observation_eval_v2",
+  "setting": "natural reserved192 TRAIN /16 DEV_MODEL",
+  "seeds": [
+    0
+  ],
+  "paired_settings_identical_except_anchor_mode": true,
+  "common_training_candidate_slots": 384000,
+  "comparison_scope": "within new192 equal budget only; old64 had one-third data and total training exposures",
+  "exposure_per_supervised_instruction": 166.66666666666666,
+  "selection": "original DEV reference ADE; best and last3000 both preserved",
+  "arms": {
+    "soft": {
+      "best_step": 3000,
+      "best": {
+        "semantic_goal_accuracy": 0.6666666666666666,
+        "AnySemanticGoalAtK": 0.6666666666666666,
+        "candidate_matched_ADE_m": 0.028721094985182088,
+        "candidate_endpoint_error_m": 0.04503515168956559
+      },
+      "last_step": 3000,
+      "last": {
+        "semantic_goal_accuracy": 0.6666666666666666,
+        "AnySemanticGoalAtK": 0.6666666666666666,
+        "candidate_matched_ADE_m": 0.028721094985182088,
+        "candidate_endpoint_error_m": 0.04503515168956559
+      },
+      "last_metric_source": "actual step3000 history, not substituted for original best",
+      "train_semantic_at_best": 0.7751736111111112,
+      "parameters": 1231965,
+      "candidate_exposures": 384000,
+      "elapsed_s": 147.10549784905743,
+      "gpu_hours_reserved": 0.040862638291404844,
+      "peak_cuda_memory_mb": 951.23046875,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 3.341022413223982,
+        "raw_geometry_cached_head_batch1_ms_p95": 4.77062496356666,
+        "rgbd_read_preprocess_head_batch1_ms_median": 7.494268997106701,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 9.05431461869739,
+        "rgbd_read_preprocess_batch1_ms_median": 3.9466480375267565,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      },
+      "source_commit": "7f27f93514850973fba93260e8569f2a7fec27ea",
+      "summary_sha256": "b2f0e205f373339ab86e0a8a3b53c6c029621cedfd6898c3fc1760c7465b38e6",
+      "config_sha256": "f64f5d9008273a6562de3c3dcfe0c4cc1543d45416e84c8b19f2456cd9a5856f",
+      "history_sha256": "c7a7fc94657a95f8e7f8d85deafdb07b7c81706ff36879374bb840f3749eb75a",
+      "binary_files": {
+        "soft_seed0\\best.pt": {
+          "sha256": "2ad19077d93cc3ee49398b9e8a458156b1db5360b0c90e89f87fad19768e50ef",
+          "bytes": 14943468
+        },
+        "soft_seed0\\dev_model\\paired_language_predictions.npz": {
+          "sha256": "322f6e435adb5333d8ece306aa2d59e0f228b7147d9fa0f79738ee981f59c591",
+          "bytes": 42716
+        },
+        "soft_seed0\\dev_model\\predictions.npz": {
+          "sha256": "a0bd89c9758b4098f2956e5878f07e326a1ce7b7b45b3b3248b228a1166066b3",
+          "bytes": 63329
+        },
+        "soft_seed0\\last.pt": {
+          "sha256": "cab2b0912a059ec7f7517c87f1a0ff10d1c460c9771d63d4ff768ebd8730f943",
+          "bytes": 14943468
+        },
+        "soft_seed0\\train\\paired_language_predictions.npz": {
+          "sha256": "a0395f70d707e35d384b722eb1194e55051a37233e4cebe9854ed9cc6e4f4f1e",
+          "bytes": 499639
+        },
+        "soft_seed0\\train\\predictions.npz": {
+          "sha256": "94a6a641310e105b2ac91992c1d71207fca425ce4e8ce661553e1387fe333249",
+          "bytes": 743918
+        }
+      }
+    },
+    "peak": {
+      "best_step": 2750,
+      "best": {
+        "semantic_goal_accuracy": 0.9583333333333334,
+        "AnySemanticGoalAtK": 0.9583333333333334,
+        "candidate_matched_ADE_m": 0.026486326086645324,
+        "candidate_endpoint_error_m": 0.03576535741255308
+      },
+      "last_step": 3000,
+      "last": {
+        "semantic_goal_accuracy": 0.875,
+        "AnySemanticGoalAtK": 0.875,
+        "candidate_matched_ADE_m": 0.039298627622580774,
+        "candidate_endpoint_error_m": 0.06301813844280939
+      },
+      "last_metric_source": "actual step3000 history, not substituted for original best",
+      "train_semantic_at_best": 0.9778645833333334,
+      "parameters": 1231965,
+      "candidate_exposures": 384000,
+      "elapsed_s": 154.4455305209849,
+      "gpu_hours_reserved": 0.04290153625582914,
+      "peak_cuda_memory_mb": 951.23046875,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 3.41212801868096,
+        "raw_geometry_cached_head_batch1_ms_p95": 3.8112783920951188,
+        "rgbd_read_preprocess_head_batch1_ms_median": 7.486215501558036,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 8.214756357483566,
+        "rgbd_read_preprocess_batch1_ms_median": 3.9556004921905696,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      },
+      "source_commit": "7f27f93514850973fba93260e8569f2a7fec27ea",
+      "summary_sha256": "0d992c7128837a785a8cdb1d2c51d729db0d6ba6d4ba4e45042b2c457bfef41b",
+      "config_sha256": "d40054f9adc077813efbdb245b5f89031128887672f913ac9cbb15eca47a87ce",
+      "history_sha256": "cc678e6a81c322563b2d9a87b55341c1aaf128a1662731bfdab111407cca5216",
+      "binary_files": {
+        "peak_seed0\\best.pt": {
+          "sha256": "1569cc9e083c2cc709fb8b70259c1579f458d658753a19b966e6d40e046d9a9f",
+          "bytes": 14943148
+        },
+        "peak_seed0\\dev_model\\paired_language_predictions.npz": {
+          "sha256": "9d8000b4bce80e30144c83b6fcb931cc74bd581f6e09594a36e8ab404ce3bdb2",
+          "bytes": 42533
+        },
+        "peak_seed0\\dev_model\\predictions.npz": {
+          "sha256": "967e935de2b16913c890f488fec7d6bd7a9079138aec23335672959b51696812",
+          "bytes": 63048
+        },
+        "peak_seed0\\last.pt": {
+          "sha256": "7cd8263acd43d65d374f4b04450ab874a93f0faa8b16a9861a1625318f428209",
+          "bytes": 14943532
+        },
+        "peak_seed0\\train\\paired_language_predictions.npz": {
+          "sha256": "b62e6f5bd7b9e1f2c5ecde7b135d625a2551edb672224ecf3204a188d5eb9a39",
+          "bytes": 495993
+        },
+        "peak_seed0\\train\\predictions.npz": {
+          "sha256": "569c6b52778f2d94bbd175fd0018ef70329b2412da5c976e9487f367ead56344",
+          "bytes": 737855
+        }
+      }
+    }
+  },
+  "paired_gain": {
+    "best": {
+      "semantic_goal_accuracy": 0.29166666666666674,
+      "AnySemanticGoalAtK": 0.29166666666666674,
+      "candidate_matched_ADE_m": -0.002234768898536764,
+      "candidate_endpoint_error_m": -0.009269794277012508
+    },
+    "last": {
+      "semantic_goal_accuracy": 0.20833333333333337,
+      "AnySemanticGoalAtK": 0.20833333333333337,
+      "candidate_matched_ADE_m": 0.010577532637398687,
+      "candidate_endpoint_error_m": 0.0179829867532438
+    }
+  },
+  "caveat": "one training seed; baseline grounding repair, no route-type or full robot validity evidence",
+  "script_sha256": "7d4e938a5ba5936ad9a493895f08c8a4011c7c938d251e4d2c8f2f962b3e82e3",
+  "posthoc_best_endpoint_diagnostic": {
+    "arms": {
+      "soft": {
+        "candidate_category_counts": {
+          "nearest_identity_correct_beyond_3cm": 58,
+          "semantic_success": 128,
+          "nearest_identity_wrong": 6
+        },
+        "all_48_scenes": [
+          {
+            "id": "derived_reach_262192_target0",
+            "instruction": "Move the gripper to touch the olive sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.10225228085230136,
+              0.10372268518866483,
+              0.10283132311967766,
+              0.10213280433582335
+            ]
+          },
+          {
+            "id": "derived_reach_262192_target1",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.036243224530829725,
+              0.03417734481960894,
+              0.03539866234534882,
+              0.036211937707344356
+            ]
+          },
+          {
+            "id": "derived_reach_262192_target2",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.0020098855009550464,
+              0.006483736280875486,
+              0.0029934280484886994,
+              0.00526436395969136
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target0",
+            "instruction": "Move the gripper to touch the purple sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.005757134334795361,
+              0.011706559111237611,
+              0.007022403863354253,
+              0.009063540426620727
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target1",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01554705990336563,
+              0.016219793929391102,
+              0.015783270956496506,
+              0.014773010717243074
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target2",
+            "instruction": "Move the gripper to touch the orange sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.007746895370190071,
+              0.01003067749281013,
+              0.008330229722179679,
+              0.009825265888632362
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target0",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.04151183344601987,
+              0.03645113306534892,
+              0.04012943380137696,
+              0.03820640053928807
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target1",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.13842262771209735,
+              0.14261631300608538,
+              0.13933666543298415,
+              0.14167468039011
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target2",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.1449200816275396,
+              0.1456132352483821,
+              0.14513043779620485,
+              0.14668651033234809
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target0",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              2,
+              0,
+              2
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_wrong",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_wrong"
+            ],
+            "target_center_error_m": [
+              0.13202516265274988,
+              0.13622099457368544,
+              0.13372296899878358,
+              0.135678592964897
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target1",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.0016683164709059678,
+              0.0007284744918036203,
+              0.0012072401245030275,
+              0.0011655919048655864
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target2",
+            "instruction": "Move the gripper to touch the navy sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.006518120049258071,
+              0.00645511947699285,
+              0.005143761783539549,
+              0.006186293455113527
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target0",
+            "instruction": "Move the gripper to touch the violet sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.06903950283687663,
+              0.0691961924301677,
+              0.07025224391308162,
+              0.07100008789070182
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target1",
+            "instruction": "Move the gripper to touch the magenta sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.14026471564582343,
+              0.1395678714526096,
+              0.139634451925261,
+              0.13867813192115233
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target2",
+            "instruction": "Move the gripper to touch the olive sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.011606635629062029,
+              0.013849007839145567,
+              0.011895898415503387,
+              0.012744700398105196
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target0",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.023416716805736048,
+              0.023025628005581354,
+              0.02275517867553216,
+              0.023597308355443852
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target1",
+            "instruction": "Move the gripper to touch the silver sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.0964980197535899,
+              0.09401567193465254,
+              0.09598132472434126,
+              0.09469320246556213
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target2",
+            "instruction": "Move the gripper to touch the red sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.004967949728470041,
+              0.01045701261845643,
+              0.006648516143143768,
+              0.008936139384216285
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target0",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.0036966146394584575,
+              0.006245244574210901,
+              0.004201087918719976,
+              0.005966683454299499
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.043073846211426334,
+              0.041579141698080344,
+              0.04228211730722327,
+              0.04128122033244046
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target2",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.008063620469902102,
+              0.009096358555151963,
+              0.00825860764868301,
+              0.007306377698708989
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target0",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02067533634547837,
+              0.017839763829231938,
+              0.020295830628949456,
+              0.018199346372772752
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target1",
+            "instruction": "Move the gripper to touch the purple sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.004251137172525803,
+              0.003150592525861231,
+              0.0037774887923220295,
+              0.004136372708296459
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target2",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong"
+            ],
+            "target_center_error_m": [
+              0.3201913954646338,
+              0.3217687906635853,
+              0.32041386422367046,
+              0.3216824594768656
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target0",
+            "instruction": "Move the gripper to touch the red sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.006691668801874136,
+              0.005441795594047873,
+              0.005960588279645396,
+              0.004607913948982741
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target1",
+            "instruction": "Move the gripper to touch the violet sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019445950473531225,
+              0.026292237874809735,
+              0.0218563665799242,
+              0.023166928834429674
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target2",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02532946695335181,
+              0.02005409997350263,
+              0.02342053006968085,
+              0.0214460038302651
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target0",
+            "instruction": "Move the gripper to touch the maroon sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.14738160181135979,
+              0.1430505956372934,
+              0.14546652706162808,
+              0.14561336727518176
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target1",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.0949150488677449,
+              0.09727154642609039,
+              0.09647244611483519,
+              0.09630561237614785
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target2",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.011991535684065902,
+              0.015556311200693814,
+              0.012995859583635756,
+              0.012862162363077486
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target0",
+            "instruction": "Move the gripper to touch the lime sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.015651113517920392,
+              0.01638586441931537,
+              0.015454330084955135,
+              0.016477351432580833
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target1",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.007401132071455234,
+              0.0122987634643657,
+              0.008672551043811844,
+              0.010858579603997942
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target2",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.15860917810735464,
+              0.16100809339331618,
+              0.1587608159272474,
+              0.16094946782484457
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target0",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.007089191920797993,
+              0.005691186809699379,
+              0.005522520325556969,
+              0.006587869199858314
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.016761365502177907,
+              0.01980387295469363,
+              0.017926679791697948,
+              0.01864696940625932
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target2",
+            "instruction": "Move the gripper to touch the maroon sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.013727584594525366,
+              0.014304185421840483,
+              0.014135065622807422,
+              0.015332938788845906
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target0",
+            "instruction": "Move the gripper to touch the blue sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.08942830875212464,
+              0.08497134189353045,
+              0.08716384038064189,
+              0.08710168232119916
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target1",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.013793905070834094,
+              0.01867176268303138,
+              0.01643594448257816,
+              0.017657986809399537
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target2",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.007745148294089881,
+              0.011529188318388691,
+              0.009254668522657834,
+              0.010241569106105356
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target0",
+            "instruction": "Move the gripper to touch the navy sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.007908491490213899,
+              0.009646383061071188,
+              0.008122570014443923,
+              0.010019885774728007
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target1",
+            "instruction": "Move the gripper to touch the yellow sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm",
+              "nearest_identity_correct_beyond_3cm"
+            ],
+            "target_center_error_m": [
+              0.03926847520638313,
+              0.03948152038360641,
+              0.038679693452893106,
+              0.038424085596256624
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target2",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.010554495847416726,
+              0.011336505227691892,
+              0.011719604392020236,
+              0.012482250120642928
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target0",
+            "instruction": "Move the gripper to touch the yellow sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.003732824172110949,
+              0.0023288506432633214,
+              0.0030003984124067013,
+              0.0021207813505743464
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.025408523101121523,
+              0.025823418482650237,
+              0.02583713669837452,
+              0.02643172309496541
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target2",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.006344530431734847,
+              0.009477812003159848,
+              0.006631136895414326,
+              0.008988580368322997
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target0",
+            "instruction": "Move the gripper to touch the cyan sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.020542521204570716,
+              0.02289034010068237,
+              0.021374915426906647,
+              0.02259594062802513
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target1",
+            "instruction": "Move the gripper to touch the magenta sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.010233458678265032,
+              0.012618480472673515,
+              0.011779062004422,
+              0.012359807086388412
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target2",
+            "instruction": "Move the gripper to touch the blue sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.012712728672183085,
+              0.011399904379412554,
+              0.011469210120125629,
+              0.011469086010564868
+            ]
+          }
+        ],
+        "all_failure_ids": [
+          "derived_reach_262192_target0",
+          "derived_reach_262192_target1",
+          "derived_reach_262194_target0",
+          "derived_reach_262194_target1",
+          "derived_reach_262194_target2",
+          "derived_reach_262195_target0",
+          "derived_reach_262196_target0",
+          "derived_reach_262196_target1",
+          "derived_reach_262197_target1",
+          "derived_reach_262198_target1",
+          "derived_reach_262199_target2",
+          "derived_reach_262201_target0",
+          "derived_reach_262201_target1",
+          "derived_reach_262202_target2",
+          "derived_reach_262204_target0",
+          "derived_reach_262205_target1"
+        ]
+      },
+      "peak": {
+        "candidate_category_counts": {
+          "semantic_success": 184,
+          "nearest_identity_wrong": 8
+        },
+        "all_48_scenes": [
+          {
+            "id": "derived_reach_262192_target0",
+            "instruction": "Move the gripper to touch the olive sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019100183306597896,
+              0.019075305877850956,
+              0.01955005649453513,
+              0.019560316282341138
+            ]
+          },
+          {
+            "id": "derived_reach_262192_target1",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02025431969897504,
+              0.022441782836767926,
+              0.020926624797477342,
+              0.021281489724531095
+            ]
+          },
+          {
+            "id": "derived_reach_262192_target2",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.024281363501016052,
+              0.0237960199281122,
+              0.024393425603796245,
+              0.024200195077523266
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target0",
+            "instruction": "Move the gripper to touch the purple sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.027219969848576508,
+              0.027639606694612365,
+              0.027523756992370762,
+              0.027217891899063887
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target1",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019922615437918834,
+              0.020017537419005353,
+              0.02055937714949029,
+              0.020534438392059845
+            ]
+          },
+          {
+            "id": "derived_reach_262193_target2",
+            "instruction": "Move the gripper to touch the orange sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.027840463614519046,
+              0.027645340778118154,
+              0.02796766528068416,
+              0.0275731723668857
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target0",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02901059688676331,
+              0.027468925919883765,
+              0.028749808531641816,
+              0.028543487927074607
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target1",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.023463049477109553,
+              0.023685105377515777,
+              0.02355152696394526,
+              0.023710629709358087
+            ]
+          },
+          {
+            "id": "derived_reach_262194_target2",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.027379670210907522,
+              0.02720389706757646,
+              0.026813771496166698,
+              0.026660424337374353
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target0",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.023314181262721986,
+              0.023662105418637152,
+              0.023219263059374946,
+              0.023338054682102274
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target1",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.014961874546461092,
+              0.015114875775405994,
+              0.014487012700392024,
+              0.014875806546638476
+            ]
+          },
+          {
+            "id": "derived_reach_262195_target2",
+            "instruction": "Move the gripper to touch the navy sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.026147865751776918,
+              0.02487598155189219,
+              0.025922575082620802,
+              0.025776401480995983
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target0",
+            "instruction": "Move the gripper to touch the violet sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01997896090284782,
+              0.018191135507542904,
+              0.01824413629177974,
+              0.018256327759159474
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target1",
+            "instruction": "Move the gripper to touch the magenta sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong"
+            ],
+            "target_center_error_m": [
+              0.34851720063131597,
+              0.3469801958690755,
+              0.34862697245474983,
+              0.34807692910843624
+            ]
+          },
+          {
+            "id": "derived_reach_262196_target2",
+            "instruction": "Move the gripper to touch the olive sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01645663983976988,
+              0.014859017902159707,
+              0.01573338968118754,
+              0.015979552524137786
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target0",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.023283193621414938,
+              0.02269348557163713,
+              0.022723344527037528,
+              0.02247684531702279
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target1",
+            "instruction": "Move the gripper to touch the silver sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.0215225236963179,
+              0.02049720042154454,
+              0.021092572434153474,
+              0.02130733105196589
+            ]
+          },
+          {
+            "id": "derived_reach_262197_target2",
+            "instruction": "Move the gripper to touch the red sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01640548183818654,
+              0.01718537399734383,
+              0.01636858235040986,
+              0.016633166773513872
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target0",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.021723281085972008,
+              0.02150489880010336,
+              0.021954360441154876,
+              0.021991711973327163
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.026352784604324657,
+              0.023863886923086348,
+              0.02531632238768909,
+              0.02490977700993275
+            ]
+          },
+          {
+            "id": "derived_reach_262198_target2",
+            "instruction": "Move the gripper to touch the rose sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.022503676497478947,
+              0.024812177555032643,
+              0.024571855746047214,
+              0.024546697522148303
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target0",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.022076994385122943,
+              0.021370309602484552,
+              0.021831579201439823,
+              0.02203883357399367
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target1",
+            "instruction": "Move the gripper to touch the purple sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019915212672973043,
+              0.020241647263993245,
+              0.019406900213694702,
+              0.01963759443295875
+            ]
+          },
+          {
+            "id": "derived_reach_262199_target2",
+            "instruction": "Move the gripper to touch the azure sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.0285732219238089,
+              0.02759594756532842,
+              0.02793418873495677,
+              0.02759571194727221
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target0",
+            "instruction": "Move the gripper to touch the red sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.021281351885427933,
+              0.020372725738674515,
+              0.02152211547629326,
+              0.021233845815670647
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target1",
+            "instruction": "Move the gripper to touch the violet sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.020410361584211043,
+              0.020873749810965205,
+              0.020436448613294404,
+              0.020570455721527086
+            ]
+          },
+          {
+            "id": "derived_reach_262200_target2",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.025604259067476844,
+              0.024252397953954143,
+              0.025191883699440722,
+              0.025260020297575347
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target0",
+            "instruction": "Move the gripper to touch the maroon sphere.",
+            "semantic_success_candidates": 0,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong",
+              "nearest_identity_wrong"
+            ],
+            "target_center_error_m": [
+              0.3827913629812699,
+              0.38153747993760834,
+              0.3827555643760122,
+              0.38238035708350726
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target1",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.024265823925278533,
+              0.023071038620182123,
+              0.02394055880825355,
+              0.024065705597920848
+            ]
+          },
+          {
+            "id": "derived_reach_262201_target2",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01909076850522823,
+              0.021916122975575825,
+              0.020566848156728077,
+              0.020887274650353546
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target0",
+            "instruction": "Move the gripper to touch the lime sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.017033768935470536,
+              0.01654820430957771,
+              0.0170180482958184,
+              0.017019178383066283
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target1",
+            "instruction": "Move the gripper to touch the teal sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.021475067074021324,
+              0.01947694842337119,
+              0.020759530176573806,
+              0.020869621523748633
+            ]
+          },
+          {
+            "id": "derived_reach_262202_target2",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02752026704461479,
+              0.027797920115539256,
+              0.02743582103517504,
+              0.027217238432457606
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target0",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.017335619203558767,
+              0.01641658545891913,
+              0.016898528624773652,
+              0.01717742359703801
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02091916779922133,
+              0.019088525972438174,
+              0.020329297073000085,
+              0.020073639307118474
+            ]
+          },
+          {
+            "id": "derived_reach_262203_target2",
+            "instruction": "Move the gripper to touch the maroon sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.021220541262816032,
+              0.02145564369725871,
+              0.020815656911063487,
+              0.020891712844029447
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target0",
+            "instruction": "Move the gripper to touch the blue sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019104006524153318,
+              0.017825173635879085,
+              0.018558456601509673,
+              0.018818576329723256
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target1",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.014409405017092992,
+              0.015169939613194176,
+              0.01422060559849347,
+              0.014594480159860779
+            ]
+          },
+          {
+            "id": "derived_reach_262204_target2",
+            "instruction": "Move the gripper to touch the green sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.017074826236600026,
+              0.01874029540574218,
+              0.01736575557293947,
+              0.017816680330580995
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target0",
+            "instruction": "Move the gripper to touch the navy sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.023031480641559004,
+              0.02346648563558753,
+              0.02296771718540733,
+              0.02292508566777473
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target1",
+            "instruction": "Move the gripper to touch the yellow sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.019145082637011375,
+              0.019545225625020996,
+              0.020057236728387343,
+              0.01995805340548103
+            ]
+          },
+          {
+            "id": "derived_reach_262205_target2",
+            "instruction": "Move the gripper to touch the gray sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.014625876340893967,
+              0.014212327295208762,
+              0.01324662268101731,
+              0.01360190476344
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target0",
+            "instruction": "Move the gripper to touch the yellow sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.026656248519651767,
+              0.02632428094608918,
+              0.02615823237633849,
+              0.02599385134165133
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target1",
+            "instruction": "Move the gripper to touch the white sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.02104855157898561,
+              0.01992984252751654,
+              0.02011981227469926,
+              0.01994905382379603
+            ]
+          },
+          {
+            "id": "derived_reach_262206_target2",
+            "instruction": "Move the gripper to touch the black sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.022405143096131983,
+              0.021297272754977132,
+              0.021925085006627633,
+              0.022120926649787542
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target0",
+            "instruction": "Move the gripper to touch the cyan sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 0,
+            "nearest_target_indices": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.01946119453642706,
+              0.02216629290370373,
+              0.02120757598897537,
+              0.021331212553156596
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target1",
+            "instruction": "Move the gripper to touch the magenta sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 1,
+            "nearest_target_indices": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.022304506396271802,
+              0.022106828205222993,
+              0.021823009719672357,
+              0.021683950080715466
+            ]
+          },
+          {
+            "id": "derived_reach_262207_target2",
+            "instruction": "Move the gripper to touch the blue sphere.",
+            "semantic_success_candidates": 4,
+            "expected_target_index": 2,
+            "nearest_target_indices": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "candidate_categories": [
+              "semantic_success",
+              "semantic_success",
+              "semantic_success",
+              "semantic_success"
+            ],
+            "target_center_error_m": [
+              0.027391522437742157,
+              0.027282702901593632,
+              0.028103540206120946,
+              0.02780147995355572
+            ]
+          }
+        ],
+        "all_failure_ids": [
+          "derived_reach_262196_target1",
+          "derived_reach_262201_target0"
+        ]
+      }
+    },
+    "supervision_sha256": "83458bd8d10cfe0db7b422d27a728f18c79f829de6345d70d6df1c78937e054e",
+    "observations_sha256": "aa17ecef147f73ada2e902ac30f7de39be0acc47a25ced5959607619bf945495",
+    "scope": "labels used only after saved predictions; no forward or model change; all 48 DEV included"
+  }
+}

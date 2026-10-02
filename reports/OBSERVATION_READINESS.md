@@ -163,13 +163,15 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 
 这些固定例子中，目标中心4cm内的观测点仅获得8.3%–33.9%的attention质量，48.8%–55.5%的质量位于三个目标邻域之外；其余在多个目标之间分散，学习anchor常落在球之间。4cm仅为解释attention的诊断邻域，不是新的成功标准；仍使用原3cm终点标准。它支持下一步检查语言条件空间选择及anchor监督，而不能把未命中的平均位置描述为已完成开放词汇定位。
 
-### 自然布局256父数据扩展：试采通过，正式作业运行中
+### 自然布局256父数据扩展：正式采集已完成
 
 `scripts/collect_derived_reach_fast.py` 保留原可靠native stop/start恢复与原任务自然随机布局，不创建障碍、不重定位目标。每父场景3种目标语言、每目标3个自由运动提案；不同欧氏路线不标为不同类型。每步读tip pose和真实gripper_open，并沿用 `collect_obstacle_reach.py` 的arm/gripper外部碰撞检查。初末均与固定RLBench版本 `Scene.get_observation` 的同名字段逐值比较，任何非零差值拒收。状态、完整对象inventory、RGB恢复要求严格零差；失败保存partial轨迹。父初始化失败单独记录，并为其9个未执行提案记录原因，不自动换种子补齐。原free-derived版本已经直接读取tip，因此本轮不声称未经实测的提速收益。
 
 固定release `bb5289c3e9a2c8bc5c60035aaf6cc666f88207e3` 的试采 `observation_reach_fast_pilot_20261002` 使用独立seed261900、1个DEV父，实际耗时27.9879秒、9/9成功；9/9完整恢复零差，初末官方字段等价均通过，零近重复。独立保存轨迹审计9/9数值有限、9/9终点通过，平均终点误差0.691mm、最大1.178mm。见 `reports/observation_reach_fast_pilot_audit/` 与 `observation_reach_fast_pilot_summary.json`。
 
-正式作业 `observation_reach_fast256_20261002` 已于2026-10-02 08:45:32 UTC启动，PID159691，CPU线程1、软件渲染、无GPU。使用全新seed262000–262255，前192父为TRAIN、后64父为DEV_MODEL，全部开发用途；与旧32父及试采父不重叠。计划256父、768指令、2304提案不能写成已成功数量。启动后73秒的持久化快照仅有3父、27/27成功、零恢复/等价失败；最终结果待作业实际完成后审计。按单父试采粗估约2小时，不能保证此耗时。
+正式作业 `observation_reach_fast256_20261002` 于2026-10-02 08:45:32 UTC启动，PID159691，CPU线程1、软件渲染、无GPU。使用全新seed262000–262255，与旧32父及试采父不重叠。启动时原始manifest写作192TRAIN/64DEV，后续已由下述预注册分区限制用途，不能整体作为开发数据使用。
+
+实际采集已完成，耗时6324.26秒（约1.76小时）：256/256父成功初始化、2304/2304提案实际执行、2281成功与23失败全部计数，1条近重复成功；2304次strict状态/RGB恢复与初始官方字段等价通过，2281条成功路线末端官方字段等价通过。总机械状态见 `reports/observation_reach_fast256_final_mechanical_summary.json`。这是全体计数与恢复审计，未读取任何保留父的图像、目标或路线进行研究选择；不据这些总量报告模型效果、路线类型覆盖或连续全机器人碰撞认证。
 
 运行证据、PID、实际命令、源码hash和下一步审计见 `reports/observation_reach_fast256_job.json`；早期快照见 `observation_reach_fast256_progress_snapshot.json`。服务器每完成一父原子更新data目录summary，并逐尝试落盘。不要重复启动同run；若中断，保留父场景/attempt日志与已写数据，当前采集器会拒绝覆盖现有目录，不能盲目同命令重跑。会话后的后台进程只执行既定采集，不代表仍会自主分析或改代码。
 
@@ -203,6 +205,10 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 
 同release的完整new64初始化核验也实际通过：216输入、192有参考TRAIN、24 DEV语义/23 DEV参考；每请求12544观测点、头1231965参数（几何321537），全部训练。共同best SHA `281aa924fd78207ad55795214a232ce87aab7000a8b2da8ea81c805f06d9a5f8`，全部当前图像、RGB-D与路线来源hash和预训练一致。验证不加载隐藏特征缓存、2B骨干或GPU。失败及成功的真实命令、PID、源码SHA、退出码和完整审计在 `reports/observed_online_geometry_preflight/`；GPU正式配对由主任务统一启动与记录。
 
+正式2B在线配对现已完成：frozen与LoRA均完成1000×4新增曝光并exit0，8/8 LoRA张量实际更新。两臂原DEV-ADE选模均停在共同step0，最优预测逐元素相同；last1000语义分别16.67%/12.50%，低于step0的19.79%。不能把参数真实更新当作任务收益。完整负结果、成本和权重索引见 `reports/OBSERVATION_ONLINE_RGBD_PAIR.md`。
+
+随后基于全DEV注意力诊断实施常规peak-anchor修复，已在natural64与obstacle32各完成soft/peak三真实种子，并对双方12个last权重实际统一CPU重评。自然旧DEV选中语义17.36±13.19%→83.68±6.62%，三配对参考误差也改善；障碍原选模结果波动大，peak seed1语义0且平均ADE恶化，固定1000步存在不同取舍。该定位修复不作为路线集合创新，两个旧DEV仍反复参与选择。完整best与fixed协议、失败和分母见 `reports/OBSERVATION_PEAK_ANCHOR.md`。
+
 ### 正式新父场景的预注册保留分区（更正原初始开发计划）
 
 正式collector原始manifest仍按启动时的192TRAIN/64DEV写入，不改运行源码或重写历史标签。但正式导出必须应用 `configs/observation_partition_reservation_v1.json`（2026-10-02 10:10:31 UTC注册、commit6799d83），不能继续按早期“后64父全部开发”的描述使用数据。
@@ -210,3 +216,13 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 natural父262000–262191为TRAIN，262192–262207为DEV_MODEL，262208–262223为DEV_SCORE，262224–262239为CALIBRATION，262240–262255为TEST_LOCKED。所有轨迹、语言、视角和条件变体随父继承角色。旧261024–261031仍是已反复使用的开发集；新64学习曲线的TRAIN来自262000–262063，配套旧8DEV，所以现有方法选择没有读取新保留父。
 
 同预注册也保留obstacle父272120–272127为TEST_LOCKED，评分/校准与生成器开发分开。研究期间不读取锁定图像、轨迹、目标或逐场景/总体模型结果；只允许格式、恢复、hash和总采集失败机械审计。不得直接对整个raw collector目录训练或评价，也不以新成功父替换失败父。OOD_LOCKED尚未建立，需要另外声明真实分布变化，不能把这批IID保留父改名为OOD。
+
+固定release `4f348c73aaf1411e9c02ba04806a5134326651e8` 的 `export_observation_roles.py` 已实际完成CPU1自测与正式导出，均exit0。自测包括过滤后才decode监督行、锁定行故意不可解析而不读取、setup失败父保留、零参考输入保留、未完成父拒绝、跨父路径及Linux真实symlink拒绝。导出只扫描unselected行的parent_id标量；仅对已选TRAIN/DEV_MODEL父打开文件并hash，不调用旧的全raw inventory。
+
+唯一导出 `data/observation_natural_reserved_development_v1` 含192 TRAIN＋16新DEV_MODEL父，624个严格5键观测输入（576 TRAIN、48 DEV），本次这些指令均有至少一条正参考。父范围完全按预注册，没有成功率筛选或补父；源行/选中父文件生成前后hash一致，原raw split保持不变。输入manifest SHA `aa17ecef147f73ada2e902ac30f7de39be0acc47a25ced5959607619bf945495`，完整父来源hash见 `reports/observation_natural_reserved_development_manifest.json`，命令/PID/exit见 `reports/observation_reserved_export_jobs/`。真实Qwen缓存由主任务统一启动；后续独立transfer入口只加载已选old64六best，不重写其训练fingerprint或假装resume。
+
+主任务实际启动的该导出真Qwen缓存已于10:50:10 UTC完成、exit0：624/624条RGB＋语言输入，官方revision与processor仍为 `89644892e4d85e24eaac8bacfd4f463576704203`，2,127,532,032个骨干参数全部冻结。耗时40.636秒（含加载3.308秒），峰值allocated显存4,279,413,760 bytes；此为连续缓存作业总成本，不能冒充完整路线单请求延迟。另以CPU逐项核验624份NPZ SHA和对应图像SHA全部与samples日志一致。运行/source/launcher/config/status SHA与完整审计保存在 `reports/observation_reserved_qwen_cache_v1/`。缓存不读取监督manifest或路径目标；该步骤本身不构成路线质量证据。
+
+固定 `7f27f93514850973fba93260e8569f2a7fec27ea` 已实际完成旧natural64 soft/peak三seed原best在新16 DEV父/48指令上的CPU迁移评价、exit0。没有新增训练或重新选模：严格语义从28.47±3.18%提高到72.05±3.14%，参考ADE从6.60±0.28cm降到6.21±0.14cm，三个配对方向一致。所有失败与144场景配对差异保留，三个peak种子共同失败的green/azure/violet/gray四指令完整列出。新DEV仍是开发泛化检查，不是最终锁定测试；详见 `reports/OBSERVATION_FRESH_DEV_TRANSFER.md`。新的192 TRAIN从头配对与旧64 prototype公平迁移由主任务排队，未完成前不记作结果。
+
+两项随后均已真实完成：new192同384000候选槽的seed0原best为soft66.67%/peak95.83%，但peak last3000退至87.50%，详见 `OBSERVATION_RESERVED192_PAIR.md`。旧64已拟合prototype未追加训练，在同48新DEV上40/48=83.33%，保留全部8离群失败，详见 `OBSERVATION_PROTOTYPE_FRESH_DEV.md`；它仍只是K1端点定位，且与新192神经模型训练数据和预算不同，不能混作公平路线比较。

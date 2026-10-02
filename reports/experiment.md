@@ -74,3 +74,5 @@
 - 后续优先级见 [下一阶段方案](next_steps.md)：可变可行路线数 → 多障碍 → 真实语言 grounding → RLBench 同场景多路线 → 固定执行器检验。加入 VLM 直接多候选、Particle Guidance、传统规划，并比较真正学习的双视角二维头。
 
 合理的研究贡献应来自困难任务上可验证的有效路线覆盖和可选性，不能仅由“VLM＋扩散/查询”这个模块组合或本轮 toy 高分得出。
+
+2026-10-02研究V2接续：本报告数值和 `demo_candidates.json` 继续作为原三路历史基线保留。新增可变开口、真实Qwen/RGB-D、RLBench-derived障碍/多目标采集、三种子定位修复及新布局开发结果见 [RESEARCH_V2_ZH.md](RESEARCH_V2_ZH.md)、[EVIDENCE_MATRIX.md](EVIDENCE_MATRIX.md) 与 [MAIN_RESULTS.json](MAIN_RESULTS.json)。原TEST/OOD不再作为新方法的未触碰确认集；新的锁定父划分另行登记。不要把历史受控结果与新观测结果混为同一评价。

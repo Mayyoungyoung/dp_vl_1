@@ -22,7 +22,10 @@
 | 软坐标均值会损害当前观测定位 | 配对三种子支持常规修复 | OBSERVATION_PEAK_ANCHOR；natural64严格语义17.36±13.19%→83.68±6.62%，参考ADE6.47→4.55cm；同参数、数据、曝光 | 仍是旧8父DEV；峰值读取是传统定位修复，不能包装为集合新机制 |
 | 峰值读取稳定改善障碍路线 | 尚未获支持 | obstacle32原ADE选模语义19.44→28.47%但峰值seed1为0，ADE18.38→19.30cm；seed0 TipValid4/48→8/48 | 额外固定步检查必须双方所有seed；不替换主选模；box tip检查不等于机器人执行 |
 | 在线RGB-D LoRA改善共享预训练头 | 未获支持 | OBSERVATION_ONLINE_RGBD_PAIR：两臂1000×4，均选共同step0；last均退化 | 真实Qwen、8adapter张量实际更新；原始失败与公共预训练成本保留 |
-| 观测A*传统基线已合理运行 | 尚未达到 | OBSERVED_ASTAR_BASELINE：v1全部48槽因start/goal不可通行失败 | 先固定TRAIN诊断；不得用该失败版本宣称胜强传统规划 |
+| 观测A*传统基线已合理运行 | v2已实测 | OBSERVED_ASTAR_V2_PROTOCOL：固定TRAIN修复后44/48 TipValid，UniqueClassified1.333，median1.969s；v1失败保留 | 闭集指令原型、末端箱体检查；低覆盖且非整机执行，尚无固定时间公平对比 |
+| 峰值定位收益迁移到新布局 | 三种子开发支持 | OBSERVATION_FRESH_DEV_TRANSFER：原64模型soft28.47±3.18%→peak72.05±3.14%，无新训练 | 新16DEV已用于分析，不是锁定TEST；原型单端点40/48仍强 |
+| 新192观测训练有效 | 配对seed0实测 | OBSERVATION_RESERVED192_PAIR：原ADE-best语义66.67%→95.83%，各384000槽 | 仅常规定位修复，peak末步回落87.5%，相对64数据与曝光均三倍 |
+| v参数化解决扩散路线失效 | 未获支持 | DIFFUSION_PARAMETERIZATION_RESULTS：v-set Unique.7969；仍约75%碰撞 | 单训练seed；准备有上限的额外曝光检查，不声称充分强扩散基线 |
 | 研究初版核心已成立 | 尚未成立 | REMAINING_EXPERIMENTS.md | 主要缺口是有效观测规划和稳定核心优势；剩余工作不只是扩大规模 |
 
 所有开发集bootstrap区间只描述已选择开发数据上的配对差异，不能作为最终锁定测试的确认性推断。未实测字段在MAIN_RESULTS中留空。
