@@ -1,4 +1,4 @@
-"""Controlled multi-gate development experiments; locked splits are never read.
+"""Controlled multi-gate development experiments; locked splits are never used.
 
 Historical SetRegressor is unchanged. The all-positive assignment is a strong
 loss control, not a claimed novel method. It selects K positive references via
@@ -32,6 +32,18 @@ def positive_assignment_loss(pred, targets, mask, objective, rng):
             raise ValueError('Every training item needs at least one known positive')
         if objective == 'subset':
             ids = rng.permutation(ids)[:k]
+        if objective == 'saturation' and len(ids) < k:
+            # Exact minimum-cost assignment that covers every known positive
+            # at least once while letting excess candidates use any positive.
+            # Randomly duplicating targets would force stochastic multiplicity
+            # into deterministic queries and can average incompatible routes.
+            small = detached[row][:, ids]
+            nearest = small.argmin(1)
+            base = small.min(1)
+            target_rows, candidate_cols = linear_sum_assignment((small-base[:, None]).T)
+            nearest[candidate_cols] = target_rows
+            selected.append(costs[row, np.arange(k), ids[nearest]].mean())
+            continue
         # If there are fewer types than K, duplicates are legitimate candidates.
         # Cover every known type before adding repeated positive targets.
         if len(ids) < k:
@@ -114,7 +126,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--data', required=True)
     p.add_argument('--output', required=True)
-    p.add_argument('--objective', choices=['subset', 'positive'], default='subset')
+    p.add_argument('--objective', choices=['subset', 'positive', 'saturation'], default='subset')
     p.add_argument('--steps', type=int, default=3000)
     p.add_argument('--batch-size', type=int, default=64)
     p.add_argument('--candidates', type=int, default=4)
@@ -164,6 +176,7 @@ def main():
         # Separate sampler prevents different assignment RNG usage changing scenes.
         sample_rng = np.random.default_rng(args.seed + 100000)
         start_step, best, elapsed_before, exposures = 0, -float('inf'), 0., 0
+        reference_pool_access = 0
         history = []
         if args.resume:
             ck = torch.load(out/'last.pt', map_location=args.device, weights_only=False)
@@ -173,6 +186,7 @@ def main():
             model.load_state_dict(ck['model']); optim.load_state_dict(ck['optimizer']); schedule.load_state_dict(ck['scheduler'])
             restore_rng(ck['rng'], rng); sample_rng.bit_generator.state = ck['sampler_state']
             start_step, best, elapsed_before, exposures = ck['step'], ck['best'], ck['elapsed_s'], ck['trajectory_exposures']
+            reference_pool_access = ck.get('reference_pool_access', 0)
             history = ck['history']
         start = synchronized_time(args.device)
         losses = []
@@ -181,6 +195,7 @@ def main():
             idx = sample_rng.choice(train_ids, args.batch_size, replace=True)
             scenes = torch.as_tensor(data['scenes'][idx], device=args.device)
             paths = torch.as_tensor(data['paths'][idx], device=args.device)
+            reference_pool_access += int(data['path_mask'][idx].sum())
             target = encode_paths(paths, scenes)
             optim.zero_grad(set_to_none=True)
             loss = positive_assignment_loss(model(scenes), target, data['path_mask'][idx], args.objective, rng)
@@ -198,7 +213,8 @@ def main():
                 elapsed = elapsed_before+synchronized_time(args.device)-start
                 checkpoint = {'model':model.state_dict(),'optimizer':optim.state_dict(),'scheduler':schedule.state_dict(),
                               'scaler':None,'step':step,'config':config,'rng':rng_state(rng),'sampler_state':sample_rng.bit_generator.state,
-                              'best':best,'history':history,'elapsed_s':elapsed,'trajectory_exposures':exposures}
+                              'best':best,'history':history,'elapsed_s':elapsed,'trajectory_exposures':exposures,
+                              'reference_pool_access':reference_pool_access}
                 atomic_checkpoint(out/'last.pt', checkpoint)
                 if improved:
                     atomic_checkpoint(out/'best.pt', checkpoint)
@@ -213,6 +229,9 @@ def main():
         elapsed = elapsed_before+synchronized_time(args.device)-start
         summary = {'metrics':metrics,'elapsed_s':elapsed,'gpu_hours_reserved':elapsed/3600 if args.device.startswith('cuda') else 0,
                    'trajectory_exposures':exposures,'positive_pool_references_per_scene':'variable, all available to both methods',
+                   'gradient_target_slots':exposures,'reference_pool_access':reference_pool_access,
+                   'padded_pairwise_costs_computed':args.steps*args.batch_size*args.candidates*data['paths'].shape[1],
+                   'assignment_selectable_references':'random K subset with repeats' if args.objective=='subset' else 'all known positives',
                    'parameters':model.active_parameter_count(),'peak_cuda_memory_mb':torch.cuda.max_memory_allocated()/2**20 if args.device.startswith('cuda') else 0,
                    'best_step':ck['step'],'best_checkpoint_sha256':sha256(out/'best.pt'),
                    'prediction_sha256':sha256(out/'dev_model'/'predictions.npz')}

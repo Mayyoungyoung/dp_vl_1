@@ -41,3 +41,15 @@ def test_rng_restore_continues_sampling():
     restore_rng(state,rng)
     np.testing.assert_array_equal(a,rng.integers(10000,size=30))
     torch.testing.assert_close(b,torch.randn(10),atol=0,rtol=0)
+
+
+def test_saturation_matches_exhaustive_valid_multiset_optimum():
+    import itertools
+    pred = torch.tensor([[[[-1.,0.,0.]], [[-0.8,0.,0.]], [[1.1,0.,0.]], [[1.2,0.,0.]]]],requires_grad=True)
+    target = torch.tensor([[[[-1.,0.,0.]], [[1.,0.,0.]]]])
+    loss = positive_assignment_loss(pred,target,np.ones((1,2),bool),'saturation',np.random.default_rng(0))
+    options = [(pred[0]-target[0,list(assignment)]).square().mean()
+               for assignment in itertools.product(range(2),repeat=4) if len(set(assignment))==2]
+    torch.testing.assert_close(loss,torch.stack(options).min())
+    loss.backward()
+    assert torch.isfinite(pred.grad).all()
