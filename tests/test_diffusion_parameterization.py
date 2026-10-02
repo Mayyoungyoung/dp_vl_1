@@ -81,6 +81,60 @@ class DiffusionParameterizationTests(unittest.TestCase):
         zero = guided_sample(schedule, model, condition, 4, 2, torch.Generator().manual_seed(29), strength=0.)
         torch.testing.assert_close(original, zero, atol=0, rtol=0)
 
+    def test_new_output_continuation_preserves_source_and_full_training_state(self):
+        from routeset.common import sha256
+        from scripts.train_multigate_diffusion import train_one
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = generate_dataset(root / "data.npz", train=2, dev_model=1,
+                dev_score=0, calibration=0, test_locked=0, ood_locked=0)
+            common = dict(data=str(data), arm="set_diffusion", parameterization="v",
+                batch_size=2, candidates=4, width=16, depth=1, lr=3e-4, seed=8,
+                eval_every=2, diffusion_steps=100, sampling_steps=2, eval_candidates=[4],
+                final_repeats=1, latency_requests=0, threads=1, device="cpu", resume=False, stop_after=None)
+            train_one(Namespace(**common, steps=4, output=str(root / "continuous"), continue_from=None))
+            train_one(Namespace(**common, steps=2, output=str(root / "source"), continue_from=None))
+            original = {name: sha256(root / "source" / name)
+                        for name in ("last.pt", "best.pt", "config.json", "summary.json", "history.json")}
+            continuation = Namespace(**common, steps=4, output=str(root / "continued"),
+                                     continue_from=str(root / "source/last.pt"))
+            with np.load(data, allow_pickle=False) as archive:
+                changed = {name: archive[name].copy() for name in archive.files}
+            changed["scenes"][0, 0] += .001
+            np.savez_compressed(root / "changed.npz", **changed)
+            for key, value in (("lr", 1e-4), ("data", str(root / "changed.npz")), ("parameterization", "epsilon")):
+                rejected = copy.copy(continuation)
+                rejected.output = str(root / ("rejected_" + key))
+                setattr(rejected, key, value)
+                with self.assertRaisesRegex(ValueError, "Continuation config mismatch"):
+                    train_one(rejected)
+                self.assertFalse((Path(rejected.output) / "best.pt").exists())
+            # Also exercise an interruption/resumption of the new output.
+            continuation.stop_after = 3
+            train_one(continuation)
+            continuation.resume, continuation.stop_after = True, None
+            train_one(continuation)
+            a = torch.load(root / "continuous/last.pt", weights_only=False)
+            b = torch.load(root / "continued/last.pt", weights_only=False)
+            for key in a["model"]:
+                torch.testing.assert_close(a["model"][key], b["model"][key], atol=0, rtol=0)
+            self.assertEqual(a["optimizer"]["param_groups"], b["optimizer"]["param_groups"])
+            for parameter, state in a["optimizer"]["state"].items():
+                for key, value in state.items():
+                    torch.testing.assert_close(value, b["optimizer"]["state"][parameter][key], atol=0, rtol=0)
+            self.assertEqual(a["scheduler"], b["scheduler"])
+            self.assertEqual(a["stream"]["digest"], b["stream"]["digest"])
+            torch.testing.assert_close(a["stream"]["noise"], b["stream"]["noise"], atol=0, rtol=0)
+            torch.testing.assert_close(a["rng"]["torch"], b["rng"]["torch"], atol=0, rtol=0)
+            self.assertEqual(a["loss_tail"], b["loss_tail"])
+            self.assertEqual(b["trajectory_exposures"], 32)
+            self.assertEqual(b["incremental_trajectory_exposures"], 16)
+            self.assertEqual(b["cost_origin"]["prior_trajectory_exposures"], 16)
+            self.assertGreater(b["cumulative_elapsed_s"], b["elapsed_s"])
+            self.assertEqual(b["config"]["continuation"]["source_checkpoint_sha256"], original["last.pt"])
+            for name, digest in original.items():
+                self.assertEqual(sha256(root / "source" / name), digest)
+
 
 if __name__ == "__main__":
     unittest.main()

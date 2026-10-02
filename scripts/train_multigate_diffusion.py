@@ -6,6 +6,7 @@ Invoke each arm in a separate recorded immutable-source job.
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +21,17 @@ from routeset.train_v2 import atomic_checkpoint, restore_rng, rng_state, synchro
 
 
 ARMS = ("independent", "set_diffusion")
+
+
+def check_continuation(config, previous):
+    """Only total steps and explicitly recorded runtime/provenance may change."""
+    ignored = {"steps", "output", "data", "resume", "stop_after", "continue_from", "continuation",
+               "code_commit", "gpu_uuid", "source_hashes"}
+    for key in set(config) | set(previous):
+        if key not in ignored and config.get(key) != previous.get(key):
+            raise ValueError("Continuation config mismatch: " + key)
+    if config["steps"] <= previous["steps"]:
+        raise ValueError("Continuation must increase the original total steps")
 
 
 def _parent_mean(values, parents):
@@ -100,11 +112,16 @@ def train_one(args):
     seed_all(args.seed)
     data, train_ids, dev_ids = load_development(args.data)
     out = Path(args.output)
+    continue_from = getattr(args, "continue_from", None)
+    if continue_from and Path(continue_from).resolve().parent == out.resolve():
+        raise ValueError("continuation requires a new output, preserving the source run")
     out.mkdir(parents=True, exist_ok=True)
     if (out / "last.pt").exists() and not args.resume:
         raise RuntimeError("existing checkpoint: use --resume or a new output")
     if args.resume and not (out / "last.pt").exists():
         raise RuntimeError("resume checkpoint missing")
+    if continue_from and not args.resume and (out / "best.pt").exists():
+        raise RuntimeError("continuation requires a fresh output without an existing best checkpoint")
     lock = out / "active.lock"
     descriptor = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     os.write(descriptor, str(os.getpid()).encode())
@@ -118,6 +135,7 @@ def train_one(args):
             "routeset/multigate.py", "routeset/train_v2.py")}
         config = vars(args).copy()
         config["parameterization"] = getattr(args, "parameterization", "epsilon")
+        config["continue_from"] = str(Path(continue_from).resolve()) if continue_from else None
         config.update(dataset_sha256=sha256(args.data), source_hashes=source_hashes,
             horizon=int(data["paths"].shape[-2]), cond_dim=int(data["scenes"].shape[-1]),
             code_commit=os.environ.get("CODE_COMMIT", "unrecorded"), gpu_uuid=os.environ.get("RESEARCH_GPU_UUID"),
@@ -136,12 +154,16 @@ def train_one(args):
         global_rng = np.random.default_rng(args.seed)
         start_step, best, elapsed_before, exposures, pool_access = 0, -float("inf"), 0., 0, 0
         history, losses = [], []
+        cost_origin = dict(prior_elapsed_s=0., prior_trajectory_exposures=0,
+                           prior_reference_pool_access=0, start_step=0)
         if args.resume:
             ck = torch.load(out / "last.pt", map_location=args.device, weights_only=False)
-            ignored = {"resume", "stop_after", "output", "data", "code_commit", "gpu_uuid"}
+            ignored = {"resume", "stop_after", "output", "data", "code_commit", "gpu_uuid", "continuation", "continue_from"}
             for key in set(config) | set(ck["config"]):
                 if key not in ignored and config.get(key) != ck["config"].get(key):
                     raise ValueError("Resume config mismatch: " + key)
+            if continue_from and config["continue_from"] != ck["config"].get("continue_from"):
+                raise ValueError("Resume continuation source mismatch")
             model.load_state_dict(ck["model"])
             optimizer.load_state_dict(ck["optimizer"])
             scheduler.load_state_dict(ck["scheduler"])
@@ -150,6 +172,49 @@ def train_one(args):
             start_step, best, elapsed_before = ck["step"], ck["best"], ck["elapsed_s"]
             exposures, pool_access = ck["trajectory_exposures"], ck["reference_pool_access"]
             history, losses = ck["history"], ck["loss_tail"]
+            cost_origin = ck.get("cost_origin", cost_origin)
+            config["continue_from"] = ck["config"].get("continue_from")
+            if "continuation" in ck["config"]:
+                config["continuation"] = ck["config"]["continuation"]
+        elif continue_from:
+            original = Path(continue_from).resolve()
+            if original.name != "last.pt":
+                raise ValueError("continue from the source last.pt, not its selected best")
+            if (original.parent / "active.lock").exists():
+                raise RuntimeError("source run has a lock; verify completion before continuing")
+            ck = torch.load(original, map_location=args.device, weights_only=False)
+            check_continuation(config, ck["config"])
+            original_best = original.parent / "best.pt"
+            best_ck = torch.load(original_best, map_location="cpu", weights_only=False)
+            check_continuation(config, best_ck["config"])
+            if best_ck["step"] > ck["step"] or ck["step"] != ck["config"]["steps"]:
+                raise ValueError("continuation source must be a completed run with best no later than last")
+            original_summary = original.parent / "summary.json"
+            prior_summary = json.loads(original_summary.read_text(encoding="utf-8"))
+            source_hash, best_hash = sha256(original), sha256(original_best)
+            if (prior_summary["trajectory_exposures"] != ck["trajectory_exposures"]
+                    or prior_summary["last_checkpoint_sha256"] != source_hash
+                    or prior_summary["best_checkpoint_sha256"] != best_hash
+                    or prior_summary["training_stream_sha256"] != ck["stream"]["digest"]):
+                raise ValueError("source summary/checkpoint provenance mismatch")
+            model.load_state_dict(ck["model"])
+            optimizer.load_state_dict(ck["optimizer"])
+            scheduler.load_state_dict(ck["scheduler"])
+            restore_rng(ck["rng"], global_rng)
+            stream.load_state_dict(ck["stream"])
+            start_step, best = ck["step"], ck["best"]
+            exposures, pool_access = ck["trajectory_exposures"], ck["reference_pool_access"]
+            history, losses = ck["history"], ck["loss_tail"]
+            prior_elapsed = max(ck.get("cumulative_elapsed_s", ck["elapsed_s"]),
+                prior_summary.get("cumulative_elapsed_s", prior_summary["elapsed_s"]))
+            cost_origin = dict(prior_elapsed_s=prior_elapsed, prior_trajectory_exposures=exposures,
+                               prior_reference_pool_access=pool_access, start_step=start_step)
+            config["continuation"] = dict(source_checkpoint=str(original), source_checkpoint_sha256=source_hash,
+                source_best_checkpoint=str(original_best), source_best_checkpoint_sha256=best_hash,
+                source_summary_sha256=sha256(original_summary), source_code_commit=ck["config"].get("code_commit"),
+                source_source_hashes=ck["config"]["source_hashes"], source_steps=ck["step"],
+                source_best_step=best_ck["step"], source_stream_sha256=ck["stream"]["digest"])
+            shutil.copy2(original_best, out / "best.pt")
         write_json(out / "config.json", config)
         write_json(out / "status.json", dict(status="running", pid=os.getpid(), step=start_step,
                                              resume_command="repeat recorded command with --resume"))
@@ -187,6 +252,10 @@ def train_one(args):
                     scaler=None, rng=rng_state(global_rng), stream=stream.state_dict(), step=step, best=best,
                     history=history, loss_tail=losses, config=config, trajectory_exposures=exposures,
                     reference_pool_access=pool_access, elapsed_s=elapsed_before + synchronized_time(args.device) - started)
+                checkpoint.update(cost_origin=cost_origin,
+                    cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + checkpoint["elapsed_s"],
+                    incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"],
+                    incremental_reference_pool_access=pool_access - cost_origin["prior_reference_pool_access"])
                 atomic_checkpoint(out / "last.pt", checkpoint)
                 if improved:
                     atomic_checkpoint(out / "best.pt", checkpoint)
@@ -220,6 +289,13 @@ def train_one(args):
             prediction_sha256=prediction_hashes,
             peak_cuda_memory_mb=torch.cuda.max_memory_allocated() / 2**20 if args.device.startswith("cuda") else 0.,
             cost_scope="training, intermediate DEV evaluation, final separate repeats and latency measurement; one real training seed")
+        summary.update(cost_origin=cost_origin, incremental_elapsed_s=elapsed,
+            cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + elapsed,
+            incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"],
+            incremental_reference_pool_access=pool_access - cost_origin["prior_reference_pool_access"],
+            cumulative_gpu_hours_reserved=(cost_origin["prior_elapsed_s"] + elapsed) / 3600 if args.device.startswith("cuda") else 0.,
+            selected_checkpoint_from_prior_run=ck["step"] <= cost_origin["start_step"],
+            cost_scope="elapsed_s/gpu_hours_reserved are this output's incremental training/evaluation cost; cumulative_* include prior completed run once; exposures are cumulative")
         write_json(out / "summary.json", summary)
         write_json(out / "status.json", dict(status="completed", step=args.steps, exit_code=0))
         print(json.dumps(dict(arm=args.arm, best_step=ck["step"], elapsed_s=elapsed,
@@ -254,6 +330,7 @@ def main():
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--continue-from", help="Completed source last.pt; restore full state into a new output and increase --steps")
     parser.add_argument("--stop-after", type=int)
     train_one(parser.parse_args())
 
