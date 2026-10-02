@@ -1,6 +1,6 @@
 """Independent on/off rendering audit; never modifies the formal collector.
 
-Both arms collect only TRAIN reach_target_281000 proposal 0, in separate
+Both arms collect one explicitly registered TRAIN parent proposal 0, in separate
 processes and output roots. These are two additional collection proposals.
 Initial/restored observations remain RGB-D. Only get_demo motion recording
 temporarily suppresses image capture; every pose/open observation is retained.
@@ -27,9 +27,17 @@ def demo_camera_flags(scene, off):
         camera.rgb,camera.depth,camera.point_cloud,camera.mask=before
 
 
-def run_arm(output, mode):
+def select_train_parent(plan, parent_id):
+    matches=[parent for parent in plan['parents'] if parent['parent_id']==parent_id]
+    if len(matches)!=1 or matches[0]['split']!='TRAIN':
+        raise ValueError('Camera audit requires exactly one registered TRAIN parent')
+    return matches[0]
+
+
+def run_arm(output, mode, parent_id='reach_target_281000'):
     from scripts import observation_collect_multitask as collection
     from rlbench.backend.scene import Scene
+    spec=select_train_parent(collection.registration(281000),parent_id)
     if output.exists():raise FileExistsError('Preserve prior performance arm')
     output.mkdir(parents=True);data=output/'data'
     plan=collection.ensure_registration(data,281000);collection.ensure_source(data)
@@ -56,17 +64,19 @@ def run_arm(output, mode):
     Scene.get_demo,Scene.get_observation=demo,observe
     began=time.perf_counter()
     try:
-        code=collection.worker(data,plan,plan['parents'][0],max_new_attempts=1)
+        code=collection.worker(data,plan,spec,max_new_attempts=1)
     finally:
         Scene.get_demo,Scene.get_observation=original_demo,original_observation
     if code!=3:raise RuntimeError('Expected one committed attempt then controlled exit 3; got '+str(code))
-    folder=collection.parent_folder(data,plan['parents'][0]);records=collection.completed_records(folder)
+    folder=collection.parent_folder(data,spec);records=collection.completed_records(folder)
     assert len(records)==1 and records[0]['attempt']==0
     assert state['flags_restored'] and state['pose_open_observations']==state['observations_during_demo']
     if mode=='off':assert state['rgb_during_demo']==state['depth_during_demo']==0
     result=dict(mode=mode,worker_seconds=time.perf_counter()-began,worker_exit_code=code,
         original_task_success=records[0]['success'],additional_collection_proposals=1,source_sha256=collection.digest(__file__),
-        collector_sha256=collection.digest(collection.__file__),parent_id='reach_target_281000',proposal=0,
+        collector_sha256=collection.digest(collection.__file__),parent_id=parent_id,task=spec['task'],proposal=0,
+        event_transition_indices=records[0].get('event_transition_indices'),
+        trajectory_sha256=records[0].get('trajectory_sha256'),event_sha256=records[0].get('event_sha256'),
         formal_collector_modified=False,performance_override_scope='Scene.get_demo only; no prefix candidate in this probe',**state)
     collection.atomic_json(output/'result.json',result);print(json.dumps(result),flush=True)
 
@@ -76,9 +86,11 @@ def compare(on, off, output):
     from scripts import observation_collect_multitask as collection
     if output.exists():raise FileExistsError('Preserve comparison output')
     summaries=[json.loads((root/'result.json').read_text()) for root in (on,off)]
+    if summaries[0]['parent_id']!=summaries[1]['parent_id'] or summaries[0]['proposal']!=summaries[1]['proposal']:
+        raise ValueError('Cannot compare different parent/proposal arms')
     arrays=[];world=[];descriptions=[];routes=[]
     for root in (on,off):
-        parent=root/'data/TRAIN/parents/reach_target_281000'
+        parent=root/'data/TRAIN/parents'/summaries[0]['parent_id']
         reference=parent/json.loads((parent/'reference_pointer.json').read_text())['directory']
         with np.load(reference/'observation.npz',allow_pickle=False) as archive:item={key:archive[key].copy() for key in archive.files}
         item['rgb']=np.asarray(Image.open(reference/'front.png'));arrays.append(item)
@@ -92,18 +104,21 @@ def compare(on, off, output):
         for name in ('gripper_pose','gripper_open'):
             left,right=routes[0][name],routes[1][name];same_shape=left.shape==right.shape
             trajectory[name]=dict(shape_on=list(left.shape),shape_off=list(right.shape),exact_equal=bool(np.array_equal(left,right)),max_absolute_difference=float(np.abs(left-right).max()) if same_shape else None)
-    equivalent=(not any(inputs.values()) and world[0]==world[1] and descriptions[0]==descriptions[1] and
+    event_equal=(summaries[0].get('event_transition_indices')==summaries[1].get('event_transition_indices'))
+    equivalent=(not any(inputs.values()) and world[0]==world[1] and descriptions[0]==descriptions[1] and event_equal and
         len(trajectory)==2 and all(value['exact_equal'] for value in trajectory.values()) and all(row['original_task_success'] for row in summaries))
     result=dict(arms=summaries,initial_max_differences=inputs,world_exact_equal=world[0]==world[1],language_equal=descriptions[0]==descriptions[1],trajectory_comparison=trajectory,
-        single_parent_exact_equivalence=equivalent,worker_wall_speedup=summaries[0]['worker_seconds']/summaries[1]['worker_seconds'],
-        get_demo_speedup=summaries[0]['demo_seconds']/summaries[1]['demo_seconds'],additional_collection_proposals=2,
+        single_parent_exact_equivalence=equivalent,event_transition_indices_equal=event_equal,
+        worker_wall_speedup=summaries[0]['worker_seconds']/summaries[1]['worker_seconds'],
+        get_demo_speedup=summaries[0]['demo_seconds']/summaries[1]['demo_seconds'] if summaries[1]['demo_seconds'] else None,additional_collection_proposals=2,
         limitation='One TRAIN parent/proposal performance audit, not a new route-type or method result; no automatic adoption in formal collection',source_sha256=collection.digest(__file__))
     collection.atomic_json(output,result);print(json.dumps(result),flush=True)
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--mode',choices=('on','off'));parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--parent-id',default='reach_target_281000')
     parser.add_argument('--compare',nargs=2,type=Path);args=parser.parse_args()
     if args.compare:compare(*args.compare,args.output)
-    elif args.mode:run_arm(args.output,args.mode)
+    elif args.mode:run_arm(args.output,args.mode,args.parent_id)
     else:parser.error('--mode or --compare required')
