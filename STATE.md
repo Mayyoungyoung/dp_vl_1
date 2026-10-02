@@ -1,5 +1,11 @@
 # State — 2026-10-02
 
+## Implementation checkpoint — 21:12 UTC / 2026-10-03 05:12 China
+
+- Full preceding evidence is pushed and remote-verified at84cd563b99fb37e308b05eb310ff0f563bb8e123: MAIN258, historical251 rows unchanged. Current new source contains an independent prefix76/12000 ordinary driver with exact first1500 reproduction gate, and a standard spatial-penalty A* adapter. Both are implemented, not yet server-validated or launched. Keep original6000/base/planner/collector files unchanged.
+- Local convergence new+old checks61passed/2Torch skips; spatial new+old23passed, independent spatial review has no blocker. Actual server Torch validation is still required. A copied budget-reporting defect was caught before any run and replaced by derived stage/total budget identities. Spatial shared-fit identity excludes only the existing fitter's measured training_seconds, retaining all parameters/data hashes.
+- At21:06:51UTC the formal116 mechanical-only audit saw112 closure filenames:64TRAIN/12DEV_MODEL/12DEV_SCORE/12CALIBRATION/12of16TEST_LOCKED. Session had no finish/exit marker yet. No closure contents, locked arrays or outcomes were opened. Do not treat marker counts as successful references.
+
 ## Current checkpoint — 20:45 UTC / 2026-10-03 04:45 China
 
 This block supersedes all older running/pending statements below. The older dated blocks are historical records, not restart instructions.

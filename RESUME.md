@@ -1,5 +1,9 @@
 # Resume
 
+## Implementation checkpoint — 2026-10-02 21:12 UTC
+
+Evidence commit84cd563b99fb37e308b05eb310ff0f563bb8e123 is remote-verified; MAIN258. New independent launchers are `launch_observed_two_row_convergence64_v1.sh REVISION stage1500|finish [resume]` and `launch_observed_two_row_spatial_penalty_v1.sh REVISION train_preflight|dev`. Source freeze/server tests precede both. Read and verify each successful gate before its separately launched second stage; no stage chaining, failed-candidate replacement, or replay of completed stages. These experiments have not launched at this checkpoint. Formal116 remains original2626487;21:06 mechanical audit112/116 closure markers only, no locked outcomes.
+
 ## Latest actual checkpoint — 2026-10-02 20:45 UTC
 
 Read this block before older dated notes below; those are historical, not current launch instructions. Prefix76 full1500-step pipeline, prefix44 bounded6000 convergence, first16TRAIN cross-goal opportunity screen and original A*32/64 controls are all COMPLETE. Do not rerun their fresh launchers or automatically extend either training schedule. Sourceac6882c convergence stage1500 and finish both exited0; full-state1500 proof passed withzero tolerance. Read reports/observed_two_row_prefix44_convergence_v1/CONVERGENCE_RESULTS.md and its diagnosis/DIAGNOSIS_AND_VISUAL_QA.md. Fixedlast TRAIN97.04% versus DEV34.03% TipValid supports a remaining generalization gap at32requested/31actual TRAIN parents;64/1500 last TRAIN20.11% still underfits.6000 onlineQwen timing remains unmeasured.
