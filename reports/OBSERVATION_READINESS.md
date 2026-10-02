@@ -202,3 +202,11 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 固定 `093a1b4` 的首次CPU预检在参数审计阶段失败：旧hash函数无法直接把geometry标量log_attention_scale view为字节。原失败log/exit1完整保留，旧模型/评价无改动。局部修复在新入口flatten后计算hash，固定 `9c19288b0e2fb86b6bea42ac23758314134872c0` 后真实小Qwen结构CPU自测通过：8/8 adapter有非零梯度且真实更新，46/46几何与头参数张量更新，冻结base不变；零B初始化输出与冻结模型逐位相同，optimizer/RNG/sampler/scheduler恢复后的参数最大差为0。小模型测试不等于本轮2B模型已训练成功。
 
 同release的完整new64初始化核验也实际通过：216输入、192有参考TRAIN、24 DEV语义/23 DEV参考；每请求12544观测点、头1231965参数（几何321537），全部训练。共同best SHA `281aa924fd78207ad55795214a232ce87aab7000a8b2da8ea81c805f06d9a5f8`，全部当前图像、RGB-D与路线来源hash和预训练一致。验证不加载隐藏特征缓存、2B骨干或GPU。失败及成功的真实命令、PID、源码SHA、退出码和完整审计在 `reports/observed_online_geometry_preflight/`；GPU正式配对由主任务统一启动与记录。
+
+### 正式新父场景的预注册保留分区（更正原初始开发计划）
+
+正式collector原始manifest仍按启动时的192TRAIN/64DEV写入，不改运行源码或重写历史标签。但正式导出必须应用 `configs/observation_partition_reservation_v1.json`（2026-10-02 10:10:31 UTC注册、commit6799d83），不能继续按早期“后64父全部开发”的描述使用数据。
+
+natural父262000–262191为TRAIN，262192–262207为DEV_MODEL，262208–262223为DEV_SCORE，262224–262239为CALIBRATION，262240–262255为TEST_LOCKED。所有轨迹、语言、视角和条件变体随父继承角色。旧261024–261031仍是已反复使用的开发集；新64学习曲线的TRAIN来自262000–262063，配套旧8DEV，所以现有方法选择没有读取新保留父。
+
+同预注册也保留obstacle父272120–272127为TEST_LOCKED，评分/校准与生成器开发分开。研究期间不读取锁定图像、轨迹、目标或逐场景/总体模型结果；只允许格式、恢复、hash和总采集失败机械审计。不得直接对整个raw collector目录训练或评价，也不以新成功父替换失败父。OOD_LOCKED尚未建立，需要另外声明真实分布变化，不能把这批IID保留父改名为OOD。

@@ -1,6 +1,6 @@
 # Multigate扩散强基线：实现前协议
 
-状态：新增实现已完成、本地语法检查通过，必要CPU测试等待固定源码后执行，尚无新扩散训练结果；GPU启动由根线程控制。现有普通集合回归是强基线，新扩散不是预设主方法。
+状态：新增实现已完成，固定提交 `f78460795b2658c1767848533d9117a29ccc64c7` 上必要CPU测试实际通过（5 passed in 2.75s），尚无新扩散训练结果；GPU启动由根线程控制。现有普通集合回归是强基线，新扩散不是预设主方法。
 
 ## 复用边界
 
@@ -45,7 +45,7 @@ gamma=0是原始采样；K1必须严格无作用。当前仅实现适配器与�
 - `scripts/train_multigate_diffusion.py`：真实epsilon训练、best/last完整状态、严格resume、不同K三次独立评价、父均值、生成+传输+checker单请求计时。K1/2/8明确标未见K推断；没有硬把固定K4回归改成K8对照。
 - `tests/test_multigate_diffusion.py`：5项有关实现的测试，包含真实最小训练与恢复，不是指标达成证据。
 
-以下是待执行命令模板，必须在根线程固定的immutable release及record_job内执行，不能据此称已训练：
+以下训练命令为待执行模板，必须在根线程固定的immutable release及record_job内执行，不能据此称已训练。第一条CPU测试已经真实执行：
 
 ```sh
 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 /home/wzy/dpvlm/route_set_v1/.venv/bin/python -m pytest tests/test_multigate_diffusion.py -q
@@ -61,3 +61,11 @@ CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 /home/wzy/dpvlm/route_set_v1/.venv/bin/
 ```
 
 真实预算由summary记录。本组每臂768000目标槽；训练参考池访问量和滚动stream哈希必须最终相同。模型的active参数数目、训练/评价总耗时及GPU小时另报，不用步数代替成本。最终3次随机重复分别生成K个、分别评价再平均；日志与每次predictions保留重复和无效输出。中途checkpoint选择只用单个固定DEV噪声seed，最终重复是同DEV诊断而不是新测试。
+
+2026-10-02 CPU验证记录：`reports/multigate_diffusion_v1_validation/targeted_f784607.{log,status.json}`。record_job PID227087、child227088，10:16:29至10:16:32 UTC，exit0、CUDA隐藏、CPU1；结束后CPU槽已归还其它研究诊断。连续4步与2+恢复至4的模型参数/调度器/噪声/损失严格相同，两真实训练臂的实际stream hash相同。未运行无关全仓测试。
+
+固定launcher：服务器 `research_v2/incoming/launch_multigate_diffusion_v1_f784607.sh`，SHA `ea4f7826cb997adb916ac46e9b250ccad340a6e662fe0f01c0d32e83bf473e09`；已上传并通过 `bash -n`，准备时尚未启动GPU。launcher核验源码、数据、GPU UUID、pytest结果和新输出，逐臂记录PID/log/exit/恢复命令，完成后再核验实际同stream/目标槽/参考池访问。运行后以真实日志与状态为准。
+
+首启失败保留：根线程启动上述launcher后在preflight退出1，报 `Immutable source hash mismatch: scripts/train_multigate_diffusion.py`，尚未进入任何训练臂。实际审计发现Git blob为LF、服务器固定导出为CRLF，8个所用源码逐字节归一化后全部等于Git blob。`reports/multigate_diffusion_v1_validation/release_hash_audit.json` 同时保存实际部署raw hash和Git blob LF hash；没有修改release，也没有因为这项包装错误重跑已在实际release通过的CPU测试。
+
+新的独立launcher是 `research_v2/incoming/launch_multigate_diffusion_v1_f784607_v2.sh`，SHA `21b69c4245af343330294065d2dbd1a45b222e33876c2d0d60aa0ccdc308cb18`，同时严格核验部署原始字节和归一化Git blob。旧launcher与失败事实保留，训练/评价配置完全不变。已通过shell语法和双端hash检查，GPU启动仍由根线程执行。

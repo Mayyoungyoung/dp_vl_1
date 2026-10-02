@@ -89,11 +89,18 @@ def main():
             reference_evaluation_examples=result['reference_evaluation_examples'],semantic_evaluation_examples=result['semantic_evaluation_examples'],
             cpu_endpoint_ms=result['cpu_latency_ms']['median'],cost_scope='one endpoint only; no path, Qwen, scorer or execution; reference and center error denominators differ',
             source=str(source.relative_to(root))))
-    for source in sorted(reports.glob('obstacle_new*_evaluation/tip_evaluation_v1/*/dev_model/metrics.json')):
+    tip_sources = sorted(reports.glob('obstacle_new*_evaluation/tip_evaluation_v1/*/dev_model/metrics.json'))
+    tip_sources += sorted(reports.glob('obstacle_new*_evaluation/hard_tip_evaluation_v1/dev_model/metrics.json'))
+    tip_sources += sorted(reports.glob('obstacle_fixed_step1000_evaluation/tip_evaluation_v1/*/metrics.json'))
+    for source in tip_sources:
         metrics=json.loads(source.read_text())
+        fixed_step = 'obstacle_fixed_step1000_evaluation' in source.parts
+        method = source.parent.name if fixed_step else source.parent.parent.name
+        seed = int(method.rsplit('_seed',1)[1]) if fixed_step else 0
         rows.append(dict(tier='observed_RGBD_box_tip_check',task='RLBench_derived_obstacle_reach_three_targets',
-            protocol=metrics['evaluation_protocol'],method=source.parent.parent.name,seed=0,split='DEV_MODEL',K=metrics['candidates'],
-            run_id=str(source.parent.parent.relative_to(reports)),TipValidAtK=metrics['TipValidAtK'],
+            protocol=metrics['evaluation_protocol'],method=method,seed=seed,split='DEV_MODEL',K=metrics['candidates'],
+            checkpoint_selection_protocol='fixed_step_1000' if fixed_step else 'original_DEV_ADE_best',
+            run_id=str(source.parent.relative_to(reports)),TipValidAtK=metrics['TipValidAtK'],
             AnyTipValidAtK=metrics['AnyTipValidAtK'],UniqueClassifiedTipValidAtK=metrics['UniqueClassifiedTipValidAtK'],
             KnownReferenceTypeCoverageAtK=metrics['KnownReferenceTypeCoverageAtK'],TipClearAtK=metrics['TipClearAtK'],
             semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
@@ -105,14 +112,16 @@ def main():
     observation_folders += [p.name for p in reports.glob('observed_learning_curve_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_obstacle_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_online_geometry_*') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_anchor_*') if p.is_dir()]
     for folder in observation_folders:
-        for source in sorted((reports/folder).glob('*/summary.json')):
+        for source in sorted((reports/folder).rglob('summary.json')):
             result=json.loads(source.read_text()); metrics=result['metrics']
             config=json.loads((source.parent/'config.json').read_text())
             rows.append(dict(tier='observed_RGBD_language_current' if 'geometry_role' in config or 'geometry_parameters' in config else 'observed_RGB_language_current',
-                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle_' in folder else 'RLBench_derived_reach_three_targets',
+                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in str(source.parent.relative_to(reports)) else 'RLBench_derived_reach_three_targets',
                 protocol=metrics.get('evaluation_protocol','observation_eval_v1_reference_subset'),
-                method=folder+'_'+source.parent.name+'_'+config.get('adapter_mode','frozen_cache'),
+                checkpoint_selection_protocol='original_DEV_ADE_best',
+                method=folder+'_'+'_'.join(source.parent.relative_to(reports/folder).parts)+'_'+config.get('adapter_mode','frozen_cache'),
                 seed=config['seed'],split='DEV_MODEL',K=config['candidates'],
                 run_id=str(source.parent.relative_to(reports)),training_exposures=result['trajectory_exposures'],
                 common_pretraining_exposures=result.get('common_pretraining',{}).get('total_trajectory_exposures'),
@@ -128,6 +137,18 @@ def main():
                 RGBD_Qwen_generation_ms=metrics.get('online_request_ms_median'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
                 source=str(source.relative_to(root))))
+    for source in sorted((reports/'observed_anchor_fixed_step1000_v1').glob('*/*/metrics.json')):
+        metrics=json.loads(source.read_text()); provenance=json.loads((source.parent/'provenance.json').read_text())
+        rows.append(dict(tier='observed_RGBD_language_current',
+            task='RLBench_derived_obstacle_reach_three_targets' if provenance['setting']=='obstacle32' else 'RLBench_derived_reach_three_targets',
+            protocol=metrics['evaluation_protocol'],checkpoint_selection_protocol='fixed_step_1000',
+            method=provenance['method'],seed=provenance['seed'],split='DEV_MODEL',K=metrics['candidates'],
+            run_id=provenance['training_run'],selected_step=1000,
+            candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
+            semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+            reference_evaluation_examples=metrics['reference_evaluation_examples'],semantic_evaluation_examples=metrics['semantic_evaluation_examples'],
+            cost_scope='uniform last-checkpoint exploratory sensitivity; same runs as primary best rows, no additional training',
+            code_commit=provenance['training_source_commit'],source=str(source.relative_to(root))))
     for source in sorted((reports/'observation_eval_v2').glob('*/metrics.json')):
         metrics=json.loads(source.read_text()); provenance=json.loads((source.parent/'provenance.json').read_text())
         config=provenance.get('original_training_config',{})
@@ -162,7 +183,7 @@ def main():
           'reference_evaluation_examples','semantic_evaluation_examples','training_exposures','training_threads','selected_step','grounding_weight',
           'extra_training_draft_forwards','forward_passes','cost_scope','elapsed_s','gpu_hours',
           'cumulative_elapsed_s','cumulative_gpu_hours','incremental_training_exposures','center_endpoint_error_m','cpu_endpoint_ms',
-          'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms',
+          'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms','checkpoint_selection_protocol',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

@@ -1,0 +1,858 @@
+{
+  "scope": "read-only diagnosis of predeclared first TRAIN sample; no planning/output/threshold change",
+  "id": "obstacle_reach_272000_target0",
+  "split": "TRAIN",
+  "config": {
+    "voxel_m": 0.025,
+    "visible_surface_clearance_m": 0.02,
+    "train_workspace_margin_m": 0.06,
+    "maximum_grid_cells": 2000000,
+    "current_tip_contact_radius_m": 0.04,
+    "target_contact_depth_m": 0.03,
+    "target_contact_radius_rule": "half TRAIN prototype extent plus one voxel",
+    "maximum_expanded_nodes_per_candidate": 20000,
+    "search_deadline_seconds": 2.0,
+    "used_edge_penalty_multiplier": 4.0,
+    "candidates": 4,
+    "horizon": 24,
+    "unknown_policy": "blocked except recorded local current/target contact allowances",
+    "collision_scope": "discrete visible-free-space proxy, not a continuous 2cm physical-clearance certificate; depth projection and surface/grid quantization errors are not jointly bounded",
+    "diagonal_policy": "all touched neighbor voxels, including edge/corner ties, must be free"
+  },
+  "localization": {
+    "status": "predicted",
+    "components_considered": 1,
+    "eligible_components": 1,
+    "candidates_emitted": 1,
+    "selected_component": 1,
+    "selected_component_score": 0.8230549511212765,
+    "pixels": 150,
+    "observed_extent_m": 0.05730362301585129,
+    "color_score": 0.8230724484026533,
+    "extent_score": 0.999978741505185
+  },
+  "original_probe_report_sha256": "75347cb870c53de58b1c0cf2ae748714f5edc0f9090570eb75ecea6a900fa443",
+  "original_grid_geometry_and_permissions_reproduced_exactly": true,
+  "no_dev_labels_or_geometry_read": true,
+  "no_model_or_planner_update": true,
+  "endpoint_audits": {
+    "current_tip": {
+      "point": [
+        0.27884534001350403,
+        -0.008133912459015846,
+        1.4706884622573853
+      ],
+      "rounded_grid_index": [
+        50,
+        36,
+        31
+      ],
+      "rounded_grid_center": [
+        0.2713594460487365,
+        -0.018863353729248078,
+        1.473821666240692
+      ],
+      "point_to_grid_center_m": 0.0134527501137914,
+      "workspace_contains_cell": true,
+      "original_grid_traversable": true,
+      "start_permission": true,
+      "predicted_target_permission": false,
+      "exact_point_projection": {
+        "in_view": true,
+        "pixel_float": [
+          109.53888100478892,
+          5.003173461984919
+        ],
+        "pixel": [
+          110,
+          5
+        ],
+        "camera_z": 1.0169919625644732,
+        "valid_depth": true,
+        "measured_depth": 1.3671058416366577,
+        "measured_surface_minus_point_depth_m": 0.3501138790721845,
+        "predicted_target_component": false,
+        "visibly_free_by_original_depth_rule": true,
+        "behind_measured_surface": false
+      },
+      "cell_center_projection": {
+        "in_view": true,
+        "pixel_float": [
+          106.32289033132479,
+          3.767824080489717
+        ],
+        "pixel": [
+          106,
+          4
+        ],
+        "camera_z": 1.022452337945638,
+        "valid_depth": true,
+        "measured_depth": 1.3647534847259521,
+        "measured_surface_minus_point_depth_m": 0.3423011467803141,
+        "predicted_target_component": false,
+        "visibly_free_by_original_depth_rule": true,
+        "behind_measured_surface": false
+      },
+      "exact_point_nearest_nonselected_surface_distance_m": 0.04150530470573659,
+      "exact_point_nearest_nonselected_surface_xyz": [
+        0.28437007598623776,
+        0.032836097647805956,
+        1.4743797876283788
+      ],
+      "exact_point_nearest_nonselected_surface_pixel_vu": [
+        4,
+        122
+      ],
+      "cell_center_nearest_nonselected_surface_distance_m": 0.031091982074177044,
+      "cell_center_nearest_nonselected_surface_xyz": [
+        0.2749327196495508,
+        -0.04962578518569962,
+        1.4765813538972559
+      ],
+      "nearest_occupied_voxel_center_distance_m": 0.025000000000000022,
+      "nearest_occupied_voxel_center": [
+        0.2713594460487365,
+        -0.0438633537292481,
+        1.473821666240692
+      ],
+      "rejected_by_original_voxel_inflation": true
+    },
+    "predicted_endpoint": {
+      "point": [
+        0.47108563649410806,
+        -0.0717250257567392,
+        0.853594741625042
+      ],
+      "rounded_grid_index": [
+        58,
+        34,
+        6
+      ],
+      "rounded_grid_center": [
+        0.4713594460487367,
+        -0.06886335372924801,
+        0.8488216662406921
+      ],
+      "point_to_grid_center_m": 0.005571928489295102,
+      "workspace_contains_cell": true,
+      "original_grid_traversable": false,
+      "start_permission": false,
+      "predicted_target_permission": true,
+      "exact_point_projection": {
+        "in_view": true,
+        "pixel_float": [
+          92.00000737814692,
+          191.99999370831944
+        ],
+        "pixel": [
+          92,
+          192
+        ],
+        "camera_z": 1.1035579067265766,
+        "valid_depth": true,
+        "measured_depth": 1.1035579442977905,
+        "measured_surface_minus_point_depth_m": 3.7571213917786395e-08,
+        "predicted_target_component": true,
+        "visibly_free_by_original_depth_rule": false,
+        "behind_measured_surface": false
+      },
+      "cell_center_projection": {
+        "in_view": true,
+        "pixel_float": [
+          92.82869096157766,
+          193.10847458855807
+        ],
+        "pixel": [
+          93,
+          193
+        ],
+        "camera_z": 1.1053269385349132,
+        "valid_depth": true,
+        "measured_depth": 1.1033552885055542,
+        "measured_surface_minus_point_depth_m": -0.001971650029358951,
+        "predicted_target_component": true,
+        "visibly_free_by_original_depth_rule": false,
+        "behind_measured_surface": true
+      },
+      "exact_point_nearest_nonselected_surface_distance_m": 0.027336153984171756,
+      "exact_point_nearest_nonselected_surface_xyz": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ],
+      "exact_point_nearest_nonselected_surface_pixel_vu": [
+        195,
+        86
+      ],
+      "cell_center_nearest_nonselected_surface_distance_m": 0.027524207093403478,
+      "cell_center_nearest_nonselected_surface_xyz": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ],
+      "nearest_occupied_voxel_center_distance_m": 0.025000000000000022,
+      "nearest_occupied_voxel_center": [
+        0.4713594460487367,
+        -0.09386335372924803,
+        0.8488216662406921
+      ],
+      "rejected_by_original_voxel_inflation": true
+    }
+  },
+  "overlapping_reason_indicators": {
+    "current_tip": {
+      "outside_workspace": 0,
+      "not_in_view": 0,
+      "invalid_depth": 0,
+      "center_not_in_front_free": 0,
+      "center_not_predicted_target_component": 1,
+      "other_visible_surface_inflation": 1,
+      "original_not_traversable": 0
+    },
+    "predicted_endpoint": {
+      "outside_workspace": 0,
+      "not_in_view": 0,
+      "invalid_depth": 0,
+      "center_not_in_front_free": 1,
+      "center_not_predicted_target_component": 0,
+      "other_visible_surface_inflation": 1,
+      "original_not_traversable": 1
+    }
+  },
+  "adjacent_grid_attachment_audit": [
+    {
+      "index": [
+        57,
+        33,
+        5
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.04458616463883534,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.01494624341568994,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        33,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.033530170115641154,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.019885842396707418,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        33,
+        7
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.038866676456398234,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.026645388735511224,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        34,
+        5
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.03880734052438906,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.02458467174889142,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        34,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.02534474125648935,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.02718707930234768,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        34,
+        7
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.03207338678937569,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        35,
+        5
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.04768745411479254,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        35,
+        6
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.03755581860022422,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        57,
+        35,
+        7
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.04238850954581269,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        33,
+        5
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.037102783654771196,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.008929445146323198,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        33,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.022648681765508123,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.011232691213566945,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        33,
+        7
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.029988481396992513,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.026702773530453937,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        34,
+        5
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.029911538848867585,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.023805225941629506,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        34,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.005571928489295102,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.02727278856953035,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        34,
+        7
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.020430188884891013,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        35,
+        5
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.04077724558723736,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        35,
+        6
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.028268887287340703,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        58,
+        35,
+        7
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.034430745261275986,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        33,
+        5
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.04489217117342604,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.018661929506877076,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        33,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.03393601720070709,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.02292824188944508,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        33,
+        7
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.039217336653949275,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.02718237662487387,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        34,
+        5
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.03915853207206243,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.025920113657293832,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        34,
+        6
+      ],
+      "grid_traversable": false,
+      "distance_from_endpoint_m": 0.025879274812506736,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        34,
+        7
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.03249743213861291,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        35,
+        5
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.04797368273765624,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        35,
+        6
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.037918603167782956,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    },
+    {
+      "index": [
+        59,
+        35,
+        7
+      ],
+      "grid_traversable": true,
+      "distance_from_endpoint_m": 0.042710264538847166,
+      "inside_unchanged_target_radius": true,
+      "original_grid_complete_connector_clear": false,
+      "connector_voxels_checked": 1,
+      "exact_complete_connector_to_nonselected_observed_points_distance_m": 0.027336153984171756,
+      "nearest_nonselected_observed_point": [
+        0.4686099464670037,
+        -0.09399152621367238,
+        0.837931433196187
+      ]
+    }
+  ],
+  "traversable_local_neighbors": 12,
+  "original_grid_clear_connectors_to_free_neighbors": 0,
+  "point_cloud_clearance_limitation": "Exact segment minimum is only against finite nonselected visible points, not solids or unknown-space visibility; it is not an executable connector certificate.",
+  "grid_metadata": {
+    "shape": [
+      66,
+      78,
+      54
+    ],
+    "grid_nodes": 277992,
+    "free_nodes": 73970,
+    "ordinary_free_nodes": 73956,
+    "unknown_nodes": 201209,
+    "unknown_nodes_still_blocked": 201205,
+    "observed_surface_occupied_voxels": 2025,
+    "obstacle_observed_points": 50026,
+    "obstacle_points_outside_workspace": 21902,
+    "target_component_pixels": 150,
+    "lower": [
+      -0.9786405539512635,
+      -0.9188633537292481,
+      0.6988216662406921
+    ],
+    "nominal_upper": [
+      0.6434432244300843,
+      0.9851127243041993,
+      2.0003069019317627
+    ],
+    "effective_upper": [
+      0.6463594460487365,
+      1.006136646270752,
+      2.0238216662406923
+    ],
+    "voxel_m": 0.025,
+    "conservative_surface_inflation_m": 0.04165063509461096,
+    "geometric_guarantee": "continuous segment supercover is relative to this discrete proxy only, not true obstacles or full robot; cell-center depth projection and point quantization are approximations",
+    "contact_allowances": {
+      "current_tip_center": [
+        0.27884534001350403,
+        -0.008133912459015846,
+        1.4706884622573853
+      ],
+      "current_tip_radius_m": 0.04,
+      "current_tip_region_voxels": 16,
+      "current_tip_newly_free_voxels": 14,
+      "current_tip_unknown_voxels": 4,
+      "current_tip_voxel_indices": [
+        [
+          49,
+          36,
+          31
+        ],
+        [
+          49,
+          37,
+          31
+        ],
+        [
+          50,
+          35,
+          31
+        ],
+        [
+          50,
+          36,
+          30
+        ],
+        [
+          50,
+          36,
+          31
+        ],
+        [
+          50,
+          36,
+          32
+        ],
+        [
+          50,
+          37,
+          30
+        ],
+        [
+          50,
+          37,
+          31
+        ],
+        [
+          50,
+          37,
+          32
+        ],
+        [
+          51,
+          35,
+          31
+        ],
+        [
+          51,
+          36,
+          30
+        ],
+        [
+          51,
+          36,
+          31
+        ],
+        [
+          51,
+          36,
+          32
+        ],
+        [
+          51,
+          37,
+          30
+        ],
+        [
+          51,
+          37,
+          31
+        ],
+        [
+          51,
+          37,
+          32
+        ]
+      ],
+      "predicted_endpoint": [
+        0.47108563649410806,
+        -0.0717250257567392,
+        0.853594741625042
+      ],
+      "target_radius_m": 0.053839247217117886,
+      "target_depth_shell_m": 0.03,
+      "target_region_voxels": 7,
+      "target_newly_free_voxels": 0,
+      "target_unknown_voxels": 0,
+      "target_permitted_voxel_indices": []
+    },
+    "grid_construction_seconds": 0.14288102905265987
+  },
+  "source_hashes": {
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/front.png": "6453375a4fd03c191fe3dcc060628b22b058821d148b8ddd7b4942acdc123759",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272000/observation.npz": "5428c215ce45e1254061fb26f808c10b38b0cc3406372b9d975f60e2c425a9f1"
+  },
+  "script_sha256": "2b24556024df0ca89d70dad4ce594ddcc6c430d81109441e713e3d80fe814c0c",
+  "planner_sha256": "9f461a292bbb5e740243b0c7e48969b34d0450991865dd16014ca54e61408395"
+}
