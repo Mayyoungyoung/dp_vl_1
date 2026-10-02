@@ -1,5 +1,16 @@
 # State — 2026-10-02
 
+## Current checkpoint — 15:10 UTC
+
+This block supersedes the historical running statements below. Inspect actual job receipts before any restart.
+
+- Full same-checkpoint Qwen SFT generation and independent analysis completed from8356b09. Both independent4 and whole4 have zero TipValid/semantic success across all24 DEV instructions. Strict H24-format slots21/96 and5/96; request medians41.123/41.211s. All120 requests, failures, raw text, component timing and binary hashes are retained. Valid JSON with wrong horizons also has no endpoint within3cm; no parsing repair changes the main evaluation. Reports/VLM_ROUTE_SFT_AUTOREGRESSIVE_RESULTS_V1.md is authoritative.
+- Prefix108 ordinary head completed from6464b3:96 requested TRAIN parents/95 positive,12 unchanged DEV;432 real Qwen features,1500x32/K4, best750 DEV macro ADE10.000cm/endpoint17.434cm versus prefix60 12.944/19.700. Best and last retained;cup/lid ADE worsened and reach/slide endpoint errors exceed30cm. Same DEV raw/cache hashes and reconstructed initialization/RNG verified. One training seed; expansion changes color/variation coverage as well as parent count. This is stronger baseline/data evidence, not core novelty.
+- Depth TRAIN8 actual processor audit completed from98f818e after retaining the6464 raw-configuration-hash failure. It finds byte-coded depth interpolation distortion; no causal attribution of SFT endpoint failure is established.
+- Fixed release0eeeecbe3d02adac413083a9edc0df674aa53be2 is pushed and deployed. CPU20 grammar tests and actual tokenizer preflight passed. Only eight TRAIN target0 K1 calls are now running at runs/vlm_route_grammar_v1/train8_k1, SSH95364 / child391988. No automatic full DEV expansion. GPU1/35%,CPU1.
+- Two-row strict reconstruction v3 failed before any proposal:27 unattempted slots preserved, no tolerance relaxation. New endpoint IK24 diagnostic from0eeeecb uses a fresh common in-process snapshot, same128 search trials per query, two orientations and two collision filters. SSH76851 CPU1; actual status determines outcome. No generated route or robot benchmark claim.
+- Two formal collectors continue in their existing releases. At15:05UTC mechanical closure was139/144 new and89/144 old; this is not a success count. Locked contents/model metrics remain unopened. New event-supported attention target is a conventional baseline repair under preparation, not yet trained. Paper-core A–H remains incomplete.
+
 ## Current checkpoint — 14:17 UTC
 
 This block supersedes the older in-progress statements below. Actual job records remain authoritative.

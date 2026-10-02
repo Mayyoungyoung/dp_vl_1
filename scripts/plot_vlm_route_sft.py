@@ -72,7 +72,10 @@ def main():
                 finite=pools[method][identifier][np.isfinite(pools[method][identifier]).all(axis=(1,2))]
                 if len(finite):extents.append(finite[...,:2].reshape(-1,2))
             extent=np.concatenate(extents);lo=extent.min(0);hi=extent.max(0)
-            margin=np.maximum((hi-lo)*.07,.04)
+            # Use a common square extent for both methods, preserving all outliers
+            # while avoiding needle-shaped panels when one coordinate diverges.
+            bounds_center=(lo+hi)/2
+            radius=max(float(np.max(hi-lo))*.57,.08)
             for column,method in enumerate(('independent4','whole4')):
                 ax=axes[row,column];prediction=pools[method][identifier];case=cases[method][identifier]
                 for center,size in zip(centers,sizes):
@@ -87,11 +90,10 @@ def main():
                     finite_count+=1
                     ax.plot(*path[:,:2].T,color=colors[slot],lw=1.3,alpha=.9,label='Slot '+str(slot+1))
                     ax.scatter(*path[-1,:2],color=colors[slot],marker='x',s=30)
-                ax.set_xlim(lo[0]-margin[0],hi[0]+margin[0]);ax.set_ylim(lo[1]-margin[1],hi[1]+margin[1])
+                ax.set_xlim(bounds_center[0]-radius,bounds_center[0]+radius);ax.set_ylim(bounds_center[1]-radius,bounds_center[1]+radius)
                 ax.set_aspect('equal',adjustable='box');ax.grid(alpha=.18)
                 ax.set_xlabel('world x (m)');ax.set_ylabel('world y (m)')
                 ax.set_title(identifier+' / '+method+'\nfinite '+str(finite_count)+'/4; 3D TipValid '+str(round(case['TipValidAtK']*4))+'/4',fontsize=10)
-                if not finite_count:ax.text(.5,.5,'All four slots failed format / budget',transform=ax.transAxes,ha='center',fontsize=9)
                 panels.append(dict(scene_id=identifier,method=method,finite_candidates=finite_count,TipValidAtK=case['TipValidAtK']))
         figure.suptitle('Saved Qwen SFT candidates: all 24 DEV instructions, page '+str(page+1)+'/8\nXY projection only; 3D tip checks exclude arm, IK and execution',fontsize=12)
         for suffix in ('png','pdf'):

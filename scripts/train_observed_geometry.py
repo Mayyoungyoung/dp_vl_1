@@ -17,6 +17,8 @@ from routeset.observed_path_refinement import refinement_config,validate_refinem
 from routeset.observed_route_head import load_observed_dataset
 from routeset.observed_multitask import (draw_observation_batch,aggregate_task_parent_reference,
                                        validate_multitask_resume,check_multitask_model_gate)
+from routeset.observed_grounding_targets import (MODES as GROUNDING_TARGET_MODES,
+    prepare_event_grounding_targets,validate_grounding_target_resume)
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
 
@@ -27,8 +29,10 @@ POINT_FIELDS = ('world_xyz', 'rgb', 'uv', 'depth', 'valid_mask')
 def validate_endpoint_training(config):
     mode=config.get('endpoint_mode','surface_anchor')
     if mode not in ('surface_anchor','free_offset'):raise ValueError('unsupported endpoint_mode')
+    grounding_target=config.get('grounding_target','endpoint')
+    if grounding_target not in GROUNDING_TARGET_MODES:raise ValueError('unsupported grounding_target')
     if mode=='free_offset':
-        if config.get('grounding_weight',0.)!=0:
+        if config.get('grounding_weight',0.)!=0 and grounding_target=='endpoint':
             raise ValueError('free_offset uses no reach surface endpoint-attention supervision')
         if config.get('checkpoint_selection','reference_ADE')!='reference_ADE':
             raise ValueError('free_offset generic baseline selects reference ADE, not reach TipValid')
@@ -301,6 +305,13 @@ def train(args):
         raise ValueError('nonempty parent-disjoint TRAIN and DEV_MODEL required')
     if selection_metric=='reference_ADE' and not data['path_mask'][dev_ids].any():
         raise ValueError('reference-ADE selection requires at least one DEV positive reference')
+    grounding_targets,grounding_metadata=None,None
+    if getattr(args,'grounding_target','endpoint')=='event_supported':
+        if model_gate is None:raise ValueError('event_supported requires the sealed generic multitask live gate')
+        target_started=time.perf_counter()
+        grounding_targets,grounding_metadata=prepare_event_grounding_targets(data,geometry,train_ids)
+        grounding_metadata['preprocess_seconds']=time.perf_counter()-target_started
+        data_load_seconds+=grounding_metadata['preprocess_seconds']
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     if (out/'last.pt').exists() and not args.resume:
@@ -335,6 +346,10 @@ def train(args):
             config['sampling_population']={task:dict(parents=len({str(data['parent_ids'][idx]) for idx in train_ids if data['tasks'][idx]==task}),
                 instructions=sum(data['tasks'][idx]==task for idx in train_ids)) for task in sorted({data['tasks'][idx] for idx in train_ids})}
         if model_gate is not None:config['multitask_model_use_gate']=model_gate
+        config['grounding_target']=getattr(args,'grounding_target','endpoint')
+        if grounding_metadata is not None:
+            config.update(grounding_target_fingerprint=grounding_metadata['target_fingerprint'],
+                grounding_target_protocol=grounding_metadata['protocol'],grounding_target_preprocessing_s=grounding_metadata['preprocess_seconds'])
         model = ObservedGeometryRouteHead(config['feature_dim'], args.horizon, args.candidates, args.width,
                                           args.depth, args.point_width, args.endpoint_residual_bound,
                                           anchor_mode=args.anchor_mode,endpoint_mode=config.get('endpoint_mode','surface_anchor'),
@@ -350,6 +365,7 @@ def train(args):
             validate_refinement_resume(config,checkpoint['config'])
             validate_endpoint_resume(config,checkpoint['config'])
             validate_multitask_resume(config,checkpoint['config'])
+            validate_grounding_target_resume(config,checkpoint['config'])
             for key in ('dataset_fingerprint', 'feature_dim', 'horizon', 'candidates', 'width', 'depth', 'steps', 'seed',
                         'lr', 'batch_size', 'event_scale', 'pooling', 'pixel_stride', 'point_width', 'endpoint_residual_bound'):
                 if config[key] != checkpoint['config'][key]:
@@ -364,6 +380,7 @@ def train(args):
             exposures, history = checkpoint['trajectory_exposures'], checkpoint['history']
         write_json(out/'config.json', config)
         if model_gate is not None:write_json(out/'multitask_model_use_gate.json',model_gate)
+        if grounding_metadata is not None:write_json(out/'grounding_target_selection.json',grounding_metadata)
         write_json(out/'source_hashes.json', dict(data['source_hashes'], **geometry['metadata']['source_hashes']))
         write_json(out/'status.json', dict(status='running', pid=os.getpid(), step=first_step))
         started, losses, path_losses, grounding_losses = synchronized_time(args.device), [], [], []
@@ -379,8 +396,10 @@ def train(args):
             path_loss = positive_assignment_loss(prediction, target, data['path_mask'][ids], 'saturation', rng)
             grounding_loss = xyz.new_zeros(())
             if args.grounding_weight:
+                grounding_labels=(target_xyz[:, :, -1] if grounding_targets is None else
+                    torch.as_tensor(grounding_targets[ids],device=args.device))
                 grounding_loss = positive_endpoint_attention_loss(details['attention'], inputs['world_xyz'],
-                    inputs['valid_mask'], target_xyz[:, :, -1],
+                    inputs['valid_mask'], grounding_labels,
                     torch.as_tensor(data['path_mask'][ids], device=args.device), args.grounding_sigma)
             loss = path_loss + args.grounding_weight*grounding_loss
             optimizer.zero_grad(set_to_none=True); loss.backward()
@@ -444,6 +463,10 @@ def train(args):
             summary.update(generation_budget=metrics['generation_budget'],
                 evidence_scope='ordinary multitask positive-reference path/event reconstruction; no semantic, collision, execution or task-success evaluation',
                 multitask_model_use_gate=model_gate)
+        if grounding_metadata is not None:
+            summary.update(grounding_target_fingerprint=grounding_metadata['target_fingerprint'],
+                grounding_target_selection_sha256=sha256(out/'grounding_target_selection.json'),
+                grounding_target_preprocessing_s=grounding_metadata['preprocess_seconds'])
         if config.get('refinement_mode','none')!='none':
             summary.update(generation_budget=metrics['generation_budget'],
                 complete_path_state_exposures=exposures*2,
@@ -487,6 +510,7 @@ def main():
     parser.add_argument('--pixel-stride', type=int, default=2)
     parser.add_argument('--endpoint-residual-bound', type=float, default=.05)
     parser.add_argument('--grounding-weight', type=float, default=0.)
+    parser.add_argument('--grounding-target',choices=GROUNDING_TARGET_MODES,default='endpoint')
     parser.add_argument('--grounding-sigma', type=float, default=.025)
     parser.add_argument('--event-scale', type=float, default=.2)
     parser.add_argument('--lr', type=float, default=3e-4)

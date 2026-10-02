@@ -1,5 +1,7 @@
 # Resume
 
+Current15:10UTC: read newest STATE block first. SFT full120-request comparison and prefix108 ordinary training are completed; do not resume/relaunch them. Active0eeeecb grammar TRAIN8 is SSH95364/child391988 and IK24 is SSH76851. Read their status files first. No DEV grammar follow-on is scheduled. Two formal collectors retain previous PIDs/releases. New ordinary event-supported auxiliary source must pass frozen CPU tests and real-data initialization/sampler preflight before a separately registered1500-step run. SFT raw request/summary files preserve byte hashes via .gitattributes; binary artifacts remain ignored locally and on server.
+
 1. Read STATE.md, JOBS.json and the tail of RESEARCH_LOG.md. Inspect actual PIDs/logs before restarting any experiment.
 2. `ssh wzy3090` → verified project `/home/wzy/dpvlm/route_set_v1`. GPU allocation and environment rules: RESOURCE_ENVELOPE.md.
 3. Historical tests: `cd /home/wzy/dpvlm/route_set_v1 && CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 .venv/bin/python -m pytest tests -q`.

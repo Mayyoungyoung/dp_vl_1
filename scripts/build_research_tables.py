@@ -1,5 +1,6 @@
 """Build mixed-scope evidence tables without filling unmeasured metrics."""
 import csv
+import hashlib
 import json
 import statistics
 from pathlib import Path
@@ -161,6 +162,44 @@ def main():
             elapsed_s=result['elapsed_s'],gpu_hours=0,code_commit=config['code_commit'],
             cost_scope='CPU cached-Qwen retrieval only; separate Qwen cache cost; no parameter training; lower-information control excludes RGB-D',
             source=str(source.relative_to(root))))
+    for source in sorted(reports.glob('vlm_route_sft_analysis*/best_seed0/summary.json')):
+        result=json.loads(source.read_text())
+        family=source.parent.parent.name.replace('_analysis','_autoregressive',1)
+        generation_source=reports/family/'best_seed0/summary.json'
+        generated=json.loads(generation_source.read_text())
+        if hashlib.sha256(generation_source.read_bytes()).hexdigest()!=result['generation_summary_sha256']:
+            raise ValueError('SFT analysis and generation receipts differ')
+        if generated['status']!='completed' or result['checkpoint_sha256']!=generated['checkpoint_sha256']:
+            raise ValueError('Completed same-checkpoint SFT evidence required')
+        training_family=Path(generated['checkpoint']).parent.parent.name
+        training=json.loads((reports/training_family/'training/summary.json').read_text())
+        if training['artifacts_sha256']['best.pt']!=generated['checkpoint_sha256']:
+            raise ValueError('SFT trained checkpoint differs from generation')
+        for method,metrics in result['methods'].items():
+            repeats=[r for r in result['results_by_repeat'] if r['method']==method]
+            if len(repeats)!=result['repeats'] or result['candidate_pooling_between_repeats']:
+                raise ValueError('Keep each sampling repeat separate')
+            rows.append(dict(tier='observed_RGB_depth_bytes_language_camera_current_VLM',
+                task='RLBench_derived_obstacle_reach_three_targets_fresh8DEV',protocol=result['protocol'],
+                method='same_checkpoint_SFT_'+method,seed=generated['config']['seed'],split='DEV_MODEL',K=4,
+                run_id=family+'/best_seed0',training_run_id=training_family+'/seed0',selected_step=result['checkpoint_step'],
+                checkpoint_selection_protocol='DEV_teacher_forced_token_NLL',sampling_repeats=result['repeats'],
+                TipValidAtK=metrics['TipValidAtK'],AnyTipValidAtK=metrics['AnyTipValidAtK'],
+                UniqueClassifiedTipValidAtK=metrics['UniqueClassifiedTipValidAtK'],
+                KnownReferenceTypeCoverageAtK=metrics['KnownReferenceTypeCoverageAtK'],TipClearAtK=metrics['TipClearAtK'],
+                semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+                center_endpoint_error_m=metrics['endpoint_error_m'],semantic_evaluation_examples=24,
+                training_exposures=training['exposure']['TRAIN']['candidate_slots'],training_threads=1,
+                RGBD_Qwen_generation_ms=statistics.mean(r['generation_ms_median'] for r in repeats),
+                observed_RGBD_plan_proxycheck_ms=statistics.mean(r['generation_plus_checker_ms_median'] for r in repeats),
+                candidate_slots_requested_total=sum(r['requested_candidate_slots'] for r in repeats),
+                candidate_slots_charged_total=sum(r['charged_candidate_slots'] for r in repeats),
+                format_or_budget_failure_slots_total=sum(r['format_or_budget_failure_slots'] for r in repeats),
+                budget_status='all attempted slots charged; overgenerated scenes fail strict K4; no retry or repair',
+                elapsed_s=generated['elapsed_seconds'],gpu_hours=generated['gpu_hours_reserved'],
+                training_gpu_hours=training['gpu_hours_reserved'],
+                cost_scope='elapsed/GPU cost is complete two-method generation job, deduplicate run_id; separate training cost deduplicate training_run_id; latency is mean of separate-repeat medians; endpoint error covers finite pools only; component-sum checker, no learned scorer or robot execution; depth-byte interface differs from regression geometry encoder',
+                code_commit=generated['code_commit'],source=str(source.relative_to(root))))
     observation_folders = ['observed_frozen_v1','observed_online_v1','observed_online_warm_v2','observed_geometry_v1',
                            'observed_geometry_grounding_v2','observed_geometry_seeds_v2']
     observation_folders += [p.name for p in reports.glob('observed_learning_curve_*') if p.is_dir()]
@@ -310,6 +349,7 @@ def main():
           'sampling_repeats','budget_status','observed_RGBD_plan_proxycheck_ms',
           'generated_complete_path_states','path_updates','complete_path_state_exposures',
           'reference_ADE_m','event_state_accuracy','event_sequence_accuracy','metric_aggregation',
+          'training_run_id','training_gpu_hours','candidate_slots_requested_total','candidate_slots_charged_total','format_or_budget_failure_slots_total',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')
