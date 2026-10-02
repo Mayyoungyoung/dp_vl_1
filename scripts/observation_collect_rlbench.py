@@ -120,6 +120,10 @@ def main():
     p.add_argument('--attempts', type=int, default=3)
     p.add_argument('--image-size', type=int, default=224)
     p.add_argument('--restore-atol', type=float, default=1e-5)
+    p.add_argument('--render-warmup', action='store_true',
+                   help='discard a rendered frame between two identical native restores')
+    p.add_argument('--strict-rgb', action='store_true',
+                   help='reject any initial RGB difference in addition to state/language checks')
     a = p.parse_args()
     from rlbench.action_modes.action_mode import MoveArmThenGripper
     from rlbench.action_modes.arm_action_modes import JointVelocity
@@ -143,6 +147,10 @@ def main():
     metadata = {'source': 'RLBench-derived free-approach pilot', 'rlbench_revision': '02720bba4c73fe02eb75df946b8791b806028a9d',
                 'pyrep_revision': '8f420be8064b1970aae18a9cfbc978dfb15747ef',
                 'coppeliasim': '4.1.0 Ubuntu20.04', 'split': 'DEV_COLLECTION',
+                'restore_protocol': 'native_state_with_optional_double_restore_v2',
+                'strict_rgb': a.strict_rgb, 'render_warmup': a.render_warmup,
+                'requested_tasks': a.tasks, 'parents_per_task': a.parents_per_task,
+                'attempts_per_parent': a.attempts, 'seed': a.seed,
                 'task_low_dim_state_exported': False, 'route_type_labels': 'unverified; do not count Euclidean variation as unique route types',
                 'known_limitations': ['small feasibility pilot', 'state equality must pass before every attempt',
                     'whole-trajectory continuous collision certification is not implemented',
@@ -172,6 +180,9 @@ def main():
                     descriptions, initial = task.reset()
                     snapshot = native_snapshot(task)
                     restore_native_snapshot(task, snapshot)
+                    if a.render_warmup:
+                        task.get_observation()  # Discard the first renderer frame.
+                        restore_native_snapshot(task, snapshot)
                     initial = task.get_observation()
                     reference = world_audit(task)
                 except Exception as e:
@@ -182,7 +193,9 @@ def main():
                 camera = {key: np.asarray(value).tolist() for key, value in initial.misc.items()
                           if key.startswith('front_camera_')}
                 np.savez_compressed(folder / 'observation.npz', depth=initial.front_depth,
-                    gripper_pose=initial.gripper_pose, gripper_open=initial.gripper_open)
+                    gripper_pose=initial.gripper_pose, gripper_open=initial.gripper_open,
+                    camera_intrinsics=initial.misc['front_camera_intrinsics'],
+                    camera_extrinsics=initial.misc['front_camera_extrinsics'])
                 (folder / 'camera.json').write_text(json.dumps(camera, indent=2), encoding='utf-8')
                 (folder / 'restore_reference.json').write_text(json.dumps(reference), encoding='utf-8')
                 # All paraphrases retain the same parent/split; they are not new scenes.
@@ -199,12 +212,16 @@ def main():
                         np.random.set_state(rng_before)
                         restored_descriptions, restored = task.reset()
                         restore_native_snapshot(task, snapshot)
+                        if a.render_warmup:
+                            task.get_observation()
+                            restore_native_snapshot(task, snapshot)
                         restored = task.get_observation()
                         difference = audit_difference(reference, world_audit(task))
                         image_delta = int(np.max(np.abs(restored.front_rgb.astype(np.int16) - rgb.astype(np.int16))))
                         record['restore'] = dict(difference, rgb_max_difference=image_delta,
                                                   language_equal=restored_descriptions == descriptions)
-                        if difference['max_abs'] > a.restore_atol or restored_descriptions != descriptions:
+                        if (difference['max_abs'] > a.restore_atol or restored_descriptions != descriptions
+                                or (a.strict_rgb and image_delta != 0)):
                             raise RuntimeError('Initial state restore verification failed')
                         restore_passes += 1
                         poses = [restored.gripper_pose]
