@@ -1,5 +1,13 @@
 # Resume
 
+## 当前执行与下一决策 — 2026-10-02 23:24 UTC
+
+本段覆盖下方历史running记录。MAIN267不变；JOBS497@23:23:57.395618UTC、registry随后按同快照同步。source905214e的TRAIN12诊断已经完成并归档：36 K4前向/0搜索/0更新，直接分支swap使净空45→33/48（14坏2好）；仅通道敏感性，不是DEV因果或方法质量。69条正参考完整grid通过0受到终点voxel与其它保守阻塞共同影响，不能推导模式不存在。[完整结果](reports/OBSERVED_TWO_ROW_ROUTE_CONDITIONING_RESULTS.md)。暂缓learned-field，下一唯一神经控制为去direct分支的普通头：相同constant12000曝光/共有init/抽样，geometry等剩余模块继续训练，参数量减少明确披露；尚未server训练。
+
+extension288 source5c8f8e4f5cd478c793a0e0d9640005deaf700973已实测158tests通过、独立prepare成功并封存来源。root单独启动train32 fresh，session `20261002T231813Z_train32_624110`，SSH89814，CPU2/3、GPU隐藏。两coordinator PID624140/624142，child624144/624145；23:23:57快照前四parent job exit0，父004/005运行中。这是机械进度，不是成功场景/有效路线数。此阶段只32父864请求槽，后续不会自动采集。新DEV须全部256TRAIN机械闭合后另启并继续封存。
+
+恢复前先核实session/status、parent status与PID实际command；完成的stage和已发父绝不重采。确有中断且现有coordinator已退出时，同source恢复命令为 `bash /home/wzy/dpvlm/route_set_v1/research_v2/releases/5c8f8e4f5cd478c793a0e0d9640005deaf700973/scripts/launch_two_row_extension288_v1.sh 5c8f8e4f5cd478c793a0e0d9640005deaf700973 train32 resume`。只有前32全部闭合并读完整质量后，才独立执行train64。GPU1当前无研究训练占用；不重复运行probe。没有后台自主决策服务，当前活跃会话继续实施与分析。
+
 ## 最新实施状态 — 2026-10-02 23:13 UTC
 
 本段覆盖下方较早的待运行和资源状态。研究分支 `codex/multiroute-v2` 的905214e8050d594b157dc7cacf6b446e7c183c85已推送、核验并冻结到服务器。TRAIN条件诊断14项真实Torch测试全部通过（2.03秒、0跳过），随后独立audit于23:09:22–23:10:13UTC完成exit0，PID619059/619064。36次K4前向、144路径状态、0新Qwen编码、0搜索、0优化更新；不是MAIN质量实验。正常预测复现、identity、geometry和权重字节门禁通过。逐场景解释与归档正在处理，不重跑已完成诊断。

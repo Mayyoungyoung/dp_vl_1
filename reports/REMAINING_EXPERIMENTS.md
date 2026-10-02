@@ -1,5 +1,11 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-02 23:24 UTC 实施更新
+
+TRAIN12条件探针已完成36 K4前向，未建立泛化/新方法优势；详见[原始诊断结果](OBSERVED_TWO_ROW_ROUTE_CONDITIONING_RESULTS.md)。全部69正参考被grid拒绝不能解读为路线类型不存在，原判定未改。下一普通去direct分支对照尚在实现；Qwen冻结、geometry与剩余decoder仍训练，减参是必须披露的混杂。
+
+独立extension288的158服务器测试和prepare已完成，首批32TRAIN/864槽在CPU2/3采集，未提前报告质量。256TRAIN+32新DEV一次登记，不替换失败；新DEV后采并封存，旧12DEV保持reused。全部32父闭合后才做全槽质量核验与后续导出。详见[登记协议](OBSERVED_TWO_ROW_EXTENSION288_PROTOCOL.md)及[实际验证](observed_two_row_extension288_validation_v1/VALIDATION_RESULTS.md)。本次扩数据不构成核心机制，论文A–H仍未满足。
+
 ## 最新实际快照 — 2026-10-02 22:41 UTC
 
 本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。

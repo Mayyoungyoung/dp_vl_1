@@ -1,0 +1,142 @@
+"""Pure fixed288 registration; mechanical exclusion hashes only, no raw data.
+
+Original formal116 registration/collector sources are reused without editing.
+This file does not authorize training or opening the reserved new32 DEV pools.
+"""
+import argparse
+import copy
+import json
+from collections import Counter
+from pathlib import Path
+import numpy as np
+from scripts import register_two_row_formal as old
+
+PROTOCOL = 'observed_two_row_extension288_registration_v1'
+ROLE_RANGES = [('TRAIN',0,256),('DEV_MODEL',256,288)]
+ORDER = list(range(288))
+EXCLUSION_SHA = 'fbad0c35f270b064f091d9c32d09f5f51f54c7bc5aff06ce7457918435ee99fa'
+DEV_POLICY = 'Collect after all TRAIN indices; seal until a separately registered frozen-model independent confirmation. No early selection or tuning.'
+canonical_hash, color_table, batch = old.canonical_hash, old.color_table, old.batch
+
+
+def role_for_index(index):
+    if isinstance(index,bool) or not isinstance(index,int) or not 0<=index<288:
+        raise ValueError('Registered extension index must be0..287')
+    return 'TRAIN' if index<256 else 'DEV_MODEL'
+
+
+def validate_spec(spec,base):
+    fixed=dict(protocol=PROTOCOL,layout_rng_seed=399999,parent_seed_start=400000,
+        parent_seed_stop_exclusive=400288,requested_parents=288,requested_route_proposals=7776,
+        role_ranges=[dict(role=r,start_inclusive=a,stop_exclusive=b) for r,a,b in ROLE_RANGES],
+        execution_indices=ORDER,shard_indices=[ORDER[::2],ORDER[1::2]],
+        training_prefix_parent_counts=[32,64,128,256],dev_evaluation_policy=DEV_POLICY,
+        dev_pool_initially_sealed=True,early_dev_model_selection_authorized=False,
+        requires_all_train_closed_before_dev=True,
+        exclusion_source='configs/observed_two_row_extension288_exclusions_v1.json',
+        excluded_entries_canonical_sha256=EXCLUSION_SHA)
+    if any(spec.get(k)!=v for k,v in fixed.items()):
+        raise ValueError('Extension288 split, budget, execution, RNG or sealed DEV policy changed')
+    compatibility=copy.deepcopy(spec)
+    compatibility.update(protocol=old.PROTOCOL,layout_rng_seed=283199,parent_seed_start=283200,
+        parent_seed_stop_exclusive=283316,requested_parents=116,requested_route_proposals=3132,
+        role_ranges=[dict(role=r,start_inclusive=a,stop_exclusive=b) for r,a,b in old.ROLE_RANGES],
+        execution_indices=old.ORDER,shard_indices=[old.ORDER[::2],old.ORDER[1::2]])
+    # This checks the unchanged v5-narrow geometry, twenty-color table, canonical
+    # joints/provenance and zero setup/IK/resampling budgets. Never executes sim.
+    old.validate_spec(compatibility,base)
+
+
+def validate_exclusions(rows):
+    if not isinstance(rows,list) or len(rows)!=128:
+        raise ValueError('All12 public pilot plus116 mechanical historical parents required')
+    pilots=[r for r in rows if r.get('version') in ('v4','v5','v6')]
+    old.validate_exclusions(pilots)
+    early=[r for r in rows if r.get('version') in ('v1','v2','v3')]
+    if len(early)!=3 or {(r['version'],r['parent_id'],r['role']) for r in early}!={(v,'two_row_reach_283000','DEV_COLLECTION') for v in ('v1','v2','v3')}:
+        raise ValueError('All three early public pilot mechanical plans required')
+    formal=[r for r in rows if r.get('version')=='formal116']
+    expected={'two_row_reach_%d'%i:old.role_for_index(i-283200) for i in range(283200,283316)}
+    if len(formal)!=116 or {r['parent_id'] for r in formal}!=set(expected):
+        raise ValueError('Exactly all original116 parent IDs required, no successful-subset selection')
+    allowed={'version','parent_id','role','source','source_sha256','geometry_exact_sha256','geometry_1mm_sha256'}
+    for row in rows:
+        if set(row)!=allowed:
+            raise ValueError('Exclusions may contain only identity/role/source and mechanical hashes')
+        if not row.get('source') or (row['version']=='formal116' and row['role']!=expected[row['parent_id']]):
+            raise ValueError('Historical mechanical role/source mismatch')
+        for key in ('geometry_exact_sha256','geometry_1mm_sha256','source_sha256'):
+            value=row[key]
+            if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value):
+                raise ValueError('Complete mechanical hash required')
+
+
+def apply_duplicate_gate(plans,excluded):
+    result=old.apply_duplicate_gate(plans,excluded)
+    for p in plans:
+        p['registration_failure_reasons']=[r.replace('public_prior_geometry_','historical_geometry_')
+            for r in p['registration_failure_reasons']]
+    result['exclusion_scope']='12 public pilots plus116 historical registered mechanical hashes; no raw outcomes or locked content.'
+    return result
+
+
+def build_registration(spec,base_config,excluded_hashes):
+    validate_spec(spec,base_config)
+    rows=excluded_hashes.get('entries') if isinstance(excluded_hashes,dict) else excluded_hashes
+    validate_exclusions(rows)
+    if canonical_hash(rows)!=spec['excluded_entries_canonical_sha256']:
+        raise ValueError('Registered mechanical historical exclusion table changed')
+    rng=np.random.RandomState(399999);sample=lambda bounds:float(rng.uniform(*bounds))
+    plans=[];colors=color_table()
+    for index in range(288):
+        seed=400000+index;role=role_for_index(index);config=copy.deepcopy(base_config)
+        config.update(protocol=batch.collector.LAYOUT_PROTOCOL,seed=seed,split=role,
+            selected_target_indices=[0,1,2],requested_route_proposals=27,requested_setup_actions=0,
+            preparation_xyz=[],entry_xyz=[0.,0.,.865])
+        config['row_x']=[sample(bounds) for bounds in spec['row_x_ranges']]
+        config['post_y']=[[sample(bounds) for bounds in row] for row in spec['post_y_ranges']]
+        config['goal_xyz']=[[sample(spec['goal_x_range']),sample(bounds),spec['goal_z']] for bounds in spec['goal_y_ranges']]
+        config['post_size_xyz'][2]=.14
+        selected_colors=[copy.deepcopy(colors[int(i)]) for i in rng.choice(20,3,replace=False)]
+        check_config=copy.deepcopy(config);check_config.update(split='DEV_COLLECTION',requested_setup_actions=1)
+        check=batch.geometry_precheck(check_config)
+        centers,halves=batch.collector.geometry(config)
+        plans.append(dict(parent_id='two_row_reach_%06d'%seed,role=role,split=role,index=index,seed=seed,
+            rng_seed=399999,config=config,target_colors=selected_colors,geometry_precheck=check,
+            registered_geometry_exact_sha256=batch.scene_geometry_hash(centers,halves,config['goal_xyz']),
+            registered_geometry_1mm_sha256=batch.scene_geometry_hash(centers,halves,config['goal_xyz'],.001),
+            model_use_initially_sealed=(role=='DEV_MODEL')))
+    gate=apply_duplicate_gate(plans,rows);order=[plans[i]['parent_id'] for i in ORDER]
+    return dict(protocol=PROTOCOL,specification=copy.deepcopy(spec),canonical_init=copy.deepcopy(spec['canonical_init']),
+        parent_plan=plans,execution_indices=ORDER.copy(),execution_order=order,shards=[order[::2],order[1::2]],
+        role_counts=dict(Counter(p['role'] for p in plans)),requested_parents=288,requested_routes=7776,
+        predeclared_unattempted_routes=sum(p['predeclared_unattempted_routes'] for p in plans),
+        duplicate_gate=gate,excluded_hashes=copy.deepcopy(rows),
+        canonical_hashes=dict(spec=canonical_hash(spec),base_config=canonical_hash(base_config),
+                              excluded_entries=canonical_hash(rows),color_table=canonical_hash(colors)),
+        rng_policy='One NumPy RandomState(399999); index order:12 geometry uniforms then choice(20,3,replace=False). No resampling.',
+        training_prefix_parent_counts=[32,64,128,256],dev_pool_initially_sealed=True,dev_evaluation_policy=DEV_POLICY,
+        requires_all_train_closed_before_dev=True,
+        reference_set_complete=False,all_solution_count=None,training_authorized=False,simulation_started=False,
+        status='registered_only_actual_collection_gates_pending')
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    for flag in ('spec','base-config','excluded-hashes','output'):
+        parser.add_argument('--'+flag,type=Path,required=True)
+    args=parser.parse_args()
+    if args.output.exists():raise FileExistsError('Fresh registration file required; never overwrite')
+    load=lambda p:json.loads(p.read_text(encoding='utf-8'))
+    result=build_registration(load(args.spec),load(args.base_config),load(args.excluded_hashes))
+    result['source_files_sha256']={str(path):batch.digest(path) for path in
+        (Path(__file__),Path(old.__file__),Path(batch.__file__),Path(batch.collector.__file__),
+         Path(batch.collector.legacy.__file__),args.spec,args.base_config,args.excluded_hashes)}
+    args.output.parent.mkdir(parents=True,exist_ok=True)
+    with args.output.open('x',encoding='utf-8') as stream:
+        json.dump(result,stream,indent=2,ensure_ascii=False,allow_nan=False)
+    print(json.dumps(dict(requested_parents=288,requested_routes=7776,role_counts=result['role_counts'],
+        blocked_parents=len(result['duplicate_gate']['blocked_parent_ids']),registration_sha256=batch.digest(args.output))))
+
+
+if __name__=='__main__':main()

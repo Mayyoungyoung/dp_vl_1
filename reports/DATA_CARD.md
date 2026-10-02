@@ -1,5 +1,11 @@
 # 数据卡：受控几何与观测任务分层
 
+## 2026-10-02 23:24 UTC 实施更新
+
+TRAIN12条件探针已完成36 K4前向，未建立泛化/新方法优势；详见[原始诊断结果](OBSERVED_TWO_ROW_ROUTE_CONDITIONING_RESULTS.md)。全部69正参考被grid拒绝不能解读为路线类型不存在，原判定未改。下一普通去direct分支对照尚在实现；Qwen冻结、geometry与剩余decoder仍训练，减参是必须披露的混杂。
+
+独立extension288的158服务器测试和prepare已完成，首批32TRAIN/864槽在CPU2/3采集，未提前报告质量。256TRAIN+32新DEV一次登记，不替换失败；新DEV后采并封存，旧12DEV保持reused。全部32父闭合后才做全槽质量核验与后续导出。详见[登记协议](OBSERVED_TWO_ROW_EXTENSION288_PROTOCOL.md)及[实际验证](observed_two_row_extension288_validation_v1/VALIDATION_RESULTS.md)。本次扩数据不构成核心机制，论文A–H仍未满足。
+
 ## 2026-10-02 21:20 UTC：formal116采集机械完成
 
 原冻结collector2626487会话20261002T183023Z_485548在21:10:27 UTC结束，两shard退出0；116个登记父均有closure文件，角色计数64TRAIN/12DEV_MODEL/12DEV_SCORE/12CALIBRATION/16TEST_LOCKED。仅核验保留区标记存在、登记元数据与不透明SHA，没有打开保留区closure内容、观测、轨迹或指标。完整采集标记不等于所有路线成功。

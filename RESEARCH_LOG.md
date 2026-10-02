@@ -355,3 +355,11 @@ Root follow-up at21:41UTC: MAIN261 rows retain all original258 fields; JOBS473 a
 新extension288实现为独立注册和采集器：256TRAIN＋32后采集封存DEV，7776预登记提案，首个明确阶段只有train32；后续阶段按真实闭合状态单独推进。旧代码/116父数据/失败/角色保持。当前本地完整157测试及最终采集20测试通过，服务器tests/prepare/采集尚未运行，须按真实job receipt更新。8GiB新增内部预算、CPU2/3、GPU隐藏；原12DEV继续标记reused。用户已授权的研究闭环继续，新增数据不是新方法证据。
 
 cosine和native100k结果已完整归档、实核并提交82c17d2。MAIN267保持；新诊断不写作泛化收益。cosine改善TRAIN拟合但未改善DEV，停止LR扩展。native100k的空间惩罚增加路线类型但请求成本更高，仅是传统对照。论文核心优势仍未成立。
+
+## 当前执行与下一决策 — 2026-10-02 23:24 UTC
+
+本段覆盖下方历史running记录。MAIN267不变；JOBS497@23:23:57.395618UTC、registry随后按同快照同步。source905214e的TRAIN12诊断已经完成并归档：36 K4前向/0搜索/0更新，直接分支swap使净空45→33/48（14坏2好）；仅通道敏感性，不是DEV因果或方法质量。69条正参考完整grid通过0受到终点voxel与其它保守阻塞共同影响，不能推导模式不存在。[完整结果](reports/OBSERVED_TWO_ROW_ROUTE_CONDITIONING_RESULTS.md)。暂缓learned-field，下一唯一神经控制为去direct分支的普通头：相同constant12000曝光/共有init/抽样，geometry等剩余模块继续训练，参数量减少明确披露；尚未server训练。
+
+extension288 source5c8f8e4f5cd478c793a0e0d9640005deaf700973已实测158tests通过、独立prepare成功并封存来源。root单独启动train32 fresh，session `20261002T231813Z_train32_624110`，SSH89814，CPU2/3、GPU隐藏。两coordinator PID624140/624142，child624144/624145；23:23:57快照前四parent job exit0，父004/005运行中。这是机械进度，不是成功场景/有效路线数。此阶段只32父864请求槽，后续不会自动采集。新DEV须全部256TRAIN机械闭合后另启并继续封存。
+
+恢复前先核实session/status、parent status与PID实际command；完成的stage和已发父绝不重采。确有中断且现有coordinator已退出时，同source恢复命令为 `bash /home/wzy/dpvlm/route_set_v1/research_v2/releases/5c8f8e4f5cd478c793a0e0d9640005deaf700973/scripts/launch_two_row_extension288_v1.sh 5c8f8e4f5cd478c793a0e0d9640005deaf700973 train32 resume`。只有前32全部闭合并读完整质量后，才独立执行train64。GPU1当前无研究训练占用；不重复运行probe。没有后台自主决策服务，当前活跃会话继续实施与分析。
