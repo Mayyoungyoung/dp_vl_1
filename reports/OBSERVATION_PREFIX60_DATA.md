@@ -13,4 +13,6 @@
 
 完整请求名单、源文件哈希、采集记录与实际 job 在 `reports/observation_multitask_prefix60_v1/`。SCORE、CALIBRATION、TEST_LOCKED 的原始图像、轨迹、目标和任务验收内容没有用于本次导出；跨角色重复检查只读取已保存机械元数据。
 
-下一组配置 `configs/observed_multitask_prefix60_v1.json` 保持相同普通自由终点头、seed0、1500×32、K4 和每 250 步宏平均参考 ADE 选模，再做同数据检索对照。训练父场景从 12 增至 48，训练指令曝光仍为 48,000、完整候选状态仍为 192,000。编码缓存和实际总体耗时单独记录；当前仅准备了不可变启动脚本，尚未将计划结果写成已完成实验。
+配置 `configs/observed_multitask_prefix60_v1.json` 已在固定 `2f7b3e9b06854f18e06b9d4bee406c08f4183d4f` 实际完成 Qwen 缓存、普通自由终点头训练和同数据检索对照，各 job exit 0。seed0、1500×32、K4 和每 250 步宏平均参考 ADE 选模不变。训练父场景从 12 增至 48，训练指令曝光仍为 48,000、完整候选状态仍为 192,000。真实缓存 240 请求耗时 27.003 秒（含加载 8.694 秒），头训练 80.671 秒。完整结果与比较见 `OBSERVATION_MULTITASK_LEARNING_CURVE.md` 和 `observed_multitask_prefix60_v1/`。
+
+父索引同时决定任务 variation；本扩展增加布局和已见颜色变化，不能解释为仅独立父数变化。DEV 在两轮完全相同，但颜色任务的 violet/rose 与当前 TRAIN 颜色不同。该开发结果不作 IID 或最终锁定 OOD 结论。

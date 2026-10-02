@@ -1,0 +1,141 @@
+{
+  "source": "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v2",
+  "source_collector_sha256": {
+    "collect_observed_two_row_pilot.py": "b62ca8d43c096633a0b8abe89a50e4cd2743a2dac63a6f0df9e214b0579e6316",
+    "collect_obstacle_reach.py": "994c38ce94e6016386439c6245807e9b9f9a00ff706fb80bd454b05b9ee60dcc",
+    "observation_collect_rlbench.py": "7d8230abc8ff642e511a35c1933df02ea2906bc8e5b926dfb028820e9302ddff"
+  },
+  "analysis_script_sha256": "b5db2f72e1171389829e4285651a2f4be83a7917a20fccffc909df15009501c2",
+  "collection_summary": {
+    "requested_parents": 1,
+    "requested_setup_actions": 1,
+    "setup_actions_attempted": 1,
+    "setup_successes": 1,
+    "requested_route_proposals": 27,
+    "route_attempts": 27,
+    "route_successes": 4,
+    "classified_successes": 2,
+    "lateral_classified_successes": 2,
+    "restore_passes": 27,
+    "duplicate_types": 0,
+    "get_path_calls": 144,
+    "planning_seconds": 80.26885203656275,
+    "simulation_seconds": 31.478441749466583,
+    "unattempted_route_proposals": 0,
+    "per_target": [
+      {
+        "id": "two_row_reach_283000_target0",
+        "valid_references": 1,
+        "distinct_classified": 0,
+        "distinct_lateral_sequences": 0,
+        "known_lateral_sequences": [],
+        "has_more_than_four_valid_lateral_sequences": false
+      },
+      {
+        "id": "two_row_reach_283000_target1",
+        "valid_references": 1,
+        "distinct_classified": 0,
+        "distinct_lateral_sequences": 0,
+        "known_lateral_sequences": [],
+        "has_more_than_four_valid_lateral_sequences": false
+      },
+      {
+        "id": "two_row_reach_283000_target2",
+        "valid_references": 2,
+        "distinct_classified": 2,
+        "distinct_lateral_sequences": 2,
+        "known_lateral_sequences": [
+          [
+            "negative_y",
+            "middle"
+          ],
+          [
+            "positive_y",
+            "middle"
+          ]
+        ],
+        "has_more_than_four_valid_lateral_sequences": false
+      }
+    ],
+    "elapsed_seconds": 211.8696641039569,
+    "setup_elapsed_seconds": 5.888833677046932,
+    "status": "collection_finished",
+    "fatal_error": null,
+    "shutdown_error": null,
+    "full_robot_continuous_certificate": false,
+    "reference_set_complete": false,
+    "all_solution_count": null
+  },
+  "setup_success": true,
+  "setup_seconds": 5.888833677046932,
+  "all_trajectory_hashes_match": true,
+  "trajectory_hashes_checked": 27,
+  "success_count": 4,
+  "failure_counts": {
+    "ConfigurationPathError('Could not create path.')": 20,
+    "RuntimeError('robot collision during simulated motion')": 2,
+    "RuntimeError('endpoint or complete tip-polyline clearance failed')": 1
+  },
+  "first_failed_stage_counts": {
+    "{'segment': 6, 'stage': 'planning'}": 11,
+    "{'segment': 1, 'stage': 'planning'}": 9,
+    "{'segment': 0, 'stage': 'simulation'}": 2
+  },
+  "partial_paths_with_tip_clearance_failure": 6,
+  "accepted_unknown_types": 2,
+  "accepted_with_over_type": 0,
+  "accepted_routes_with_any_over_crossing": 1,
+  "maximum_accepted_guide_endpoint_error_m": 0.001751091736059853,
+  "maximum_accepted_segment_deviation_m": 0.3706210812234621,
+  "strict_restore_passes": 27,
+  "generated_robot_validity": null,
+  "route_type_total": null,
+  "inference": "All registered attempts are retained. Partial-tip AABB intersections are diagnostic only; arm_environment does not identify a particular robot link or external body.",
+  "cross_version_initial_comparison": {
+    "baseline": "/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v1",
+    "strict_initial_match": false,
+    "physical_config_equal": true,
+    "world_and_rgb": {
+      "max_abs": 2.8896898925304413,
+      "worst_field": "_robot.arm_joints",
+      "same_object_inventory": true,
+      "global_inventory_equal": true,
+      "rgb_max_difference": 244
+    },
+    "observation_fields": {
+      "camera_extrinsics": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      },
+      "camera_intrinsics": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      },
+      "depth": {
+        "equal": false,
+        "max_abs_difference": 3.1502236127853394
+      },
+      "gripper_open": {
+        "equal": true,
+        "max_abs_difference": 0.0
+      },
+      "gripper_pose": {
+        "equal": false,
+        "max_abs_difference": 0.0004955250769853592
+      }
+    },
+    "interpretation": "Same requested geometry only; do not claim a strictly paired robot initial condition",
+    "initial_artifact_hashes": {
+      "baseline": {
+        "front.png": "70090cd318f250d8e6782cbb15bbdb55858627a559dab15cd7fea1d868581035",
+        "observation.npz": "540fd66f6418d178a28fc57090afdc46a41c81446a623ef0859d9040fd214fd0",
+        "restore_reference.json": "7c3ff03e9fd964d95d81981b41e3347337432759f3cfe66fa7291c64a74486e0"
+      },
+      "current": {
+        "front.png": "b47871eff4c3bd2d1be0945624d510e907db88e773718cb0b6bca4470a45ddc2",
+        "observation.npz": "2f87d6281161118b7dda4cf4e0776f1bf346363e617cce56a2b4200cd1107c0e",
+        "restore_reference.json": "a35b1361d483515f5eeb8e7a3152b2f31ec44a92b59783e3495bfe1d70895609"
+      }
+    }
+  }
+}

@@ -23,6 +23,7 @@ _SCRIPTS = str(Path(__file__).resolve().parent)
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 import collect_obstacle_reach as legacy
+import two_row_anchor
 
 
 PASSAGES = ("negative_y", "middle", "positive_y")
@@ -35,11 +36,14 @@ def geometry(config):
 
 
 def validate_config(config):
-    versions = {"observed_two_row_low_posts_v1":False, "observed_two_row_low_posts_rowpoints_v2":True}
+    versions = {"observed_two_row_low_posts_v1":False, "observed_two_row_low_posts_rowpoints_v2":True,
+                "observed_two_row_recorded_v1_anchor_rowpoints_v3":True}
     if config["protocol"] not in versions or config["parents"] != 1:
         raise ValueError("this version is a single registered feasibility parent")
     if bool(config.get("row_plane_guides",False)) != versions[config["protocol"]]:
         raise ValueError("row-plane guide policy differs from declared version")
+    if (config["protocol"]=="observed_two_row_recorded_v1_anchor_rowpoints_v3") != ("initial_state_anchor" in config):
+        raise ValueError("version and explicit v1 reconstruction policy differ")
     if config["split"] != "DEV_COLLECTION" or config["requested_route_proposals"] != 27:
         raise ValueError("pilot role and proposal budget are fixed")
     if np.asarray(config["goal_xyz"]).shape != (3, 3) or np.asarray(config["post_y"]).shape != (2, 2):
@@ -237,7 +241,8 @@ def collect(config, config_path, output):
     parent_id = "two_row_reach_%06d" % config["seed"]
     folder = output / parent_id
     folder.mkdir()
-    source_files = [Path(__file__), Path(legacy.__file__), Path(legacy.native_snapshot.__code__.co_filename)]
+    source_files = [Path(__file__), Path(legacy.__file__), Path(legacy.native_snapshot.__code__.co_filename),Path(two_row_anchor.__file__)]
+    anchored="initial_state_anchor" in config
     manifest = dict(config=config, config_sha256=hashlib.sha256(config_path.read_bytes()).hexdigest(),
         sources_sha256={str(p.name): hashlib.sha256(p.read_bytes()).hexdigest() for p in source_files},
         benchmark="RLBench-derived two-row low-post pilot", original_benchmark_result=False,
@@ -246,9 +251,10 @@ def collect(config, config_path, output):
         supervision_only=["post geometry", "target coordinates", "route signatures", "guide points", "masks", "setup trajectory"],
         proposed_sequences=list(itertools.product(PASSAGES, repeat=2)),
         reference_set_complete=False, all_solution_count=None, full_robot_continuous_certificate=False,
-        initial_preparation="One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start",
+        initial_preparation=("One reconstruction action from frozen v1 preparation terminal joints; no new setup IK; require every recorded world/velocity/RGB-D/calibration field exactly equal before any of 27 slots" if anchored else
+            "One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start"),
         planning_budget=dict(route_slots=27,maximum_calls_per_route=9 if config.get("row_plane_guides",False) else 7,
-            setup_maximum_calls=2,failed_slots_stop_early=True,
+            setup_maximum_calls=0 if anchored else 2,failed_slots_stop_early=True,
             internal_search_scope="IK/OMPL configuration searches are not complete output trajectories and are not individually instrumented"),
         acceptance="strict full world/inventory/RGB/depth/camera/current restore; per-step arm/gripper collisions; 2cm tip segments; 3cm endpoint",
         type_definition="consistent actual crossings of both row-x planes in order; finite-height lateral corridors or explicit over; ambiguous unknown",
@@ -313,16 +319,32 @@ def collect(config, config_path, output):
                 raise RuntimeError("initial robot collision or missing gripper collision shapes")
             before = task.get_observation()
             save_observation_evidence(folder / "before_preparation", before, legacy.full_audit(task, posts))
-            trace.append(state_sample(task))
-            quaternion = trace[0][0][3:].copy()
-            execute(task, config["preparation_xyz"], quaternion, gripper_shapes, external_shapes, trace, setup, config)
-            setup["endpoint_error_m"] = float(np.linalg.norm(trace[-1][0][:3] - config["entry_xyz"]))
-            if setup["endpoint_error_m"] > config["preparation_endpoint_tolerance_m"]:
-                raise RuntimeError("preparation did not reach registered entry")
-            snapshot = legacy.full_snapshot(task, posts)
+            if anchored:
+                anchor=two_row_anchor.load_anchor(config)
+                two_row_anchor.apply_recorded_task_state(task,posts,anchor)
+                snapshot=legacy.full_snapshot(task,posts)
+                snapshot["core"]["arm_joints"]=anchor["preparation_arm_joints"].tolist()
+                snapshot["core"]["gripper_joints"]=anchor["preparation_gripper_joints"].tolist()
+                setup.update(initialization="reconstruct_then_exact_readback",new_setup_ik_calls=0,
+                             reconstruction_source=anchor["source"],canonicalization_steps=20)
+            else:
+                trace.append(state_sample(task))
+                quaternion = trace[0][0][3:].copy()
+                execute(task, config["preparation_xyz"], quaternion, gripper_shapes, external_shapes, trace, setup, config)
+                setup["endpoint_error_m"] = float(np.linalg.norm(trace[-1][0][:3] - config["entry_xyz"]))
+                if setup["endpoint_error_m"] > config["preparation_endpoint_tolerance_m"]:
+                    raise RuntimeError("preparation did not reach registered entry")
+                snapshot = legacy.full_snapshot(task, posts)
             legacy.canonical_restore(task, snapshot, config["canonicalization_passes"])
             initial = task.get_observation()
             reference = legacy.full_audit(task, posts)
+            if anchored:
+                trace.append(state_sample(task))
+                gate=two_row_anchor.exact_readback(anchor,reference,initial)
+                setup["v1_recorded_state_readback"]=gate
+                write_json(folder/"v1_anchor_readback.json",gate)
+                if not gate["passed"]:
+                    raise RuntimeError("v1 recorded initial-state reconstruction differed; all 27 route slots remain unattempted")
             if legacy.robot_collision_check(task, gripper_shapes, external_shapes):
                 raise RuntimeError("canonical low initial state is colliding")
             if np.linalg.norm(np.asarray(initial.gripper_pose[:3])-config["entry_xyz"]) > config["preparation_endpoint_tolerance_m"]:
@@ -331,6 +353,15 @@ def collect(config, config_path, output):
             visible = [int(np.sum(initial.front_mask == target.get_handle())) for target in targets]
             if min(visible) < config["minimum_visible_pixels"]:
                 raise RuntimeError("target visibility insufficient: " + str(visible))
+            if anchored:
+                # Pinned PyRep returns an opaque CFFI pointer for config trees,
+                # despite the bytes annotation. Never guess its buffer length.
+                # The supported scene export is a native artifact; future load
+                # still requires readback, and hidden dynamics are not certified.
+                scene_path=folder/"verified_initial_scene.ttt"
+                task._pyrep.export_scene(str(scene_path))
+                setup["native_scene_export"]=dict(file=scene_path.name,sha256=hashlib.sha256(scene_path.read_bytes()).hexdigest(),
+                    roundtrip_verified=False,configuration_tree_pointer_not_serialized=True)
             setup.update(success=True, target_visible_pixels=visible, post_depth_audit=depth_audit,
                          actual_entry_xyz=np.asarray(initial.gripper_pose[:3]),
                          target_colors=[colors[index][0] for index in target_colors])
