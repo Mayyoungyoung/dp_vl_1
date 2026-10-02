@@ -329,7 +329,8 @@ def plan_observation(rgb, xyz, valid, depth, intrinsics, camera_to_world, curren
         filtering_or_repair=False)
 
 
-def run(data, output, train_benchmark_only=False):
+def run(data, output, train_benchmark_only=False, plan_function=None, planner_config=None,
+        baseline_name=None, generation_script=None):
     if output.exists():
         raise FileExistsError('preserve existing run: '+str(output))
     observations = prototype.read_rows(data/'observations.jsonl')
@@ -367,7 +368,7 @@ def run(data, output, train_benchmark_only=False):
             current = np.r_[archive['gripper_pose'], np.asarray(archive['gripper_open']).reshape(1)]
             depth, intrinsics, camera_to_world = archive['depth'], archive['camera_intrinsics'], archive['camera_extrinsics']
         preprocessing_seconds = time.perf_counter()-request_started
-        paths, raw_paths, record = plan_observation(rgb, xyz, valid, depth, intrinsics, camera_to_world,
+        paths, raw_paths, record = (plan_function or plan_observation)(rgb, xyz, valid, depth, intrinsics, camera_to_world,
             current, row['instruction'], model, prior)
         record.update(id=row['id'], parent_id=row['parent_id'], preprocessing_seconds=preprocessing_seconds,
             total_observation_to_routes_seconds=time.perf_counter()-request_started)
@@ -393,12 +394,13 @@ def run(data, output, train_benchmark_only=False):
         metrics = evaluate(data, prediction_file, output/'tip_evaluation', split=split, allow_subset=train_benchmark_only)
     finally:
         sys.path.pop(0)
-    report = dict(baseline='TRAIN prototype localization + observed voxel A* with used-edge penalty',
-        config=CONFIG, prototype_config=prototype.CONFIG, split=split, subset_training_cost_diagnostic=train_benchmark_only,
+    report = dict(baseline=baseline_name or 'TRAIN prototype localization + observed voxel A* with used-edge penalty',
+        config=planner_config or CONFIG, prototype_config=prototype.CONFIG, split=split, subset_training_cost_diagnostic=train_benchmark_only,
         examples=len(chosen), submitted_candidate_budget=len(chosen)*CONFIG['candidates'],
         input_fields=['RGB', 'metric depth', 'camera calibration', 'current gripper pose/open', 'exact instruction'],
         privileged_inference_input=False, train_workspace_prior=prior, prototype_model=model,
-        training_seconds=training_seconds, source_sha256=source_hashes, script_sha256=prototype.digest(__file__),
+        training_seconds=training_seconds, source_sha256=source_hashes, script_sha256=prototype.digest(generation_script or __file__),
+        shared_grid_script_sha256=prototype.digest(__file__),
         records=records, fixed_tip_evaluation=metrics, evaluation_seconds=time.perf_counter()-evaluation_started,
         limitation='Unknown space is conservatively blocked except explicitly recorded local contact allowances. Grid clearance is a discrete proxy, not a continuous physical 2cm certificate: cell-center depth tests and surface/segment quantization errors are not jointly bounded. Visible points do not reconstruct hidden solids or certify full arm/IK/execution. Independent unchanged true-box evaluation may reject proxy-clear paths.',
         selection_or_repair=False, scored_only_after_all_candidates_emitted=True)

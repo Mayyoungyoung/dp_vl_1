@@ -180,6 +180,8 @@ def main():
             path = Path(args.runs) / arm / (checkpoint_name + ".pt")
             checkpoint = torch.load(path, map_location=args.device, weights_only=False)
             config = checkpoint["config"]
+            if config.get("parameterization", "epsilon") != "epsilon":
+                raise ValueError("this epsilon diagnostic does not yet interpret v model outputs")
             if config["dataset_sha256"] != result["data_sha256"]:
                 raise ValueError("checkpoint data mismatch")
             key = arm + "_" + checkpoint_name
