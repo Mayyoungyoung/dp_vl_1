@@ -147,6 +147,20 @@ def main():
             center_endpoint_error_m=metrics['endpoint_error_m'],semantic_evaluation_examples=metrics['examples'],
             cost_scope='saved-prediction evaluation; training cost in corresponding neural run; box-only tip checks exclude arm/table/execution',
             source=str(source.relative_to(root))))
+    for source in sorted(reports.glob('observation_retrieval_prefix*/dev_model/summary.json')):
+        result=json.loads(source.read_text());metrics=result['metrics']
+        config=json.loads((source.parent/'config.json').read_text())
+        rows.append(dict(tier='observed_RGB_language_current_retrieval',task='RLBench_six_tasks_reference_only',
+            protocol=metrics['evaluation_protocol'],method='Qwen_feature_nearest_reference',seed=None,split='DEV_MODEL',
+            K=config['candidates'],run_id=str(source.parent.relative_to(reports)),
+            candidate_ADE_m=metrics['candidate_matched_ADE_m'],reference_ADE_m=metrics['reference_matched_ADE_m'],
+            endpoint_error_m=metrics['candidate_endpoint_error_m'],event_state_accuracy=metrics['event_state_accuracy'],
+            event_sequence_accuracy=metrics['event_sequence_accuracy'],metric_aggregation=metrics['metric_aggregation'],
+            reference_evaluation_examples=metrics['reference_evaluation_examples'],semantic_evaluation_examples=0,
+            training_exposures=0,generated_complete_path_states=config['candidates'],path_updates=0,
+            elapsed_s=result['elapsed_s'],gpu_hours=0,code_commit=config['code_commit'],
+            cost_scope='CPU cached-Qwen retrieval only; separate Qwen cache cost; no parameter training; lower-information control excludes RGB-D',
+            source=str(source.relative_to(root))))
     observation_folders = ['observed_frozen_v1','observed_online_v1','observed_online_warm_v2','observed_geometry_v1',
                            'observed_geometry_grounding_v2','observed_geometry_seeds_v2']
     observation_folders += [p.name for p in reports.glob('observed_learning_curve_*') if p.is_dir()]

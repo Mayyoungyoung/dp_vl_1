@@ -14,6 +14,7 @@ from PIL import Image
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 
 def sha(path):
@@ -91,6 +92,7 @@ def main():
             left.set_xlim(-.5,rgb.shape[1]-.5);left.set_ylim(rgb.shape[0]-.5,-.5);left.axis('off')
             left.set_title(label['task']+' / '+identifier+'\n'+textwrap.fill(obs['instruction'],65),fontsize=10)
             right.set_xlabel('world x (m)');right.set_ylabel('world y (m)');right.set_zlabel('world z (m)')
+            for axis in (right.xaxis,right.yaxis,right.zaxis):axis.set_major_locator(MaxNLocator(3))
             right.tick_params(labelsize=8);right.view_init(elev=25,azim=-65)
             right.set_title('All K4 paths; grey = '+str(len(refs))+' recorded references',fontsize=10)
             if row==2:right.legend(loc='upper center',bbox_to_anchor=(.5,-.07),ncol=3,fontsize=8)
