@@ -1,5 +1,11 @@
 # State — 2026-10-02
 
+## Current checkpoint — 18:33 UTC / 2026-10-03 02:33 China
+
+- Formal116 is ACTUALLY RUNNING from immutable262648796fd47b25a2051cc227b6838515b651c6, session runs/observed_two_row_formal116_v1/sessions/20261002T183023Z_485548, outer PID485548/SSH85859. Server111tests passed7.88s and registration_prepare exit0. First0/1 workers485599/485598 started18:30:34UTC, affinity2/3, one thread each, GPUhidden.
+- Corpus data/observed_two_row_formal116_v1 has once-frozen116parent plan; order16TRAIN →12DEV →48TRAIN →score/cal/locked,3132requested slots. Failure/unknown/no-input remain, no replacement/replay. Only mechanical receipts read across locked roles. Read actual session/parent statuses; initial running is not collection success.
+- Next: first16 TRAIN all-slot quality/visual analysis, closed28-prefix export and TRAIN-only endpoint support/H24 audit, then ordinary actual-Qwen K4 1500x32 training. Driver under implementation; no new GPU training yet. Core mechanism remains unestablished.
+
 ## Current checkpoint — 18:10 UTC / 2026-10-03 02:10 China
 
 - All previously launched jobs are complete; JOBS snapshot18:06:51UTC has310records and no live running recorded jobs. Old6c formal collector completed144/144closed at17:38:07UTC,exit0; only mechanical closure inspected for locked roles, never contents.
