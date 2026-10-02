@@ -68,7 +68,7 @@ def _landmarks(scene):
 
 
 def path_x(scene, horizon=24):
-    """Scene-conditioned x sampling [H] shared by every method and reference."""
+    """Reference x sampling [H]; free-XYZ neural outputs are not clamped to it."""
     if horizon < 8:
         raise ValueError("horizon >= 8 is required to retain all wall shoulders")
     landmarks = _landmarks(scene)

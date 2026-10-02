@@ -51,7 +51,7 @@ def main():
     rng = np.random.default_rng(2719)
     for left in rows:
         for right in rows:
-            if left['objective']!='subset' or right['objective']!='positive' or left['K']!=right['K'] or left['seed']!=right['seed']: continue
+            if (left['objective'], right['objective']) not in [('subset','positive'),('subset','saturation'),('positive','saturation')] or left['K']!=right['K'] or left['seed']!=right['seed']: continue
             l, r = records[left['run_id']], records[right['run_id']]
             assert [x['parent_id'] for x in l] == [x['parent_id'] for x in r]
             parents = sorted(set(x['parent_id'] for x in l))
