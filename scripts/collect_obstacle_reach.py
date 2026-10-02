@@ -187,6 +187,7 @@ def main():
     parser.add_argument("--dev-parents", type=int, default=1)
     parser.add_argument("--seed", type=int, default=271000)
     parser.add_argument("--obstacles", type=int, choices=(1, 2), default=1)
+    parser.add_argument("--target-layout", choices=("natural", "safe_lowered"), default="safe_lowered")
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--side-margin", type=float, default=.10)
     parser.add_argument("--tip-clearance", type=float, default=.02)
@@ -234,7 +235,9 @@ def main():
                                     initial_state_max_abs_tolerance=args.restore_atol, initial_rgb_max_difference=0,
                                     global_object_inventory_must_match=True),
                     continuous_whole_robot_collision_certified=False, parents_requested=args.parents,
-                    dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles)
+                    dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
+                    target_layout=args.target_layout,
+                    target_layout_description="safe_lowered relocates the three original colored spheres to a declared reachable lower workspace with small parent-seeded offsets; natural retains original task placement")
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     started = time.perf_counter()
     total = successes = restores = classified = duplicate_types = parents_collected = 0
@@ -266,6 +269,16 @@ def main():
             try:
                 _, initial = task.reset()
                 targets = [task._task.target, task._task.distractor0, task._task.distractor1]
+                if args.target_layout == "safe_lowered":
+                    # Original ReachTarget may place a sphere almost at the
+                    # initial wrist height, leaving no room for this independent
+                    # obstacle setting. Explicit derived layouts retain object
+                    # identities/colors and change only their physical poses.
+                    layout_rng = np.random.default_rng(args.seed + parent + 80000)
+                    safe_positions = np.array([[.08, .18, .84], [.28, .02, .96], [.44, -.05, .83]])
+                    safe_positions += layout_rng.uniform([-.012, -.012, -.008], [.012, .012, .008], (3, 3))
+                    for target, position in zip(targets, safe_positions):
+                        target.set_position(position.tolist())
                 goals = np.asarray([target.get_position() for target in targets])
                 start_xyz = np.asarray(initial.gripper_pose[:3])
                 gap = start_xyz[2] - goals[:, 2].max()
