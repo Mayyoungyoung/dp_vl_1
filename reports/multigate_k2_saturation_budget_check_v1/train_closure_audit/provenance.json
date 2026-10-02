@@ -1,0 +1,122 @@
+{
+  "source_commit": "5bb9087c9ca511c2a68a4da08798e95e8c6d4cdc",
+  "registration": {
+    "protocol": "multigate_k2_saturation_budget_check_v1",
+    "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+    "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+    "historical_k4_run": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0",
+    "prior_audit": "/home/wzy/dpvlm/route_set_v1/runs/multigate_closure_opportunity_train768_v1/audit",
+    "output": "/home/wzy/dpvlm/route_set_v1/runs/multigate_k2_saturation_budget_check_v1",
+    "training": {
+      "objective": "saturation",
+      "steps": 3000,
+      "batch_size": 64,
+      "candidates": 2,
+      "width": 192,
+      "depth": 3,
+      "lr": 0.0003,
+      "seed": 0,
+      "eval_every": 500,
+      "device": "cuda"
+    },
+    "selection": "unchanged static DEV_MODEL UniqueValid + .05*Valid every500; original best and last preserved; TRAIN closure audit cannot reselect",
+    "gradient_target_slots": 384000,
+    "training_example_exposures": 192000,
+    "comparison_scope": "A genuinely K2-trained conventional saturation baseline, not a new joint-risk objective. Same historical K4 updates/batch/lr/width/depth/data; half its generated/gradient path slots. Candidate count and query parameter count differ, so not a same-path-budget K4 comparison or an initialization-matched pair.",
+    "cpu_policy": "Launcher pins itself and all descendants to one allowed logical CPU, with explicit taskset on recorded subprocesses. OMP_NUM_THREADS=4 and historical trainer requests four torch threads, but affinity restricts actual CPU execution to one logical core. Do not compare CPU wall-time fairly against historical four-core runs.",
+    "gpu": {
+      "physical_index": 1,
+      "memory_fraction": 0.35,
+      "uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab"
+    },
+    "post_training": "CPU TRAIN768 all-present single-closure audit with exact same prior reference controls. No changed evaluator, no new constraint condition, no DEV closure evaluation.",
+    "research_decision": "Geometric selection already reaches the response upper bound. This run only tests ordinary learned small-budget behavior, regardless of its score; it cannot establish joint-risk innovation."
+  },
+  "registration_sha256": "7e5735b1d8bbd0470d4a28ae707428b9565c6e750a5e3c12990d0194265a560d",
+  "checkpoint_sha256": "bb151fdc3e083434d88711f9a9a479a3fc7e59b0522ebff801a1c1be924c8dad",
+  "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+  "original_audit_provenance": {
+    "config": {
+      "protocol": "multigate_closure_opportunity_train_v1",
+      "split": "TRAIN",
+      "expected_parents": 768,
+      "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+      "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+      "checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0/best.pt",
+      "checkpoint_sha256": "b2cb51ae0de50785a12f129c2ff12ecc981a9df826b5ee7ae1462de6366f102c",
+      "geometric_dpp_sigma_m": 0.25,
+      "screening_threshold": 0.05,
+      "interventions": "Every present opening closed independently, including closure of the final opening. No model recomputation after closure.",
+      "candidate_accounting": {
+        "joint4_actual": "4 complete generated paths from one real K4-trained forward",
+        "joint4_prefix2_zero_adaptation": "first 2 retained from the same 4 generated paths; charged 4, not a trained K2 baseline",
+        "reference_farthest_k2": "privileged stored bank of R complete reference paths examined; 2 selected before closure; max C(R,2) pair checks, not K2 generation",
+        "reference_geometric_dpp_k2": "same R bank, unit-quality RBF K2 MAP is exactly farthest pair; not an independent replication",
+        "reference_response_oracle_k2": "same R bank and every closure outcome from exact privileged geometry; optimal fixed pair over all solvable closures; diagnostic upper bound within reference bank only"
+      },
+      "screening_rule": "5pp equal-parent AnyValid opportunity is only a cheap TRAIN falsification screen. Gap beyond geometric reference selection is principal; gap only versus unadapted prefix cannot support a new mechanism. Any retained opportunity requires a genuinely K2-trained saturation baseline before deciding a mechanism comparison.",
+      "reference_scope": "complete finite opening-pair representatives in controlled geometry; not enumeration of all continuous trajectories or evidence about incomplete robot demonstrations",
+      "selection_ties": "stable original reference-index lexicographic order; one pair selected per parent before a particular closure is revealed",
+      "no_solution_handling": "Retain every closure and report its raw count, all-closure metric, and separate solvable-only equal-parent denominator; no fabricated failed learning target. Parents with zero solvable closures remain with null conditional metrics.",
+      "new_training": false,
+      "new_gpu_jobs": false
+    },
+    "config_sha256": "dfd6c903dc293f93c23b77cc711648b555981b6ca398dae6fdf4a4a688378c95",
+    "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+    "checkpoint_sha256": "b2cb51ae0de50785a12f129c2ff12ecc981a9df826b5ee7ae1462de6366f102c",
+    "source_commit": "7b496e24a85512f23fe448d50288c14b27ed6f12",
+    "source_sha256": {
+      "scripts/audit_multigate_closure_opportunity.py": "74d62c67624abad9f2f5ea8633aec68b0221f203d5ac9eecf5eb6bc75cca75eb",
+      "routeset/multigate.py": "18e28363ab189ba15d71e55eb1e66ac08c92392dc4566e03ede60c39956fbf51",
+      "routeset/geometry.py": "9e7e6e63c3bef6c8bf9b1036f3661f01f5fe6b31f8eef19253c1de99096494e3",
+      "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+      "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8"
+    },
+    "outputs_sha256": {
+      "parents.json": "928c7972c5651c6d31db857e1069da4db8a305aaa58cf9399d1cc61e5df6a839",
+      "summary.json": "90369530d55794fa657961870ca594d6e6c6c36e168047bc73ef75e3b19d4ea3",
+      "closures.json": "b703e591d632c175b8d943335d1a200415974189224d28cea8fa2c0ead2de452",
+      "train_joint4_predictions.npz": "53ccf3fbee6d8843a1ef448c87099d6f4d8d43d5c3bc8bb7e0e548a50a9c4bef"
+    },
+    "data_access": "split/parent/scene IDs are metadata; only TRAIN payload rows decoded, DEV bytes may be skipped by ZIP decompression; locked-containing archive rejected before any payload",
+    "trained_config": {
+      "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+      "output": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0",
+      "objective": "saturation",
+      "steps": 3000,
+      "batch_size": 64,
+      "candidates": 4,
+      "width": 192,
+      "depth": 3,
+      "lr": 0.0003,
+      "seed": 0,
+      "eval_every": 500,
+      "device": "cuda",
+      "resume": false,
+      "stop_after": null,
+      "dataset_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+      "horizon": 24,
+      "cond_dim": 34,
+      "code_commit": "1a1b6bb7600419504f5c1b2f5534435de7a1cf6e",
+      "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+      "selection_split": "DEV_MODEL",
+      "information": "controlled true geometry and endpoints",
+      "supervision": "same full positive reference pool; matching objective differs"
+    },
+    "checkpoint_step": 1500
+  },
+  "source_sha256": {
+    "scripts/audit_multigate_k2_closure.py": "4d869cfecd53f296d9e18a44483aee266b346672fb0eec5b264d0db1bc6421af",
+    "scripts/audit_multigate_closure_opportunity.py": "74d62c67624abad9f2f5ea8633aec68b0221f203d5ac9eecf5eb6bc75cca75eb",
+    "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+    "routeset/multigate.py": "18e28363ab189ba15d71e55eb1e66ac08c92392dc4566e03ede60c39956fbf51",
+    "routeset/geometry.py": "9e7e6e63c3bef6c8bf9b1036f3661f01f5fe6b31f8eef19253c1de99096494e3",
+    "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8"
+  },
+  "outputs_sha256": {
+    "parents.json": "46269691f81785ca9935fe1b1bf4f20af7c00b6865e3cf8ff52a84ef18aed51f",
+    "summary.json": "84e766c440eebc095ade731acc7dc75d247e6f666ab2e6d70f44e0be43fded4f",
+    "closures.json": "32d33fbf3820e374eeadc60cab3b5bf9380439cf87696f8419159c537bda84aa",
+    "train_k2_predictions.npz": "7fec854abaea7c738a7760357eefdb66d1f26f3ee3a84085ac984547b1116a06"
+  }
+}

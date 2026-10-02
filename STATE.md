@@ -1,5 +1,12 @@
 # State — 2026-10-02
 
+## Current checkpoint — 16:57 UTC / 2026-10-03 00:57 China
+
+- GenuineK2 ordinary3000x64 completed exit0 from5bb9087,384000path slots. Both original static-best500 and last3000 DEV Valid100%/Unique1.9375. Fixed-best TRAIN closure AnyValid99.65278%;16 failed solvable changes across8parents all involve an originally invalid candidate, zero common-failure events from two originally valid distinct routes. This reinforces abandoning the joint-risk mechanism. Complete artifact/analysis report is being synchronized.
+- Bounded Qwen continuation ACTUALLY RUNNING from5bb9087 since16:52:48UTC, record440253/child440254, runs/vlm_route_sft_continuation_v1/seed0. Actual13CPU recovery tests passed; latest inspectedstep2150. Original1500 source immutable; total limit6000, no post-limit continuation. Read actual checkpoint/status before resume.
+- Four-layout/three-target physical pilot ACTUALLY RUNNING from9324efc, runs/data/observed_two_row_layout4_v5, SSH12430. Actual62server tests passed;108 route slots across4 once-sampled layouts, no replacement/retry. CPU1, GPU hidden. All outputs remain DEV_COLLECTION; no model-training authorization or claim follows from partial parents.
+- Old6c formal collector mechanical check16:53:11UTC:125/144 closed markers (TRAIN85/96, remaining roles10/12 each), still running. No locked contents inspected. JOBS snapshot293records, registry updated; new84ee144-parent collection remains complete. Current process receipts supersede snapshots.
+
 ## Current checkpoint — 16:42 UTC / 2026-10-03 00:42 China
 
 - Actual7b496e TRAIN768 closure audit completed:3806 changes,3424 solvable,720 evaluable parents. Geometric farthest/DPP K2 and fixed response oracle all reach100% conditional AnyValid; opportunity gap0. Stop the joint-risk module in this setting. K4 prefix2 is not a trainedK2 baseline; an actual K2 ordinary budget control is being registered separately.

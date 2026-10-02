@@ -73,3 +73,12 @@
 - [Topology-Driven Parallel Trajectory Optimization作者代码](https://github.com/tud-amr/guidance_planner)：作者仓库列T-RO2024与ICRA2023关联论文，给定动态障碍、状态和目标，生成拓扑不同引导路线。已核验代码来源和README，未安装或复现。候选路线的绕障分类及先离散引导后连续优化已有强传统先例。
 
 研究判断：当前181条障碍TRAIN正参考本身与训练重采样均通过固定2cm协议，而单seed峰值头前段频繁撞障。应先区分几何表示/训练收敛与集合预算分配的贡献，不能仅把局部地图cross-attention、碰撞损失或传统拓扑分类换名作为核心。
+
+
+## Additional current primary-source check — 2026-10-03
+
+| Work | Verified status/source | Mechanism relevant here | Boundary / reproduction |
+|---|---|---|---|
+| Ariadne: Trajectory Planning without Trajectory Data: A Manifold-Guided Approach | 2026 preprint per [author paper](https://silongyong.github.io/paper/ariadne.pdf) and [official repository](https://github.com/SilongYong/Ariadne); official main `4c6d9f3fa770e8dbbc77e2a7b874c7f5a63ef905` read via git ls-remote | State-only score model, local normal-space estimates from score derivatives, endpoint-corrected projection ODE | Known start/goal; not image-language finite-budget route-set generation. Repository currently contains paper/citation and says implementation is planned upon acceptance. No code reproduction or venue acceptance claimed. |
+
+Research implication: using valid trajectory states as geometric support, or recombining them toward a goal, is not by itself a new mechanism. Our observation inputs cannot acquire privileged goal coordinates or unseen geometry from this comparison. This literature check does not trigger a new implementation or transfer the paper's reported results to this project.

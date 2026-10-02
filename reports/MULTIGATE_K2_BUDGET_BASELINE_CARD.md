@@ -1,6 +1,6 @@
 # 真正K2训练：普通有限预算基线登记
 
-2026-10-03。状态：**代码、配置与本地13项相关测试完成；尚未服务器测试或训练，等待冻结和root GPU队列。** 本轮不是共同失效新方法；[TRAIN审计](MULTIGATE_CLOSURE_OPPORTUNITY_RESULTS.md)已经表明传统几何最远对/DPP在当前单门变化设置达到响应最优上限。无论本轮K2结果怎样，都不恢复joint-risk创新叙述。
+2026-10-03。状态：**固定5bb9087服务器13测通过，唯一seed0 K2训练3000及CPU TRAIN关闭审计均exit0。** 原静态best500为DEV Valid100%/Unique1.9375；TRAIN可解关闭AnyValid99.6528%，距传统几何上限仅0.3472pp，且16个失败关闭全部原本已含无效候选。[完整结果](MULTIGATE_K2_BUDGET_BASELINE_RESULTS.md)。本轮不是共同失效新方法；[先前TRAIN审计](MULTIGATE_CLOSURE_OPPORTUNITY_RESULTS.md)已经表明传统几何最远对/DPP在当前单门变化设置达到响应最优上限。保留以下注册参数，不依结果改设置。
 
 ## 实际历史设置核验
 
@@ -27,6 +27,6 @@
 
 输出为`runs/multigate_k2_saturation_budget_check_v1/seed0`和`train_closure_audit`，job在`receipts`。launcher本身只接受fresh输出，避免重复启动。训练中断时使用`launch_receipt.json`保存的原命令追加`--resume`恢复，不改steps/参数；审计中断用记录命令的新输出路径重算。原trainer具备模型、优化器、调度器、全RNG和sampler checkpoint。不会用新launcher重建或覆盖旧K4实验。
 
-本地新4测加原9测实际13通过，1.08s：历史超参/曝光保护、真正K2 checkpoint拒绝K4、所有原closure/无解分母保持、父序与重复身份拒绝。实际服务器CPU测试、GPU开始/完成、数值与hash留待执行后填入。
+本地新4测加原9测实际13通过，1.08s：历史超参/曝光保护、真正K2 checkpoint拒绝K4、所有原closure/无解分母保持、父序与重复身份拒绝。服务器同13测实际0.82s通过，训练2026-10-02 16:49:02至16:50:56UTC；随后CPU审计完成，GPU/CPU均已释放，实际job和hash见结果报告。
 
 未来研究建议将依托已经取得真实多模式支撑的新两排观测数据，先确认同父多目标/约束变化能稳定采集；不通过给双墙附加人为risk groups制造有利新结果。

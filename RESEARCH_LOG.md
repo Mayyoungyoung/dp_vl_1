@@ -215,3 +215,10 @@ Hypothesis: lowering the diagnosed gripper/post obstruction may permit more than
 Independent hypothesis: response-aware finite-budget selection may avoid common failures beyond geometry diversity. TRAIN768/3806 single closures falsify the registered opportunity: all720 evaluable parents tie between geometric farthest/DPP and fixed reference response oracle,100% solvable-closure AnyValid. Stop the proposed risk module; retain one genuine K2 ordinary budget control rather than treating a K4 prefix as strong.
 
 Greedy SFT still fails TRAIN8 endpoint gate, so one bounded same-objective1500-to6000 continuation is prepared. Restore all states into a fresh tree, preserve original artifacts/best bytes, and account original/added cost separately. Local pure tests and peer review passed; actual server Torch equivalence remains required before GPU work. No new training outcome is inferred from source preparation.
+
+
+## 2026-10-02 16:57 UTC — trained small-budget control closes the apparent gap
+
+Actual5bb9087 K2 saturation3000x64 completed:static DEV best500 and last3000 bothValid100%/Unique1.9375;384000pathslots. TRAIN closure99.65278%AnyValid versus83.66353%unadaptedK4prefix. Every remaining16solvable failed closure across8parents involves an originally invalid candidate; zero failures from two originally valid distinct routes. Stop common-failure objective design in this setting.
+
+Actual next execution: afterK2 releasedGPU, full-state Qwen6000 continuation launched16:52:48UTC fromsame5bb,child440254,13actualCPU tests passed. Original checkpoints unchanged. Independently, four-layout108proposal physical pilot launchedfrom9324efc after62tests; sameimage3target conditions and allfailures preserved. Oldformalcollector125/144closed mechanically at16:53; lockedcontents not opened.

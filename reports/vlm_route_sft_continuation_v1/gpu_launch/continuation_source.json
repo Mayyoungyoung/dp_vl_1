@@ -1,0 +1,93 @@
+{
+  "protocol": "vlm_route_sft_explicit_continuation_v1",
+  "source_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_v1/seed0/last.pt",
+  "source_run": "/home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_v1/seed0",
+  "source_file_sha256": {
+    "last.pt": "d604b5a213bdf281e7976b460b7ceb2fc428488610b1b84670ddca04711cb00c",
+    "best.pt": "675595f0f06eb523edfce1d783f61cf5726446b2a376e2e6cdf12f62c69be33f",
+    "initial_adapters.pt": "966970d0a68904a6828e036fbf8476e9c5956378843224a388aa4579d78bcf8b",
+    "summary.json": "8f30f8e5b18bc8eb7d14fcc621c338b55ff78f272837e8ce946e5a71ba2b2143",
+    "config.json": "84ffe585096a24c45be225059fa25b6020ebda5458dda380f0b94690d78f75dd",
+    "requests.jsonl": "477b70f751a76a79e32e3689ba8dbf1fe70ae0467ff199d58a07b359566c8b5d",
+    "data_source_hashes.json": "ce79a32dcf88fb083f7ed9422a14846c40a1697760b963cdd244716834d996b7",
+    "dataset_accounting.json": "4a6d53791fc62852d62bc7a9b042e4d3d9ce772d081a74d8a193caae33609670",
+    "dev_plan.json": "0d47b4c07eaf1eb6dbf9cbed98f3b9e80e1b50ad707db409a35510566d78cead"
+  },
+  "original_config": {
+    "protocol": "vlm_route_sft_alternating_k1_k4_v1",
+    "observations": "/home/wzy/dpvlm/route_set_v1/data/observation_obstacle_reserved_development_v1/observations.jsonl",
+    "supervision": "/home/wzy/dpvlm/route_set_v1/data/observation_obstacle_reserved_development_v1/supervision.jsonl",
+    "model": "/home/wzy/dpvlm/route_set_v1/data/qwen3-vl-2b-instruct-89644892",
+    "model_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "processor_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "model_provenance_sha256": "a001afb3ebdeceee3548ea9c8e58d5c9c4443b4d9a0ecdac004c85de3a691819",
+    "steps": 1500,
+    "batch_size": 1,
+    "seed": 0,
+    "lr": 0.0001,
+    "weight_decay": 0.0,
+    "eval_every": 250,
+    "checkpoint_every": 25,
+    "log_every": 25,
+    "chunk_size": 64,
+    "horizon": 24,
+    "gradient_clip": 1.0,
+    "scheduler": "constant",
+    "min_pixels": 65536,
+    "max_pixels": 65536,
+    "lora_rank": 8,
+    "lora_alpha": 16.0,
+    "lora_layers": "last2_q_v",
+    "parameter_dtype": "bfloat16_base_float32_adapter",
+    "attn_implementation": "sdpa",
+    "sampling": "uniform_positive_parent_then_uniform_positive_language",
+    "k_schedule": "odd1_even4",
+    "dev_plan_seed": 200000,
+    "selection": "DEV_token_NLL_total_sum_div_supervised_tokens",
+    "data_fingerprint": "40f33d663944402247667c425424b99474afaaf1234141910f5c3189e7c50da0",
+    "source_sha256": {
+      "scripts/train_vlm_route_sft.py": "9fc192e069dd0f0c0c2a2478db9a00172e7e35cb2b8dc42f71d3b2c6a6520329",
+      "routeset/vlm_sft_data.py": "fcacb71f4f7225b58c7dd4b7a30f24db7b0c54560540b0fffd4f7d8451510e30",
+      "routeset/vlm_sft_loss.py": "ed18ff29ec36fb2d93c3965ca349ac34cbc8d28f2abbfbc14d7abf39b458c12c",
+      "routeset/vlm_route_serialization.py": "2001fc1b1e10d578058d9ef88989cc4e403b5cea1fa65c082a53a937b617126e",
+      "scripts/train_observed_lora.py": "ce02085a9462bcdd4e20717b4a7e2a583ca001b475699a4ac08141ef908d7b70",
+      "routeset/observed_route_head.py": "b67c38be821ad335d4080a6b9e55bc1f423451396bcd682459676da5de5d808b",
+      "routeset/train_v2.py": "011253aaeadb02d686c3e0386e382c2d6d0932bb317a10ba98b9895b4b0e370b",
+      "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8"
+    },
+    "dependencies": {
+      "torch": "2.4.1+cu121",
+      "transformers": "4.57.1",
+      "numpy": "1.26.4"
+    },
+    "dev_plan_sha256": "cb3353484be64f09b105ef78e3593aad9e7be2c42bf1dc834a8473caf54e94d1"
+  },
+  "original_planned_steps": 1500,
+  "restored_step": 1500,
+  "added_planned_steps": 4500,
+  "total_planned_steps": 6000,
+  "inherited_elapsed_seconds": 556.7868460919708,
+  "source_checkpoint_elapsed_seconds": 556.6759936460294,
+  "inherited_exposure": {
+    "TRAIN": {
+      "requests": 1500,
+      "candidate_slots": 3750,
+      "prompt_tokens": 1160434,
+      "supervised_tokens": 1273081,
+      "sequence_tokens": 2433515,
+      "completed_optimizer_steps": 1500
+    },
+    "DEV_MODEL": {
+      "requests": 322,
+      "candidate_slots": 805,
+      "prompt_tokens": 248920,
+      "supervised_tokens": 272979,
+      "sequence_tokens": 521899,
+      "completed_optimizer_steps": 0
+    }
+  },
+  "inherited_best_step": 1500,
+  "inherited_best_checkpoint_sha256": "675595f0f06eb523edfce1d783f61cf5726446b2a376e2e6cdf12f62c69be33f",
+  "source_checkpoint_not_modified": true,
+  "scope": "Explicit larger-budget run; original metadata/checkpoints stay immutable. Inherited best.pt bytes/config remain original until a new DEV-token-NLL winner is saved."
+}
