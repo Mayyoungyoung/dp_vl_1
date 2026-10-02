@@ -1,7 +1,8 @@
 """Independent RLBench-derived low-post, two-row feasibility pilot.
 
 No model training, automatic retry, or inference-time oracle geometry. Exactly
-one registered setup action and 3 targets x 9 complete route proposals. The
+one registered setup action and nine proposals per registered target. Legacy
+versions use three targets; v4 uses the predeclared central target only. The
 setup trajectory is separate from routes starting at the restored low entry.
 """
 import argparse
@@ -27,6 +28,27 @@ import two_row_anchor
 
 
 PASSAGES = ("negative_y", "middle", "positive_y")
+LOWER_POST_PROTOCOL = "observed_two_row_lower_posts_central_v4"
+
+
+def registered_target_indices(config):
+    expected = [1] if config["protocol"] == LOWER_POST_PROTOCOL else [0, 1, 2]
+    if config.get("selected_target_indices", expected) != expected:
+        raise ValueError("target selection differs from registered protocol")
+    return expected
+
+
+def summarize_reference_types(identifier, route_types, config):
+    """Only accepted trajectories enter this list; unknown remains a reference."""
+    known = {tuple(value) for value in route_types if value is not None}
+    lateral = {value for value in known if all(item in PASSAGES for item in value)}
+    include_over = config["protocol"] == LOWER_POST_PROTOCOL
+    return dict(id=identifier, valid_references=len(route_types), distinct_classified=len(known),
+        known_classified_sequences=sorted(known), distinct_lateral_sequences=len(lateral),
+        known_lateral_sequences=sorted(lateral), unknown_valid_references=sum(v is None for v in route_types),
+        has_more_than_four_valid_lateral_sequences=len(lateral)>4,
+        feasibility_type_policy="lateral_and_over" if include_over else "lateral_only",
+        preregistered_feasibility_met=(len(known) if include_over else len(lateral))>=5)
 
 
 def geometry(config):
@@ -37,15 +59,21 @@ def geometry(config):
 
 def validate_config(config):
     versions = {"observed_two_row_low_posts_v1":False, "observed_two_row_low_posts_rowpoints_v2":True,
-                "observed_two_row_recorded_v1_anchor_rowpoints_v3":True}
+                "observed_two_row_recorded_v1_anchor_rowpoints_v3":True, LOWER_POST_PROTOCOL:True}
     if config["protocol"] not in versions or config["parents"] != 1:
         raise ValueError("this version is a single registered feasibility parent")
     if bool(config.get("row_plane_guides",False)) != versions[config["protocol"]]:
         raise ValueError("row-plane guide policy differs from declared version")
     if (config["protocol"]=="observed_two_row_recorded_v1_anchor_rowpoints_v3") != ("initial_state_anchor" in config):
         raise ValueError("version and explicit v1 reconstruction policy differ")
-    if config["split"] != "DEV_COLLECTION" or config["requested_route_proposals"] != 27:
+    requested = 9 * len(registered_target_indices(config))
+    if config["split"] != "DEV_COLLECTION" or config["requested_route_proposals"] != requested:
         raise ValueError("pilot role and proposal budget are fixed")
+    if config["protocol"] == LOWER_POST_PROTOCOL:
+        if (config.get("selected_target_indices") != [1] or
+                config.get("feasibility_type_policy") != "lateral_and_over" or
+                config.get("minimum_distinct_valid_types") != 5):
+            raise ValueError("v4 requires explicit central target and its new type policy")
     if np.asarray(config["goal_xyz"]).shape != (3, 3) or np.asarray(config["post_y"]).shape != (2, 2):
         raise ValueError("three goals and two pairs of posts are required")
     if any(a >= b for a, b in zip(config["row_x"], config["row_x"][1:])):
@@ -236,6 +264,8 @@ def collect(config, config_path, output):
     from rlbench.tasks.reach_target import ReachTarget
     from rlbench.const import colors
     centers, halves = validate_config(config)
+    target_indices=registered_target_indices(config)
+    requested_routes=config["requested_route_proposals"]
     output.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     parent_id = "two_row_reach_%06d" % config["seed"]
@@ -253,7 +283,10 @@ def collect(config, config_path, output):
         reference_set_complete=False, all_solution_count=None, full_robot_continuous_certificate=False,
         initial_preparation=("One reconstruction action from frozen v1 preparation terminal joints; no new setup IK; require every recorded world/velocity/RGB-D/calibration field exactly equal before any of 27 slots" if anchored else
             "One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start"),
-        planning_budget=dict(route_slots=27,maximum_calls_per_route=9 if config.get("row_plane_guides",False) else 7,
+        selected_target_indices=target_indices,physical_target_count=3,
+        feasibility_type_policy="lateral_and_over" if config["protocol"]==LOWER_POST_PROTOCOL else "lateral_only",
+        minimum_distinct_valid_types=5,old_dynamic_initial_state_pairing_claimed=False,
+        planning_budget=dict(route_slots=requested_routes,maximum_calls_per_route=9 if config.get("row_plane_guides",False) else 7,
             setup_maximum_calls=0 if anchored else 2,failed_slots_stop_early=True,
             internal_search_scope="IK/OMPL configuration searches are not complete output trajectories and are not individually instrumented"),
         acceptance="strict full world/inventory/RGB/depth/camera/current restore; per-step arm/gripper collisions; 2cm tip segments; 3cm endpoint",
@@ -270,7 +303,7 @@ def collect(config, config_path, output):
     obsconfig.task_low_dim_state = False
     env = Environment(MoveArmThenGripper(JointVelocity(), Discrete()), obs_config=obsconfig, headless=True)
     counts = dict(requested_parents=1, requested_setup_actions=1, setup_actions_attempted=0, setup_successes=0,
-                  requested_route_proposals=27, route_attempts=0, route_successes=0, classified_successes=0,
+                  requested_route_proposals=requested_routes, route_attempts=0, route_successes=0, classified_successes=0,
                   lateral_classified_successes=0, restore_passes=0, duplicate_types=0)
     setup = dict(parent_id=parent_id, phase="setup", success=False, simulated_steps=0)
     trace, initial, per_target, fatal_error, shutdown_error = [], None, [], None, None
@@ -388,7 +421,8 @@ def collect(config, config_path, output):
                             obstacle_halfsizes=halves, target_centers=goals, target_visible_pixels=visible)
         write_json(folder / "restore_reference.json", reference)
         palette = np.asarray([item[1] for item in colors])
-        for target_index, target in enumerate(targets):
+        for target_index in target_indices:
+            target=targets[target_index]
             identifier = parent_id + "_target%d" % target_index
             color_index = int(np.linalg.norm(palette-target.get_color(), axis=1).argmin())
             instruction = "Move the gripper to touch the %s sphere while avoiding the gray posts." % colors[color_index][0]
@@ -465,9 +499,7 @@ def collect(config, config_path, output):
                 task="rlbench_derived_two_row_reach", observation=parent_id+"/observation.npz", routes=routes,
                 route_types=types, verification_only=parent_id+"/verification_only.npz", reference_set_complete=False,
                 semantic_targets=dict(centers=goals.tolist(), target_index=target_index, tolerance=config["endpoint_tolerance_m"])))
-            per_target.append(dict(id=identifier, valid_references=len(routes), distinct_classified=len(seen),
-                distinct_lateral_sequences=len(lateral), known_lateral_sequences=sorted(lateral),
-                has_more_than_four_valid_lateral_sequences=len(lateral)>4))
+            per_target.append(summarize_reference_types(identifier,types,config))
     except Exception as error:
         fatal_error = dict(error=repr(error), traceback=traceback.format_exc())
         raise
@@ -476,7 +508,7 @@ def collect(config, config_path, output):
             env.shutdown()
         except Exception as error:
             shutdown_error = repr(error)
-        counts["unattempted_route_proposals"] = 27-counts["route_attempts"]
+        counts["unattempted_route_proposals"] = requested_routes-counts["route_attempts"]
         status = "collector_error" if fatal_error or shutdown_error else ("collection_finished" if setup["success"] else "setup_failed")
         write_json(output/"summary.json", dict(**counts, per_target=per_target, elapsed_seconds=time.perf_counter()-started,
             setup_elapsed_seconds=setup.get("seconds"), status=status,

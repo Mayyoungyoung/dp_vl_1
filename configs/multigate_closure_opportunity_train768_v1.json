@@ -1,0 +1,25 @@
+{
+  "protocol": "multigate_closure_opportunity_train_v1",
+  "split": "TRAIN",
+  "expected_parents": 768,
+  "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+  "data_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+  "checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0/best.pt",
+  "checkpoint_sha256": "b2cb51ae0de50785a12f129c2ff12ecc981a9df826b5ee7ae1462de6366f102c",
+  "geometric_dpp_sigma_m": 0.25,
+  "screening_threshold": 0.05,
+  "interventions": "Every present opening closed independently, including closure of the final opening. No model recomputation after closure.",
+  "candidate_accounting": {
+    "joint4_actual": "4 complete generated paths from one real K4-trained forward",
+    "joint4_prefix2_zero_adaptation": "first 2 retained from the same 4 generated paths; charged 4, not a trained K2 baseline",
+    "reference_farthest_k2": "privileged stored bank of R complete reference paths examined; 2 selected before closure; max C(R,2) pair checks, not K2 generation",
+    "reference_geometric_dpp_k2": "same R bank, unit-quality RBF K2 MAP is exactly farthest pair; not an independent replication",
+    "reference_response_oracle_k2": "same R bank and every closure outcome from exact privileged geometry; optimal fixed pair over all solvable closures; diagnostic upper bound within reference bank only"
+  },
+  "screening_rule": "5pp equal-parent AnyValid opportunity is only a cheap TRAIN falsification screen. Gap beyond geometric reference selection is principal; gap only versus unadapted prefix cannot support a new mechanism. Any retained opportunity requires a genuinely K2-trained saturation baseline before deciding a mechanism comparison.",
+  "reference_scope": "complete finite opening-pair representatives in controlled geometry; not enumeration of all continuous trajectories or evidence about incomplete robot demonstrations",
+  "selection_ties": "stable original reference-index lexicographic order; one pair selected per parent before a particular closure is revealed",
+  "no_solution_handling": "Retain every closure and report its raw count, all-closure metric, and separate solvable-only equal-parent denominator; no fabricated failed learning target. Parents with zero solvable closures remain with null conditional metrics.",
+  "new_training": false,
+  "new_gpu_jobs": false
+}

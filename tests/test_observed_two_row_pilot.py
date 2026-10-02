@@ -121,3 +121,51 @@ def test_failed_segment_records_actual_cost_without_filling_later_calls(config, 
     totals = {}
     collector.add_execution_totals(totals, record)
     assert totals["get_path_calls"] == 1
+
+
+def v4_config():
+    return json.loads((Path(__file__).resolve().parents[1]/"configs/observed_two_row_pilot_v4.json").read_text())
+
+
+def test_v4_changes_only_post_height_and_preregistered_scope():
+    old=json.loads((Path(__file__).resolve().parents[1]/"configs/observed_two_row_pilot_v2.json").read_text())
+    new=v4_config();collector.validate_config(new)
+    for key,value in old.items():
+        if key not in {'protocol','seed','post_size_xyz','requested_route_proposals'}:assert new[key]==value
+    assert new['post_size_xyz']==[.035,.035,.14] and old['post_size_xyz']==[.035,.035,.16]
+    assert new['seed']!=old['seed'] and collector.registered_target_indices(new)==[1]
+    assert collector.registered_target_indices(old)==[0,1,2]
+    assert len(new['goal_xyz'])==3 and new['requested_route_proposals']==9
+
+
+def test_v4_nine_central_paths_keep_original_guides_and_raw_h24_rules():
+    new=v4_config();centers,halves=collector.validate_config(new)
+    old=json.loads((Path(__file__).resolve().parents[1]/"configs/observed_two_row_pilot_v2.json").read_text())
+    for sequence in itertools.product(PASSAGES,repeat=2):
+        guides=proposed_waypoints(new['goal_xyz'][1],sequence,new)
+        assert len(guides)==9 and np.array_equal(guides,proposed_waypoints(old['goal_xyz'][1],sequence,old))
+        raw=np.vstack([new['entry_xyz'],guides])
+        for xyz in (raw,collector.legacy.resample(raw,24)):
+            assert crossing_signature(xyz,new)==sequence
+            assert collector.legacy.tip_polyline_clear(xyz,centers,halves,.02)
+    top=new['post_base_z']+new['post_size_xyz'][2]
+    assert crossing_signature([[0,0,top+.1],[.5,0,top+.1]],new)==('over','over')
+    assert crossing_signature([[0,0,top],[.5,0,top]],new) is None
+
+
+def test_v4_unknown_duplicate_and_over_do_not_rewrite_legacy_threshold(config):
+    references=[('negative_y','middle'),('middle','middle'),('positive_y','middle'),
+        ('over','middle'),('over','over'),('over','over'),None]
+    current=collector.summarize_reference_types('fixture',references,v4_config())
+    legacy=collector.summarize_reference_types('fixture',references,config)
+    assert current['valid_references']==7 and current['distinct_classified']==5
+    assert current['unknown_valid_references']==1 and current['distinct_lateral_sequences']==3
+    assert current['preregistered_feasibility_met'] and not current['has_more_than_four_valid_lateral_sequences']
+    assert not legacy['preregistered_feasibility_met'] and legacy['feasibility_type_policy']=='lateral_only'
+
+
+@pytest.mark.parametrize('field,value',[('selected_target_indices',[0]),('requested_route_proposals',27),
+    ('feasibility_type_policy','lateral_only'),('minimum_distinct_valid_types',4)])
+def test_v4_rejects_unregistered_target_budget_or_primary_type_policy(field,value):
+    new=v4_config();new[field]=value
+    with pytest.raises(ValueError):collector.validate_config(new)
