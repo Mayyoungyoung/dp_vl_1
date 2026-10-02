@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from argparse import Namespace
 from pathlib import Path
 
 import numpy as np
@@ -82,6 +83,25 @@ class CompletionTests(unittest.TestCase):
             drafts[:, 1] = drafts[:, 0]
             duplicate = model(scenes, drafts, torch.ones((2, 2), dtype=torch.bool))
             torch.testing.assert_close(single, duplicate, atol=1e-7, rtol=1e-6)
+
+    def test_self_draft_training_resume_preserves_rng_and_updates(self):
+        from scripts.train_completion import train_one
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = generate_dataset(root / 'data.npz', train=8, dev_model=2,
+                                    dev_score=0, calibration=0, test_locked=0, ood_locked=0)
+            common = dict(data=str(data), mechanism='coverage', steps=8, batch_size=2,
+                          width=32, depth=1, lr=3e-4, seed=11, eval_every=4,
+                          threads=1, device='cpu', self_draft_prob=1., self_draft_start=1)
+            train_one(Namespace(**common, output=str(root/'full'), resume=False, stop_after=None))
+            train_one(Namespace(**common, output=str(root/'resumed'), resume=False, stop_after=4))
+            train_one(Namespace(**common, output=str(root/'resumed'), resume=True, stop_after=None))
+            full = torch.load(root/'full/last.pt', map_location='cpu', weights_only=False)
+            resumed = torch.load(root/'resumed/last.pt', map_location='cpu', weights_only=False)
+            self.assertEqual(full['self_draft_batches'], 6)
+            self.assertEqual(full['self_draft_batches'], resumed['self_draft_batches'])
+            for name, value in full['model'].items():
+                torch.testing.assert_close(value, resumed['model'][name], atol=0., rtol=0.)
 
 
 if __name__ == "__main__":

@@ -70,6 +70,38 @@ def main():
         'unique_valid_route_types': None,
         'scope': 'collection and input-isolation audit; not learned model performance or continuous collision certification',
         'hash_manifest_sha256': sha256(a.output / 'dataset_file_hashes.json')}
+    cache = a.data / 'qwen_cache'
+    if cache.exists():
+        samples = [json.loads(line) for line in (cache / 'samples.jsonl').read_text().splitlines() if line]
+        if len(samples) != len(observations) or {row['id'] for row in samples} != set(image_hashes):
+            raise ValueError('Qwen cache ids do not exactly match observation manifest')
+        cached_by_id, cache_hashes = {}, []
+        for row in samples:
+            path = cache / row['file']
+            if sha256(path) != row['sha256']:
+                raise ValueError('Qwen sample hash mismatch')
+            with np.load(path) as features:
+                if str(features['image_sha256']) != image_hashes[row['id']]:
+                    raise ValueError('Qwen feature input image differs from observation')
+                if not np.isfinite(features['mean_hidden']).all() or not np.isfinite(features['last_hidden']).all():
+                    raise ValueError('Nonfinite Qwen cache features')
+                cached_by_id[row['id']] = (features['mean_hidden'].copy(), features['last_hidden'].copy())
+                cache_hashes.append({'id': row['id'], 'file': row['file'], 'sha256': row['sha256']})
+        (a.output / 'qwen_cache_hashes.json').write_text(json.dumps(cache_hashes, indent=2), encoding='utf-8')
+        latencies = [row['single_request_seconds'] for row in samples]
+        pair_l2 = []
+        for rows in by_parent.values():
+            anchor = cached_by_id[rows[0]['id']][1]
+            pair_l2.extend(float(np.linalg.norm(anchor-cached_by_id[row['id']][1])) for row in rows[1:])
+        report['qwen_cache'] = {'samples': len(samples), 'finite_and_hash_checked': len(samples),
+            'hidden_shapes': [list(x.shape) for x in next(iter(cached_by_id.values()))],
+            'single_request_seconds_median': float(np.median(latencies)),
+            'single_request_seconds_p95': float(np.quantile(latencies, .95)),
+            'first_single_request_seconds': latencies[0],
+            'same_image_language_last_hidden_l2_min': min(pair_l2),
+            'status': json.loads((cache / 'status.json').read_text()),
+            'config': json.loads((cache / 'cache_config.json').read_text()),
+            'hash_manifest_sha256': sha256(a.output / 'qwen_cache_hashes.json')}
     (a.output / 'audit.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(json.dumps(report, indent=2), flush=True)
 

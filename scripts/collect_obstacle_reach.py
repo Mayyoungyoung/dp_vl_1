@@ -173,6 +173,9 @@ def self_test():
         assert tip_polyline_clear(path, centers, halfsizes)
         assert crossing_signature(path, centers, halfsizes) == (side,)
         assert crossing_signature(path[::-1], centers, halfsizes) == (side,)
+        sampled = resample(path, count=24)
+        assert tip_polyline_clear(sampled, centers, halfsizes)
+        assert crossing_signature(sampled, centers, halfsizes) == (side,)
     assert not tip_polyline_clear(np.array([[0., 0., 1.4], [0., 0., .6]]), centers, halfsizes)
     assert crossing_signature(np.array([[0., 0., 1.4], [0., 0., .6]]), centers, halfsizes) is None
     # Safe waypoints do not make a segment through the expanded box safe.
@@ -247,6 +250,9 @@ def main():
         # them. They never change Task.get_state's task-tree object count.
         env._pyrep.stop()
         task = env.get_task(ReachTarget)
+        # TaskEnvironment.__init__ starts simulation internally after loading
+        # the task. Stop AGAIN before adding persistent root obstacle objects.
+        env._pyrep.stop()
         sizes = [np.array([.14, .18, .06])] * args.obstacles
         obstacles = []
         for index, size in enumerate(sizes):
@@ -379,13 +385,17 @@ def main():
                             raise RuntimeError("endpoint or continuous tip-polyline clearance failed")
                         actual = crossing_signature(xyz, centers, halfsizes, args.tip_clearance)
                         record["actual_route_type"] = actual
+                        xyz_24 = resample(np.asarray(poses), count=24)
+                        record["tip_polyline_24_clear"] = bool(tip_polyline_clear(xyz_24, centers, halfsizes, args.tip_clearance))
+                        if not record["tip_polyline_24_clear"] or crossing_signature(xyz_24, centers, halfsizes, args.tip_clearance) != actual:
+                            raise RuntimeError("24-point reference resampling changed clearance or passage classification")
                         duplicate = actual in accepted_types if actual is not None else None
                         if actual is not None:
                             classified += 1
                             duplicate_types += int(duplicate)
                             accepted_types.add(actual)
                         filename = parent_id + "/target%d_route%d.npz" % (target_index, attempt)
-                        np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens), xyz_64=resample(np.asarray(poses)))
+                        np.savez_compressed(args.output / filename, gripper_pose=np.asarray(poses), gripper_open=np.asarray(opens), xyz_64=resample(np.asarray(poses)), xyz_24=xyz_24)
                         routes.append(filename)
                         route_types.append(actual)
                         successes += 1
