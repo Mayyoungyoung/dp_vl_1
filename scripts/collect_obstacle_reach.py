@@ -61,6 +61,32 @@ def set_box_size(shape, desired):
     return actual[:, 1] - actual[:, 0]
 
 
+def observed_box_depth_audit(observation, obstacles, centers, halfsizes):
+    """Validation-only check for stale rendered meshes after simulator scale.
+
+    Signed camera intrinsics and optical-axis metric depth reconstruct each
+    actually observed obstacle pixel. Geometry/masks are never model inputs.
+    """
+    intrinsics = np.asarray(observation.misc["front_camera_intrinsics"])
+    extrinsics = np.asarray(observation.misc["front_camera_extrinsics"])
+    audits = []
+    for obstacle, center, halfsize in zip(obstacles, centers, halfsizes):
+        yy, xx = np.where(observation.front_mask == obstacle.get_handle())
+        if len(xx) < 10:
+            raise RuntimeError("physical obstacle is not sufficiently visible for RGB-D consistency validation")
+        pixels = np.stack([xx, yy, np.ones_like(xx)], axis=-1)
+        camera_xyz = (pixels @ np.linalg.inv(intrinsics).T) * observation.front_depth[yy, xx, None]
+        world_xyz = camera_xyz @ extrinsics[:3, :3].T + extrinsics[:3, 3]
+        distance = np.linalg.norm(np.maximum(np.abs(world_xyz - center) - halfsize, 0.), axis=-1)
+        record = dict(object_name=obstacle.get_name(), visible_pixels=len(xx),
+                      maximum_observed_distance_outside_box_m=float(distance.max()),
+                      points_outside_one_cm=int(np.sum(distance > .01)))
+        audits.append(record)
+        if not np.isfinite(distance).all() or record["points_outside_one_cm"]:
+            raise RuntimeError("rendered obstacle depth is inconsistent with physical box: " + json_text(record))
+    return audits
+
+
 def json_ready(value):
     """One strict serialization boundary for every collector JSON artifact."""
     if isinstance(value, np.ndarray):
@@ -123,7 +149,10 @@ def serialization_check(folder):
                     attempt_failure=failure, supervision=supervision, summary=summary,
                     all_actual_observation_arrays=observed, all_actual_verification_arrays=verification,
                     randomized_layout_sampling=randomized_layout(271100, observed["gripper_pose"][:3]),
-                    canonical_restore_diagnostic=dict(difference_from_original=restore, audit=reference))
+                    canonical_restore_diagnostic=dict(difference_from_original=restore, audit=reference),
+                    observation_validation=dict(canonicalization_passes=2, physical_obstacle_observed_depth=[dict(
+                        object_name="fixture_obstacle", visible_pixels=np.int64(1477),
+                        maximum_observed_distance_outside_box_m=np.float32(.002), points_outside_one_cm=np.int64(0))]))
     hashes = {}
     import hashlib
     import tempfile
@@ -279,6 +308,15 @@ def restore_full_snapshot(task, snapshot):
         task._scene.step()
 
 
+def canonical_restore(task, snapshot, passes):
+    # CoppeliaSim 4.1/PyRep can serve a stale RGB/depth mesh on the first native
+    # restart after scaling. A fixed warm-up pass precedes the canonical pass
+    # in v3, identically for reference and EVERY candidate. No adaptive choice
+    # of a convenient reference or relaxed equality tolerance is allowed.
+    for _ in range(passes):
+        restore_full_snapshot(task, snapshot)
+
+
 def compare_restore(reference, current, original_rgb, current_rgb):
     same_inventory = reference["inventory"] == current["inventory"]
     difference = audit_difference(reference["state"], current["state"]) if same_inventory else dict(max_abs=None)
@@ -322,6 +360,19 @@ def self_test():
         assert np.all(sample["sizes"] >= RANDOMIZED_V3["box_size_lower"])
         assert np.all(sample["sizes"] <= RANDOMIZED_V3["box_size_upper"])
         assert np.array_equal(sample["goals"], sample["region_positions"][sample["target_region_indices"]])
+    from types import SimpleNamespace
+    mock_box = SimpleNamespace(get_handle=lambda: 7, get_name=lambda: "test_box")
+    observed = SimpleNamespace(front_mask=np.full((4, 4), 7), front_depth=np.ones((4, 4)),
+        misc=dict(front_camera_intrinsics=np.array([[-8., 0., 1.5], [0., -8., 1.5], [0., 0., 1.]]),
+                  front_camera_extrinsics=np.eye(4)))
+    assert observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.]], [[.25, .25, .02]])[0]["points_outside_one_cm"] == 0
+    observed.front_depth[0, 0] = 3.
+    try:
+        observed_box_depth_audit(observed, [mock_box], [[0., 0., 1.]], [[.25, .25, .02]])
+    except RuntimeError as error:
+        assert "rendered obstacle depth" in str(error)
+    else:
+        raise AssertionError("stale/wrong depth must be rejected by the geometry auditor")
     print(json_text(dict(pure_geometry_self_test="passed", simulator_launched=False)))
 
 
@@ -345,6 +396,8 @@ def main():
     parser.add_argument("--serialization-check", type=Path, help="saved parent folder; checks actual array types without starting simulation")
     parser.add_argument("--diagnostic-restores", type=int, default=0,
                         help="save additional canonical restores before attempts; never replace the original reference")
+    parser.add_argument("--canonicalization-passes", type=int, choices=(1, 2),
+                        help="v3 defaults to two fixed native restores (mesh warm-up then canonical); older layouts use one")
     args = parser.parse_args()
     if args.self_test:
         self_test()
@@ -358,6 +411,8 @@ def main():
         parser.error("safe_randomized_v3 currently declares exactly one physical obstacle")
     if args.diagnostic_restores < 0:
         parser.error("diagnostic restore count must be nonnegative")
+    if args.canonicalization_passes is None:
+        args.canonicalization_passes = 2 if args.target_layout == "safe_randomized_v3" else 1
     from pyrep.const import ObjectType, PrimitiveShape
     from pyrep.objects.shape import Shape
     from rlbench.action_modes.action_mode import MoveArmThenGripper
@@ -402,6 +457,10 @@ def main():
                     continuous_whole_robot_collision_certified=False, parents_requested=args.parents,
                     joint_state_traces_recorded=True,
                     diagnostic_restores=args.diagnostic_restores, diagnostic_restores_do_not_replace_reference=True,
+                    canonicalization_passes=args.canonicalization_passes,
+                    render_protocol_version=("native_double_restart_mesh_warmup_v2" if args.canonicalization_passes == 2 else
+                                             "native_single_restart_v1"),
+                    renderer_consistency_check="all segmentation-labelled box depth pixels within 1cm of the physical AABB; validation only",
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
                     target_layout_description=layout_descriptions[args.target_layout],
@@ -439,6 +498,7 @@ def main():
             task.set_variation(parent % task.variation_count())
             random_state = np.random.get_state()
             layout_metadata = None
+            initial = None
             try:
                 _, initial = task.reset()
                 targets = [task._task.target, task._task.distractor0, task._task.distractor1]
@@ -475,7 +535,7 @@ def main():
                     shape.set_position(center.tolist())
                     shape.set_orientation([0., 0., 0.])
                 snapshot = full_snapshot(task, obstacles)
-                restore_full_snapshot(task, snapshot)
+                canonical_restore(task, snapshot, args.canonicalization_passes)
                 initial = task.get_observation()
                 for shape, center, halfsize in zip(obstacles, centers, halfsizes):
                     actual_bounds = np.asarray(shape.get_bounding_box()).reshape(3, 2)
@@ -484,6 +544,7 @@ def main():
                     if not np.allclose(shape.get_position(), center, atol=1e-6, rtol=0):
                         raise RuntimeError("initial restored physical box center differs from validation geometry")
                 reference = full_audit(task, obstacles)
+                depth_audit = observed_box_depth_audit(initial, obstacles, centers, halfsizes)
                 for diagnostic in range(args.diagnostic_restores):
                     restore_full_snapshot(task, snapshot)
                     diagnostic_observation = task.get_observation()
@@ -517,10 +578,20 @@ def main():
                 record = dict(parent_id=parent_id, split=split, phase="parent_setup", success=False,
                               requested_layout_supervision_only=layout_metadata,
                               error=repr(exc), traceback=traceback.format_exc())
+                if initial is not None:
+                    Image.fromarray(initial.front_rgb).save(folder / "failed_setup_front.png")
+                    np.savez_compressed(folder / "failed_setup_observation.npz", rgb=initial.front_rgb,
+                        depth=initial.front_depth, mask=initial.front_mask,
+                        camera_intrinsics=initial.misc["front_camera_intrinsics"],
+                        camera_extrinsics=initial.misc["front_camera_extrinsics"])
+                    record["failed_setup_observation"] = parent_id + "/failed_setup_observation.npz"
                 append_json(args.output / "attempts.jsonl", record)
                 print(json_text({key: value for key, value in record.items() if key != "traceback"}), flush=True)
                 continue
             parents_collected += 1
+            (folder / "observation_validation.json").write_text(json_text(dict(
+                canonicalization_passes=args.canonicalization_passes,
+                physical_obstacle_observed_depth=depth_audit)), encoding="utf-8")
             if layout_metadata is not None:
                 layout_metadata.update(actual_target_centers=goals, actual_obstacle_centers=centers,
                                        actual_obstacle_sizes=np.asarray(sizes), target_visible_pixels=visible,
@@ -552,7 +623,7 @@ def main():
                     try:
                         np.random.set_state(random_state)
                         task.reset()
-                        restore_full_snapshot(task, snapshot)
+                        canonical_restore(task, snapshot, args.canonicalization_passes)
                         restored = task.get_observation()
                         restored_audit = full_audit(task, obstacles)
                         difference = compare_restore(reference, restored_audit, initial.front_rgb, restored.front_rgb)
