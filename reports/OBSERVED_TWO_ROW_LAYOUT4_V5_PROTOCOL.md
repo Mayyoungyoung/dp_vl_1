@@ -1,6 +1,6 @@
 # v5 四布局泛化可采性：执行前登记
 
-状态：仅准备源码、固定采样配置和测试，未运行模拟器。数据角色全部 `DEV_COLLECTION`，不训练、不跨 split、不建立正式 TEST。新增 `scripts/collect_two_row_layout4.py` 顺序协调四个独立 worker；每个 worker 使用既有 collector 的相同原生恢复与检查。源冻结后才允许唯一正式调用，不增加静态配置扫描。
+原执行前登记如下；现已从固定 9324efc 唯一执行完毕，完整结果见 [v5 实测报告](OBSERVED_TWO_ROW_LAYOUT4_V5_RESULTS.md)。数据角色全部 `DEV_COLLECTION`，不训练、不跨 split、不建立正式 TEST。四父闭合并不表示全部成功；原登记范围和失败保留。
 
 ## 固定范围与非自适应采样
 
@@ -33,7 +33,7 @@
 
 ## 预算、失败和恢复
 
-总预算为 **4 请求父 × 3 指令 × 9 提案 = 108 路线槽**；四次 setup 上限 8 次 get_path，路线最多 972 次，合计最多 **980 次**。内部 IK/OMPL 配置搜索仍明确未逐项插桩。每段最多 1000 模拟步，失败即停该槽；完整 raw/H24/事件/partial、规划/模拟/严格恢复成本、exit/PID/log/source hash 均保留。
+总预算为 **4 请求父 × 3 指令 × 9 提案 = 108 路线槽**；collector 显式四次 setup 上限 8 次 get_path，路线最多 972 次，显式合计最多 **980 次**。事后源码审计补充：框架 task.reset 的 Task.validate/_feasible 另调用 waypoint.get_path，未插桩，980 不是全系统规划调用上界；内部 IK/OMPL 配置搜索同样未逐项插桩。完整 worker walltime 包含全部开销。每段最多 1000 模拟步，失败即停该槽；完整 raw/H24/事件/partial、规划/模拟/严格恢复成本、exit/PID/log/source hash 均保留。
 
 父 worker 通过 `record_job` 顺序运行，每个使用独立新数据目录，线程上限 CPU1，不并发启动模拟器。协调器为每父保存闭合摘要，再将所有语言/成功参考/失败 attempt join 到批次级 JSONL；setup 失败不虚造图像/参考，仍留请求分母。
 

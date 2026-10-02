@@ -128,3 +128,12 @@ def test_live_worker_is_not_marked_interrupted_or_restarted(tmp_path,monkeypatch
     with pytest.raises(RuntimeError,match='still running'):
         batch.run(regpath,basepath,tmp_path/'out',runs)
     assert not (tmp_path/'out'/'closures'/'283100.json').exists()
+
+
+def test_live_summary_does_not_call_unclosed_parent_budget_unattempted(tmp_path):
+    reg,base=fixtures();plan=batch.build_plan(reg,base)
+    batch.publish_progress(tmp_path,plan,[],{})
+    summary=json.loads((tmp_path/'summary.json').read_text())
+    assert summary['route_attempts_lower']==0 and summary['route_attempts_upper']==108
+    assert summary['unattempted_routes_lower']==0 and summary['unattempted_routes_upper']==108
+    assert summary['live_unclosed_parent_attempts_not_read']

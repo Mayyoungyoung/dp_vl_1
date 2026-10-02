@@ -1,6 +1,6 @@
 # One bounded TRAIN8 greedy probe after completed continuation
 
-Status: implemented for review and source freezing, not run. The separate real-Qwen continuation is running from immutable5bb9087 to its fixed6000-step limit. This entry cannot run against an incomplete summary and does not authorize another training stage or DEV/K4 expansion.
+Status: completed from57e5231d1a5e25f2a8d2d5b2e0f656c49a3eb3d6 on2026-10-02 at17:24:58UTC, exit0. All8 strict format,0/8 within3cm, mean27.769cm; declared useful gate failed. No DEV/K4 or further training/decoding expansion. See VLM_SFT_CONTINUATION_6000_RESULTS.md and vlm_sft_continued_train8_v1/artifact_index.json.
 
 The sole question is whether more optimization under the unchanged original SFT objective materially reduces free-generation spatial error. Original1500 greedy scored0/8 within3cm, mean23.391cm. Its fixed eight TRAIN target0 inputs, K1, H24, grammar, coordinate/event protocol, greedy configuration, seed identities,512 tokens per call and180s request-loop boundary are unchanged. This is an exposure/optimization control, not a proposed novel method or an equal-training-budget comparison with regression.
 
@@ -12,11 +12,11 @@ After all outputs are frozen, a separate CPU analyzer rehashes/reparses both poo
 
 The previously declared useful-control criterion remains at least4/8 endpoints within3cm and an all-eight mean endpoint error at most15cm. A missing/nonfinite slot makes the all-eight mean undefined and fails that gate. Target identity is also reported separately. Passing this TRAIN gate only motivates proposing a later DEV check; it is not generalization evidence. Failing it stops this decoding/exposure branch at the declared bound without a temperature, beam, seed or step-count sweep.
 
-Proposed commands after freeze and queue scheduling:
+Commands actually executed from the frozen release (outputs now exist; do not overwrite or rerun):
 
 ```bash
 python -m scripts.evaluate_vlm_sft_continued_train8 --run /home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_continuation_v1/seed0 --output /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/train8
 python -m scripts.analyze_vlm_sft_continued_train8 --run /home/wzy/dpvlm/route_set_v1/runs/vlm_route_sft_continuation_v1/seed0 --original-greedy /home/wzy/dpvlm/route_set_v1/runs/vlm_route_greedy_train8_v1/train8 --continued-greedy /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/train8 --supervision-metadata /home/wzy/dpvlm/route_set_v1/data/observation_obstacle_reserved_development_v1/supervision.jsonl --output /home/wzy/dpvlm/route_set_v1/runs/vlm_sft_continued_train8_v1/analysis
 ```
 
-Actual wrappers will pin the release, environment, hashes and job receipts. Expected generation time is about80–90s from the earlier measured TRAIN8 calls; actual cost and any overshoot are authoritative. GPU1/35%, CPU1, at most eight new autoregressive calls. CPU tests and source freezing precede any launch.
+Actual wrappers pinned the release, environment, hashes and job receipts. Measured generation elapsed83.116s (request loop80.465s) and zero boundary overshoot; these replace the prior80–90s estimate. GPU1/35%, CPU1, at most eight new autoregressive calls. CPU tests and source freezing precede any launch.

@@ -1,5 +1,16 @@
 # State — 2026-10-02
 
+## Current checkpoint — 17:35 UTC / 2026-10-03 01:35 China
+
+This block supersedes earlier running statements; actual job receipts remain authoritative.
+
+- Bounded Qwen SFT1500→6000 completed exit0 from5bb9087 at17:22:30UTC. Added4500 requests/11250 route slots,1777.327 seconds; original nine source artifacts unchanged. New best5750 NLL.416633 is not generation success.
+- Exact registered continued TRAIN8 greedy probe completed exit0 from57e5231 at17:24:58UTC after14server tests. All8 calls formatted correctly, but0/8 endpoints within3cm. Mean23.391→27.769cm,3 improve/5 worsen. Stop this continuation/decoding branch; no DEV/K4/more-step expansion. GPU released.
+- Four-layout v5 physical pilot from9324efc completed4 parents:108 requested slots,81 attempted,61 accepted,49 classified/12unknown,20 route failures,27 unattempted due to one setup collision. Six of12 requested target conditions have≥5known types. All81 strict restores pass. Four local perturbations are DEV_COLLECTION, not formal training/generalization evidence. Formal report/analysis and all-slot figures are archived.
+- CPU source audit found framework reset validation performs additional planning calls. Historical83/683 counts cover collector-explicit calls only; total walltime includes framework costs, unknown internal counts are not reconstructed. One new static canonical-start gate on all4layouts and27slots only on formerly failed283102 is under implementation; not launched.
+- Read-only old-batch eligibility: all12 old DEV closed, no exact/1mm/RGB-file duplicates against108 new TRAIN/DEV mechanical records, and no usage in62 indexed model configs/10input manifests/27per-scene reports. This supports a prospective frozen12-checkpoint transfer, not statistical independence/OOD/locked TEST. Export/gate preparation only; no transfer predictions yet.
+- JOBS snapshot17:31:04UTC contains303 records. Read it and current PIDs before action. No locked images/routes/model metrics were opened. Core-paper A–H remains incomplete.
+
 ## Current checkpoint — 16:57 UTC / 2026-10-03 00:57 China
 
 - GenuineK2 ordinary3000x64 completed exit0 from5bb9087,384000path slots. Both original static-best500 and last3000 DEV Valid100%/Unique1.9375. Fixed-best TRAIN closure AnyValid99.65278%;16 failed solvable changes across8parents all involve an originally invalid candidate, zero common-failure events from two originally valid distinct routes. This reinforces abandoning the joint-risk mechanism. Complete artifact/analysis report is being synchronized.

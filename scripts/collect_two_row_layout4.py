@@ -165,9 +165,11 @@ def publish_progress(output,plan,closures,source_sha):
         (output/(name+'.jsonl')).write_text(''.join(json.dumps(x,allow_nan=False)+'\n' for x in items),encoding='utf-8')
     summary=dict(protocol='two_row_layout4_coordinator_v5',role='DEV_COLLECTION',requested_parents=4,closed_parents=len(closures),
         requested_routes=108,completed_ledger_routes=len(attempts),accepted_references=sum(r['success'] for r in attempts),
-        route_attempts_lower=sum(r['attempted_lower'] for r in closures),route_attempts_upper=sum(r['attempted_upper'] for r in closures),
-        unattempted_routes_lower=sum(r['unattempted_lower'] for r in closures)+27*(4-len(closures)),
+        route_attempts_lower=sum(r['attempted_lower'] for r in closures),
+        route_attempts_upper=sum(r['attempted_upper'] for r in closures)+27*(4-len(closures)),
+        unattempted_routes_lower=sum(r['unattempted_lower'] for r in closures),
         unattempted_routes_upper=sum(r['unattempted_upper'] for r in closures)+27*(4-len(closures)),
+        live_unclosed_parent_attempts_not_read=True,
         summarized_get_path_calls_lower=sum(r.get('summary',{}).get('get_path_calls',0) for r in closures),
         get_path_call_count_complete=len(closures)==4 and all('summary' in r for r in closures),
         finalized_worker_seconds=sum(r.get('worker_seconds') or 0 for r in closures),

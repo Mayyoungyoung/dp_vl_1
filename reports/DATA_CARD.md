@@ -1,5 +1,7 @@
 # 数据卡：受控几何与观测任务分层
 
+2026-10-02 17:35 UTC：新增四个DEV_COLLECTION物理布局、同图三目标；108请求槽中81尝试/61有效/20路线失败/27初始化未尝试。已接受参考中49已分类、12unknown；已知类型数1–8，6/12请求目标条件至少5种。原失败、全部尝试、严格恢复和数据hash见[完整v5报告](OBSERVED_TWO_ROW_LAYOUT4_V5_RESULTS.md)。这些是约±5mm局部几何变化，尚未升级为正式TRAIN/独立测试；没有把示范数当真实总解数。
+
 最新第三点为prefix108：96请求TRAIN父（95正参考）、12原DEV父，321/324正参考，432语言输入；TRAIN保留3条无参考输入，只对381条可评价输入计算参考指标。所有48DEV记录、60原文件及48Qwen缓存hash与旧快照一致。该快照数据已用于真实1500步普通头训练，详见[数据清单](OBSERVATION_PREFIX108_DATA.md)与[实测结果](OBSERVATION_MULTITASK_PREFIX108_RESULTS.md)。其余score/calibration/locked角色没有用于这次训练和选模。两排新24-query只是端点配置诊断，0路线/0新参考；不要计入轨迹规模。
 
 最新实测补充（2026-10-02）：六任务prefix24/prefix60快照均已封存，分别12/48TRAIN父与完全相同的12DEV父，72/180条正参考，96/240个语言输入。父划分遵守原注册和跨批次机械布局门禁，全部选中请求父保留；无语义、类型或模型执行标签时相应评价为null。每父语言改写不跨角色。collector用parent_index对应variation，因此扩TRAIN同时增加颜色/variation，固定DEV不是IID样本；不得把普通头误差变化归因于纯数据量。详见[学习曲线](OBSERVATION_MULTITASK_LEARNING_CURVE.md)。两排低柱仍是DEV_COLLECTION单父可采性试验：v1/v2各自27槽，18/4接受，跨版本关节初态不同，不能当作54个独立父或配对机制证据。原始采集失败、未知类型和全部预算见[第二轮报告](OBSERVED_TWO_ROW_PILOT_V2_RESULTS.md)。

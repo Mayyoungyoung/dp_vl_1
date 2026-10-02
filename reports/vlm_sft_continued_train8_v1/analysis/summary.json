@@ -1,0 +1,493 @@
+{
+  "protocol": "vlm_original_vs_continued_train8_greedy_v1",
+  "status": "completed",
+  "split": "TRAIN",
+  "original_summary_sha256": "228506dbb94b80cad93ce5cc9d23c3841123447b43fbb52dade7963a5f1cc4c2",
+  "continued_summary_sha256": "c48bb6462ddee7ea5c9c2ca67aacddb580520859e37d5b0b87694145e4807be6",
+  "continuation_lineage": {
+    "protocol": "continued_sft_train8_lineage_v1",
+    "training_summary_sha256": "c1bff2778fa16ddfe39bc6167bb19adda92c780d33e365b744cf5eebc6e55918",
+    "config_sha256": "97976e9418171515b3e2eaedb5dc1d3c8a6227cd6b6cf49053fede0f950d2044",
+    "continuation_source_sha256": "4683b7661f601d050a96ee4a9c833349ae1ddeec98b91005d47c7a0df5d020f4",
+    "selected_checkpoint_sha256": "777b79b69f8f3e27a87d6c0120a6012970a463dea0db385cdbe7610c23817b8c",
+    "selected_step": 5750,
+    "original_source_files_sha256": {
+      "last.pt": "d604b5a213bdf281e7976b460b7ceb2fc428488610b1b84670ddca04711cb00c",
+      "best.pt": "675595f0f06eb523edfce1d783f61cf5726446b2a376e2e6cdf12f62c69be33f",
+      "initial_adapters.pt": "966970d0a68904a6828e036fbf8476e9c5956378843224a388aa4579d78bcf8b",
+      "summary.json": "8f30f8e5b18bc8eb7d14fcc621c338b55ff78f272837e8ce946e5a71ba2b2143",
+      "config.json": "84ffe585096a24c45be225059fa25b6020ebda5458dda380f0b94690d78f75dd",
+      "requests.jsonl": "477b70f751a76a79e32e3689ba8dbf1fe70ae0467ff199d58a07b359566c8b5d",
+      "data_source_hashes.json": "ce79a32dcf88fb083f7ed9422a14846c40a1697760b963cdd244716834d996b7",
+      "dataset_accounting.json": "4a6d53791fc62852d62bc7a9b042e4d3d9ce772d081a74d8a193caae33609670",
+      "dev_plan.json": "0d47b4c07eaf1eb6dbf9cbed98f3b9e80e1b50ad707db409a35510566d78cead"
+    },
+    "training_accounting": {
+      "inherited_elapsed_seconds": 556.7868460919708,
+      "added_elapsed_seconds": 1777.327383690048,
+      "cumulative_elapsed_seconds": 2334.114229782019,
+      "inherited_exposure": {
+        "TRAIN": {
+          "requests": 1500,
+          "candidate_slots": 3750,
+          "prompt_tokens": 1160434,
+          "supervised_tokens": 1273081,
+          "sequence_tokens": 2433515,
+          "completed_optimizer_steps": 1500
+        },
+        "DEV_MODEL": {
+          "requests": 322,
+          "candidate_slots": 805,
+          "prompt_tokens": 248920,
+          "supervised_tokens": 272979,
+          "sequence_tokens": 521899,
+          "completed_optimizer_steps": 0
+        }
+      },
+      "added_exposure": {
+        "TRAIN": {
+          "requests": 4500,
+          "candidate_slots": 11250,
+          "prompt_tokens": 3481402,
+          "supervised_tokens": 3816120,
+          "sequence_tokens": 7297522,
+          "completed_optimizer_steps": 4500
+        },
+        "DEV_MODEL": {
+          "requests": 828,
+          "candidate_slots": 2070,
+          "prompt_tokens": 640080,
+          "supervised_tokens": 701946,
+          "sequence_tokens": 1342026,
+          "completed_optimizer_steps": 0
+        }
+      },
+      "cumulative_exposure": {
+        "TRAIN": {
+          "requests": 6000,
+          "candidate_slots": 15000,
+          "prompt_tokens": 4641836,
+          "supervised_tokens": 5089201,
+          "sequence_tokens": 9731037,
+          "completed_optimizer_steps": 6000
+        },
+        "DEV_MODEL": {
+          "requests": 1150,
+          "candidate_slots": 2875,
+          "prompt_tokens": 889000,
+          "supervised_tokens": 974925,
+          "sequence_tokens": 1863925,
+          "completed_optimizer_steps": 0
+        }
+      },
+      "scope": "Add only added cost when aggregating this child with its original parent; cumulative values include both. Logged uncheckpointed replay is charged by the shared resume ledger."
+    },
+    "training_code_commit": "5bb9087c9ca511c2a68a4da08798e95e8c6d4cdc",
+    "original_source_files_verified": true
+  },
+  "supervision_metadata_sha256": "37da38855af0357732ac48f125f140e8ed5d1a60008f1424fd5080c7a9421237",
+  "analyzer_sha256": "cac0f8af5c8f672ee0a97e6db21792083dbcd292c31fd87673bafa65a977d1ff",
+  "paired_receipts_verified": true,
+  "original": {
+    "requested_slots": 8,
+    "strict_format_finite": 8,
+    "within_3cm_count": 0,
+    "correct_requested_target_count": 0,
+    "endpoint_error_mean_m_over_finite_only": 0.2339105712562243,
+    "endpoint_error_median_m_over_finite_only": 0.21605177117302,
+    "all_eight_mean_endpoint_error_m": 0.2339105712562243,
+    "predeclared_useful_control": false,
+    "rows": [
+      {
+        "scene_id": "obstacle_reach_272000_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21462875290118483,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272001_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.20481399866727706,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272002_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.4192453643320828,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272003_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21633765772195318,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272004_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.2538771178283159,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272005_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.07649847898627316,
+        "nearest_target_index": 0,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272006_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21576588462408677,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272007_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.27011731498862085,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      }
+    ]
+  },
+  "continued": {
+    "requested_slots": 8,
+    "strict_format_finite": 8,
+    "within_3cm_count": 0,
+    "correct_requested_target_count": 0,
+    "endpoint_error_mean_m_over_finite_only": 0.2776867587989964,
+    "endpoint_error_median_m_over_finite_only": 0.300276487002038,
+    "all_eight_mean_endpoint_error_m": 0.2776867587989964,
+    "predeclared_useful_control": false,
+    "rows": [
+      {
+        "scene_id": "obstacle_reach_272000_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.37204795119734746,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272001_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.16099081365932516,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272002_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.41201062229206564,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272003_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.27047857330563224,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272004_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.3602597152791008,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272005_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.169797763996627,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272006_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.14583422996342918,
+        "nearest_target_index": 0,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      {
+        "scene_id": "obstacle_reach_272007_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.33007440069844385,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      }
+    ]
+  },
+  "paired_scenes": [
+    {
+      "scene_id": "obstacle_reach_272000_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272000_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21462875290118483,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272000_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.37204795119734746,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": 0.15741919829616263
+    },
+    {
+      "scene_id": "obstacle_reach_272001_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272001_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.20481399866727706,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272001_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.16099081365932516,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": -0.043823185007951904
+    },
+    {
+      "scene_id": "obstacle_reach_272002_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272002_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.4192453643320828,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272002_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.41201062229206564,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": -0.0072347420400171725
+    },
+    {
+      "scene_id": "obstacle_reach_272003_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272003_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21633765772195318,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272003_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.27047857330563224,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": 0.05414091558367906
+    },
+    {
+      "scene_id": "obstacle_reach_272004_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272004_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.2538771178283159,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272004_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.3602597152791008,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": 0.10638259745078488
+    },
+    {
+      "scene_id": "obstacle_reach_272005_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272005_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.07649847898627316,
+        "nearest_target_index": 0,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272005_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.169797763996627,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": 0.09329928501035384
+    },
+    {
+      "scene_id": "obstacle_reach_272006_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272006_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.21576588462408677,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272006_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.14583422996342918,
+        "nearest_target_index": 0,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": -0.0699316546606576
+    },
+    {
+      "scene_id": "obstacle_reach_272007_target0",
+      "original": {
+        "scene_id": "obstacle_reach_272007_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.27011731498862085,
+        "nearest_target_index": 2,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued": {
+        "scene_id": "obstacle_reach_272007_target0",
+        "strict_format_finite": true,
+        "requested_target_distance_m": 0.33007440069844385,
+        "nearest_target_index": 1,
+        "within_3cm": false,
+        "correct_requested_target": false
+      },
+      "continued_minus_original_distance_m": 0.059957085709823
+    }
+  ],
+  "continuation_training_accounting": {
+    "inherited_elapsed_seconds": 556.7868460919708,
+    "added_elapsed_seconds": 1777.327383690048,
+    "cumulative_elapsed_seconds": 2334.114229782019,
+    "inherited_exposure": {
+      "TRAIN": {
+        "requests": 1500,
+        "candidate_slots": 3750,
+        "prompt_tokens": 1160434,
+        "supervised_tokens": 1273081,
+        "sequence_tokens": 2433515,
+        "completed_optimizer_steps": 1500
+      },
+      "DEV_MODEL": {
+        "requests": 322,
+        "candidate_slots": 805,
+        "prompt_tokens": 248920,
+        "supervised_tokens": 272979,
+        "sequence_tokens": 521899,
+        "completed_optimizer_steps": 0
+      }
+    },
+    "added_exposure": {
+      "TRAIN": {
+        "requests": 4500,
+        "candidate_slots": 11250,
+        "prompt_tokens": 3481402,
+        "supervised_tokens": 3816120,
+        "sequence_tokens": 7297522,
+        "completed_optimizer_steps": 4500
+      },
+      "DEV_MODEL": {
+        "requests": 828,
+        "candidate_slots": 2070,
+        "prompt_tokens": 640080,
+        "supervised_tokens": 701946,
+        "sequence_tokens": 1342026,
+        "completed_optimizer_steps": 0
+      }
+    },
+    "cumulative_exposure": {
+      "TRAIN": {
+        "requests": 6000,
+        "candidate_slots": 15000,
+        "prompt_tokens": 4641836,
+        "supervised_tokens": 5089201,
+        "sequence_tokens": 9731037,
+        "completed_optimizer_steps": 6000
+      },
+      "DEV_MODEL": {
+        "requests": 1150,
+        "candidate_slots": 2875,
+        "prompt_tokens": 889000,
+        "supervised_tokens": 974925,
+        "sequence_tokens": 1863925,
+        "completed_optimizer_steps": 0
+      }
+    },
+    "scope": "Add only added cost when aggregating this child with its original parent; cumulative values include both. Logged uncheckpointed replay is charged by the shared resume ledger."
+  },
+  "generation_elapsed_seconds": 83.11601670202799,
+  "generation_gpu_hours_reserved": 0.023087782417229998,
+  "generation_peak_cuda_allocated_bytes": 4409023488,
+  "generation_group": {
+    "scope": "TRAIN-only capacity/format probe; not independent4 versus whole4 or a DEV result",
+    "examples": 8,
+    "parents": 8,
+    "requested_autoregressive_calls": 8,
+    "requested_candidate_slots": 8,
+    "charged_candidate_slots": 8,
+    "strict_finite_slots": 8,
+    "failed_requests": 0,
+    "reached_token_limit": 0,
+    "total_generation_seconds": 80.46245936583728,
+    "geometry_opened": false,
+    "candidate_pooling_between_repeats": false,
+    "decoding_mode": "greedy",
+    "attempted_autoregressive_calls": 8,
+    "budget_unattempted_slots": 0,
+    "request_loop_seconds": 80.46455806598533,
+    "request_loop_limit_seconds": 180.0,
+    "request_loop_budget_overshoot_seconds": 0.0,
+    "deadline_policy": "Check before each complete request; an in-flight request may finish beyond the boundary; no retry"
+  },
+  "additional_model_calls": 0,
+  "raw_reference_paths_opened": 0,
+  "verification_geometry_opened": 0,
+  "scope": "Original1500 versus DEV-token-NLL-selected checkpoint from bounded6000; additional training is the intervention. Eight fixed TRAIN observations, no generalization/robot collision/execution evidence or mechanism novelty. All requested slots retained. No repairs or post-hoc checkpoint selection."
+}

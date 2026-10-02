@@ -1,0 +1,177 @@
+{
+  "config": {
+    "protocol": "observed_two_row_lower_posts_layout4_v5",
+    "row_plane_guides": true,
+    "seed": 283100,
+    "split": "DEV_COLLECTION",
+    "parents": 1,
+    "row_x": [
+      0.14344419360940597,
+      0.33885639954908653
+    ],
+    "post_y": [
+      [
+        -0.10623171670824678,
+        0.11403296561597863
+      ],
+      [
+        -0.1459851793836278,
+        0.15457100931163498
+      ]
+    ],
+    "post_size_xyz": [
+      0.035,
+      0.035,
+      0.14
+    ],
+    "post_base_z": 0.755,
+    "entry_xyz": [
+      0.0009541239384206167,
+      -0.003594897071324551,
+      0.865
+    ],
+    "preparation_xyz": [
+      [
+        0.0009541239384206167,
+        -0.003594897071324551,
+        1.25
+      ],
+      [
+        0.0009541239384206167,
+        -0.003594897071324551,
+        0.865
+      ]
+    ],
+    "goal_xyz": [
+      [
+        0.4513627501986823,
+        -0.1517309239488259,
+        0.84
+      ],
+      [
+        0.46515442785664357,
+        -0.012772702606062768,
+        0.84
+      ],
+      [
+        0.4532183370764052,
+        0.16338884271364829,
+        0.84
+      ]
+    ],
+    "selected_target_indices": [
+      0,
+      1,
+      2
+    ],
+    "feasibility_type_policy": "lateral_and_over",
+    "minimum_distinct_valid_types": 5,
+    "corridor_guide_y": [
+      -0.25,
+      0.0,
+      0.25
+    ],
+    "route_height": 0.865,
+    "row_guide_x_offset": 0.07,
+    "tip_clearance_m": 0.02,
+    "endpoint_tolerance_m": 0.03,
+    "preparation_endpoint_tolerance_m": 0.01,
+    "minimum_visible_pixels": 10,
+    "maximum_steps_per_segment": 1000,
+    "image_size": 224,
+    "canonicalization_passes": 2,
+    "requested_setup_actions": 1,
+    "requested_route_proposals": 27,
+    "reference_set_complete": false,
+    "all_solution_count": null
+  },
+  "config_sha256": "145b423e5bde33c2a989bd95d3f50f8ac053f9ac5a77bb381837556294761aa3",
+  "sources_sha256": {
+    "collect_observed_two_row_pilot.py": "961e60736de5784fd9d9064ad24128177b33828812a3f02fb468adda6fdfc5fd",
+    "collect_obstacle_reach.py": "994c38ce94e6016386439c6245807e9b9f9a00ff706fb80bd454b05b9ee60dcc",
+    "observation_collect_rlbench.py": "7d8230abc8ff642e511a35c1933df02ea2906bc8e5b926dfb028820e9302ddff",
+    "two_row_anchor.py": "40ae551f47e9bd301c49a87eeb21e29eb03ab412d7d8f14d50c8457ed8856d60"
+  },
+  "benchmark": "RLBench-derived two-row low-post pilot",
+  "original_benchmark_result": false,
+  "rlbench_revision": "02720bba4c73fe02eb75df946b8791b806028a9d",
+  "pyrep_revision": "8f420be8064b1970aae18a9cfbc978dfb15747ef",
+  "input_contract": [
+    "RGB",
+    "instruction",
+    "depth",
+    "camera",
+    "current gripper pose/open"
+  ],
+  "supervision_only": [
+    "post geometry",
+    "target coordinates",
+    "route signatures",
+    "guide points",
+    "masks",
+    "setup trajectory"
+  ],
+  "proposed_sequences": [
+    [
+      "negative_y",
+      "negative_y"
+    ],
+    [
+      "negative_y",
+      "middle"
+    ],
+    [
+      "negative_y",
+      "positive_y"
+    ],
+    [
+      "middle",
+      "negative_y"
+    ],
+    [
+      "middle",
+      "middle"
+    ],
+    [
+      "middle",
+      "positive_y"
+    ],
+    [
+      "positive_y",
+      "negative_y"
+    ],
+    [
+      "positive_y",
+      "middle"
+    ],
+    [
+      "positive_y",
+      "positive_y"
+    ]
+  ],
+  "reference_set_complete": false,
+  "all_solution_count": null,
+  "full_robot_continuous_certificate": false,
+  "initial_preparation": "One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start",
+  "selected_target_indices": [
+    0,
+    1,
+    2
+  ],
+  "physical_target_count": 3,
+  "feasibility_type_policy": "lateral_and_over",
+  "minimum_distinct_valid_types": 5,
+  "old_dynamic_initial_state_pairing_claimed": false,
+  "planning_budget": {
+    "route_slots": 27,
+    "maximum_calls_per_route": 9,
+    "setup_maximum_calls": 2,
+    "failed_slots_stop_early": true,
+    "internal_search_scope": "IK/OMPL configuration searches are not complete output trajectories and are not individually instrumented"
+  },
+  "acceptance": "strict full world/inventory/RGB/depth/camera/current restore; per-step arm/gripper collisions; 2cm tip segments; 3cm endpoint",
+  "type_definition": "consistent actual crossings of both row-x planes in order; finite-height lateral corridors or explicit over; ambiguous unknown",
+  "camera_policy": "initial and restore RGB-D enabled; trajectory state read directly; final RGB-D equivalence check",
+  "render_protocol": "native_double_restart_explicit_render_warmup_v3",
+  "role": "DEV_COLLECTION"
+}

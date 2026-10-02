@@ -24,7 +24,7 @@
 
 ## 成本与复现
 
-一请求父/一 setup/九请求路线全部实际执行，0 未尝试。setup 为 5.653865 s；collector 总计 62.996343 s。实际 83 次 get_path（setup 2 + 路线 81），规划 7.067439 s、模拟执行 15.754542 s；其它时间含严格恢复、渲染与初始化。get_path 内部配置搜索未逐项计数，不能称只搜索九条路径。所有九条完整/失败轨迹的 SHA 均匹配。
+一请求父/一 setup/九请求路线全部实际执行，0 未尝试。setup 为 5.653865 s；collector 总计 62.996343 s。collector 显式 83 次 get_path（setup 2 + 路线 81），插桩规划 7.067439 s、模拟执行 15.754542 s；其它时间含严格恢复、渲染与初始化。后续 pinned 源码审计确认 task.reset 内的 Task.validate/_feasible 还会调用 waypoint.get_path：这些框架验证调用和内部 IK/OMPL 配置搜索均未逐项计数。83 不是全系统规划调用数，完整 walltime 包含这些开销；不能称只搜索九条路径。原日志不变，未知内部调用数不补造。所有九条完整/失败轨迹的 SHA 均匹配。
 
 数据服务器位置 `/home/wzy/dpvlm/route_set_v1/data/observed_two_row_pilot_v4`，作业同名 `/runs/observed_two_row_pilot_v4`。LF wrapper SHA `7c8c36e312b11d9257b42f7fbc1746b5957998da72936669261b1718b97ab7df`，传输 archive SHA `ed3e1ea541e61615dd4d5f9dd2ae84a40dba8681d416a7db8fdacc4080a22eac` 双端一致。完整[来源/文件/恢复命令索引](observed_two_row_pilot_v4/artifact_index.json)、[原 summary](observed_two_row_pilot_v4/metadata/summary.json)、[作业状态](observed_two_row_pilot_v4/run/pilot.status.json)已同步。
 

@@ -1,5 +1,7 @@
 # 方法实现与证据边界
 
+2026-10-02 17:35 UTC 更新（后文较早状态为历史）：Qwen6000步续训完成，best NLL降至.416633；同8TRAIN贪心端点仍0/8在3cm内，均值23.391→27.769cm，停止这组扩训及DEV/K4扩展。四布局v5完成108请求槽，61条有效参考（49已知类型、12unknown）、20路线失败、27setup未尝试槽；6/12目标条件有≥5已知类型，但仅为DEV_COLLECTION局部布局可采性。详见[物理结果](OBSERVED_TWO_ROW_LAYOUT4_V5_RESULTS.md)、[续训结果](VLM_SFT_CONTINUATION_6000_RESULTS.md)。下一实际工作是有界静态初始化修复与已冻结三种子模型在另一批12父上的前瞻迁移；未得到这些新结果，核心A–H仍未完成。
+
 2026-10-02 16:09 UTC：支持事件位置的普通辅助基线已完成三个配对训练种子，原规则best宏ADE9.8548→9.0827cm、末端17.9283→15.6893cm。固定1500路径误差仅2/3种子改善，杯子均退化；没有把该辅助当新集合机制。9次真实Qwen条件前向审计通过单位/mask/shift/因果检查，但坐标占97.04% NLL；真前缀条件末端准确不能证明视觉定位。下一唯一SFT控制是同权重TRAIN8贪心生成。详见 OBSERVATION_MULTITASK_LANDMARK_THREE_SEED.md、VLM_SFT_TEACHER_AUDIT_RESULTS_V1.md。
 
 当前新增普通基线修复：对每条正TRAIN参考，在首次open→close后的点与最终末端之间，选择离初始有效观测点云较近的一点，仅监督已有空间attention；无close或平局用末端。固定weight .02、sigma .025，不丢难参考、不改变free_offset末端标签、不把taskID或目标点传入forward。原普通头与辅助头参数、真实首输入初始输出及48k采样流已核验一致；实际收益须读配对训练结果。它是标准定位辅助，不是集合生成创新。

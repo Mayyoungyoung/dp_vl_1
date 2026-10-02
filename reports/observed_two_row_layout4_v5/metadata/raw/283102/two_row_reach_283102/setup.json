@@ -1,0 +1,47 @@
+{
+  "parent_id": "two_row_reach_283102",
+  "phase": "setup",
+  "success": false,
+  "simulated_steps": 145,
+  "planning_segments": [
+    {
+      "segment": 0,
+      "goal_supervision_only": [
+        0.0010615976744499846,
+        -0.0021991444639638015,
+        1.25
+      ],
+      "get_path_calls": 1,
+      "planning_status": "success",
+      "planning_seconds": 0.016624756040982902,
+      "simulation_status": "success",
+      "simulation_seconds": 0.32879475702065974,
+      "simulated_steps": 49
+    },
+    {
+      "segment": 1,
+      "goal_supervision_only": [
+        0.0010615976744499846,
+        -0.0021991444639638015,
+        0.865
+      ],
+      "get_path_calls": 1,
+      "planning_status": "success",
+      "planning_seconds": 0.5119015029631555,
+      "simulation_status": "failed",
+      "simulation_seconds": 0.7579425679286942,
+      "simulated_steps": 96,
+      "simulation_error": "RuntimeError('robot collision during simulated motion')"
+    }
+  ],
+  "collision_pair": "arm_environment",
+  "error": "RuntimeError('robot collision during simulated motion')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/wzy/dpvlm/route_set_v1/research_v2/releases/9324efcf2cb59263225e4dd4a40234160bcd23b6/scripts/collect_observed_two_row_pilot.py\", line 377, in collect\n    execute(task, config[\"preparation_xyz\"], quaternion, gripper_shapes, external_shapes, trace, setup, config)\n  File \"/home/wzy/dpvlm/route_set_v1/research_v2/releases/9324efcf2cb59263225e4dd4a40234160bcd23b6/scripts/collect_observed_two_row_pilot.py\", line 233, in execute\n    raise RuntimeError(\"robot collision during simulated motion\")\nRuntimeError: robot collision during simulated motion\n",
+  "seconds": 3.2260278570465744,
+  "trajectory": {
+    "file": "preparation_trace.npz",
+    "sha256": "9fb955ff6af3423d9479db6dfea5e41ac297f06680bd85aae17d28df7f47a48f",
+    "pose_array_sha256": "113570dcc271a21b3b0e993532ee7e4bcc1e92885781168d30c5381459774423",
+    "samples": 146
+  }
+}
