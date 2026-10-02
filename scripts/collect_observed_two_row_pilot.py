@@ -29,11 +29,21 @@ import two_row_anchor
 
 PASSAGES = ("negative_y", "middle", "positive_y")
 LOWER_POST_PROTOCOL = "observed_two_row_lower_posts_central_v4"
+LAYOUT_PROTOCOL = "observed_two_row_lower_posts_layout4_v5"
+MIXED_TYPE_PROTOCOLS = {LOWER_POST_PROTOCOL, LAYOUT_PROTOCOL}
 
 
 def registered_target_indices(config):
-    expected = [1] if config["protocol"] == LOWER_POST_PROTOCOL else [0, 1, 2]
-    if config.get("selected_target_indices", expected) != expected:
+    if config["protocol"] == LOWER_POST_PROTOCOL:
+        expected = [1]
+        actual = config.get("selected_target_indices")
+    elif config["protocol"] == LAYOUT_PROTOCOL:
+        expected = [0, 1, 2]
+        actual = config.get("selected_target_indices")
+    else:
+        expected = [0, 1, 2]
+        actual = config.get("selected_target_indices", expected)
+    if actual != expected:
         raise ValueError("target selection differs from registered protocol")
     return expected
 
@@ -42,7 +52,7 @@ def summarize_reference_types(identifier, route_types, config):
     """Only accepted trajectories enter this list; unknown remains a reference."""
     known = {tuple(value) for value in route_types if value is not None}
     lateral = {value for value in known if all(item in PASSAGES for item in value)}
-    include_over = config["protocol"] == LOWER_POST_PROTOCOL
+    include_over = config["protocol"] in MIXED_TYPE_PROTOCOLS
     return dict(id=identifier, valid_references=len(route_types), distinct_classified=len(known),
         known_classified_sequences=sorted(known), distinct_lateral_sequences=len(lateral),
         known_lateral_sequences=sorted(lateral), unknown_valid_references=sum(v is None for v in route_types),
@@ -59,7 +69,7 @@ def geometry(config):
 
 def validate_config(config):
     versions = {"observed_two_row_low_posts_v1":False, "observed_two_row_low_posts_rowpoints_v2":True,
-                "observed_two_row_recorded_v1_anchor_rowpoints_v3":True, LOWER_POST_PROTOCOL:True}
+                "observed_two_row_recorded_v1_anchor_rowpoints_v3":True, LOWER_POST_PROTOCOL:True, LAYOUT_PROTOCOL:True}
     if config["protocol"] not in versions or config["parents"] != 1:
         raise ValueError("this version is a single registered feasibility parent")
     if bool(config.get("row_plane_guides",False)) != versions[config["protocol"]]:
@@ -69,11 +79,12 @@ def validate_config(config):
     requested = 9 * len(registered_target_indices(config))
     if config["split"] != "DEV_COLLECTION" or config["requested_route_proposals"] != requested:
         raise ValueError("pilot role and proposal budget are fixed")
-    if config["protocol"] == LOWER_POST_PROTOCOL:
-        if (config.get("selected_target_indices") != [1] or
+    if config["protocol"] in MIXED_TYPE_PROTOCOLS:
+        required_targets = [1] if config["protocol"] == LOWER_POST_PROTOCOL else [0, 1, 2]
+        if (config.get("selected_target_indices") != required_targets or
                 config.get("feasibility_type_policy") != "lateral_and_over" or
                 config.get("minimum_distinct_valid_types") != 5):
-            raise ValueError("v4 requires explicit central target and its new type policy")
+            raise ValueError("new lower-post versions require explicit targets and type policy")
     if np.asarray(config["goal_xyz"]).shape != (3, 3) or np.asarray(config["post_y"]).shape != (2, 2):
         raise ValueError("three goals and two pairs of posts are required")
     if any(a >= b for a, b in zip(config["row_x"], config["row_x"][1:])):
@@ -284,7 +295,7 @@ def collect(config, config_path, output):
         initial_preparation=("One reconstruction action from frozen v1 preparation terminal joints; no new setup IK; require every recorded world/velocity/RGB-D/calibration field exactly equal before any of 27 slots" if anchored else
             "One separately budgeted two-segment collision-checked setup; actual low-state snapshot is route start"),
         selected_target_indices=target_indices,physical_target_count=3,
-        feasibility_type_policy="lateral_and_over" if config["protocol"]==LOWER_POST_PROTOCOL else "lateral_only",
+        feasibility_type_policy="lateral_and_over" if config["protocol"] in MIXED_TYPE_PROTOCOLS else "lateral_only",
         minimum_distinct_valid_types=5,old_dynamic_initial_state_pairing_claimed=False,
         planning_budget=dict(route_slots=requested_routes,maximum_calls_per_route=9 if config.get("row_plane_guides",False) else 7,
             setup_maximum_calls=0 if anchored else 2,failed_slots_stop_early=True,

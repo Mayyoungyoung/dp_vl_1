@@ -48,3 +48,13 @@
 Sealed prefix24: six original tasks,24 parents/72 successful references,12 TRAIN and12 DEV parents; three source attempts per parent. Actual frozen Qwen96 encodings and ordinary free-endpoint head1500-step training completed from6bc2b8. TRAIN/DEV macro path ADE1.783/17.121cm shows a large generalization gap, not representative task success. Semantic, collision, UniqueValid and execution results remain null. Complete provenance: `observed_multitask_prefix24_v1/artifact_index.json`.
 
 Direct VLM SFT boundary: real2B preflight v1 failed memory, v2 passed exact-prefix masking and4 actual LoRA steps at4.839GB. This establishes a working memory-bounded training interface only; full SFT and independent-versus-whole-set generation have not completed. No new core advantage follows from either result.
+
+
+## 2026-10-02 16:50 UTC — latest method/data evidence
+
+| Claim | Status | Measured evidence | Boundary |
+|---|---|---|---|
+| Same physical initial state can support more than K4 route relations | Single-parent feasibility supported | v4:8/9valid,5 distinct lateral sequences,9 exact restores | 3 valid unknowns,1 H24 type-instability rejection; one target/layout, no learned-method claim |
+| Response-aware pair selection improves on geometry/DPP for single gate closures | Rejected in current controlled setting | TRAIN768:3806closures,3424solvable; all720evaluable parents tie at100% AnyValid | Reference controls privileged; stop module, never promote weak K4prefix2 comparison |
+| Real K2 ordinary small-budget baseline exists | Registered and training, outcome pending | Same3000x64/old static selection,384000 path states | Half K4 path budget, different query count; no causal joint-risk claim |
+| Extra SFT exposure restores route quality | Unverified; actual recovery implementation tested |13server CPU tests pass, including exact tiny continuous/continued/resumed loop | Original1500 results remain;6000 GPU outcome not yet present |

@@ -89,6 +89,7 @@ def analyze(data, output, baseline=None):
     manifest = json.loads((data/"manifest.json").read_text())
     config = manifest["config"]
     centers, halves = collector.validate_config(config)
+    target_indices = collector.registered_target_indices(config)
     summary = json.loads((data/"summary.json").read_text())
     records = [json.loads(line) for line in (data/"attempts.jsonl").read_text().splitlines()] if (data/"attempts.jsonl").exists() else []
     output.mkdir(parents=True, exist_ok=False)
@@ -134,6 +135,7 @@ def analyze(data, output, baseline=None):
         return dict(Counter(values))
     result = dict(source=str(data),source_collector_sha256=manifest["sources_sha256"],analysis_script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         collection_summary=summary,setup_success=setup.get("success"),setup_seconds=setup.get("seconds"),
+        registered_target_indices=target_indices,registered_route_slots=config["requested_route_proposals"],
         all_trajectory_hashes_match=all(hash_checks),trajectory_hashes_checked=len(hash_checks),
         success_count=sum(r["success"] for r in records),
         failure_counts=count(r.get("error") for r in records if not r["success"]),
@@ -159,14 +161,14 @@ def analyze(data, output, baseline=None):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
-    fig, axes = plt.subplots(3,2,figsize=(13,15))
+    fig, axes = plt.subplots(len(target_indices),2,figsize=(13,5*len(target_indices)),squeeze=False)
     palette = plt.get_cmap("tab10")
     all_xyz=np.concatenate(list(paths.values()))
     goals=np.asarray(config["goal_xyz"])
-    for target in range(3):
+    for target_row,target in enumerate(target_indices):
         identifier=parent.name+"_target%d" % target
         for column,(horizontal,vertical) in enumerate(((0,1),(0,2))):
-            axis=axes[target,column]
+            axis=axes[target_row,column]
             for center,half in zip(centers,halves):
                 axis.add_patch(Rectangle((center[horizontal]-half[horizontal],center[vertical]-half[vertical]),
                     2*half[horizontal],2*half[vertical],facecolor="gray",alpha=.35))
@@ -186,7 +188,8 @@ def analyze(data, output, baseline=None):
             axis.set_title("Target %d — %s projection, all 9 registered slots"%(target,"XY" if column==0 else "XZ"))
             if column==0:axis.legend(fontsize=7,ncol=2)
     fig.suptitle("Two-row pilot: solid=accepted, dashed=failed partial/full trajectory\nGray boxes are projections; end-tip markers are not robot collision contact locations",fontsize=12)
-    fig.tight_layout(rect=(0,0,1,.96));fig.savefig(output/"all_27_attempts.png",dpi=150);plt.close(fig)
+    fig.tight_layout(rect=(0,0,1,.96))
+    fig.savefig(output/("all_%d_attempts.png"%config["requested_route_proposals"]),dpi=150);plt.close(fig)
     return result
 
 
