@@ -313,8 +313,13 @@ def canonical_restore(task, snapshot, passes):
     # restart after scaling. A fixed warm-up pass precedes the canonical pass
     # in v3, identically for reference and EVERY candidate. No adaptive choice
     # of a convenient reference or relaxed equality tolerance is allowed.
-    for _ in range(passes):
+    for index in range(passes):
         restore_full_snapshot(task, snapshot)
+        if index < passes - 1:
+            # The renderer must actually execute to refresh the scaled mesh;
+            # two physics restarts without an intervening render are not a
+            # warm-up. This observation is discarded on EVERY invocation.
+            task.get_observation()
 
 
 def compare_restore(reference, current, original_rgb, current_rgb):
@@ -373,6 +378,15 @@ def self_test():
         assert "rendered obstacle depth" in str(error)
     else:
         raise AssertionError("stale/wrong depth must be rejected by the geometry auditor")
+    events = []
+    original_restore = globals()["restore_full_snapshot"]
+    try:
+        globals()["restore_full_snapshot"] = lambda task, snapshot: events.append("native_restore_10steps")
+        mock_task = SimpleNamespace(get_observation=lambda: events.append("explicit_render_discarded"))
+        canonical_restore(mock_task, {}, passes=2)
+        assert events == ["native_restore_10steps", "explicit_render_discarded", "native_restore_10steps"]
+    finally:
+        globals()["restore_full_snapshot"] = original_restore
     print(json_text(dict(pure_geometry_self_test="passed", simulator_launched=False)))
 
 
@@ -458,8 +472,9 @@ def main():
                     joint_state_traces_recorded=True,
                     diagnostic_restores=args.diagnostic_restores, diagnostic_restores_do_not_replace_reference=True,
                     canonicalization_passes=args.canonicalization_passes,
-                    render_protocol_version=("native_double_restart_mesh_warmup_v2" if args.canonicalization_passes == 2 else
+                    render_protocol_version=("native_double_restart_explicit_render_warmup_v3" if args.canonicalization_passes == 2 else
                                              "native_single_restart_v1"),
+                    render_warmup_observations_discarded=max(0, args.canonicalization_passes - 1),
                     renderer_consistency_check="all segmentation-labelled box depth pixels within 1cm of the physical AABB; validation only",
                     dev_parents=args.dev_parents, seed=args.seed, obstacles=args.obstacles,
                     target_layout=args.target_layout,
