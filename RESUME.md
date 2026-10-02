@@ -1,5 +1,17 @@
 # Resume
 
+## Latest actual checkpoint — 2026-10-02 21:41 UTC
+
+Root snapshot21:40:55UTC: MAIN261 (original258 fields unchanged), JOBS473 with no live PID, registry489. One fresh12000 cosine-LR ordinary control is now in implementation only, not launched. Same initialization/sample chain/189 inputs/48 DEV selections; constant-LR source remains unchanged, with no warmup, restart, LR sweep or new seed. Freeze and validate before any run; endpoint drift is motivation, not proof that LR caused it.
+
+
+Prefix76/12000 is COMPLETE from1417cdc, following98server tests andzero-tolerance first1500 full-state reproduction. Do not relaunchstage1500/finish or extend12000. Best5500 DEV Tip40.97%,knownUnique.8333;last12000 Tip43.06%,knownUnique.6389. TRAIN best85.45% versuslast76.06% shows late endpoint/anchor drift rather than monotonically improving fit;last138semantic misses areall3.006–4.288cm,not evidence ofwrong identity alone. ConstantLR causality remains untested. Read reports/observed_two_row_prefix76_convergence_v1/CONVERGENCE_RESULTS.md,TRAINING_DRIFT_ANALYSIS.json anddiagnosis/DIAGNOSIS_AND_VISUAL_QA.md. All12DEV images reviewed;75-file index retains original51-file predecessor.12000onlineQwen latency is unmeasured.
+
+Spatialpenalty A*TRAIN/DEV stages also COMPLETE:DEV Tip29.17% versusold66.67%,knownUnique.8056 versus.6667,56newtimeout slots andmedian6.143s versus.914s. Preserve the negative tradeoff. Nextprepared work is same-algorithm native implementation forBOTH arms,equivalence andfair20k/2s remeasurement;no native experiment has run. Do not retune sigma,extenddeadline orfillfailedslots.
+
+Formal116 session ended21:10:27UTC,bothshards exit0,116closure filenames present. Read reports/observed_two_row_formal116_completion_v1/COMPLETION_DATA_CARD.md;mechanical closure isnot success. Lockedcontent remains unread;role gates andexisting split assignments remain. No completedcollector should be resumed. CheckfreshPID/status before anynewauthorizedjob. MAIN/JOBS/deployments remain root-owned. Olderblocks below arehistorical,not restart instructions.
+
+
 ## Implementation checkpoint — 2026-10-02 21:12 UTC
 
 Evidence commit84cd563b99fb37e308b05eb310ff0f563bb8e123 is remote-verified; MAIN258. New independent launchers are `launch_observed_two_row_convergence64_v1.sh REVISION stage1500|finish [resume]` and `launch_observed_two_row_spatial_penalty_v1.sh REVISION train_preflight|dev`. Source freeze/server tests precede both. Read and verify each successful gate before its separately launched second stage; no stage chaining, failed-candidate replacement, or replay of completed stages. These experiments have not launched at this checkpoint. Formal116 remains original2626487;21:06 mechanical audit112/116 closure markers only, no locked outcomes.

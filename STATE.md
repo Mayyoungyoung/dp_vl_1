@@ -1,5 +1,19 @@
 # State — 2026-10-02
 
+## Current checkpoint — 21:41 UTC / 2026-10-03 05:41 China
+
+- Current snapshot: MAIN261 rows (previous258 fields unchanged), JOBS473 at21:40:55UTC with no live PID, registry489. Next neural ordinary control is one fresh12000 cosine-LR pair, same initialization/sample chain/189 inputs/48 DEV selections; implementation only, no launch. Preserve constant-LR source/results. No warmup, restart, LR sweep or new seed; endpoint drift motivates the test but does not prove LR causality.
+
+This block supersedes older running/pending statements below; retain them as historical records.
+
+- Prefix76/12000 ordinary control from1417cdc is COMPLETE:98 actual server tests, exact original64 first1500 state proof, separately launchedfinish, both exit0. Best5500 DEV Tip59/144=40.97%,Any30/36,knownUnique.8333;fixedlast12000 Tip62/144=43.06%,Any28/36,knownUnique.6389. BestDEV has2classified duplicate slots;last has0. Full history, all saved pools and12DEV plots are archived and reviewed.
+- TRAIN improves from original1500 Tip20.11% tobest85.45%/last76.06%, but last semantic734→618/756 falls relative tobest whileclear665→690 improves. All138last endpoint misses are3.006–4.288cm;133 lie within3–4cm. Shared-anchor movement correlates with degraded conditions;constant LR instability is only a hypothesis, not proven cause or wrong-object identification. Do not automatically extend or select another checkpoint.
+- Actual12000 budget1536000pathstates/384000draws;48DEV selection opportunities versus24for32/6000 and6for64/1500. Per-input exposure ratio to32/6000 is62/63, totaltraining2x. Outer stage cost559.381s,base nested536.405s;no12000 real-Qwen online latency was measured. See reports/observed_two_row_prefix76_convergence_v1/CONVERGENCE_RESULTS.md.
+- Standard spatial-penalty A* is COMPLETE and unfavorable overall:DEV knownUnique.6667→.8056,Tip96/144→42/144,median request.914→6.143s;56new search-timeout slots,all retained. Field preparation explains only6.18%of extraDEV time. It is a traditional baseline tradeoff,not a method contribution.
+- Next implementation only: jointly compile both originaledge andspatial arms without changing neighbor/cost/tie/geometry/path semantics or20k/2s limits;first prove equivalence then measure. No native experiment or gain yet. The prior cross-goal screen remains stopped at.7633cm<2cm.
+- Formal116 collection mechanically COMPLETE:both source2626487shards exit0,session ended21:10:27UTC;116/116closure filenames exist(64TRAIN/12DEV_MODEL/12DEV_SCORE/12CAL/16LOCKED). This does not mean116successful scenes or3132valid trajectories. Only opaque hashes/statuses ofreserved roles were read;lockedraw remains sealed. Do not restart completed collectors or training. Corepaper criteria remain unmet.
+
+
 ## Implementation checkpoint — 21:12 UTC / 2026-10-03 05:12 China
 
 - Full preceding evidence is pushed and remote-verified at84cd563b99fb37e308b05eb310ff0f563bb8e123: MAIN258, historical251 rows unchanged. Current new source contains an independent prefix76/12000 ordinary driver with exact first1500 reproduction gate, and a standard spatial-penalty A* adapter. Both are implemented, not yet server-validated or launched. Keep original6000/base/planner/collector files unchanged.
