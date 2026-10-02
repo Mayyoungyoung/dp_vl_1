@@ -1,6 +1,7 @@
 """Build mixed-scope evidence tables without filling unmeasured metrics."""
 import csv
 import json
+import statistics
 from pathlib import Path
 
 
@@ -109,7 +110,7 @@ def main():
             reference_evaluation_examples=result['reference_evaluation_examples'],semantic_evaluation_examples=result['semantic_evaluation_examples'],
             cpu_endpoint_ms=result['cpu_latency_ms']['median'],cost_scope='one endpoint only; no path, Qwen, scorer or execution; reference and center error denominators differ',
             source=str(source.relative_to(root))))
-    for source in sorted(reports.glob('observation_astar_obstacle_new32_v*/dev_model/report.json')):
+    for source in sorted(reports.glob('observation_astar_obstacle_*/dev_model/report.json')):
         result=json.loads(source.read_text())
         metrics=json.loads((source.parent/'tip_evaluation/metrics.json').read_text())
         aggregate=source.parent.parent/'aggregate_analysis.json'
@@ -121,7 +122,8 @@ def main():
             KnownReferenceTypeCoverageAtK=metrics['KnownReferenceTypeCoverageAtK'],TipClearAtK=metrics['TipClearAtK'],
             semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
             center_endpoint_error_m=metrics['endpoint_error_m'],semantic_evaluation_examples=metrics['examples'],
-            observed_RGBD_plan_proxycheck_ms=analysis.get('request_seconds_quantiles',{}).get('median',0)*1000 if analysis else None,
+            observed_RGBD_plan_proxycheck_ms=(analysis['request_seconds_quantiles']['median']*1000 if analysis else
+                statistics.median(r['total_observation_to_routes_seconds'] for r in result['records'])*1000),
             code_commit=analysis.get('source_release'),
             cost_scope='current RGBD + closed TRAIN instruction prototype + exactly K searches + observed proxy checks; failed slots retained; no Qwen/scorer/full robot execution',
             source=str(source.relative_to(root))))
@@ -154,15 +156,28 @@ def main():
     observation_folders += [p.name for p in reports.glob('observed_natural_reserved*') if p.is_dir()]
     for folder in observation_folders:
         for source in sorted((reports/folder).rglob('summary.json')):
+            if not (source.parent/'config.json').is_file():
+                continue  # Actual inference/diagnostic receipts are not training summaries.
             result=json.loads(source.read_text()); metrics=result['metrics']
             config=json.loads((source.parent/'config.json').read_text())
+            full_latency=metrics.get('online_request_ms_median')
+            if folder=='observed_obstacle_reserved96_v1':
+                audit_path=reports/'observed_obstacle_reserved96_full_inference_v1/cached_vs_online_audit.json'
+                if audit_path.exists():
+                    audit=json.loads(audit_path.read_text())['arms'][source.parent.name.split('_')[0]]
+                    if not audit['predictions_match_at_1e_5']:raise ValueError('actual Qwen prediction drift')
+                    full_latency=audit['all_requests_ms_median']
             rows.append(dict(tier='observed_RGBD_language_current' if 'geometry_role' in config or 'geometry_parameters' in config else 'observed_RGB_language_current',
                 task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in str(source.parent.relative_to(reports)) else 'RLBench_derived_reach_three_targets',
                 protocol=metrics.get('evaluation_protocol','observation_eval_v1_reference_subset'),
-                checkpoint_selection_protocol='original_DEV_ADE_best',
+                checkpoint_selection_protocol=result.get('checkpoint_selection_protocol','original_DEV_ADE_best'),
                 method=folder+'_'+'_'.join(source.parent.relative_to(reports/folder).parts)+'_'+config.get('adapter_mode','frozen_cache'),
                 seed=config['seed'],split='DEV_MODEL',K=config['candidates'],
                 run_id=str(source.parent.relative_to(reports)),training_exposures=result['trajectory_exposures'],
+                generated_complete_path_states=result.get('generation_budget',{}).get('total_complete_path_states',config['candidates']),
+                path_updates=result.get('generation_budget',{}).get('updates',0),
+                complete_path_state_exposures=result.get('complete_path_state_exposures',result['trajectory_exposures']),
+                budget_status=result.get('generation_budget',{}).get('description','one-pass complete candidates; no hidden update'),
                 common_pretraining_exposures=result.get('common_pretraining',{}).get('total_trajectory_exposures'),
                 common_pretraining_gpu_hours=result.get('common_pretraining',{}).get('gpu_hours_reserved'),
                 selected_step=result['best_step'],grounding_weight=config.get('grounding_weight'),
@@ -173,8 +188,28 @@ def main():
                     if 'online' in folder else 'head training/evaluation only; separate Qwen encoding is excluded'),
                 candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
                 semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
-                RGBD_Qwen_generation_ms=metrics.get('online_request_ms_median'),
+                RGBD_Qwen_generation_ms=full_latency,
+                TipValidAtK=metrics.get('TipValidAtK'),AnyTipValidAtK=metrics.get('AnyTipValidAtK'),
+                UniqueClassifiedTipValidAtK=metrics.get('UniqueClassifiedTipValidAtK'),
+                KnownReferenceTypeCoverageAtK=metrics.get('KnownReferenceTypeCoverageAtK'),TipClearAtK=metrics.get('TipClearAtK'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
+                source=str(source.relative_to(root))))
+    source=reports/'observed_obstacle_reserved96_analysis_v1/analysis.json'
+    if source.exists():
+        audited=json.loads(source.read_text())
+        for method in ('soft','peak'):
+            result=audited['results'][method+'_last'];metrics=result['metrics']
+            rows.append(dict(tier='observed_RGBD_language_current',task='RLBench_derived_obstacle_reach_three_targets',
+                protocol='observation_eval_v2',checkpoint_selection_protocol='uniform_last3000_sensitivity',
+                method=method+'_last',seed=audited['seed'],split='DEV_MODEL',K=4,
+                run_id='observed_obstacle_reserved96_v1/'+method+'_seed0',selected_step=result['step'],
+                TipValidAtK=metrics['TipValidAtK'],AnyTipValidAtK=metrics['AnyTipValidAtK'],
+                UniqueClassifiedTipValidAtK=metrics['UniqueClassifiedTipValidAtK'],
+                KnownReferenceTypeCoverageAtK=metrics['KnownReferenceTypeCoverageAtK'],TipClearAtK=metrics['TipClearAtK'],
+                candidate_ADE_m=metrics['candidate_matched_ADE_m'],endpoint_error_m=metrics['candidate_endpoint_error_m'],
+                semantic_goal_accuracy=metrics['semantic_goal_accuracy'],AnySemanticGoalAtK=metrics['AnySemanticGoalAtK'],
+                reference_evaluation_examples=metrics['reference_evaluation_examples'],semantic_evaluation_examples=metrics['semantic_evaluation_examples'],
+                cost_scope='same training run as best row; no additional training; last is retained sensitivity, not a replacement selection',
                 source=str(source.relative_to(root))))
     for source in sorted((reports/'observed_natural_fresh_dev_v1').glob('*/metrics.json')):
         metrics=json.loads(source.read_text()); provenance=json.loads((source.parent/'provenance.json').read_text())
@@ -235,6 +270,7 @@ def main():
           'cumulative_elapsed_s','cumulative_gpu_hours','incremental_training_exposures','center_endpoint_error_m','cpu_endpoint_ms',
           'common_pretraining_exposures','common_pretraining_gpu_hours','anchor_mode','RGBD_Qwen_generation_ms','checkpoint_selection_protocol',
           'sampling_repeats','budget_status','observed_RGBD_plan_proxycheck_ms',
+          'generated_complete_path_states','path_updates','complete_path_state_exposures',
           'TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK','code_commit','source']
     rows=[{key:row.get(key) for key in keys} for row in rows]
     (reports/'MAIN_RESULTS.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')

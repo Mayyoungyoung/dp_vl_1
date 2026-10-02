@@ -1,0 +1,124 @@
+{
+  "config": {
+    "radii_m": [
+      0.15,
+      0.25,
+      0.35
+    ],
+    "voxel_m": 0.025,
+    "maximum_admitted_nodes": 20000,
+    "scope": "first8 predeclared old32 TRAIN parents, all instructions and positive references",
+    "radius_metric": "Euclidean distance from measured current tip; not goal distance or reference arc length",
+    "boundary": "reachable in-radius free nodes with a conservative valid grid edge to an out-of-radius free node",
+    "adjacency": "shared26-neighbor edges; all supercover touched voxels must be free",
+    "region": "connected components of the induced boundary graph, without arbitrary angular splitting",
+    "node_limit": "reject before graph construction if the entire admitted in-radius free-node set exceeds20000",
+    "reference_mapping": "last sqrt(3)*voxel length of the segment before first exact sphere exit; full grid supercover intersects frozen boundary",
+    "inference_fields": [
+      "RGB",
+      "depth",
+      "camera calibration",
+      "current state",
+      "instruction",
+      "unchanged TRAIN prototype/workspace"
+    ],
+    "complete_routes_searched": 0,
+    "true_boxes_read": false
+  },
+  "parents": 8,
+  "observations": 24,
+  "radii": {
+    "0.15": {
+      "instructions": 24,
+      "region_count_histogram": {
+        "1": 24
+      },
+      "generation_failed": 0,
+      "multi_region_instructions": 0,
+      "positive_references": 40,
+      "reference_exits": 40,
+      "no_radius_exit": 0,
+      "geometric_boundary_covered": 29,
+      "unambiguous_reference_exits": 29,
+      "covered_and_prefix_proxy_clear": 23,
+      "known_different_type_mapped_pairs": 4,
+      "separated_different_type_pairs": 0,
+      "collapsed_different_type_pairs": 4,
+      "known_same_type_mapped_pairs": 0,
+      "fragmented_same_type_pairs": 0,
+      "maximum_regions": 1
+    },
+    "0.25": {
+      "instructions": 24,
+      "region_count_histogram": {
+        "1": 24
+      },
+      "generation_failed": 0,
+      "multi_region_instructions": 0,
+      "positive_references": 40,
+      "reference_exits": 40,
+      "no_radius_exit": 0,
+      "geometric_boundary_covered": 22,
+      "unambiguous_reference_exits": 22,
+      "covered_and_prefix_proxy_clear": 8,
+      "known_different_type_mapped_pairs": 2,
+      "separated_different_type_pairs": 0,
+      "collapsed_different_type_pairs": 2,
+      "known_same_type_mapped_pairs": 0,
+      "fragmented_same_type_pairs": 0,
+      "maximum_regions": 1
+    },
+    "0.35": {
+      "instructions": 24,
+      "region_count_histogram": {
+        "1": 24
+      },
+      "generation_failed": 0,
+      "multi_region_instructions": 0,
+      "positive_references": 40,
+      "reference_exits": 40,
+      "no_radius_exit": 0,
+      "geometric_boundary_covered": 16,
+      "unambiguous_reference_exits": 16,
+      "covered_and_prefix_proxy_clear": 6,
+      "known_different_type_mapped_pairs": 0,
+      "separated_different_type_pairs": 0,
+      "collapsed_different_type_pairs": 0,
+      "known_same_type_mapped_pairs": 0,
+      "fragmented_same_type_pairs": 0,
+      "maximum_regions": 1
+    }
+  },
+  "decision": "reject_this_boundary_representation_no_multi_region_space",
+  "limitation": "observed partial-space proxy only; local components are not certified global route/homotopy classes; reference sets incomplete; unknown types retained",
+  "total_seconds": 9.345739005017094,
+  "generation_seconds": 8.954545071930625,
+  "artifact_sha256": {
+    "obstacle_reach_272003_target1_regions.npz": "00a8f5b61399d8c3f709d1ee91bd49e4a8fbda86447c5e3cce3fd12dad06ef8b",
+    "obstacle_reach_272001_target0_regions.npz": "729a75d62dcae992499d219fe6cc1ebd856ae07269bb4611d053def2864c45e6",
+    "obstacle_reach_272002_target1_regions.npz": "79c199238cb2490dd8d349aa9ba6f7517c11c6a3644fbe373aa01e628c63f080",
+    "obstacle_reach_272004_target2_regions.npz": "eb5778754420ccf54c7de8a101934c071f72c5ea354e48882836682444fd6c7d",
+    "obstacle_reach_272001_target2_regions.npz": "b80a271a5ad1a279cc90981b94f78a7ab8c82b057888a2188c813bb495b4969b",
+    "obstacle_reach_272006_target0_regions.npz": "1c7184e9ceb1a42020c8eef16697574980ad5b813ec3cbf6ce7f00c611fbefc0",
+    "obstacle_reach_272002_target2_regions.npz": "cb57b828baa280b109fa8497d49477e675af8bcd58add9909035e5173acd1702",
+    "obstacle_reach_272006_target2_regions.npz": "972d4c53d57432e1a71356002be44fede19d5f5e8467822166e6b8c5583e4477",
+    "obstacle_reach_272007_target1_regions.npz": "86c9638ba811950f1729eeb4433a4c70801c798dbcc927b8e2ecd0ec13b2829b",
+    "obstacle_reach_272000_target2_regions.npz": "b181dc46cca20d8184d218620a703dd9cd70b1ead08c647aaf27b0fe7248995c",
+    "obstacle_reach_272002_target0_regions.npz": "3e992a660e811c9584ec4f60c9efa00e1e4166e677663e1b208d489b2b447abb",
+    "obstacle_reach_272007_target2_regions.npz": "e975eacadbeb0a5dfcb21bce79bcca11fb158359a08cd5543e6be181cdb90b3d",
+    "obstacle_reach_272006_target1_regions.npz": "709a84fcf19a5843c95091533b5a85847db96f00a0026b802beb106bd4eeeed2",
+    "obstacle_reach_272003_target2_regions.npz": "99455609038b0e4fe0b0f7dc3dace935bdcb50adea9b6602206d66d9c391aed8",
+    "obstacle_reach_272004_target1_regions.npz": "52de895fe5afbdafbb1a178d3e49ae862895878d123a9cbbfbd1e0b6acdbcfe8",
+    "obstacle_reach_272005_target1_regions.npz": "300d98afa8c1619a6842de9a746df0bacc0634b20544fcc43806ad4e9bb5980d",
+    "obstacle_reach_272004_target0_regions.npz": "830664ecab01edb4217e947a871a8b3a797efe31b1f9de05250fa7867d05a09c",
+    "obstacle_reach_272007_target0_regions.npz": "ef2fc6a4142163a8ce81902ebe1841067f5ef22f65dec8b2e94002ed5b8202dd",
+    "obstacle_reach_272003_target0_regions.npz": "0325f3b95b95742da18e5c1c4c008b01dbdba4eac46df4f9698c2ec1b84948a0",
+    "obstacle_reach_272000_target1_regions.npz": "b25213fc4446192dd0ca8be8f3bae8673b49b4f08f14e348235e3a4457126aa8",
+    "obstacle_reach_272000_target0_regions.npz": "38ebeb729e71f3403d657f1a006fcf47684340c0799c5535fc2e4ea029bfbf6f",
+    "obstacle_reach_272005_target0_regions.npz": "ddd44f65eab182dd7dd323cf169be6d97b03110c1df135729fb05d8466b0e681",
+    "obstacle_reach_272005_target2_regions.npz": "46512064e03d5654ca5a40a9e299c699f1237c1920d3d36b6571e17e376be717",
+    "obstacle_reach_272001_target1_regions.npz": "9489ff3d16d97293fe3a9fdabd539bbaadfeaa5a35690e4c516fa8186b8bcc56"
+  },
+  "generation_complete_sha256": "643b745652d27800f8427f6849d2eeb098dcbde162bdcff0463164fbacfead39",
+  "reference_evaluation_sha256": "84d31215a65507611b33b122230b6b8662b6bce80474464afca60eda5408432b"
+}

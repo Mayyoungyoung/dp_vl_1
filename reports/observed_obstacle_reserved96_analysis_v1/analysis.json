@@ -1,0 +1,3824 @@
+{
+  "protocol": "observed_obstacle_pair_audit_v1",
+  "evaluation_protocol": "observation_eval_v2",
+  "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+  "seed": 0,
+  "selection_protocol": "dev_tip_unique_valid_v1",
+  "criterion": "UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK",
+  "common_candidate_slots": 384000,
+  "metadata": {
+    "export_sha256": "63df6bb48e56f82a63b47eb122d1df1ba2fc591b5d6636d99cdfc03f4bb0a503",
+    "observations_sha256": "d24e7ec52948a6b521498a72885a5c880c4a50b0e295f65386e692d67feee072",
+    "supervision_sha256": "37da38855af0357732ac48f125f140e8ed5d1a60008f1424fd5080c7a9421237",
+    "collection_settings_sha256": "8c585d3e30669a3c230ed4ee3cadc86b5c757996322a5745238ea89d9e244d6d",
+    "reservation_sha256": "d9a8112d6f68efd13e785134fcd5435306e4e570fefbaf1c6c31468a9a8ca2e8"
+  },
+  "results": {
+    "soft_best": {
+      "step": 3000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.1860745716030183,
+        "reference_matched_ADE_m": 0.21521409633366959,
+        "candidate_endpoint_error_m": 0.04324873842541938,
+        "best_endpoint_error_m": 0.040540666778764244,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.65625,
+        "AnySemanticGoalAtK": 0.7083333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.4479166666666667,
+        "AnyTipValidAtK": 0.625,
+        "UniqueClassifiedTipValidAtK": 0.75,
+        "DuplicateClassifiedTipValidCount": 0.75,
+        "UnknownTypeTipValidCount": 0.2916666666666667,
+        "KnownReferenceTypeCoverageAtK": 0.3627450980392157,
+        "TipClearAtK": 0.6458333333333334,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 0.7723958333333334,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 33,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 34,
+          "event_state_sequence_correct": 0,
+          "TipValid": 53
+        },
+        "tip_valid_candidates": 43,
+        "tip_valid_unknown_type_candidates": 7,
+        "first_collision_segment_histogram": {
+          "7": 2,
+          "2": 4,
+          "4": 8,
+          "3": 11,
+          "5": 3,
+          "6": 3,
+          "9": 1,
+          "8": 2
+        },
+        "first_collision_arc_quartile_histogram": {
+          "1": 9,
+          "0": 25
+        },
+        "first_collision_arc_before_segment_mean": 0.18185325214541417,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 43,
+          "semantic_correct/tip_collision_or_nonfinite": 20,
+          "semantic_wrong/tip_collision_or_nonfinite": 14,
+          "semantic_wrong/tip_clear": 19
+        },
+        "semantic_correct_collisions": 20,
+        "semantic_correct_first_quarter_collisions": 15,
+        "classified_valid_route_types": {
+          "negative_x": 31,
+          "positive_y": 4,
+          "negative_y": 1
+        },
+        "valid_unknown_types": 7,
+        "classified_valid_duplicates": 18,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 1,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {
+            "8": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "1": 1
+          },
+          "first_collision_arc_before_segment_mean": 0.31178414998604786
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/best.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/dev_model/predictions.npz"
+    },
+    "soft_last": {
+      "step": 3000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.1860745716030183,
+        "reference_matched_ADE_m": 0.21521409633366959,
+        "candidate_endpoint_error_m": 0.04324873842541938,
+        "best_endpoint_error_m": 0.040540666778764244,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.65625,
+        "AnySemanticGoalAtK": 0.7083333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.4479166666666667,
+        "AnyTipValidAtK": 0.625,
+        "UniqueClassifiedTipValidAtK": 0.75,
+        "DuplicateClassifiedTipValidCount": 0.75,
+        "UnknownTypeTipValidCount": 0.2916666666666667,
+        "KnownReferenceTypeCoverageAtK": 0.3627450980392157,
+        "TipClearAtK": 0.6458333333333334,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 0.7723958333333334,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 33,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 34,
+          "event_state_sequence_correct": 0,
+          "TipValid": 53
+        },
+        "tip_valid_candidates": 43,
+        "tip_valid_unknown_type_candidates": 7,
+        "first_collision_segment_histogram": {
+          "7": 2,
+          "2": 4,
+          "4": 8,
+          "3": 11,
+          "5": 3,
+          "6": 3,
+          "9": 1,
+          "8": 2
+        },
+        "first_collision_arc_quartile_histogram": {
+          "1": 9,
+          "0": 25
+        },
+        "first_collision_arc_before_segment_mean": 0.18185325214541417,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 43,
+          "semantic_correct/tip_collision_or_nonfinite": 20,
+          "semantic_wrong/tip_collision_or_nonfinite": 14,
+          "semantic_wrong/tip_clear": 19
+        },
+        "semantic_correct_collisions": 20,
+        "semantic_correct_first_quarter_collisions": 15,
+        "classified_valid_route_types": {
+          "negative_x": 31,
+          "positive_y": 4,
+          "negative_y": 1
+        },
+        "valid_unknown_types": 7,
+        "classified_valid_duplicates": 18,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 1,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {
+            "8": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "1": 1
+          },
+          "first_collision_arc_before_segment_mean": 0.31178414998604786
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/last.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/last_dev_model/predictions.npz"
+    },
+    "peak_best": {
+      "step": 1250,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.18533314537742865,
+        "reference_matched_ADE_m": 0.21017098718363306,
+        "candidate_endpoint_error_m": 0.06291933762638466,
+        "best_endpoint_error_m": 0.06239692563110072,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.6666666666666666,
+        "AnySemanticGoalAtK": 0.6666666666666666,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.5208333333333334,
+        "AnyTipValidAtK": 0.625,
+        "UniqueClassifiedTipValidAtK": 1.125,
+        "DuplicateClassifiedTipValidCount": 0.9583333333333334,
+        "UnknownTypeTipValidCount": 0.0,
+        "KnownReferenceTypeCoverageAtK": 0.6470588235294118,
+        "TipClearAtK": 0.7395833333333334,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 1.1510416666666667,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 32,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 25,
+          "event_state_sequence_correct": 0,
+          "TipValid": 46
+        },
+        "tip_valid_candidates": 50,
+        "tip_valid_unknown_type_candidates": 0,
+        "first_collision_segment_histogram": {
+          "4": 9,
+          "15": 3,
+          "13": 2,
+          "3": 5,
+          "14": 2,
+          "12": 1,
+          "11": 1,
+          "10": 1,
+          "2": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "0": 15,
+          "2": 5,
+          "1": 5
+        },
+        "first_collision_arc_before_segment_mean": 0.2993366111528297,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 50,
+          "semantic_wrong/tip_clear": 21,
+          "semantic_correct/tip_collision_or_nonfinite": 14,
+          "semantic_wrong/tip_collision_or_nonfinite": 11
+        },
+        "semantic_correct_collisions": 14,
+        "semantic_correct_first_quarter_collisions": 9,
+        "classified_valid_route_types": {
+          "negative_x": 31,
+          "positive_y": 18,
+          "negative_y": 1
+        },
+        "valid_unknown_types": 0,
+        "classified_valid_duplicates": 23,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/best.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/dev_model/predictions.npz"
+    },
+    "peak_last": {
+      "step": 3000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.18297407435982124,
+        "reference_matched_ADE_m": 0.20400655690742575,
+        "candidate_endpoint_error_m": 0.041146865600477096,
+        "best_endpoint_error_m": 0.03967295283370692,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.8020833333333334,
+        "AnySemanticGoalAtK": 0.8333333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.4375,
+        "AnyTipValidAtK": 0.6666666666666666,
+        "UniqueClassifiedTipValidAtK": 0.875,
+        "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+        "UnknownTypeTipValidCount": 0.20833333333333334,
+        "KnownReferenceTypeCoverageAtK": 0.5098039215686274,
+        "TipClearAtK": 0.5416666666666666,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 0.896875,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 19,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 44,
+          "event_state_sequence_correct": 0,
+          "TipValid": 54
+        },
+        "tip_valid_candidates": 42,
+        "tip_valid_unknown_type_candidates": 5,
+        "first_collision_segment_histogram": {
+          "4": 9,
+          "5": 10,
+          "3": 12,
+          "8": 2,
+          "2": 5,
+          "7": 2,
+          "6": 2,
+          "9": 1,
+          "11": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "0": 33,
+          "1": 11
+        },
+        "first_collision_arc_before_segment_mean": 0.20182643573258147,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 42,
+          "semantic_correct/tip_collision_or_nonfinite": 35,
+          "semantic_wrong/tip_collision_or_nonfinite": 9,
+          "semantic_wrong/tip_clear": 10
+        },
+        "semantic_correct_collisions": 35,
+        "semantic_correct_first_quarter_collisions": 26,
+        "classified_valid_route_types": {
+          "negative_x": 25,
+          "positive_y": 10,
+          "positive_x": 1,
+          "negative_y": 1
+        },
+        "valid_unknown_types": 5,
+        "classified_valid_duplicates": 16,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/last.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/last_dev_model/predictions.npz"
+    }
+  },
+  "paired": {
+    "best": {
+      "per_instruction": [
+        {
+          "scene_id": "obstacle_reach_272096_target0",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.03740103915333748,
+            "candidate_endpoint_error_m": 0.013102758675813675
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target1",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.051739368587732315,
+            "candidate_endpoint_error_m": 0.016310409177094698
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target2",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 1.0,
+            "semantic_goal_accuracy": -0.5,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.14427447319030762,
+            "candidate_endpoint_error_m": 0.1371057815849781
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target0",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.061520397663116455,
+            "candidate_endpoint_error_m": -0.053147291764616966
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target1",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.04075887054204941,
+            "candidate_endpoint_error_m": 0.016337708570063114
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target2",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.5,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": -0.011423051357269287,
+            "candidate_endpoint_error_m": 0.10910698398947716
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target0",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.05163087695837021,
+            "candidate_endpoint_error_m": 0.010939477011561394
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target1",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.01792919635772705,
+            "candidate_endpoint_error_m": 0.010374738834798336
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target2",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.01734546199440956,
+            "candidate_endpoint_error_m": 0.012931869365274906
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target0",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.011401854455471039,
+            "candidate_endpoint_error_m": 0.016509619541466236
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target1",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.0873938500881195,
+            "candidate_endpoint_error_m": 0.005846553482115269
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target2",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.12471675872802734,
+            "candidate_endpoint_error_m": 0.06856580078601837
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target0",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0875757485628128,
+            "candidate_endpoint_error_m": 0.09803055599331856
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target1",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.3333333333333333,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": 0.06641730666160583,
+            "candidate_endpoint_error_m": -0.09545547142624855
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target2",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.07719068229198456,
+            "candidate_endpoint_error_m": 0.007463604211807251
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target0",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.013893656432628632,
+            "candidate_endpoint_error_m": 0.010226155631244183
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target1",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": -1.0,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -3,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -1.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.00523039698600769,
+            "candidate_endpoint_error_m": 0.015475347638130188
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target2",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.05375668406486511,
+            "candidate_endpoint_error_m": -0.007537484169006348
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target0",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 0,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": null,
+            "candidate_endpoint_error_m": null
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target1",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.75,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": 2,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 1.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.75,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.008407428860664368,
+            "candidate_endpoint_error_m": -0.008001228794455528
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target2",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0009687468409538269,
+            "candidate_endpoint_error_m": 0.015258340630680323
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target0",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -2,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": -0.031177528202533722,
+            "candidate_endpoint_error_m": 0.024666079320013523
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target1",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 1.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.058514177799224854,
+            "candidate_endpoint_error_m": 0.020542459096759558
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target2",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0231635719537735,
+            "candidate_endpoint_error_m": 0.0077710142359137535
+          }
+        }
+      ],
+      "per_parent": [
+        {
+          "parent_id": "obstacle_reach_272096",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.16666666666666666,
+            "TipClearAtK": 0.4166666666666667,
+            "semantic_goal_accuracy": -0.16666666666666666,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.07780496031045914,
+            "candidate_endpoint_error_m": 0.05550631647929549
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272097",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.25,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.010728192826112112,
+            "candidate_endpoint_error_m": 0.02409913359830777
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272098",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.25,
+            "TipClearAtK": 0.16666666666666666,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.017404870440562565,
+            "candidate_endpoint_error_m": 0.011415361737211546
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272099",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.07450415442387263,
+            "candidate_endpoint_error_m": 0.03030732460319996
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272100",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.1111111111111111,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": 0.3333333333333333,
+            "AnySemanticGoalAtK": 0.3333333333333333,
+            "candidate_matched_ADE_m": 0.025600790977478027,
+            "candidate_endpoint_error_m": 0.003346229592959086
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272101",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": -1.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.020806647837162018,
+            "candidate_endpoint_error_m": 0.006054673033456008
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272102",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.3333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": 1.0,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.75,
+            "TipClearAtK": 0.16666666666666666,
+            "semantic_goal_accuracy": 0.25,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.0037193410098552704,
+            "candidate_endpoint_error_m": 0.003628555918112397
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272103",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.08333333333333333,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.3333333333333333,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.01683340718348821,
+            "candidate_endpoint_error_m": 0.017659850884228945
+          }
+        }
+      ],
+      "aggregate_peak_minus_soft": {
+        "TipValidAtK": 0.07291666666666669,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0.375,
+        "DuplicateClassifiedTipValidCount": 0.20833333333333337,
+        "UnknownTypeTipValidCount": -0.2916666666666667,
+        "KnownReferenceTypeCoverageAtK": 0.2843137254901961,
+        "TipClearAtK": 0.09375,
+        "semantic_goal_accuracy": 0.01041666666666663,
+        "AnySemanticGoalAtK": -0.04166666666666674,
+        "candidate_matched_ADE_m": -0.0007414262255896475,
+        "candidate_endpoint_error_m": 0.019670599200965276
+      }
+    },
+    "last": {
+      "per_instruction": [
+        {
+          "scene_id": "obstacle_reach_272096_target0",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.008625656366348267,
+            "candidate_endpoint_error_m": 0.016020532697439194
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target1",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -2,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": -0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.05396890267729759,
+            "candidate_endpoint_error_m": 0.014018405694514513
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target2",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": -0.5,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.17109811305999756,
+            "candidate_endpoint_error_m": 0.00322159007191658
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target0",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 1,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.09633395075798035,
+            "candidate_endpoint_error_m": -0.05170047469437122
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target1",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.009874388575553894,
+            "candidate_endpoint_error_m": 0.010530545376241207
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target2",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.75,
+            "semantic_goal_accuracy": -0.75,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.08222790062427521,
+            "candidate_endpoint_error_m": 0.02499609813094139
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target0",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.005137801170349121,
+            "candidate_endpoint_error_m": 0.010050719603896141
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target1",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.5,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 1,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.5,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.023333042860031128,
+            "candidate_endpoint_error_m": 0.0026038167998194695
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target2",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0009429492056369781,
+            "candidate_endpoint_error_m": 0.007033857516944408
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target0",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.0085877925157547,
+            "candidate_endpoint_error_m": 0.0077581508085131645
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target1",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.04744279384613037,
+            "candidate_endpoint_error_m": 0.003887559287250042
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target2",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 1,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -1.0,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.06692025065422058,
+            "candidate_endpoint_error_m": -0.027491219341754913
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target0",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.5,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 2,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.05880254507064819,
+            "candidate_endpoint_error_m": -0.03062126226723194
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target1",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.5,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": 0.022163182497024536,
+            "candidate_endpoint_error_m": -0.09985303040593863
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target2",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.008399903774261475,
+            "candidate_endpoint_error_m": 0.004060238599777222
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target0",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.012464158236980438,
+            "candidate_endpoint_error_m": 0.005067559890449047
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target1",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -2,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.062737375497818,
+            "candidate_endpoint_error_m": 0.020866598933935165
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target2",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.014295369386672974,
+            "candidate_endpoint_error_m": -0.0016762614250183105
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target0",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 0,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": null,
+            "candidate_endpoint_error_m": null
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target1",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.75,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": 2,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 1.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.75,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.014652237296104431,
+            "candidate_endpoint_error_m": -0.012692572548985481
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target2",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.03865031152963638,
+            "candidate_endpoint_error_m": 0.007636446971446276
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target0",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.020263224840164185,
+            "candidate_endpoint_error_m": 0.022618412040174007
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target1",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -2,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.006207630038261414,
+            "candidate_endpoint_error_m": 0.011185070034116507
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target2",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.02881193906068802,
+            "candidate_endpoint_error_m": 0.004136143252253532
+          }
+        }
+      ],
+      "per_parent": [
+        {
+          "parent_id": "obstacle_reach_272096",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": -0.6666666666666666,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": -0.16666666666666666,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": -0.16666666666666666,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.07789755736788113,
+            "candidate_endpoint_error_m": 0.011086842821290096
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272097",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.6666666666666666,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.25,
+            "TipClearAtK": 0.3333333333333333,
+            "semantic_goal_accuracy": 0.08333333333333333,
+            "AnySemanticGoalAtK": 0.3333333333333333,
+            "candidate_matched_ADE_m": -0.0014105538527170818,
+            "candidate_endpoint_error_m": -0.005391277062396209
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272098",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.16666666666666666,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.005750764161348343,
+            "candidate_endpoint_error_m": 0.00656279797355334
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272099",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.5833333333333334,
+            "semantic_goal_accuracy": 0.3333333333333333,
+            "AnySemanticGoalAtK": 0.3333333333333333,
+            "candidate_matched_ADE_m": -0.04098361233870188,
+            "candidate_endpoint_error_m": -0.005281836415330569
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272100",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.6666666666666666,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": 0.6666666666666666,
+            "AnySemanticGoalAtK": 0.6666666666666666,
+            "candidate_matched_ADE_m": -0.015013088782628378,
+            "candidate_endpoint_error_m": -0.04213801802446445
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272101",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.3333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": -1.0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": -0.4166666666666667,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.02152286221583684,
+            "candidate_endpoint_error_m": 0.008085965799788633
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272102",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": 0.3333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": 1.0,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.75,
+            "TipClearAtK": 0.16666666666666666,
+            "semantic_goal_accuracy": 0.25,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.026651274412870407,
+            "candidate_endpoint_error_m": -0.0025280627887696028
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272103",
+          "instructions": 3,
+          "peak_minus_soft": {
+            "TipValidAtK": -0.16666666666666666,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": -1.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.16666666666666666,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0007803613940874735,
+            "candidate_endpoint_error_m": 0.012646541775514683
+          }
+        }
+      ],
+      "aggregate_peak_minus_soft": {
+        "TipValidAtK": -0.010416666666666685,
+        "AnyTipValidAtK": 0.04166666666666663,
+        "UniqueClassifiedTipValidAtK": 0.125,
+        "DuplicateClassifiedTipValidCount": -0.08333333333333337,
+        "UnknownTypeTipValidCount": -0.08333333333333334,
+        "KnownReferenceTypeCoverageAtK": 0.14705882352941174,
+        "TipClearAtK": -0.10416666666666674,
+        "semantic_goal_accuracy": 0.14583333333333337,
+        "AnySemanticGoalAtK": 0.125,
+        "candidate_matched_ADE_m": -0.0031004972431970534,
+        "candidate_endpoint_error_m": -0.0021018728249422858
+      }
+    }
+  },
+  "actual_artifact_index": {
+    "soft": {
+      "binaries": {
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/best.pt": {
+          "sha256": "454edcc64fddf7b9806d1e7235a1aabae2fbebdf459f61195491d0e95ce26348",
+          "bytes": 14933164
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/dev_model/paired_language_predictions.npz": {
+          "sha256": "2664746f4aa7d80e6dae0341546c04e76a17a3e132b040a5a0b7b36241ecb1f6",
+          "bytes": 22466
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/dev_model/predictions.npz": {
+          "sha256": "3057b3e77d0f7d1a74f848678775f62723fecfa55cef938470a07297a688db27",
+          "bytes": 33048
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/last.pt": {
+          "sha256": "c34d9c13f6f6b7738cb0c34b5ab0681851604ba251e84f886d14c610eedb08f3",
+          "bytes": 14933164
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/last_dev_model/paired_language_predictions.npz": {
+          "sha256": "2664746f4aa7d80e6dae0341546c04e76a17a3e132b040a5a0b7b36241ecb1f6",
+          "bytes": 22466
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/last_dev_model/predictions.npz": {
+          "sha256": "3057b3e77d0f7d1a74f848678775f62723fecfa55cef938470a07297a688db27",
+          "bytes": 33048
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/train/paired_language_predictions.npz": {
+          "sha256": "017e40ee564a76459ba4f23f4e970bb6492c0d9b6a4ac54d46e438182679cf79",
+          "bytes": 256532
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/soft_seed0/train/predictions.npz": {
+          "sha256": "cd9db06958ebaa09b8dd76ec0115f322b06a5ba65a475752cca9a2cfdac5f34b",
+          "bytes": 382056
+        }
+      },
+      "config_sha256": "cd440235c5c6dc3c0354e8a8ed6b01dabd91d72f9c6e6ccfec0f58d25c55fef7",
+      "summary_sha256": "59c46b01e1aaef9302595525f6ce2127c9f6c50779f8453ab42ce89dd63834ab",
+      "history_sha256": "6b0f8b7fb32d05e6130a16f6a9e39d93c8a40f5f7011c5ae343c7302227c77d1",
+      "training_sources_sha256": "b60eeb6b2f8497792ddd143eda2ab1b6bad8624d6eb7cec23b6151f7cb8dd546"
+    },
+    "peak": {
+      "binaries": {
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/best.pt": {
+          "sha256": "2a4a0c2e5ae8ffea4482a7c4ef42b569d997b2c858a9498e15c16dc48ace613e",
+          "bytes": 14916396
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/dev_model/paired_language_predictions.npz": {
+          "sha256": "ccbfd7bed49d48e57548509ce295af56fc70a50cb3baa57b57ed828ca1979563",
+          "bytes": 22162
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/dev_model/predictions.npz": {
+          "sha256": "6ec10c225108bc4f2906ec88e8b77f8c4554d355483f6f1c5cb01ea16e71a1cb",
+          "bytes": 32614
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/last.pt": {
+          "sha256": "771cbedab6aff34f3488e03c1e3c56d147ba75c03ffb75ed0d7ca5e208c54a8c",
+          "bytes": 14933164
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/last_dev_model/paired_language_predictions.npz": {
+          "sha256": "005c8f65e9eb0ccc79b7adb1fcb39f669e4c952ad67ad137c0e7b641a1c6a8c6",
+          "bytes": 22307
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/last_dev_model/predictions.npz": {
+          "sha256": "cde725ca74cf79690cfe2643674de2062173b58b2e22eb9faa6453c58833bc2f",
+          "bytes": 32879
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/train/paired_language_predictions.npz": {
+          "sha256": "b32c5ab258dc4c4b92f118f21d5296a0421ed5cf133400ac11a260bea998be56",
+          "bytes": 254834
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_reserved96_v1/peak_seed0/train/predictions.npz": {
+          "sha256": "4d8fa5ff90d5fa4c4261c003df40df167b41ce7c43dfcf721a48386a3c94aa58",
+          "bytes": 379076
+        }
+      },
+      "config_sha256": "28fb02e5ec6bc1ffa41e3a83dec98321e7f478ef88f69cc9d9cb8f93176bd275",
+      "summary_sha256": "cd14329b3a927d9113d3429591e9aae03687e647c795e59a8993ab555db15945",
+      "history_sha256": "ad0be4d5c214da2eb4e69c72dd3e68630d4698a697a2c50a7d6afd2440d8d3c4",
+      "training_sources_sha256": "b60eeb6b2f8497792ddd143eda2ab1b6bad8624d6eb7cec23b6151f7cb8dd546"
+    }
+  },
+  "training_source_hashes": {
+    "routeset/observed_geometry.py": "ae63c613b61e98727cae353aa222623840397f7918f22f7ad59aee12f26fca9f",
+    "routeset/observed_route_head.py": "4453c785f5c7ad2e3162c9e325c6712184f8692b724053057049dd768db59fe3",
+    "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+    "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8",
+    "routeset/train_v2.py": "011253aaeadb02d686c3e0386e382c2d6d0932bb317a10ba98b9895b4b0e370b"
+  },
+  "evaluation_file_hashes": {
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/observation.npz": "aeb8ea3e3391d515067fd4f84db4634240045acbc42591f267b52f0f436b7e02",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/verification_only.npz": "4132a825dd9ebed875bfd5beb121cd41df3df2cbf5e4993260766017bd48746f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target0_route0.npz": "b182a241c04c46717e6d0de485980e6784360d44cb36d7dc342f36bd002a0c05",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target0_route3.npz": "a8b591a61278b22ab4849f8c37b5494aded5a8fbbf1484c8fa683c2c7974bf15",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target1_route0.npz": "86173022b1de3fca0e0c593446edfd2c4a2e73f44bee14eb2f5dc51b2d4b35b2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target1_route3.npz": "e06aa1de9305f07284e59883a238349ce066870ccda73169781e6fe133eee07b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target2_route0.npz": "d10cfc4a6afa6c346b6675c6010b8fae56c8825e71b706871c6a7d2f9b4ed7d5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target2_route3.npz": "81108a12836e50545e07ddda9cf0a7545cc7326636f345190b15b960be06a957",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/observation.npz": "c26018b4f221fdcae537b683f5c50852b80e9dc099728a31787ed9c45e0968c1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/verification_only.npz": "9b36b4849fcf895bcfa2474fb735988b3f9ee2f4a69e33772f99fed4496efe9d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target0_route0.npz": "ba5eddf65b5afa3c03acdde3c80737038377ae024a65ccccbbaeff73e2040cb1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target1_route0.npz": "3c832a1e96eacfe89bb60621b76cd33800120b8354865358d45db887e161c734",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target1_route3.npz": "da2095a2a652437040aeee672b081b91c49631a46799ea53e9c74406694b32d4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target2_route0.npz": "2d2d0a85fe08359fea5aeef986188b1aad0704deacc808c5a1276689718144ad",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target2_route3.npz": "08cd5d6aaa47bc28fd90414bbfb690131254b363ed342dac5b797dbb4e6a9b3d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/observation.npz": "3a54ef8e791124cbef3eb45a71733c2006f28139d78271df06bf7daaffeabf16",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/verification_only.npz": "9b900ec1581440c7ed27082dde7e801342ed0ca7caff696c5cffca44341d10fa",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target0_route0.npz": "e265b6803497dc508dd895f0dc81a4ab1d853aef6ca2ff0ee4ed47868fb60821",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target0_route3.npz": "a173a15b2010c4672e2acdd86f8d5e037135243dc56aa6af45dcc301da79f5e2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target1_route3.npz": "e1bf055523822af387c75eef3147b829f9e043a72079681cdb93527a1c26d0e5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target2_route0.npz": "41e6f429e986990f633ad4162ad57b989f9d0ebe7415c03bc53759ca7bc6709d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target2_route3.npz": "560271cd35dbe94032e6c157e764693d9027bef3b70e5ad9f935888ca4347592",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/observation.npz": "13fa6f8b7233f67f1939c5a6d490a202947a5a9a8754053eb39151958ebf1a07",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/verification_only.npz": "e6440c3154df1996035926cab282c9016a31883ab9e24ec8d9957fbb41c7b640",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route0.npz": "d4bcac5397cf0042ffc5fb8a3caeae858c5e22c5bb394d61b87891e5185b82cf",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route1.npz": "27887763b768bee46d282a6e838671e83d27e6b4d509943e4e2394deb3e7729c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route3.npz": "60210089a574232a66d2d39d048498966de6b66f9348f75e59a1b9d63864c654",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target1_route1.npz": "05a9fbbbcc4ebb1062975b2653e3afbdc8261a94cc02cdd5be43add027a837eb",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target1_route3.npz": "0830f2bdeb53456b7551b4cb1fb5defc3a7fced47d3f1c7b5348f0e3d4209746",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target2_route0.npz": "b04562d73c1fa943564400e464d4402f27656bcfb42fe104ad037f32da937b78",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/observation.npz": "4da5cd049966e1e592ecaccaef2ada8e663282cf9751483f5f1918177a83698b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/verification_only.npz": "792eb07f02e13f72ee005715d64e36359d36052703d5b539e9135233d9684ecb",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target0_route0.npz": "20a5042377b40371160231f68804bbaaed1e79f5b4a7fe99a4686e94c6222058",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target0_route1.npz": "8f44b1eadcb6a4e6f4f31363ed130b6e8466e7e0bd1cbe06a63b29301af89ea5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route0.npz": "1912396c36c437968f1d4d80842323b1e36df3493cd4c27a6a42393cb051c389",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route1.npz": "ab62af41b16d9d39b7851fcbed38182a29e91e65774e5665521ca7137725bd17",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route3.npz": "c7a6f3d5f812c7981226be4123f53d176002cd500faa88ee4beaa9f5afa31a39",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target2_route0.npz": "09c9575d728bd2c4c5d78d72de011e59db6e154dbd3ffb8c4380c10179102b36",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target2_route1.npz": "69ffdf89f9d622234d6ff4f27ed88e2f3f1ab09cae8afad9268fc5768946b999",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/observation.npz": "bbbb3713709efef4439be88bbfab1de95d26180adbc417fa32461165e5b6e79a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/verification_only.npz": "7e76ccf48ac74433a900708e32e2e51f4874e7b4b3e557d89d57dee60ddf90a5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route0.npz": "8394a3da298eebaa948b994827d25f0bd3ac6a9f2d1eb6ecff0fb16a698399f3",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route1.npz": "4c92b759aebf5d2e9a6e155d3258a5e7415fefc52160f7c9bae7437f7217f351",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route3.npz": "f2edcb3450e1aa4b2754993743540f8086ec127ea46deed4534732d5e7cd2479",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target1_route0.npz": "12c4d31e05cfb16af971b40ce226c6e8e6723f6a79819a4050679a95ee260e0e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target1_route1.npz": "0a3c799623ee95eba651d9f5195cfb7e3726292aeee9fa4dc3bd5c8212b705bd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target2_route0.npz": "9ce631bf67087eb76c3f2276421472da3f807c592b96202f1f9b50710a972ef2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target2_route3.npz": "57008b2869dbc3571a07f72d82f67eb46b4b15d41001310d749ebddddc6d3726",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/observation.npz": "c96865c196098653044db4f0b90c9f4a06474cbe9aee23d449ef49e10df0c355",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/verification_only.npz": "6f82144d7da7bea600f45bb3ba40d6d362a3a79af581481a2122ac6d19434775",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target1_route0.npz": "5cd1b484f2bbcd7c7053c8ff90757e27f2dc325f5d30d14834376df5625a3ad8",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target1_route3.npz": "4864c4a79c8d001fcc02186e0752c0579218dd87d4ad32fbad0918b920b429b4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target2_route0.npz": "8e412b59b479d2230b685fa1c4deca27e55319f5e56da8acb1854f68bf1521dd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target2_route3.npz": "341981bb8d921170b19124371f4f3c7a17eeaedfde47f2097b1d7d342917995e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/observation.npz": "5c023ea62495ad3cd5eb58bb2a2089264a7b76c6d43305d96b60186607d936b2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/verification_only.npz": "419590cee5df3dac9ac31c552bfb3787df88c3e958d5125e1cbe7a4d31e7712b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route0.npz": "345f57a0d75f31994eb41cb52c85ee8f49538b4749421d7db93a08cbff04bd57",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route1.npz": "b2f4ad9e2c6489efa546d93bf9780d82dc800d8af42ce04917035b66ca86f73d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route3.npz": "072f85320042b8e78dc2108918ae4c1f52cd3926508a63e4343ffe71bbdad979",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route0.npz": "3bdf03f255e4c9528a95c00592eb3573ba644bf620a3d9513eee534c15100054",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route1.npz": "b65361e63ffc9d4bb080d44189f92329221ad2ffe1d0dc4a862863e669d31b1b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route3.npz": "0be654c02e18a72856e74401669c72e12ec666dda3b2274208c5076992172108",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route0.npz": "29cb7c85319d9f1d1ae30122984de37ace66bb23e7df63cedd02cfa647706a56",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route1.npz": "80c5a8d5d17bb835375e4fd5c88ae5bc183e1accee756f990e3496f6fe823bcf",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route3.npz": "b575fd3ba79597b861f9a35f850b396d3c844213c1f565fa0ef37f4791c5c18a"
+  },
+  "initialization": {
+    "reconstructed_state_sha256": {
+      "soft": "6f67fcdd889d9445982e844ea04c52180f2388dc6fdf571eeefdf0871592f411",
+      "peak": "6f67fcdd889d9445982e844ea04c52180f2388dc6fdf571eeefdf0871592f411"
+    },
+    "evidence": "Exact immutable-source/seed reconstruction; initial weights were not saved during training."
+  },
+  "sampler_audit": {
+    "soft": {
+      "reconstructed_index_stream_sha256": "d3dfb3b768cfba197fa46232c766400da99c88ab6fe58fbef6b8adfc095dfd87",
+      "final_state": {
+        "bit_generator": "PCG64",
+        "state": {
+          "state": 170788640165291201054339742354481458595,
+          "inc": 85100242837629463183944470323720454901
+        },
+        "has_uint32": 0,
+        "uinteger": 865967660
+      }
+    },
+    "peak": {
+      "reconstructed_index_stream_sha256": "d3dfb3b768cfba197fa46232c766400da99c88ab6fe58fbef6b8adfc095dfd87",
+      "final_state": {
+        "bit_generator": "PCG64",
+        "state": {
+          "state": 170788640165291201054339742354481458595,
+          "inc": 85100242837629463183944470323720454901
+        },
+        "has_uint32": 0,
+        "uinteger": 865967660
+      }
+    }
+  },
+  "cost": {
+    "soft": {
+      "elapsed_s": 160.10684767004568,
+      "gpu_hours_reserved": 0.04447412435279047,
+      "peak_cuda_memory_mb": 951.23046875,
+      "data_load_preprocess_s": 2.1980518749915063,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 3.562794008757919,
+        "raw_geometry_cached_head_batch1_ms_p95": 3.9213539799675345,
+        "rgbd_read_preprocess_head_batch1_ms_median": 7.564199506305158,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 8.782680559670553,
+        "rgbd_read_preprocess_batch1_ms_median": 3.946121549233794,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      }
+    },
+    "peak": {
+      "elapsed_s": 161.37648510700092,
+      "gpu_hours_reserved": 0.04482680141861137,
+      "peak_cuda_memory_mb": 951.23046875,
+      "data_load_preprocess_s": 2.407166318036616,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 3.487623471301049,
+        "raw_geometry_cached_head_batch1_ms_p95": 3.892368054948747,
+        "rgbd_read_preprocess_head_batch1_ms_median": 7.272827497217804,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 7.800702896201983,
+        "rgbd_read_preprocess_batch1_ms_median": 3.7892039981670678,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      }
+    }
+  },
+  "limitations": "One training seed; all parents are DEV_MODEL. Tip checks certify only added boxes at original2cm; no arm/table/IK/execution or core novelty claim.",
+  "script_sha256": "9271bea31de673f65d0e505543837a9cd4e912318e897ca5f19c9ca8d55575fa",
+  "analysis_cpu_wall_s": 1.8185702949995175,
+  "traditional_planner": {
+    "baseline": "TRAIN prototype + observed grid A* v2 virtual exact endpoint attachment",
+    "metrics": {
+      "TipValidAtK": 0.875,
+      "AnyTipValidAtK": 0.875,
+      "UniqueClassifiedTipValidAtK": 1.25,
+      "UnknownTypeTipValidCount": 0.0,
+      "DuplicateClassifiedTipValidCount": 2.25,
+      "KnownReferenceTypeCoverageAtK": 0.24509803921568624,
+      "SelectedTipValidAtK": null,
+      "semantic_goal_accuracy": 0.875,
+      "AnySemanticGoalAtK": 0.875,
+      "endpoint_error_m": 0.025416374676391826,
+      "TipClearAtK": 0.875,
+      "StartCorrectAtK": 0.875,
+      "EventSequenceCorrectAtK": 1.0,
+      "mean_path_length_m": 0.7206324193038769,
+      "format_failure_count": 0.5,
+      "ValidAtK": null,
+      "AnyValidAtK": null,
+      "UniqueValidAtK": null,
+      "SelectedValidAtK": null,
+      "evaluation_protocol": "observed_obstacle_tip_eval_v1",
+      "examples": 24,
+      "requested_split_examples": 24,
+      "missing_prediction_examples": 0,
+      "parents": 8,
+      "candidates": 4,
+      "total_submitted_candidate_budget": 96,
+      "total_format_failure_candidates": 12,
+      "total_tip_valid_candidates": 84,
+      "examples_without_reference": 1,
+      "reference_coverage_evaluable_examples": 17,
+      "input_contract": "saved predictions only; target and geometry opened exclusively for evaluation",
+      "validity_scope": "TipValid requires correct target within original tolerance, current start within 5mm, constant reach event state, and exact full tip-segment checks against supplied physical boxes with original clearance; excludes full-arm/IK/execution validity",
+      "unverified_geometry": "The added physical boxes are checked. Table, walls, other environment bodies, arm volume and IK feasibility are not certified by this evaluator.",
+      "unknown_type_policy": "Valid unclassified routes remain valid; they do not contribute invented types",
+      "reference_policy": "Coverage only of known classified positive reference types; no total-solution-count claim",
+      "selection_policy": "optional scores rank the same submitted K; missing scores yield null, all nonfinite scores fail selection",
+      "paths_repaired_or_filtered": false,
+      "prediction_sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+      "source_hashes": {
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/verification_only.npz": "4132a825dd9ebed875bfd5beb121cd41df3df2cbf5e4993260766017bd48746f",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/observation.npz": "aeb8ea3e3391d515067fd4f84db4634240045acbc42591f267b52f0f436b7e02",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/verification_only.npz": "9b36b4849fcf895bcfa2474fb735988b3f9ee2f4a69e33772f99fed4496efe9d",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/observation.npz": "c26018b4f221fdcae537b683f5c50852b80e9dc099728a31787ed9c45e0968c1",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/verification_only.npz": "9b900ec1581440c7ed27082dde7e801342ed0ca7caff696c5cffca44341d10fa",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/observation.npz": "3a54ef8e791124cbef3eb45a71733c2006f28139d78271df06bf7daaffeabf16",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/verification_only.npz": "e6440c3154df1996035926cab282c9016a31883ab9e24ec8d9957fbb41c7b640",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/observation.npz": "13fa6f8b7233f67f1939c5a6d490a202947a5a9a8754053eb39151958ebf1a07",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/verification_only.npz": "792eb07f02e13f72ee005715d64e36359d36052703d5b539e9135233d9684ecb",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/observation.npz": "4da5cd049966e1e592ecaccaef2ada8e663282cf9751483f5f1918177a83698b",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/verification_only.npz": "7e76ccf48ac74433a900708e32e2e51f4874e7b4b3e557d89d57dee60ddf90a5",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/observation.npz": "bbbb3713709efef4439be88bbfab1de95d26180adbc417fa32461165e5b6e79a",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/verification_only.npz": "6f82144d7da7bea600f45bb3ba40d6d362a3a79af581481a2122ac6d19434775",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/observation.npz": "c96865c196098653044db4f0b90c9f4a06474cbe9aee23d449ef49e10df0c355",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/verification_only.npz": "419590cee5df3dac9ac31c552bfb3787df88c3e958d5125e1cbe7a4d31e7712b",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/observation.npz": "5c023ea62495ad3cd5eb58bb2a2089264a7b76c6d43305d96b60186607d936b2"
+      },
+      "manifest_sha256": "8c585d3e30669a3c230ed4ee3cadc86b5c757996322a5745238ea89d9e244d6d",
+      "supervision_sha256": "37da38855af0357732ac48f125f140e8ed5d1a60008f1424fd5080c7a9421237",
+      "reserved_export_manifest_sha256": "63df6bb48e56f82a63b47eb122d1df1ba2fc591b5d6636d99cdfc03f4bb0a503",
+      "collection_metadata_path": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/manifest.json",
+      "reservation_sha256": "d9a8112d6f68efd13e785134fcd5435306e4e570fefbaf1c6c31468a9a8ca2e8",
+      "requested_collection_parents_for_split": 8,
+      "available_observation_parents_for_split": 8,
+      "collection_parents_without_observations": 0
+    },
+    "per_candidate": [
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7410791921289571,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7586572706950965,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7623522475039504,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7863038554348728,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6896645379620857,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6904939650411086,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7056607241320304,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7177152961011104,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7032316531649979,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6980457087055479,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7094148047804589,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7143503956384759,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.68580744699846,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6973790344728901,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7122875660558489,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7856468906435922,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7377646968203271,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7369981239323875,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8026612587529293,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8060773503796296,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6973902426191686,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7012695296763084,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7066294550775839,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7027849797464134,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6870488978874661,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6895738074077294,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7052112060614699,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7158624375487807,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7253667928166888,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7254454047228616,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7336831264481671,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7413304282088646,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6732509992272072,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6974107800774478,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6968596114162368,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7037538065138448,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6859550412850831,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6978964127683733,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7083573128525765,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7240830368990216,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6761680362229685,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6828641315598664,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.689209783006637,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7075382696625292,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6896787824513039,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.706238010765446,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7165017503077065,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7305623220103078,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7361216752352222,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.761416275275981,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7622242356924114,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7852705273596845,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.700857396125145,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7059160541233633,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7086372096891463,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7226764370149777,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7082732143623305,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7178120899302078,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7235702232029857,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7288318670029752,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6964720412844249,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7094690750714338,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7103331755092802,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7309870411896837,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.691288104462827,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6940184029655404,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6995287364657408,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7060604422510636,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7235560474428219,
+        "declared_passage_type": [
+          "negative_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7381318170670789,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7518183572754997,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7679417397634938,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7262275284122619,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7486005833597182,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8169834884773057,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7375556931587215,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7102698174912437,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7114400888878412,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7164752132993326,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7316827187874629,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7126389705994841,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7137339268472908,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7318290680805786,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7349575237682805,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      }
+    ],
+    "report_sha256": "868c8058dcebe17bf16f290a736afec6811711f4c02a7227d407a10f43f85eea",
+    "prediction_sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+    "binary_index": {
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target0_raw.npz": {
+        "sha256": "f02f865eb78941979442fbe7de5d72a34038ad4f12711ac33be5bf06103483ca",
+        "bytes": 2102
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target1_raw.npz": {
+        "sha256": "519b277538673faba5e5eb757ce36fb397fe886395cd7ecf5eb8dbc062ad329f",
+        "bytes": 1845
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target2_raw.npz": {
+        "sha256": "6febbd9a33e688c8a56f31235669d892a585469cb117491fe4b8622adcc8e1b7",
+        "bytes": 1842
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target0_raw.npz": {
+        "sha256": "00fbf92c3da51cb3f78c117412187ab57544cfff77a8682cae6b55ce7f7e522d",
+        "bytes": 1865
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target1_raw.npz": {
+        "sha256": "197ffb6346285692eba6c3312aa2e5268a84841d3c8de36a86f04a1a27f34736",
+        "bytes": 2065
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target2_raw.npz": {
+        "sha256": "78014dc2a58e45d6fd11ac982a4a32c9d40d868354bbb386b9a49aab14e73096",
+        "bytes": 1835
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target0_raw.npz": {
+        "sha256": "6e4ef6904b544ae30b979b6f20bd02222756949574813f4047e64ff3248f3460",
+        "bytes": 1826
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target1_raw.npz": {
+        "sha256": "326a3cad7eefe3fc491c7dc24d97ba89830af19a580114388bcb096581e9726c",
+        "bytes": 1942
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target2_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target0_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target1_raw.npz": {
+        "sha256": "6e24ff2c5b18ae9a407270b389b8f418043c2e656ac3d0f9ab47fa93dbc89d4e",
+        "bytes": 1797
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target2_raw.npz": {
+        "sha256": "45eda042cfc28db893d7061e3f9b395f9d26657ec42295806a3bf6ea158fa2e2",
+        "bytes": 1835
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target0_raw.npz": {
+        "sha256": "8e4b90a7e259dd0745dad1c564070cf84c9e8b88d7638ed3f3a732aab737b689",
+        "bytes": 1851
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target1_raw.npz": {
+        "sha256": "83345456fd15f2b6ad004b82355c0250ee133d1912bf8d52db6448650a95f453",
+        "bytes": 1848
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target2_raw.npz": {
+        "sha256": "8686d5617110ee1920e5f0394f1a9dc0453579173a3ada5d63e21b08898e1142",
+        "bytes": 2120
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target0_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target1_raw.npz": {
+        "sha256": "67a4430fcf7c52443a31c8c204188d67962d5bd1c63194b81a85bd325b1c6b19",
+        "bytes": 1874
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target2_raw.npz": {
+        "sha256": "96f078999c6541994e40138be3928496ebf7cec39922511b57bcdccbf2e1245a",
+        "bytes": 1859
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target0_raw.npz": {
+        "sha256": "9de6b4682a48706e6541028b7278b0466387a548e4aa36b39c496f81df05a7f1",
+        "bytes": 1882
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target1_raw.npz": {
+        "sha256": "c9eed5cd94afae4309c19f91c72d0c971cf5c031f76458a2bbe70a36a8d4423a",
+        "bytes": 1831
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target2_raw.npz": {
+        "sha256": "e98e70b9e970a19eb4b2da02d82741cadef95dc381df4e4b0d3003e0ede0a18c",
+        "bytes": 2084
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target0_raw.npz": {
+        "sha256": "9545a06c97b3631de78ba38f36d8055b7caa04d95a00011265e5885a68038657",
+        "bytes": 2040
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target1_raw.npz": {
+        "sha256": "98adbe2a38b4a29b0ca94bcff606f94e5009d24bc8cb3c050eb38939dbb8c042",
+        "bytes": 1870
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target2_raw.npz": {
+        "sha256": "2f73ddcdaa75711a34975a84602e25c6c33d60aecfa7f0df07d12a4589c84f40",
+        "bytes": 1850
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/predictions.npz": {
+        "sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+        "bytes": 26359
+      }
+    },
+    "training_parents": 96,
+    "training_seconds": 3.996357389027253,
+    "observation_to_routes_ms_median": 1867.1700314735062,
+    "observation_to_routes_ms_p95": 3822.0479255134687,
+    "total_generation_seconds": 46.90802122687455,
+    "evaluation_seconds": 0.1259928389918059,
+    "language_scope": "Exact TRAIN instruction/color prototypes only; unseen instructions abstain. No open-vocabulary claim.",
+    "comparison_scope": "Same exported TRAIN and DEV, RGB-D/current/language and K4; different inference runtime, no equal-time claim.",
+    "limitation": "Unknown space is conservatively blocked except explicitly recorded local contact allowances. Grid clearance is a discrete proxy, not a continuous physical 2cm certificate: cell-center depth tests and surface/segment quantization errors are not jointly bounded. Visible points do not reconstruct hidden solids or certify full arm/IK/execution. Independent unchanged true-box evaluation may reject proxy-clear paths."
+  }
+}

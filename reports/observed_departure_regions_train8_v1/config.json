@@ -1,0 +1,53 @@
+{
+  "config": {
+    "radii_m": [
+      0.15,
+      0.25,
+      0.35
+    ],
+    "voxel_m": 0.025,
+    "maximum_admitted_nodes": 20000,
+    "scope": "first8 predeclared old32 TRAIN parents, all instructions and positive references",
+    "radius_metric": "Euclidean distance from measured current tip; not goal distance or reference arc length",
+    "boundary": "reachable in-radius free nodes with a conservative valid grid edge to an out-of-radius free node",
+    "adjacency": "shared26-neighbor edges; all supercover touched voxels must be free",
+    "region": "connected components of the induced boundary graph, without arbitrary angular splitting",
+    "node_limit": "reject before graph construction if the entire admitted in-radius free-node set exceeds20000",
+    "reference_mapping": "last sqrt(3)*voxel length of the segment before first exact sphere exit; full grid supercover intersects frozen boundary",
+    "inference_fields": [
+      "RGB",
+      "depth",
+      "camera calibration",
+      "current state",
+      "instruction",
+      "unchanged TRAIN prototype/workspace"
+    ],
+    "complete_routes_searched": 0,
+    "true_boxes_read": false
+  },
+  "code_commit": "d73a4f2da9459a663d2ba9769b889c1a2b3c2e78",
+  "pid": 292177,
+  "prior_report": "/home/wzy/dpvlm/route_set_v1/runs/observation_multiroute_astar_obstacle_new32_v2/train_probe_reexport/report.json",
+  "prior_report_sha256": "2b228acc808a1544d3cb7fa8111203a47d427123ade4cac254ad9e22ad0ffc62",
+  "source_sha256": {
+    "scripts/observation_multiroute_astar.py": "95d71e2f708e1e2c534b297f81f555980e685081ebf6d7cdb228d682dc37cd39",
+    "scripts/observation_multiroute_astar_v2.py": "d0166218effb7f576318052ab79cefaa9b8a418b22f0b7d907a54ac5fde82edc",
+    "scripts/observation_prototype_grounding.py": "fdeafdbc22f2e0351477e11ea597400d3037d5571369c150a1c70879a1f0a565"
+  },
+  "script_sha256": "23a6a11cd19375a7eeb602cc7507f0490ab756708cb955207f6fc0e1e5a88287",
+  "manifest_sha256": {
+    "observations.jsonl": "878ae1935499a5c5e6e64c4922f2d7cd6c1ffb80a0b0329af6e3b37efd914dfe",
+    "supervision.jsonl": "e7aa3be20b14bee36e91104e6de330595de0abe53f0b93730ac1713625c6cf84"
+  },
+  "parents": [
+    "obstacle_reach_272000",
+    "obstacle_reach_272001",
+    "obstacle_reach_272002",
+    "obstacle_reach_272003",
+    "obstacle_reach_272004",
+    "obstacle_reach_272005",
+    "obstacle_reach_272006",
+    "obstacle_reach_272007"
+  ],
+  "all_regions_written_before_reference_evaluation": true
+}
