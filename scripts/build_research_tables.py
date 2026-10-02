@@ -55,15 +55,18 @@ def main():
                 supplied_candidates=metrics['supplied_candidates'],end_to_end_controlled_ms=metrics['batch1_gate_head_check_ms_median'],
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],
                 code_commit=config.get('code_commit'),source=str(source.relative_to(root))))
-    for folder in ['observed_frozen_v1','observed_online_v1','observed_online_warm_v2','observed_geometry_v1',
-                   'observed_geometry_grounding_v2','observed_geometry_seeds_v2']:
+    observation_folders = ['observed_frozen_v1','observed_online_v1','observed_online_warm_v2','observed_geometry_v1',
+                           'observed_geometry_grounding_v2','observed_geometry_seeds_v2']
+    observation_folders += [p.name for p in reports.glob('observed_learning_curve_*') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_obstacle_*') if p.is_dir()]
+    for folder in observation_folders:
         for source in sorted((reports/folder).glob('*/summary.json')):
             result=json.loads(source.read_text()); metrics=result['metrics']
             config=json.loads((source.parent/'config.json').read_text())
-            rows.append(dict(tier='observed_RGBD_language_current' if 'geometry' in folder else 'observed_RGB_language_current',
-                task='RLBench_derived_reach_three_targets',
+            rows.append(dict(tier='observed_RGBD_language_current' if 'geometry_role' in config else 'observed_RGB_language_current',
+                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle_' in folder else 'RLBench_derived_reach_three_targets',
                 protocol=metrics.get('evaluation_protocol','observation_eval_v1_reference_subset'),
-                method=folder+'_'+config.get('adapter_mode','frozen_cache'),
+                method=folder+'_'+source.parent.name+'_'+config.get('adapter_mode','frozen_cache'),
                 seed=config['seed'],split='DEV_MODEL',K=config['candidates'],
                 run_id=str(source.parent.relative_to(reports)),training_exposures=result['trajectory_exposures'],
                 selected_step=result['best_step'],grounding_weight=config.get('grounding_weight'),

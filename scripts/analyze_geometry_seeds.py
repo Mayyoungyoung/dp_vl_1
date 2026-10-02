@@ -1,4 +1,5 @@
 """Paired development analysis of conventional observed-point grounding."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -15,6 +16,11 @@ def digest(path):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--runs', type=Path)
+    parser.add_argument('--output-name', default='observation_geometry_three_seed')
+    parser.add_argument('--report-name', default='OBSERVATION_GROUNDING_THREE_SEED')
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     paths = {
         0: {'plain': root/'runs/observed_geometry_v1/seed0',
@@ -22,6 +28,10 @@ def main():
         **{seed: {method: root/('runs/observed_geometry_seeds_v2/%s_seed%d' % (method, seed))
                    for method in ['plain', 'aux']} for seed in [1, 2]},
     }
+    if args.runs:
+        args.runs = args.runs.resolve()
+        paths = {seed: {method: args.runs/('%s_seed%d' % (method, seed)) for method in ['plain', 'aux']}
+                 for seed in [0, 1, 2]}
     metrics = ['semantic_goal_accuracy', 'AnySemanticGoalAtK', 'candidate_matched_ADE_m',
                'candidate_endpoint_error_m', 'learned_surface_anchor_reference_endpoint_error_m']
     runs, ids, parents = {}, None, None
@@ -49,6 +59,7 @@ def main():
                 assert abs(np.mean(measured) - summary['metrics'][key]) < 1e-7
             runs[str(seed)][method] = dict(run=str(path.relative_to(root)).replace('\\', '/'),
                 code_commit=config['code_commit'], dataset_fingerprint=config['dataset_fingerprint'],
+                train_parents=config['train_parents'], train_examples=config['train_examples'],
                 selected_step=summary['best_step'], elapsed_s=summary['elapsed_s'],
                 gpu_hours=summary['gpu_hours_reserved'], training_exposures=summary['trajectory_exposures'],
                 checkpoint_sha256=summary['best_checkpoint_sha256'], prediction_sha256=summary['prediction_sha256'],
@@ -94,9 +105,15 @@ def main():
     result = dict(scope='DEV_MODEL, 8 parents/24 language instructions; selected checkpoints, not locked confirmation',
                   bootstrap='10000 draws of 8 independent parents after averaging three trained models; not training-seed uncertainty',
                   metrics=results, target_breakdown=target_results, runs=runs)
-    output = root/'reports/observation_geometry_three_seed.json'
+    output = root/'reports'/(args.output_name+'.json')
     output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+    train_parents = runs['0']['plain']['train_parents']
+    reproduction = 'python scripts/analyze_geometry_seeds.py'
+    if args.runs:
+        reproduction += ' --runs '+str(args.runs.relative_to(root)).replace('\\','/')+' --output-name '+args.output_name+' --report-name '+args.report_name
     lines = ['# 观测几何定位的三种子配对实验', '',
+        '训练父场景数：%d。%s' % (train_parents,
+            '新采集训练布局；验证仍复用原8父DEV，不是独立测试设置。' if args.runs else '原24TRAIN/8DEV开发批。'), '',
         '同一真实冻结Qwen、RGB-D、当前状态与普通集合回归头；仅增加训练时的正参考终点附近像素注意力监督（权重0.02）。'
         '目标坐标和终点标签均不进入模型前向。每次训练1000步、batch32、K4、128000反传目标槽、1231965参数。'
         '同一8父/24指令DEV_MODEL选优；23条有参考路径，全部24条均计语义评价。', '',
@@ -107,16 +124,20 @@ def main():
         lines.append('| %s | %.6f ± %.6f | %.6f ± %.6f | %s |' %
             (key, a['mean'], a['training_seed_sample_sd'], b['mean'], b['training_seed_sample_sd'],
              ' / '.join('%+.6f' % x for x in value['paired_seed_differences'])))
-    lines += ['', '三个种子均改善严格语义正确率、终点误差和参考ADE，支持此前定位注意力过于分散的诊断。'
+    semantic_improved = sum(x > 0 for x in results['semantic_goal_accuracy']['paired_seed_differences'])
+    endpoint_improved = sum(x < 0 for x in results['candidate_endpoint_error_m']['paired_seed_differences'])
+    ade_improved = sum(x < 0 for x in results['candidate_matched_ADE_m']['paired_seed_differences'])
+    lines += ['', ('严格语义正确率改善%d/3种子，终点误差改善%d/3种子，参考ADE改善%d/3种子。' %
+                  (semantic_improved, endpoint_improved, ade_improved)) +
         '这项常规监督是增强基线的必要修正，不是路线集合机制的新颖性或机器人执行证据。'
         '每个模型都已在这个很小的开发集上选优；没有把8个父场景扩算成24个独立样本，'
         '也不把固定三个模型的父场景bootstrap区间当作训练种子稳定性。', '',
         '下一步实际采集新的独立父布局，并在新增数据上用同一评价规则重复普通/辅助基线。'
         '接下来必须检验完整路径的碰撞和类型覆盖，不能将终点正确率称作Valid@K。'
         '完整逐场景、语言目标分解、哈希、代码版本和未成功场景均在相邻JSON。', '',
-        '复现：`python scripts/analyze_geometry_seeds.py`。输入位于本地runs索引对应的服务器运行目录；'
+        '复现：`'+reproduction+'`。输入位于本地runs索引对应的服务器运行目录；'
         '脚本验证checkpoint/预测文件SHA、训练预算和逐行聚合。']
-    (root/'reports/OBSERVATION_GROUNDING_THREE_SEED.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
+    (root/'reports'/(args.report_name+'.md')).write_text('\n'.join(lines)+'\n', encoding='utf-8')
     print(json.dumps({key: {k:v for k,v in value.items() if k not in ['plain','aux']} for key,value in results.items()}, indent=2))
 
 
