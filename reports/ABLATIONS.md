@@ -55,3 +55,9 @@ R<K分支改为覆盖所有R种已知正例后，多余候选选择最近合法�
 固定new64 aux checkpoint全部24 DEV：最高attention观测点严格87.5%，加权anchor16.67%，原路线终点19.79%。目标仅在完整forward之后用于分析，原输出及选模未改。针对性下一轮只将anchor改成straight-through最高注意力有效观测点，全部参数/数据/候选/辅助loss保持一致，默认soft仍执行旧公式；正式新训练结果待实测，不能把诊断峰值直接算新模型成功。它是常规定位修复，不是集合机制创新。
 
 在线RGB-D新入口第一次CPU预检遇到标量log_attention_scale无法直接view(uint8)的审计错误，exit1保留。只在新入口flatten后hash，随后CPU小型真实Qwen+RGBD更新与完整恢复验证通过；正式2B训练从修复后的固定源码运行。
+
+## 局部几何读取的等参数对照
+
+source5501的global/local各3000×32、同初始化及采样流、同4995额外参数和8完整路径状态。实际best Tip50.00/51.04%、Unique1.083/1.167；last3000 Tip52.08/43.75%、Unique1.0/.875。独立d305复算全部96候选/阶段：local best只修复1条，last破坏3条且未修好候选，训练耗时增加39.1%。原单次peak仍是更低成本参照。来源和草稿→最终PNG/PDF见 observed_refinement_analysis_v1，11项分析/恢复guard测试通过。
+
+停止本局部模块，不再追加种子或放大尺度。actual local last草稿Tip46.88%高于原ordinary peak last43.75%，因此不能笼统解释为联合训练草稿退化；local更新在降低ADE时反而破坏有效性。此处只能提出回归距离与验收不一致的待查问题，不能直接当作证明或新机制。

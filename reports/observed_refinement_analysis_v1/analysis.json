@@ -1,0 +1,4397 @@
+{
+  "protocol": "observed_refinement_pair_audit_v1",
+  "evaluation_protocol": "observation_eval_v2",
+  "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+  "seed": 0,
+  "selection_protocol": "dev_tip_unique_valid_v1",
+  "criterion": "UniqueClassifiedTipValidAtK + 0.05 * TipValidAtK",
+  "comparison": "refinement",
+  "common_candidate_slots": 384000,
+  "common_complete_path_state_exposures": 768000,
+  "metadata": {
+    "export_sha256": "63df6bb48e56f82a63b47eb122d1df1ba2fc591b5d6636d99cdfc03f4bb0a503",
+    "observations_sha256": "d24e7ec52948a6b521498a72885a5c880c4a50b0e295f65386e692d67feee072",
+    "supervision_sha256": "37da38855af0357732ac48f125f140e8ed5d1a60008f1424fd5080c7a9421237",
+    "collection_settings_sha256": "8c585d3e30669a3c230ed4ee3cadc86b5c757996322a5745238ea89d9e244d6d",
+    "reservation_sha256": "d9a8112d6f68efd13e785134fcd5435306e4e570fefbaf1c6c31468a9a8ca2e8"
+  },
+  "results": {
+    "global_best": {
+      "step": 2750,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.17497698363402617,
+        "reference_matched_ADE_m": 0.18944120050772376,
+        "candidate_endpoint_error_m": 0.0540283833346937,
+        "best_endpoint_error_m": 0.05237696530378383,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.8020833333333334,
+        "AnySemanticGoalAtK": 0.8333333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.5,
+        "AnyTipValidAtK": 0.6666666666666666,
+        "UniqueClassifiedTipValidAtK": 1.0833333333333333,
+        "DuplicateClassifiedTipValidCount": 0.75,
+        "UnknownTypeTipValidCount": 0.16666666666666666,
+        "KnownReferenceTypeCoverageAtK": 0.6274509803921569,
+        "TipClearAtK": 0.625,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 1.1083333333333332,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 19,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 36,
+          "event_state_sequence_correct": 0,
+          "TipValid": 48
+        },
+        "tip_valid_candidates": 48,
+        "tip_valid_unknown_type_candidates": 4,
+        "first_collision_segment_histogram": {
+          "4": 11,
+          "10": 1,
+          "3": 10,
+          "2": 2,
+          "6": 5,
+          "8": 1,
+          "14": 2,
+          "7": 3,
+          "5": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "0": 24,
+          "1": 10,
+          "2": 2
+        },
+        "first_collision_arc_before_segment_mean": 0.21376036560017833,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 48,
+          "semantic_correct/tip_collision_or_nonfinite": 29,
+          "semantic_wrong/tip_clear": 12,
+          "semantic_wrong/tip_collision_or_nonfinite": 7
+        },
+        "semantic_correct_collisions": 29,
+        "semantic_correct_first_quarter_collisions": 21,
+        "classified_valid_route_types": {
+          "negative_x": 26,
+          "positive_y": 15,
+          "negative_y": 2,
+          "positive_x": 1
+        },
+        "valid_unknown_types": 4,
+        "classified_valid_duplicates": 18,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/best.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/dev_model/predictions.npz",
+      "generation_budget": {
+        "final_candidates": 4,
+        "draft_complete_paths": 4,
+        "updates": 1,
+        "total_complete_path_states": 8,
+        "candidate_filtering": false,
+        "description": "K complete drafts plus K updated finals; no equal-path-state-budget claim versus one-pass K"
+      },
+      "draft": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.17799491435289383,
+          "reference_matched_ADE_m": 0.19130676596061044,
+          "candidate_endpoint_error_m": 0.0540283833346937,
+          "best_endpoint_error_m": 0.05237696530378383,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.8020833333333334,
+          "AnySemanticGoalAtK": 0.8333333333333334,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.4895833333333333,
+          "AnyTipValidAtK": 0.6666666666666666,
+          "UniqueClassifiedTipValidAtK": 1.1666666666666667,
+          "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+          "UnknownTypeTipValidCount": 0.125,
+          "KnownReferenceTypeCoverageAtK": 0.6568627450980392,
+          "TipClearAtK": 0.6145833333333334,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_scope": "diagnostic saved pre-update drafts; never used to replace original final-path checkpoint selection",
+          "saved_prediction_sha256": "9b344c363f4c4119d150f2e433261380d89e6e841fb91216f5e33112e4338c68",
+          "saved_array_field": "draft_paths"
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 19,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 37,
+            "event_state_sequence_correct": 0,
+            "TipValid": 49
+          },
+          "tip_valid_candidates": 47,
+          "tip_valid_unknown_type_candidates": 3,
+          "first_collision_segment_histogram": {
+            "4": 12,
+            "6": 7,
+            "3": 9,
+            "2": 2,
+            "8": 1,
+            "12": 1,
+            "7": 2,
+            "5": 2,
+            "9": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "0": 25,
+            "1": 12
+          },
+          "first_collision_arc_before_segment_mean": 0.2053404497897872
+        }
+      },
+      "final_minus_draft": {
+        "TipValidAtK": 0.010416666666666685,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": -0.08333333333333348,
+        "DuplicateClassifiedTipValidCount": 0.08333333333333337,
+        "UnknownTypeTipValidCount": 0.04166666666666666,
+        "KnownReferenceTypeCoverageAtK": -0.02941176470588236,
+        "TipClearAtK": 0.01041666666666663,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "candidate_matched_ADE_m": -0.003017930718867662,
+        "candidate_endpoint_error_m": 0.0
+      }
+    },
+    "global_last": {
+      "step": 3000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.18050085137719693,
+        "reference_matched_ADE_m": 0.20698995548097984,
+        "candidate_endpoint_error_m": 0.045088853808524815,
+        "best_endpoint_error_m": 0.0437043566742669,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.8020833333333334,
+        "AnySemanticGoalAtK": 0.8333333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.5208333333333334,
+        "AnyTipValidAtK": 0.7083333333333334,
+        "UniqueClassifiedTipValidAtK": 1.0,
+        "DuplicateClassifiedTipValidCount": 0.875,
+        "UnknownTypeTipValidCount": 0.20833333333333334,
+        "KnownReferenceTypeCoverageAtK": 0.5588235294117647,
+        "TipClearAtK": 0.625,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 1.0260416666666667,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 19,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 36,
+          "event_state_sequence_correct": 0,
+          "TipValid": 46
+        },
+        "tip_valid_candidates": 50,
+        "tip_valid_unknown_type_candidates": 5,
+        "first_collision_segment_histogram": {
+          "8": 1,
+          "2": 6,
+          "4": 5,
+          "3": 19,
+          "5": 2,
+          "6": 2,
+          "7": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "1": 4,
+          "0": 32
+        },
+        "first_collision_arc_before_segment_mean": 0.146661979042708,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 50,
+          "semantic_correct/tip_collision_or_nonfinite": 27,
+          "semantic_wrong/tip_collision_or_nonfinite": 9,
+          "semantic_wrong/tip_clear": 10
+        },
+        "semantic_correct_collisions": 27,
+        "semantic_correct_first_quarter_collisions": 24,
+        "classified_valid_route_types": {
+          "negative_x": 31,
+          "positive_y": 12,
+          "negative_y": 2
+        },
+        "valid_unknown_types": 5,
+        "classified_valid_duplicates": 21,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/last.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/last_dev_model/predictions.npz",
+      "generation_budget": {
+        "final_candidates": 4,
+        "draft_complete_paths": 4,
+        "updates": 1,
+        "total_complete_path_states": 8,
+        "candidate_filtering": false,
+        "description": "K complete drafts plus K updated finals; no equal-path-state-budget claim versus one-pass K"
+      },
+      "draft": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.18265274069879367,
+          "reference_matched_ADE_m": 0.20924916636684668,
+          "candidate_endpoint_error_m": 0.045088853808524815,
+          "best_endpoint_error_m": 0.0437043566742669,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.8020833333333334,
+          "AnySemanticGoalAtK": 0.8333333333333334,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.5,
+          "AnyTipValidAtK": 0.7083333333333334,
+          "UniqueClassifiedTipValidAtK": 1.0416666666666667,
+          "DuplicateClassifiedTipValidCount": 0.7083333333333334,
+          "UnknownTypeTipValidCount": 0.25,
+          "KnownReferenceTypeCoverageAtK": 0.5588235294117647,
+          "TipClearAtK": 0.6041666666666666,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_scope": "diagnostic saved pre-update drafts; never used to replace original final-path checkpoint selection",
+          "saved_prediction_sha256": "79575ab37d29ec186b06f13aeba0c13f3a2c4837f7dfafbc70da8f4ee88f958e",
+          "saved_array_field": "draft_paths"
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 19,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 38,
+            "event_state_sequence_correct": 0,
+            "TipValid": 48
+          },
+          "tip_valid_candidates": 48,
+          "tip_valid_unknown_type_candidates": 6,
+          "first_collision_segment_histogram": {
+            "8": 2,
+            "2": 6,
+            "4": 6,
+            "3": 17,
+            "5": 2,
+            "7": 1,
+            "6": 2,
+            "10": 1,
+            "11": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "1": 6,
+            "0": 32
+          },
+          "first_collision_arc_before_segment_mean": 0.16455621010533336
+        }
+      },
+      "final_minus_draft": {
+        "TipValidAtK": 0.02083333333333337,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": -0.04166666666666674,
+        "DuplicateClassifiedTipValidCount": 0.16666666666666663,
+        "UnknownTypeTipValidCount": -0.04166666666666666,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "TipClearAtK": 0.02083333333333337,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "candidate_matched_ADE_m": -0.0021518893215967394,
+        "candidate_endpoint_error_m": 0.0
+      }
+    },
+    "local_best": {
+      "step": 1000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.186871530569118,
+        "reference_matched_ADE_m": 0.2083456321902897,
+        "candidate_endpoint_error_m": 0.08804437048409296,
+        "best_endpoint_error_m": 0.08706128872607065,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.625,
+        "AnySemanticGoalAtK": 0.625,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.5104166666666666,
+        "AnyTipValidAtK": 0.625,
+        "UniqueClassifiedTipValidAtK": 1.1666666666666667,
+        "DuplicateClassifiedTipValidCount": 0.875,
+        "UnknownTypeTipValidCount": 0.0,
+        "KnownReferenceTypeCoverageAtK": 0.6078431372549019,
+        "TipClearAtK": 0.875,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 1.1921875000000002,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 36,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 12,
+          "event_state_sequence_correct": 0,
+          "TipValid": 47
+        },
+        "tip_valid_candidates": 49,
+        "tip_valid_unknown_type_candidates": 0,
+        "first_collision_segment_histogram": {
+          "12": 3,
+          "4": 4,
+          "13": 1,
+          "6": 2,
+          "7": 1,
+          "5": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "1": 6,
+          "0": 5,
+          "2": 1
+        },
+        "first_collision_arc_before_segment_mean": 0.3115482469575354,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 49,
+          "semantic_wrong/tip_clear": 35,
+          "semantic_correct/tip_collision_or_nonfinite": 11,
+          "semantic_wrong/tip_collision_or_nonfinite": 1
+        },
+        "semantic_correct_collisions": 11,
+        "semantic_correct_first_quarter_collisions": 5,
+        "classified_valid_route_types": {
+          "negative_x": 30,
+          "positive_y": 19
+        },
+        "valid_unknown_types": 0,
+        "classified_valid_duplicates": 21,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/best.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/dev_model/predictions.npz",
+      "generation_budget": {
+        "final_candidates": 4,
+        "draft_complete_paths": 4,
+        "updates": 1,
+        "total_complete_path_states": 8,
+        "candidate_filtering": false,
+        "description": "K complete drafts plus K updated finals; no equal-path-state-budget claim versus one-pass K"
+      },
+      "draft": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.1911505998476692,
+          "reference_matched_ADE_m": 0.21275065677321475,
+          "candidate_endpoint_error_m": 0.08804437048409296,
+          "best_endpoint_error_m": 0.08706128872607065,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.625,
+          "AnySemanticGoalAtK": 0.625,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.5,
+          "AnyTipValidAtK": 0.625,
+          "UniqueClassifiedTipValidAtK": 1.125,
+          "DuplicateClassifiedTipValidCount": 0.875,
+          "UnknownTypeTipValidCount": 0.0,
+          "KnownReferenceTypeCoverageAtK": 0.6078431372549019,
+          "TipClearAtK": 0.875,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_scope": "diagnostic saved pre-update drafts; never used to replace original final-path checkpoint selection",
+          "saved_prediction_sha256": "6f606291f0ec0f8a6d65808cf2bb453f9ec72f99e9a35a008ce2fba3fbeaa7b3",
+          "saved_array_field": "draft_paths"
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 36,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 12,
+            "event_state_sequence_correct": 0,
+            "TipValid": 48
+          },
+          "tip_valid_candidates": 48,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {
+            "11": 2,
+            "10": 1,
+            "6": 2,
+            "4": 2,
+            "5": 3,
+            "12": 2
+          },
+          "first_collision_arc_quartile_histogram": {
+            "1": 9,
+            "0": 3
+          },
+          "first_collision_arc_before_segment_mean": 0.32359967947986285
+        }
+      },
+      "final_minus_draft": {
+        "TipValidAtK": 0.01041666666666663,
+        "AnyTipValidAtK": 0.0,
+        "UniqueClassifiedTipValidAtK": 0.04166666666666674,
+        "DuplicateClassifiedTipValidCount": 0.0,
+        "UnknownTypeTipValidCount": 0.0,
+        "KnownReferenceTypeCoverageAtK": 0.0,
+        "TipClearAtK": 0.0,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "candidate_matched_ADE_m": -0.004279069278551179,
+        "candidate_endpoint_error_m": 0.0
+      }
+    },
+    "local_last": {
+      "step": 3000,
+      "metrics": {
+        "candidate_matched_ADE_m": 0.17922190609185593,
+        "reference_matched_ADE_m": 0.20617394084515778,
+        "candidate_endpoint_error_m": 0.04359403556293767,
+        "best_endpoint_error_m": 0.04184024436804264,
+        "event_state_accuracy": 1.0,
+        "event_sequence_accuracy": 1.0,
+        "semantic_goal_accuracy": 0.8020833333333334,
+        "AnySemanticGoalAtK": 0.8333333333333334,
+        "SelectedSemanticGoalAtK": null,
+        "ValidAtK": null,
+        "AnyValidAtK": null,
+        "UniqueValidAtK": null,
+        "ReferenceCoverageAtK": null,
+        "SelectedValidAtK": null,
+        "examples": 24,
+        "parents": 8,
+        "candidates": 4,
+        "evaluation_protocol": "observation_eval_v2",
+        "reference_evaluation_examples": 23,
+        "examples_without_reference": 1,
+        "semantic_evaluation_examples": 24,
+        "geometry_validation": "not implemented; no validity or route-type claims",
+        "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+        "TipValidAtK": 0.4375,
+        "AnyTipValidAtK": 0.5833333333333334,
+        "UniqueClassifiedTipValidAtK": 0.875,
+        "DuplicateClassifiedTipValidCount": 0.7916666666666666,
+        "UnknownTypeTipValidCount": 0.08333333333333333,
+        "KnownReferenceTypeCoverageAtK": 0.5,
+        "TipClearAtK": 0.5520833333333334,
+        "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+        "tip_evaluation_examples": 24,
+        "total_submitted_candidate_budget": 96,
+        "selection_score": 0.896875,
+        "reference_type_coverage_examples": 17
+      },
+      "failure_breakdown": {
+        "candidates": 96,
+        "independent_gate_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 19,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 43,
+          "event_state_sequence_correct": 0,
+          "TipValid": 54
+        },
+        "tip_valid_candidates": 42,
+        "tip_valid_unknown_type_candidates": 2,
+        "first_collision_segment_histogram": {
+          "7": 2,
+          "2": 7,
+          "4": 8,
+          "3": 16,
+          "5": 3,
+          "6": 2,
+          "10": 1,
+          "8": 3,
+          "16": 1
+        },
+        "first_collision_arc_quartile_histogram": {
+          "1": 8,
+          "0": 34,
+          "2": 1
+        },
+        "first_collision_arc_before_segment_mean": 0.17900151368905218,
+        "semantic_geometry_cross_counts": {
+          "semantic_correct/tip_clear": 42,
+          "semantic_correct/tip_collision_or_nonfinite": 35,
+          "semantic_wrong/tip_collision_or_nonfinite": 8,
+          "semantic_wrong/tip_clear": 11
+        },
+        "semantic_correct_collisions": 35,
+        "semantic_correct_first_quarter_collisions": 28,
+        "classified_valid_route_types": {
+          "negative_x": 29,
+          "positive_y": 8,
+          "positive_x": 1,
+          "negative_y": 2
+        },
+        "valid_unknown_types": 2,
+        "classified_valid_duplicates": 19,
+        "no_reference": {
+          "candidates": 4,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 4,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 0,
+            "event_state_sequence_correct": 0,
+            "TipValid": 4
+          },
+          "tip_valid_candidates": 0,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {},
+          "first_collision_arc_quartile_histogram": {},
+          "first_collision_arc_before_segment_mean": null
+        }
+      },
+      "actual_checkpoint": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/last.pt",
+      "actual_prediction": "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/last_dev_model/predictions.npz",
+      "generation_budget": {
+        "final_candidates": 4,
+        "draft_complete_paths": 4,
+        "updates": 1,
+        "total_complete_path_states": 8,
+        "candidate_filtering": false,
+        "description": "K complete drafts plus K updated finals; no equal-path-state-budget claim versus one-pass K"
+      },
+      "draft": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.18400261810292368,
+          "reference_matched_ADE_m": 0.21213886400927667,
+          "candidate_endpoint_error_m": 0.04359403556293767,
+          "best_endpoint_error_m": 0.04184024436804264,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.8020833333333334,
+          "AnySemanticGoalAtK": 0.8333333333333334,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.46875,
+          "AnyTipValidAtK": 0.625,
+          "UniqueClassifiedTipValidAtK": 0.9583333333333334,
+          "DuplicateClassifiedTipValidCount": 0.7916666666666666,
+          "UnknownTypeTipValidCount": 0.125,
+          "KnownReferenceTypeCoverageAtK": 0.5294117647058824,
+          "TipClearAtK": 0.5833333333333334,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_scope": "diagnostic saved pre-update drafts; never used to replace original final-path checkpoint selection",
+          "saved_prediction_sha256": "57c11ed6db738e3563190171a45109327232d3608e73b3b9cc68edb2ae81359c",
+          "saved_array_field": "draft_paths"
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 19,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 40,
+            "event_state_sequence_correct": 0,
+            "TipValid": 51
+          },
+          "tip_valid_candidates": 45,
+          "tip_valid_unknown_type_candidates": 3,
+          "first_collision_segment_histogram": {
+            "7": 1,
+            "2": 6,
+            "4": 9,
+            "3": 15,
+            "10": 1,
+            "5": 3,
+            "6": 1,
+            "8": 3,
+            "16": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "1": 6,
+            "0": 33,
+            "2": 1
+          },
+          "first_collision_arc_before_segment_mean": 0.1737116330112409
+        }
+      },
+      "final_minus_draft": {
+        "TipValidAtK": -0.03125,
+        "AnyTipValidAtK": -0.04166666666666663,
+        "UniqueClassifiedTipValidAtK": -0.08333333333333337,
+        "DuplicateClassifiedTipValidCount": 0.0,
+        "UnknownTypeTipValidCount": -0.04166666666666667,
+        "KnownReferenceTypeCoverageAtK": -0.02941176470588236,
+        "TipClearAtK": -0.03125,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "candidate_matched_ADE_m": -0.00478071201106775,
+        "candidate_endpoint_error_m": 0.0
+      }
+    }
+  },
+  "paired": {
+    "best": {
+      "per_instruction": [
+        {
+          "scene_id": "obstacle_reach_272096_target0",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.03998734802007675,
+            "candidate_endpoint_error_m": -0.007017340511083603
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target1",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.02864108234643936,
+            "candidate_endpoint_error_m": -0.001988455653190613
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target2",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.0656798779964447,
+            "candidate_endpoint_error_m": 0.14738347381353378
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target0",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": 0.75,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 2,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.03300511837005615,
+            "candidate_endpoint_error_m": -0.002208869904279709
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target1",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.04255912825465202,
+            "candidate_endpoint_error_m": 0.005691692233085632
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target2",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.5,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 1.0,
+            "TipClearAtK": 0.5,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.07650130987167358,
+            "candidate_endpoint_error_m": -0.0026541799306869507
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target0",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": -0.5,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": 0.5,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": -0.00785885751247406,
+            "candidate_endpoint_error_m": 0.2606871370226145
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target1",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": 0.5,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.5,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.003901660442352295,
+            "candidate_endpoint_error_m": 0.0015351958572864532
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target2",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.005636617541313171,
+            "candidate_endpoint_error_m": 0.0009101629257202148
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target0",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.00863175094127655,
+            "candidate_endpoint_error_m": 0.007572649046778679
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target1",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.027259469032287598,
+            "candidate_endpoint_error_m": 0.0016821147873997688
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target2",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.75,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.01226586103439331,
+            "candidate_endpoint_error_m": 0.08819366618990898
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target0",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.75,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": -0.03258499503135681,
+            "candidate_endpoint_error_m": 0.12712157145142555
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target1",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.5,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 2,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.6666666666666666,
+            "TipClearAtK": -0.5,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.00635237991809845,
+            "candidate_endpoint_error_m": -0.2359086088836193
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target2",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.75,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.04797026515007019,
+            "candidate_endpoint_error_m": -0.02527126669883728
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target0",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.018509097397327423,
+            "candidate_endpoint_error_m": -0.005601435899734497
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target1",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 1.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.75,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0911841094493866,
+            "candidate_endpoint_error_m": -0.00944296270608902
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target2",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.01712682843208313,
+            "candidate_endpoint_error_m": -0.02299836277961731
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target0",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 0,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": null,
+            "candidate_endpoint_error_m": null
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target1",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": -0.75,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.017213687300682068,
+            "candidate_endpoint_error_m": 0.2565675489604473
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target2",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.006968803703784943,
+            "candidate_endpoint_error_m": 0.009126156568527222
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target0",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.021185725927352905,
+            "candidate_endpoint_error_m": -0.009761752560734749
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target1",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -1,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.021396875381469727,
+            "candidate_endpoint_error_m": -0.005047854036092758
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target2",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": -1.0,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -2,
+            "DuplicateClassifiedTipValidCount": -2,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": -1.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.09370752424001694,
+            "candidate_endpoint_error_m": 0.2037974251434207
+          }
+        }
+      ],
+      "per_parent": [
+        {
+          "parent_id": "obstacle_reach_272096",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.08333333333333333,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.0256753812233607,
+            "candidate_endpoint_error_m": 0.04612589254975319
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272097",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.4166666666666667,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 1.0,
+            "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.5,
+            "TipClearAtK": 0.4166666666666667,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.028685106585423153,
+            "candidate_endpoint_error_m": 0.0002762141327063243
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272098",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": -0.25,
+            "TipClearAtK": 0.4166666666666667,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.0005598068237304688,
+            "candidate_endpoint_error_m": 0.08771083193520705
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272099",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.4166666666666667,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": -0.002120619018872579,
+            "candidate_endpoint_error_m": 0.03248281000802914
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272100",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.2222222222222222,
+            "TipClearAtK": 0.3333333333333333,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.028969213366508484,
+            "candidate_endpoint_error_m": -0.044686101377010345
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272101",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.16666666666666666,
+            "AnyTipValidAtK": 0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.25,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.01851606120665868,
+            "candidate_endpoint_error_m": -0.012680920461813608
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272102",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.16666666666666666,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": -0.25,
+            "TipClearAtK": 0.16666666666666666,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.005122441798448563,
+            "candidate_endpoint_error_m": 0.13284685276448727
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272103",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.4166666666666667,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.6666666666666666,
+            "DuplicateClassifiedTipValidCount": -0.6666666666666666,
+            "UnknownTypeTipValidCount": -0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": -0.3333333333333333,
+            "TipClearAtK": -0.08333333333333333,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.04543004184961319,
+            "candidate_endpoint_error_m": 0.06299593951553106
+          }
+        }
+      ],
+      "aggregate_local_minus_global": {
+        "TipValidAtK": 0.01041666666666663,
+        "AnyTipValidAtK": -0.04166666666666663,
+        "UniqueClassifiedTipValidAtK": 0.08333333333333348,
+        "DuplicateClassifiedTipValidCount": 0.125,
+        "UnknownTypeTipValidCount": -0.16666666666666666,
+        "KnownReferenceTypeCoverageAtK": -0.019607843137254943,
+        "TipClearAtK": 0.25,
+        "semantic_goal_accuracy": -0.17708333333333337,
+        "AnySemanticGoalAtK": -0.20833333333333337,
+        "candidate_matched_ADE_m": 0.011894546935091843,
+        "candidate_endpoint_error_m": 0.034015987149399254
+      }
+    },
+    "last": {
+      "per_instruction": [
+        {
+          "scene_id": "obstacle_reach_272096_target0",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.007690213620662689,
+            "candidate_endpoint_error_m": 0.004974799230694771
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target1",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.002836279571056366,
+            "candidate_endpoint_error_m": 0.011839492246508598
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272096_target2",
+          "parent_id": "obstacle_reach_272096",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.028744041919708252,
+            "candidate_endpoint_error_m": 0.0010910183191299438
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target0",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 1.0,
+            "AnySemanticGoalAtK": 1.0,
+            "candidate_matched_ADE_m": -0.0708097517490387,
+            "candidate_endpoint_error_m": -0.09689660370349884
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target1",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.007927313446998596,
+            "candidate_endpoint_error_m": -0.0037290453910827637
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272097_target2",
+          "parent_id": "obstacle_reach_272097",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.038233786821365356,
+            "candidate_endpoint_error_m": -0.0006253961473703384
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target0",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.037267379462718964,
+            "candidate_endpoint_error_m": -0.0006648842245340347
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target1",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.039024919271469116,
+            "candidate_endpoint_error_m": -0.0014377161860466003
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272098_target2",
+          "parent_id": "obstacle_reach_272098",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.005754582583904266,
+            "candidate_endpoint_error_m": -0.001058107241988182
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target0",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.009489670395851135,
+            "candidate_endpoint_error_m": 0.0022010542452335358
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target1",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.01713576912879944,
+            "candidate_endpoint_error_m": 0.0019189566373825073
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272099_target2",
+          "parent_id": "obstacle_reach_272099",
+          "reference_count": 1,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.0673043429851532,
+            "candidate_endpoint_error_m": -0.0014887815341353416
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target0",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": -1.0,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": -4,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -1.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.047037914395332336,
+            "candidate_endpoint_error_m": 0.007075784727931023
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target1",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.022841840982437134,
+            "candidate_endpoint_error_m": -0.0021378397941589355
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272100_target2",
+          "parent_id": "obstacle_reach_272100",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.047819122672080994,
+            "candidate_endpoint_error_m": 0.0009216070175170898
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target0",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.004620864987373352,
+            "candidate_endpoint_error_m": 0.0038156062364578247
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target1",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.043350860476493835,
+            "candidate_endpoint_error_m": 0.001537146046757698
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272101_target2",
+          "parent_id": "obstacle_reach_272101",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.007281094789505005,
+            "candidate_endpoint_error_m": -0.0033560991287231445
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target0",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 0,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": null,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": null,
+            "candidate_endpoint_error_m": null
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target1",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.08070343732833862,
+            "candidate_endpoint_error_m": 0.0006370600312948227
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272102_target2",
+          "parent_id": "obstacle_reach_272102",
+          "reference_count": 2,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0,
+            "DuplicateClassifiedTipValidCount": 0,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.002279050648212433,
+            "candidate_endpoint_error_m": 0.007637741044163704
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target0",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": -1.0,
+            "AnyTipValidAtK": -1.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -3,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": -1.0,
+            "AnySemanticGoalAtK": -1.0,
+            "candidate_matched_ADE_m": 0.029316432774066925,
+            "candidate_endpoint_error_m": 0.017958369106054306
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target1",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": -1,
+            "UnknownTypeTipValidCount": 1,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.25,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.0019507557153701782,
+            "candidate_endpoint_error_m": 0.0009507648646831512
+          }
+        },
+        {
+          "scene_id": "obstacle_reach_272103_target2",
+          "parent_id": "obstacle_reach_272103",
+          "reference_count": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": -1,
+            "DuplicateClassifiedTipValidCount": 1,
+            "UnknownTypeTipValidCount": 0,
+            "KnownReferenceTypeCoverageAtK": -0.5,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.004809319972991943,
+            "candidate_endpoint_error_m": 0.014454253949224949
+          }
+        }
+      ],
+      "per_parent": [
+        {
+          "parent_id": "obstacle_reach_272096",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.011199325323104858,
+            "candidate_endpoint_error_m": 0.005968436598777771
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272097",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": -0.3333333333333333,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.08333333333333333,
+            "semantic_goal_accuracy": 0.3333333333333333,
+            "AnySemanticGoalAtK": 0.3333333333333333,
+            "candidate_matched_ADE_m": -0.03370540837446848,
+            "candidate_endpoint_error_m": -0.03375034841398398
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272098",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.08333333333333333,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -0.3333333333333333,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.08333333333333333,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.027348960439364117,
+            "candidate_endpoint_error_m": -0.001053569217522939
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272099",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.08333333333333333,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.08333333333333333,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.013559634486834208,
+            "candidate_endpoint_error_m": 0.0008770764494935671
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272100",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.25,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.3333333333333333,
+            "UnknownTypeTipValidCount": -1.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": -0.3333333333333333,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.024005065361658733,
+            "candidate_endpoint_error_m": 0.001953183983763059
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272101",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": -0.013563543558120728,
+            "candidate_endpoint_error_m": 0.0006655510514974594
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272102",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": 0.0,
+            "AnyTipValidAtK": 0.0,
+            "UniqueClassifiedTipValidAtK": 0.0,
+            "DuplicateClassifiedTipValidCount": 0.0,
+            "UnknownTypeTipValidCount": 0.0,
+            "KnownReferenceTypeCoverageAtK": 0.0,
+            "TipClearAtK": 0.0,
+            "semantic_goal_accuracy": 0.0,
+            "AnySemanticGoalAtK": 0.0,
+            "candidate_matched_ADE_m": 0.04149124398827553,
+            "candidate_endpoint_error_m": 0.004137400537729263
+          }
+        },
+        {
+          "parent_id": "obstacle_reach_272103",
+          "instructions": 3,
+          "local_minus_global": {
+            "TipValidAtK": -0.4166666666666667,
+            "AnyTipValidAtK": -0.3333333333333333,
+            "UniqueClassifiedTipValidAtK": -1.0,
+            "DuplicateClassifiedTipValidCount": -1.0,
+            "UnknownTypeTipValidCount": 0.3333333333333333,
+            "KnownReferenceTypeCoverageAtK": -0.3333333333333333,
+            "TipClearAtK": -0.16666666666666666,
+            "semantic_goal_accuracy": -0.3333333333333333,
+            "AnySemanticGoalAtK": -0.3333333333333333,
+            "candidate_matched_ADE_m": 0.00881928950548172,
+            "candidate_endpoint_error_m": 0.011121129306654135
+          }
+        }
+      ],
+      "aggregate_local_minus_global": {
+        "TipValidAtK": -0.08333333333333337,
+        "AnyTipValidAtK": -0.125,
+        "UniqueClassifiedTipValidAtK": -0.125,
+        "DuplicateClassifiedTipValidCount": -0.08333333333333337,
+        "UnknownTypeTipValidCount": -0.125,
+        "KnownReferenceTypeCoverageAtK": -0.05882352941176472,
+        "TipClearAtK": -0.07291666666666663,
+        "semantic_goal_accuracy": 0.0,
+        "AnySemanticGoalAtK": 0.0,
+        "candidate_matched_ADE_m": -0.0012789452853410044,
+        "candidate_endpoint_error_m": -0.0014948182455871428
+      }
+    }
+  },
+  "actual_artifact_index": {
+    "global": {
+      "binaries": {
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/best.pt": {
+          "sha256": "7fc6211aa2cbba1b4d699f09ba94c8fd0990cc85ae98e1342b21af05ab909b6f",
+          "bytes": 14995868
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/dev_model/paired_language_predictions.npz": {
+          "sha256": "b950dafe218b5fd96b0d60f1dd95b53fae0f604f71470111cb7dbfafeea822e9",
+          "bytes": 22255
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/dev_model/predictions.npz": {
+          "sha256": "9b344c363f4c4119d150f2e433261380d89e6e841fb91216f5e33112e4338c68",
+          "bytes": 57521
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/last.pt": {
+          "sha256": "a89ca299b1843dcaaa80cda3dfa6f2f0321826e81ebc007dcd929722a2cc39f1",
+          "bytes": 14998300
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/last_dev_model/paired_language_predictions.npz": {
+          "sha256": "5d7792f5435c6be9f26bed487cdb159a0c92cc61e55d2284dfb2a501ec9cfa79",
+          "bytes": 22251
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/last_dev_model/predictions.npz": {
+          "sha256": "79575ab37d29ec186b06f13aeba0c13f3a2c4837f7dfafbc70da8f4ee88f958e",
+          "bytes": 57482
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/train/paired_language_predictions.npz": {
+          "sha256": "f181104eb0cbe627a854e86eb401c79fb36ecc31665512197afbabc67bfb4754",
+          "bytes": 255230
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/global_seed0/train/predictions.npz": {
+          "sha256": "ed20fee5ff32b1774d2a0dfb96372ff097bf5c4ceaebec7a0846ca4d26d40732",
+          "bytes": 674471
+        }
+      },
+      "config_sha256": "a08cd318c1959d9619c8cab126b1984980b2d6c145334a8f1a472655eaced563",
+      "summary_sha256": "8dffd171828e2460f5e8bc1e3a9284970456dfcbd4bffca98be59c2d7d222b34",
+      "history_sha256": "ea0c014b9c975e2cc81b8d31c0d6f1965583b53ae52fb7fdc17be978c30f714b",
+      "training_sources_sha256": "b60eeb6b2f8497792ddd143eda2ab1b6bad8624d6eb7cec23b6151f7cb8dd546"
+    },
+    "local": {
+      "binaries": {
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/best.pt": {
+          "sha256": "8cb069ae78aa6d8c16fe897825ae39f6a971abcc05492b770f061572149e268f",
+          "bytes": 14978652
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/dev_model/paired_language_predictions.npz": {
+          "sha256": "6d808a98fbc4b183aafba67f37b24c506d2e5a7cb7e7f4da0a16f433c785e207",
+          "bytes": 22053
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/dev_model/predictions.npz": {
+          "sha256": "6f606291f0ec0f8a6d65808cf2bb453f9ec72f99e9a35a008ce2fba3fbeaa7b3",
+          "bytes": 56841
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/last.pt": {
+          "sha256": "1338af682d00b1309333a7420eb72cddf913cb4289251b71b7b42fab112aaffd",
+          "bytes": 14998300
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/last_dev_model/paired_language_predictions.npz": {
+          "sha256": "8845f2e09c119e64d7e661539427c62ffaad1153e525adb3fe7ccdaf7d4da572",
+          "bytes": 22310
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/last_dev_model/predictions.npz": {
+          "sha256": "57c11ed6db738e3563190171a45109327232d3608e73b3b9cc68edb2ae81359c",
+          "bytes": 57719
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/train/paired_language_predictions.npz": {
+          "sha256": "f4405fde2d822dcdf5da857d2ea8786179d5a202cfbc602c953add5091715811",
+          "bytes": 252304
+        },
+        "/home/wzy/dpvlm/route_set_v1/runs/observed_refinement_reserved96_v1/local_seed0/train/predictions.npz": {
+          "sha256": "9f0486605acd4055ab800645e1c23b8890e441cb419855c883954496528e88f4",
+          "bytes": 666541
+        }
+      },
+      "config_sha256": "86581522832f9f6f20321405eb02b09d932d9d8e5b253428016b1897f196b54f",
+      "summary_sha256": "e147e3b26906f17aab1ce20fc05260f0f7c1bf8734bf2e36be22d304dc36fe94",
+      "history_sha256": "df3c7796790d8205ed5e37ec62e3a669d4f795973ab886dc6cc07c1e4d0ab53e",
+      "training_sources_sha256": "b60eeb6b2f8497792ddd143eda2ab1b6bad8624d6eb7cec23b6151f7cb8dd546"
+    }
+  },
+  "training_source_hashes": {
+    "routeset/observed_geometry.py": "1d2e0596f2e64493888afafc69b8148f8a78008463032ed9e6ef4dac41ded524",
+    "routeset/observed_route_head.py": "4453c785f5c7ad2e3162c9e325c6712184f8692b724053057049dd768db59fe3",
+    "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+    "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8",
+    "routeset/train_v2.py": "011253aaeadb02d686c3e0386e382c2d6d0932bb317a10ba98b9895b4b0e370b",
+    "routeset/observed_path_refinement.py": "48b46fc49d0f01d41a4b344d069894929b316465679b24fe499e9d45ba61ada3"
+  },
+  "evaluation_file_hashes": {
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/observation.npz": "aeb8ea3e3391d515067fd4f84db4634240045acbc42591f267b52f0f436b7e02",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/verification_only.npz": "4132a825dd9ebed875bfd5beb121cd41df3df2cbf5e4993260766017bd48746f",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target0_route0.npz": "b182a241c04c46717e6d0de485980e6784360d44cb36d7dc342f36bd002a0c05",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target0_route3.npz": "a8b591a61278b22ab4849f8c37b5494aded5a8fbbf1484c8fa683c2c7974bf15",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target1_route0.npz": "86173022b1de3fca0e0c593446edfd2c4a2e73f44bee14eb2f5dc51b2d4b35b2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target1_route3.npz": "e06aa1de9305f07284e59883a238349ce066870ccda73169781e6fe133eee07b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target2_route0.npz": "d10cfc4a6afa6c346b6675c6010b8fae56c8825e71b706871c6a7d2f9b4ed7d5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/target2_route3.npz": "81108a12836e50545e07ddda9cf0a7545cc7326636f345190b15b960be06a957",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/observation.npz": "c26018b4f221fdcae537b683f5c50852b80e9dc099728a31787ed9c45e0968c1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/verification_only.npz": "9b36b4849fcf895bcfa2474fb735988b3f9ee2f4a69e33772f99fed4496efe9d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target0_route0.npz": "ba5eddf65b5afa3c03acdde3c80737038377ae024a65ccccbbaeff73e2040cb1",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target1_route0.npz": "3c832a1e96eacfe89bb60621b76cd33800120b8354865358d45db887e161c734",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target1_route3.npz": "da2095a2a652437040aeee672b081b91c49631a46799ea53e9c74406694b32d4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target2_route0.npz": "2d2d0a85fe08359fea5aeef986188b1aad0704deacc808c5a1276689718144ad",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/target2_route3.npz": "08cd5d6aaa47bc28fd90414bbfb690131254b363ed342dac5b797dbb4e6a9b3d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/observation.npz": "3a54ef8e791124cbef3eb45a71733c2006f28139d78271df06bf7daaffeabf16",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/verification_only.npz": "9b900ec1581440c7ed27082dde7e801342ed0ca7caff696c5cffca44341d10fa",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target0_route0.npz": "e265b6803497dc508dd895f0dc81a4ab1d853aef6ca2ff0ee4ed47868fb60821",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target0_route3.npz": "a173a15b2010c4672e2acdd86f8d5e037135243dc56aa6af45dcc301da79f5e2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target1_route3.npz": "e1bf055523822af387c75eef3147b829f9e043a72079681cdb93527a1c26d0e5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target2_route0.npz": "41e6f429e986990f633ad4162ad57b989f9d0ebe7415c03bc53759ca7bc6709d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/target2_route3.npz": "560271cd35dbe94032e6c157e764693d9027bef3b70e5ad9f935888ca4347592",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/observation.npz": "13fa6f8b7233f67f1939c5a6d490a202947a5a9a8754053eb39151958ebf1a07",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/verification_only.npz": "e6440c3154df1996035926cab282c9016a31883ab9e24ec8d9957fbb41c7b640",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route0.npz": "d4bcac5397cf0042ffc5fb8a3caeae858c5e22c5bb394d61b87891e5185b82cf",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route1.npz": "27887763b768bee46d282a6e838671e83d27e6b4d509943e4e2394deb3e7729c",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target0_route3.npz": "60210089a574232a66d2d39d048498966de6b66f9348f75e59a1b9d63864c654",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target1_route1.npz": "05a9fbbbcc4ebb1062975b2653e3afbdc8261a94cc02cdd5be43add027a837eb",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target1_route3.npz": "0830f2bdeb53456b7551b4cb1fb5defc3a7fced47d3f1c7b5348f0e3d4209746",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/target2_route0.npz": "b04562d73c1fa943564400e464d4402f27656bcfb42fe104ad037f32da937b78",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/observation.npz": "4da5cd049966e1e592ecaccaef2ada8e663282cf9751483f5f1918177a83698b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/verification_only.npz": "792eb07f02e13f72ee005715d64e36359d36052703d5b539e9135233d9684ecb",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target0_route0.npz": "20a5042377b40371160231f68804bbaaed1e79f5b4a7fe99a4686e94c6222058",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target0_route1.npz": "8f44b1eadcb6a4e6f4f31363ed130b6e8466e7e0bd1cbe06a63b29301af89ea5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route0.npz": "1912396c36c437968f1d4d80842323b1e36df3493cd4c27a6a42393cb051c389",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route1.npz": "ab62af41b16d9d39b7851fcbed38182a29e91e65774e5665521ca7137725bd17",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target1_route3.npz": "c7a6f3d5f812c7981226be4123f53d176002cd500faa88ee4beaa9f5afa31a39",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target2_route0.npz": "09c9575d728bd2c4c5d78d72de011e59db6e154dbd3ffb8c4380c10179102b36",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/target2_route1.npz": "69ffdf89f9d622234d6ff4f27ed88e2f3f1ab09cae8afad9268fc5768946b999",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/observation.npz": "bbbb3713709efef4439be88bbfab1de95d26180adbc417fa32461165e5b6e79a",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/verification_only.npz": "7e76ccf48ac74433a900708e32e2e51f4874e7b4b3e557d89d57dee60ddf90a5",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route0.npz": "8394a3da298eebaa948b994827d25f0bd3ac6a9f2d1eb6ecff0fb16a698399f3",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route1.npz": "4c92b759aebf5d2e9a6e155d3258a5e7415fefc52160f7c9bae7437f7217f351",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target0_route3.npz": "f2edcb3450e1aa4b2754993743540f8086ec127ea46deed4534732d5e7cd2479",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target1_route0.npz": "12c4d31e05cfb16af971b40ce226c6e8e6723f6a79819a4050679a95ee260e0e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target1_route1.npz": "0a3c799623ee95eba651d9f5195cfb7e3726292aeee9fa4dc3bd5c8212b705bd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target2_route0.npz": "9ce631bf67087eb76c3f2276421472da3f807c592b96202f1f9b50710a972ef2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/target2_route3.npz": "57008b2869dbc3571a07f72d82f67eb46b4b15d41001310d749ebddddc6d3726",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/observation.npz": "c96865c196098653044db4f0b90c9f4a06474cbe9aee23d449ef49e10df0c355",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/verification_only.npz": "6f82144d7da7bea600f45bb3ba40d6d362a3a79af581481a2122ac6d19434775",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target1_route0.npz": "5cd1b484f2bbcd7c7053c8ff90757e27f2dc325f5d30d14834376df5625a3ad8",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target1_route3.npz": "4864c4a79c8d001fcc02186e0752c0579218dd87d4ad32fbad0918b920b429b4",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target2_route0.npz": "8e412b59b479d2230b685fa1c4deca27e55319f5e56da8acb1854f68bf1521dd",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/target2_route3.npz": "341981bb8d921170b19124371f4f3c7a17eeaedfde47f2097b1d7d342917995e",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/observation.npz": "5c023ea62495ad3cd5eb58bb2a2089264a7b76c6d43305d96b60186607d936b2",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/verification_only.npz": "419590cee5df3dac9ac31c552bfb3787df88c3e958d5125e1cbe7a4d31e7712b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route0.npz": "345f57a0d75f31994eb41cb52c85ee8f49538b4749421d7db93a08cbff04bd57",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route1.npz": "b2f4ad9e2c6489efa546d93bf9780d82dc800d8af42ce04917035b66ca86f73d",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target0_route3.npz": "072f85320042b8e78dc2108918ae4c1f52cd3926508a63e4343ffe71bbdad979",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route0.npz": "3bdf03f255e4c9528a95c00592eb3573ba644bf620a3d9513eee534c15100054",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route1.npz": "b65361e63ffc9d4bb080d44189f92329221ad2ffe1d0dc4a862863e669d31b1b",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target1_route3.npz": "0be654c02e18a72856e74401669c72e12ec666dda3b2274208c5076992172108",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route0.npz": "29cb7c85319d9f1d1ae30122984de37ace66bb23e7df63cedd02cfa647706a56",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route1.npz": "80c5a8d5d17bb835375e4fd5c88ae5bc183e1accee756f990e3496f6fe823bcf",
+    "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/target2_route3.npz": "b575fd3ba79597b861f9a35f850b396d3c844213c1f565fa0ef37f4791c5c18a"
+  },
+  "initialization": {
+    "reconstructed_state_sha256": {
+      "global": "f8faf581d3b572214b5302ae4be1c5420028e91652a50a2aa5819e3b3c581a31",
+      "local": "f8faf581d3b572214b5302ae4be1c5420028e91652a50a2aa5819e3b3c581a31"
+    },
+    "evidence": "Exact immutable-source/seed reconstruction; initial weights were not saved during training."
+  },
+  "sampler_audit": {
+    "global": {
+      "reconstructed_index_stream_sha256": "d3dfb3b768cfba197fa46232c766400da99c88ab6fe58fbef6b8adfc095dfd87",
+      "final_state": {
+        "bit_generator": "PCG64",
+        "state": {
+          "state": 170788640165291201054339742354481458595,
+          "inc": 85100242837629463183944470323720454901
+        },
+        "has_uint32": 0,
+        "uinteger": 865967660
+      }
+    },
+    "local": {
+      "reconstructed_index_stream_sha256": "d3dfb3b768cfba197fa46232c766400da99c88ab6fe58fbef6b8adfc095dfd87",
+      "final_state": {
+        "bit_generator": "PCG64",
+        "state": {
+          "state": 170788640165291201054339742354481458595,
+          "inc": 85100242837629463183944470323720454901
+        },
+        "has_uint32": 0,
+        "uinteger": 865967660
+      }
+    }
+  },
+  "cost": {
+    "global": {
+      "elapsed_s": 145.06898332596757,
+      "gpu_hours_reserved": 0.040296939812768766,
+      "peak_cuda_memory_mb": 952.4541015625,
+      "data_load_preprocess_s": 2.193943838006817,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 3.885729005560279,
+        "raw_geometry_cached_head_batch1_ms_p95": 4.2731633060611784,
+        "rgbd_read_preprocess_head_batch1_ms_median": 8.632475975900888,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 9.116981324041262,
+        "rgbd_read_preprocess_batch1_ms_median": 4.375540011096746,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      }
+    },
+    "local": {
+      "elapsed_s": 201.7965673119761,
+      "gpu_hours_reserved": 0.056054602031104475,
+      "peak_cuda_memory_mb": 1250.10302734375,
+      "data_load_preprocess_s": 2.5044509689323604,
+      "latency": {
+        "raw_geometry_cached_head_batch1_ms_median": 4.939713981002569,
+        "raw_geometry_cached_head_batch1_ms_p95": 5.888916365802288,
+        "rgbd_read_preprocess_head_batch1_ms_median": 8.850651502143592,
+        "rgbd_read_preprocess_head_batch1_ms_p95": 9.447820083005354,
+        "rgbd_read_preprocess_batch1_ms_median": 3.883572469931096,
+        "latency_scope": "single-request RGB-D disk read/backprojection/transfers/trainable point encoder/set head; excludes Qwen, checking and scoring; OS file pages may be warm"
+      }
+    }
+  },
+  "limitations": "One training seed; all parents are DEV_MODEL. Tip checks certify only added boxes at original2cm; no arm/table/IK/execution or core novelty claim.",
+  "script_sha256": "8b252fbae72539d3e0c0596084b80e9691f90a199518b739ac532c56d1adeaae",
+  "analysis_cpu_wall_s": 1.2680666900705546,
+  "lower_cost_original_peak": {
+    "stages": {
+      "best": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.18533314537742865,
+          "reference_matched_ADE_m": 0.21017098718363306,
+          "candidate_endpoint_error_m": 0.06291933762638466,
+          "best_endpoint_error_m": 0.06239692563110072,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.6666666666666666,
+          "AnySemanticGoalAtK": 0.6666666666666666,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.5208333333333334,
+          "AnyTipValidAtK": 0.625,
+          "UniqueClassifiedTipValidAtK": 1.125,
+          "DuplicateClassifiedTipValidCount": 0.9583333333333334,
+          "UnknownTypeTipValidCount": 0.0,
+          "KnownReferenceTypeCoverageAtK": 0.6470588235294118,
+          "TipClearAtK": 0.7395833333333334,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_score": 1.1510416666666667,
+          "reference_type_coverage_examples": 17
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 32,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 25,
+            "event_state_sequence_correct": 0,
+            "TipValid": 46
+          },
+          "tip_valid_candidates": 50,
+          "tip_valid_unknown_type_candidates": 0,
+          "first_collision_segment_histogram": {
+            "4": 9,
+            "15": 3,
+            "13": 2,
+            "3": 5,
+            "14": 2,
+            "12": 1,
+            "11": 1,
+            "10": 1,
+            "2": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "0": 15,
+            "2": 5,
+            "1": 5
+          },
+          "first_collision_arc_before_segment_mean": 0.2993366111528297,
+          "semantic_geometry_cross_counts": {
+            "semantic_correct/tip_clear": 50,
+            "semantic_wrong/tip_clear": 21,
+            "semantic_correct/tip_collision_or_nonfinite": 14,
+            "semantic_wrong/tip_collision_or_nonfinite": 11
+          },
+          "semantic_correct_collisions": 14,
+          "semantic_correct_first_quarter_collisions": 9,
+          "classified_valid_route_types": {
+            "negative_x": 31,
+            "positive_y": 18,
+            "negative_y": 1
+          },
+          "valid_unknown_types": 0,
+          "classified_valid_duplicates": 23,
+          "no_reference": {
+            "candidates": 4,
+            "independent_gate_failures": {
+              "finite_xyz": 0,
+              "finite_event_values": 0,
+              "semantic_goal_correct": 4,
+              "starts_at_current_state": 0,
+              "tip_segments_clear": 0,
+              "event_state_sequence_correct": 0,
+              "TipValid": 4
+            },
+            "tip_valid_candidates": 0,
+            "tip_valid_unknown_type_candidates": 0,
+            "first_collision_segment_histogram": {},
+            "first_collision_arc_quartile_histogram": {},
+            "first_collision_arc_before_segment_mean": null
+          }
+        },
+        "checkpoint_sha256": "2a4a0c2e5ae8ffea4482a7c4ef42b569d997b2c858a9498e15c16dc48ace613e",
+        "prediction_sha256": "6ec10c225108bc4f2906ec88e8b77f8c4554d355483f6f1c5cb01ea16e71a1cb"
+      },
+      "last": {
+        "metrics": {
+          "candidate_matched_ADE_m": 0.18297407435982124,
+          "reference_matched_ADE_m": 0.20400655690742575,
+          "candidate_endpoint_error_m": 0.041146865600477096,
+          "best_endpoint_error_m": 0.03967295283370692,
+          "event_state_accuracy": 1.0,
+          "event_sequence_accuracy": 1.0,
+          "semantic_goal_accuracy": 0.8020833333333334,
+          "AnySemanticGoalAtK": 0.8333333333333334,
+          "SelectedSemanticGoalAtK": null,
+          "ValidAtK": null,
+          "AnyValidAtK": null,
+          "UniqueValidAtK": null,
+          "ReferenceCoverageAtK": null,
+          "SelectedValidAtK": null,
+          "examples": 24,
+          "parents": 8,
+          "candidates": 4,
+          "evaluation_protocol": "observation_eval_v2",
+          "reference_evaluation_examples": 23,
+          "examples_without_reference": 1,
+          "semantic_evaluation_examples": 24,
+          "geometry_validation": "not implemented; no validity or route-type claims",
+          "endpoint_semantics": "predicted final end-effector xyz; target identities only used for evaluation",
+          "TipValidAtK": 0.4375,
+          "AnyTipValidAtK": 0.6666666666666666,
+          "UniqueClassifiedTipValidAtK": 0.875,
+          "DuplicateClassifiedTipValidCount": 0.6666666666666666,
+          "UnknownTypeTipValidCount": 0.20833333333333334,
+          "KnownReferenceTypeCoverageAtK": 0.5098039215686274,
+          "TipClearAtK": 0.5416666666666666,
+          "tip_evaluation_protocol": "observed_obstacle_tip_eval_v1",
+          "tip_evaluation_examples": 24,
+          "total_submitted_candidate_budget": 96,
+          "selection_score": 0.896875,
+          "reference_type_coverage_examples": 17
+        },
+        "failure_breakdown": {
+          "candidates": 96,
+          "independent_gate_failures": {
+            "finite_xyz": 0,
+            "finite_event_values": 0,
+            "semantic_goal_correct": 19,
+            "starts_at_current_state": 0,
+            "tip_segments_clear": 44,
+            "event_state_sequence_correct": 0,
+            "TipValid": 54
+          },
+          "tip_valid_candidates": 42,
+          "tip_valid_unknown_type_candidates": 5,
+          "first_collision_segment_histogram": {
+            "4": 9,
+            "5": 10,
+            "3": 12,
+            "8": 2,
+            "2": 5,
+            "7": 2,
+            "6": 2,
+            "9": 1,
+            "11": 1
+          },
+          "first_collision_arc_quartile_histogram": {
+            "0": 33,
+            "1": 11
+          },
+          "first_collision_arc_before_segment_mean": 0.20182643573258147,
+          "semantic_geometry_cross_counts": {
+            "semantic_correct/tip_clear": 42,
+            "semantic_correct/tip_collision_or_nonfinite": 35,
+            "semantic_wrong/tip_collision_or_nonfinite": 9,
+            "semantic_wrong/tip_clear": 10
+          },
+          "semantic_correct_collisions": 35,
+          "semantic_correct_first_quarter_collisions": 26,
+          "classified_valid_route_types": {
+            "negative_x": 25,
+            "positive_y": 10,
+            "positive_x": 1,
+            "negative_y": 1
+          },
+          "valid_unknown_types": 5,
+          "classified_valid_duplicates": 16,
+          "no_reference": {
+            "candidates": 4,
+            "independent_gate_failures": {
+              "finite_xyz": 0,
+              "finite_event_values": 0,
+              "semantic_goal_correct": 4,
+              "starts_at_current_state": 0,
+              "tip_segments_clear": 0,
+              "event_state_sequence_correct": 0,
+              "TipValid": 4
+            },
+            "tip_valid_candidates": 0,
+            "tip_valid_unknown_type_candidates": 0,
+            "first_collision_segment_histogram": {},
+            "first_collision_arc_quartile_histogram": {},
+            "first_collision_arc_before_segment_mean": null
+          }
+        },
+        "checkpoint_sha256": "771cbedab6aff34f3488e03c1e3c56d147ba75c03ffb75ed0d7ca5e208c54a8c",
+        "prediction_sha256": "cde725ca74cf79690cfe2643674de2062173b58b2e22eb9faa6453c58833bc2f"
+      }
+    },
+    "parameters": 1231965,
+    "complete_path_states_per_request": 4,
+    "training_complete_path_state_exposures": 384000,
+    "comparison": "Same data and final K only. Original peak has no draft update, fewer parameters and half as many complete path states; not a strict fair-generation-count control."
+  },
+  "traditional_planner": {
+    "baseline": "TRAIN prototype + observed grid A* v2 virtual exact endpoint attachment",
+    "metrics": {
+      "TipValidAtK": 0.875,
+      "AnyTipValidAtK": 0.875,
+      "UniqueClassifiedTipValidAtK": 1.25,
+      "UnknownTypeTipValidCount": 0.0,
+      "DuplicateClassifiedTipValidCount": 2.25,
+      "KnownReferenceTypeCoverageAtK": 0.24509803921568624,
+      "SelectedTipValidAtK": null,
+      "semantic_goal_accuracy": 0.875,
+      "AnySemanticGoalAtK": 0.875,
+      "endpoint_error_m": 0.025416374676391826,
+      "TipClearAtK": 0.875,
+      "StartCorrectAtK": 0.875,
+      "EventSequenceCorrectAtK": 1.0,
+      "mean_path_length_m": 0.7206324193038769,
+      "format_failure_count": 0.5,
+      "ValidAtK": null,
+      "AnyValidAtK": null,
+      "UniqueValidAtK": null,
+      "SelectedValidAtK": null,
+      "evaluation_protocol": "observed_obstacle_tip_eval_v1",
+      "examples": 24,
+      "requested_split_examples": 24,
+      "missing_prediction_examples": 0,
+      "parents": 8,
+      "candidates": 4,
+      "total_submitted_candidate_budget": 96,
+      "total_format_failure_candidates": 12,
+      "total_tip_valid_candidates": 84,
+      "examples_without_reference": 1,
+      "reference_coverage_evaluable_examples": 17,
+      "input_contract": "saved predictions only; target and geometry opened exclusively for evaluation",
+      "validity_scope": "TipValid requires correct target within original tolerance, current start within 5mm, constant reach event state, and exact full tip-segment checks against supplied physical boxes with original clearance; excludes full-arm/IK/execution validity",
+      "unverified_geometry": "The added physical boxes are checked. Table, walls, other environment bodies, arm volume and IK feasibility are not certified by this evaluator.",
+      "unknown_type_policy": "Valid unclassified routes remain valid; they do not contribute invented types",
+      "reference_policy": "Coverage only of known classified positive reference types; no total-solution-count claim",
+      "selection_policy": "optional scores rank the same submitted K; missing scores yield null, all nonfinite scores fail selection",
+      "paths_repaired_or_filtered": false,
+      "prediction_sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+      "source_hashes": {
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/verification_only.npz": "4132a825dd9ebed875bfd5beb121cd41df3df2cbf5e4993260766017bd48746f",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272096/observation.npz": "aeb8ea3e3391d515067fd4f84db4634240045acbc42591f267b52f0f436b7e02",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/verification_only.npz": "9b36b4849fcf895bcfa2474fb735988b3f9ee2f4a69e33772f99fed4496efe9d",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272097/observation.npz": "c26018b4f221fdcae537b683f5c50852b80e9dc099728a31787ed9c45e0968c1",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/verification_only.npz": "9b900ec1581440c7ed27082dde7e801342ed0ca7caff696c5cffca44341d10fa",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272098/observation.npz": "3a54ef8e791124cbef3eb45a71733c2006f28139d78271df06bf7daaffeabf16",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/verification_only.npz": "e6440c3154df1996035926cab282c9016a31883ab9e24ec8d9957fbb41c7b640",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272099/observation.npz": "13fa6f8b7233f67f1939c5a6d490a202947a5a9a8754053eb39151958ebf1a07",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/verification_only.npz": "792eb07f02e13f72ee005715d64e36359d36052703d5b539e9135233d9684ecb",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272100/observation.npz": "4da5cd049966e1e592ecaccaef2ada8e663282cf9751483f5f1918177a83698b",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/verification_only.npz": "7e76ccf48ac74433a900708e32e2e51f4874e7b4b3e557d89d57dee60ddf90a5",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272101/observation.npz": "bbbb3713709efef4439be88bbfab1de95d26180adbc417fa32461165e5b6e79a",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/verification_only.npz": "6f82144d7da7bea600f45bb3ba40d6d362a3a79af581481a2122ac6d19434775",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272102/observation.npz": "c96865c196098653044db4f0b90c9f4a06474cbe9aee23d449ef49e10df0c355",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/verification_only.npz": "419590cee5df3dac9ac31c552bfb3787df88c3e958d5125e1cbe7a4d31e7712b",
+        "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/obstacle_reach_272103/observation.npz": "5c023ea62495ad3cd5eb58bb2a2089264a7b76c6d43305d96b60186607d936b2"
+      },
+      "manifest_sha256": "8c585d3e30669a3c230ed4ee3cadc86b5c757996322a5745238ea89d9e244d6d",
+      "supervision_sha256": "37da38855af0357732ac48f125f140e8ed5d1a60008f1424fd5080c7a9421237",
+      "reserved_export_manifest_sha256": "63df6bb48e56f82a63b47eb122d1df1ba2fc591b5d6636d99cdfc03f4bb0a503",
+      "collection_metadata_path": "/home/wzy/dpvlm/route_set_v1/data/obstacle_reach_safe_randomized_v3_128_20261002/manifest.json",
+      "reservation_sha256": "d9a8112d6f68efd13e785134fcd5435306e4e570fefbaf1c6c31468a9a8ca2e8",
+      "requested_collection_parents_for_split": 8,
+      "available_observation_parents_for_split": 8,
+      "collection_parents_without_observations": 0
+    },
+    "per_candidate": [
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7410791921289571,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7586572706950965,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7623522475039504,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target0",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025640139144765192,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7863038554348728,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6896645379620857,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6904939650411086,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7056607241320304,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target1",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025120390017597003,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7177152961011104,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7032316531649979,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6980457087055479,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7094148047804589,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272096_target2",
+        "parent_id": "obstacle_reach_272096",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025310489393216132,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7143503956384759,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.68580744699846,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6973790344728901,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7122875660558489,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target0",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025478819555705978,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7856468906435922,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7377646968203271,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7369981239323875,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8026612587529293,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target1",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02512774082200375,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8060773503796296,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6973902426191686,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7012695296763084,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7066294550775839,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272097_target2",
+        "parent_id": "obstacle_reach_272097",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02529482180382491,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7027849797464134,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6870488978874661,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6895738074077294,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7052112060614699,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target0",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025488212598764146,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7158624375487807,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7253667928166888,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7254454047228616,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7336831264481671,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target1",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025472085691174904,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7413304282088646,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272098_target2",
+        "parent_id": "obstacle_reach_272098",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target0",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6732509992272072,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6974107800774478,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6968596114162368,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target1",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025460123374970837,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7037538065138448,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6859550412850831,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6978964127683733,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7083573128525765,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272099_target2",
+        "parent_id": "obstacle_reach_272099",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02524544388275462,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7240830368990216,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6761680362229685,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6828641315598664,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.689209783006637,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target0",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025448555344194903,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7075382696625292,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6896787824513039,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.706238010765446,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7165017503077065,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target1",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025530582874623155,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7305623220103078,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7361216752352222,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.761416275275981,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7622242356924114,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272100_target2",
+        "parent_id": "obstacle_reach_272100",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025664448491924695,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7852705273596845,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target0",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": false,
+        "finite_event_values": true,
+        "semantic_goal_correct": false,
+        "endpoint_error_m": null,
+        "start_error_m": null,
+        "starts_at_current_state": false,
+        "tip_segments_clear": false,
+        "event_state_sequence_correct": true,
+        "length_m": null,
+        "declared_passage_type": null,
+        "TipValid": false,
+        "classified_tip_valid": false
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.700857396125145,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7059160541233633,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7086372096891463,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target1",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025400267356593047,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7226764370149777,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7082732143623305,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7178120899302078,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7235702232029857,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272101_target2",
+        "parent_id": "obstacle_reach_272101",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025498421621696077,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7288318670029752,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6964720412844249,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7094690750714338,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7103331755092802,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target0",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.02540061083454559,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7309870411896837,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.691288104462827,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6940184029655404,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.6995287364657408,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target1",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025182618365522536,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7060604422510636,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7235560474428219,
+        "declared_passage_type": [
+          "negative_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7381318170670789,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7518183572754997,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272102_target2",
+        "parent_id": "obstacle_reach_272102",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025282610315275674,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7679417397634938,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7262275284122619,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7486005833597182,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.8169834884773057,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target0",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025843019987487573,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7375556931587215,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7102698174912437,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7114400888878412,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7164752132993326,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target1",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025458509973953714,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7316827187874629,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 0,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7126389705994841,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 1,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7137339268472908,
+        "declared_passage_type": [
+          "positive_x"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 2,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7318290680805786,
+        "declared_passage_type": [
+          "negative_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      },
+      {
+        "scene_id": "obstacle_reach_272103_target2",
+        "parent_id": "obstacle_reach_272103",
+        "candidate": 3,
+        "finite_xyz": true,
+        "finite_event_values": true,
+        "semantic_goal_correct": true,
+        "endpoint_error_m": 0.025395956753633937,
+        "start_error_m": 0.0,
+        "starts_at_current_state": true,
+        "tip_segments_clear": true,
+        "event_state_sequence_correct": true,
+        "length_m": 0.7349575237682805,
+        "declared_passage_type": [
+          "positive_y"
+        ],
+        "TipValid": true,
+        "classified_tip_valid": true
+      }
+    ],
+    "report_sha256": "868c8058dcebe17bf16f290a736afec6811711f4c02a7227d407a10f43f85eea",
+    "prediction_sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+    "binary_index": {
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target0_raw.npz": {
+        "sha256": "f02f865eb78941979442fbe7de5d72a34038ad4f12711ac33be5bf06103483ca",
+        "bytes": 2102
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target1_raw.npz": {
+        "sha256": "519b277538673faba5e5eb757ce36fb397fe886395cd7ecf5eb8dbc062ad329f",
+        "bytes": 1845
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272096_target2_raw.npz": {
+        "sha256": "6febbd9a33e688c8a56f31235669d892a585469cb117491fe4b8622adcc8e1b7",
+        "bytes": 1842
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target0_raw.npz": {
+        "sha256": "00fbf92c3da51cb3f78c117412187ab57544cfff77a8682cae6b55ce7f7e522d",
+        "bytes": 1865
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target1_raw.npz": {
+        "sha256": "197ffb6346285692eba6c3312aa2e5268a84841d3c8de36a86f04a1a27f34736",
+        "bytes": 2065
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272097_target2_raw.npz": {
+        "sha256": "78014dc2a58e45d6fd11ac982a4a32c9d40d868354bbb386b9a49aab14e73096",
+        "bytes": 1835
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target0_raw.npz": {
+        "sha256": "6e4ef6904b544ae30b979b6f20bd02222756949574813f4047e64ff3248f3460",
+        "bytes": 1826
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target1_raw.npz": {
+        "sha256": "326a3cad7eefe3fc491c7dc24d97ba89830af19a580114388bcb096581e9726c",
+        "bytes": 1942
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272098_target2_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target0_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target1_raw.npz": {
+        "sha256": "6e24ff2c5b18ae9a407270b389b8f418043c2e656ac3d0f9ab47fa93dbc89d4e",
+        "bytes": 1797
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272099_target2_raw.npz": {
+        "sha256": "45eda042cfc28db893d7061e3f9b395f9d26657ec42295806a3bf6ea158fa2e2",
+        "bytes": 1835
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target0_raw.npz": {
+        "sha256": "8e4b90a7e259dd0745dad1c564070cf84c9e8b88d7638ed3f3a732aab737b689",
+        "bytes": 1851
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target1_raw.npz": {
+        "sha256": "83345456fd15f2b6ad004b82355c0250ee133d1912bf8d52db6448650a95f453",
+        "bytes": 1848
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272100_target2_raw.npz": {
+        "sha256": "8686d5617110ee1920e5f0394f1a9dc0453579173a3ada5d63e21b08898e1142",
+        "bytes": 2120
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target0_raw.npz": {
+        "sha256": "a6391cd2b5f3acac8948756790752489c105993ed7686df257a0277aa36f740b",
+        "bytes": 806
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target1_raw.npz": {
+        "sha256": "67a4430fcf7c52443a31c8c204188d67962d5bd1c63194b81a85bd325b1c6b19",
+        "bytes": 1874
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272101_target2_raw.npz": {
+        "sha256": "96f078999c6541994e40138be3928496ebf7cec39922511b57bcdccbf2e1245a",
+        "bytes": 1859
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target0_raw.npz": {
+        "sha256": "9de6b4682a48706e6541028b7278b0466387a548e4aa36b39c496f81df05a7f1",
+        "bytes": 1882
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target1_raw.npz": {
+        "sha256": "c9eed5cd94afae4309c19f91c72d0c971cf5c031f76458a2bbe70a36a8d4423a",
+        "bytes": 1831
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272102_target2_raw.npz": {
+        "sha256": "e98e70b9e970a19eb4b2da02d82741cadef95dc381df4e4b0d3003e0ede0a18c",
+        "bytes": 2084
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target0_raw.npz": {
+        "sha256": "9545a06c97b3631de78ba38f36d8055b7caa04d95a00011265e5885a68038657",
+        "bytes": 2040
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target1_raw.npz": {
+        "sha256": "98adbe2a38b4a29b0ca94bcff606f94e5009d24bc8cb3c050eb38939dbb8c042",
+        "bytes": 1870
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/obstacle_reach_272103_target2_raw.npz": {
+        "sha256": "2f73ddcdaa75711a34975a84602e25c6c33d60aecfa7f0df07d12a4589c84f40",
+        "bytes": 1850
+      },
+      "/home/wzy/dpvlm/route_set_v1/runs/observation_astar_obstacle_reserved96_v2/dev_model/predictions.npz": {
+        "sha256": "e1c967b7aac1a5a496f7ae43d1ef786ff02671e276724f137e71c00a189e2d16",
+        "bytes": 26359
+      }
+    },
+    "training_parents": 96,
+    "training_seconds": 3.996357389027253,
+    "observation_to_routes_ms_median": 1867.1700314735062,
+    "observation_to_routes_ms_p95": 3822.0479255134687,
+    "total_generation_seconds": 46.90802122687455,
+    "evaluation_seconds": 0.1259928389918059,
+    "language_scope": "Exact TRAIN instruction/color prototypes only; unseen instructions abstain. No open-vocabulary claim.",
+    "comparison_scope": "Same exported TRAIN and DEV, RGB-D/current/language and K4; different inference runtime, no equal-time claim.",
+    "limitation": "Unknown space is conservatively blocked except explicitly recorded local contact allowances. Grid clearance is a discrete proxy, not a continuous physical 2cm certificate: cell-center depth tests and surface/segment quantization errors are not jointly bounded. Visible points do not reconstruct hidden solids or certify full arm/IK/execution. Independent unchanged true-box evaluation may reject proxy-clear paths.",
+    "generation_budget_caveat": "Planner emits4 complete paths; updated neural model emits4 drafts+4 finals. This is a lower-state-budget reference, not matched complete-generation count."
+  }
+}

@@ -151,6 +151,7 @@ def main():
                            'observed_geometry_grounding_v2','observed_geometry_seeds_v2']
     observation_folders += [p.name for p in reports.glob('observed_learning_curve_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_obstacle_*') if p.is_dir()]
+    observation_folders += [p.name for p in reports.glob('observed_refinement_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_online_geometry_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_anchor_*') if p.is_dir()]
     observation_folders += [p.name for p in reports.glob('observed_natural_reserved*') if p.is_dir()]
@@ -168,7 +169,7 @@ def main():
                     if not audit['predictions_match_at_1e_5']:raise ValueError('actual Qwen prediction drift')
                     full_latency=audit['all_requests_ms_median']
             rows.append(dict(tier='observed_RGBD_language_current' if 'geometry_role' in config or 'geometry_parameters' in config else 'observed_RGB_language_current',
-                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in str(source.parent.relative_to(reports)) else 'RLBench_derived_reach_three_targets',
+                task='RLBench_derived_obstacle_reach_three_targets' if 'obstacle' in config.get('observations',str(source.parent.relative_to(reports))) else 'RLBench_derived_reach_three_targets',
                 protocol=metrics.get('evaluation_protocol','observation_eval_v1_reference_subset'),
                 checkpoint_selection_protocol=result.get('checkpoint_selection_protocol','original_DEV_ADE_best'),
                 method=folder+'_'+'_'.join(source.parent.relative_to(reports/folder).parts)+'_'+config.get('adapter_mode','frozen_cache'),
@@ -194,6 +195,22 @@ def main():
                 KnownReferenceTypeCoverageAtK=metrics.get('KnownReferenceTypeCoverageAtK'),TipClearAtK=metrics.get('TipClearAtK'),
                 elapsed_s=result['elapsed_s'],gpu_hours=result['gpu_hours_reserved'],code_commit=config['code_commit'],
                 source=str(source.relative_to(root))))
+            if config.get('refinement_mode','none')!='none':
+                final=result['last_metrics']
+                # Preserve the uniform final-step result, without double-counting
+                # the same training run's cost or changing its selected best.
+                last_row=dict(rows[-1],method=rows[-1]['method']+'_last',
+                    checkpoint_selection_protocol='uniform_last%d_sensitivity'%result['last_step'],
+                    selected_step=result['last_step'],elapsed_s=None,gpu_hours=None,
+                    training_exposures=None,complete_path_state_exposures=None,
+                    RGBD_Qwen_generation_ms=None,
+                    cost_scope='same training run as best row; no additional training; final-step sensitivity retained')
+                for field in ('semantic_goal_accuracy','AnySemanticGoalAtK','TipValidAtK','AnyTipValidAtK',
+                              'UniqueClassifiedTipValidAtK','KnownReferenceTypeCoverageAtK','TipClearAtK'):
+                    last_row[field]=final[field]
+                last_row.update(candidate_ADE_m=final['candidate_matched_ADE_m'],
+                                endpoint_error_m=final['candidate_endpoint_error_m'])
+                rows.append(last_row)
     source=reports/'observed_obstacle_reserved96_analysis_v1/analysis.json'
     if source.exists():
         audited=json.loads(source.read_text())
