@@ -36,6 +36,8 @@
 | [DivPO](https://arxiv.org/abs/2501.18101)、[作者出版列表](https://angie-chen55.github.io/) | 2025 预印本已核验；从响应池按质量和稀有程度构造偏好对。网上有相互矛盾的会议标签，本次未确认正式发表/官方实现 | 可用于具有序列概率的 Qwen 路线文本分支。样本池、评审成本和训练候选曝光必须记录；确定性回归坐标头不能直接套 DPO。未复现 |
 | [SetPO](https://proceedings.mlr.press/v306/li26jk.html)、[原论文](https://arxiv.org/abs/2602.01062)、[作者代码](https://github.com/chenyili0818/SetPO) | ICML 2026，PMLR 306:72496–72522 已确认；kernel 集合效用的 leave-one-out 多样性边际作为策略优势修正 | 集合边际奖励/稀有路线奖励已存在明确近邻；移植到空间路径须同时约束真实任务质量。是语言推理 policy optimization，不等于普通回归器的损失。未复现 |
 | [Yen K 最短无环路径](https://pubsonline.informs.org/doi/10.1287/mnsc.17.11.712) | Management Science 1971，出版社确认；已知图、边代价、起终点 → 按长度排列 K 条无环图路径 | 几何受控层可作传统强基线；几条图路径可能属于同一路线类型。生成后再丢弃近重复路径也计候选/搜索预算，不能把搜索大池只报 K。观测层须共享预测目标与观测地图 |
+| [MPNet 扩展原文](https://arxiv.org/html/1907.06013)、[作者实现](https://github.com/ahq1993/MPNet)、[实际读取的 replan_path 源码](https://raw.githubusercontent.com/ahq1993/MPNet/master/MPNet/neuralplanner.py) | 2019预印本；2020-06-27 v3页首注明T-RO接收；另有ICRA2019版本。原文算法4及源码对可连接段保留，对不能连接的相邻节点执行神经双向局部重规划；原文还讨论经典规划fallback | “保留有效段+神经局部修复”已存在。当前 constraint_update 仅检验相同旧集合、同新增完整路线预算下预测复制门控是否胜普通条件补全；不能把局部编辑概念称为新颖。已读作者源码，未安装/运行/复现 |
+| [MARS 出版社版本原文（作者机构存档）](https://re.public.polimi.it/retrieve/4bb6d46f-51b9-48d7-89b7-c5be61421687/11311-1255951_Faroni.pdf)、[机构记录](https://re.public.polimi.it/handle/11311/1255951)、[原文[41]代码链接](https://github.com/JRL-CARI-CNR-UNIBS/replanning_strategies) | IEEE Access 11:4105–4116，2023-01-10发表，DOI10.1109/ACCESS.2023.3235652；多条预计算路线构成有向图，障碍使当前路失效时连接到其他可用子路径，并用informed sampling、图复用及anytime改进 | 多路线复用与变化后替换已有明确传统强近邻。论文代码链接现重定向作者OpenMORE；已核验README/子模块来源，未执行MARS核心实现。不能把本项目受控神经筛选或解析开口规划器写成对MARS的复现/胜出 |
 | [同伦约束搜索](https://ojs.aaai.org/index.php/AAAI/article/view/7735)、[作者机构记录](https://publications.ri.cmu.edu/search-based-path-planning-with-homotopy-class-constraints)、[3D 后续作者论文](https://www.cs.cmu.edu/afs/cs/Web/People/maxim/files/planwithhomotopy_aaai12_invitedpaper.pdf) | 平面方法 AAAI 2010；3D 表示 RSS 2011/AAAI 2012 后续。AAAI 网站 3D 条目的重新上网日期不应误写成论文年份 | 已知障碍下将路径类别纳入搜索状态，排除已找到类别后继续找有效路径；这是显式类别记忆的强概念近邻。普通三维箱体左右绕行不应未经证明叫不同同伦类。项目当前未复现 |
 
 ## 源码检查记录及复现边界
@@ -52,6 +54,8 @@
 | gcorso/particle-guidance | `ce7de745191168c10b2c125b78d94ad8de119488` | 文件树、生成脚本、synthetic notebook 存在性；未执行 |
 
 真正启动外部基线前还需锁定 commit、license、依赖、权重 revision/hash 和本项目适配差异。未获得完整训练链的系统，可以公开权重推理对照起步，但不得称同数据从头训练复现。
+
+约束更新补充核验（2026-10-02）：MPNet 默认分支 tree SHA `f38623bff34626b649d00f3f6535c1954852907e`，已读 `MPNet/neuralplanner.py` 中 `replan_path`、`steerTo` 与保留分支；MARS已读原文方法及参考[41]，其代码地址重定向OpenMORE，页面所列 `replanners_lib` 子模块为 `074c7e875a0a800614cbc9244dbff1a7101c498c`。后者仅核验来源和框架说明，未声称读取或执行全部核心实现。两者均无本项目训练/规划复现结果。
 
 ## 对当前创新叙述的直接影响
 

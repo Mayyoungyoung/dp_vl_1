@@ -8,6 +8,7 @@ import argparse
 import copy
 import json
 import os
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +23,19 @@ from routeset.train_v2 import (atomic_checkpoint, positive_assignment_loss, rest
                               rng_state, synchronized_time)
 
 ARMS = ("full_free", "full_paired", "local_paired")
+
+CONTINUATION_MATCH_KEYS = ("data", "arm", "batch_size", "width", "depth", "lr", "seed", "eval_every",
+    "threads", "device", "proxy_threshold", "aux_weight", "dataset_sha256", "horizon", "objective",
+    "auxiliary", "information", "candidate_budget", "selection_split", "sampling", "gpu_uuid")
+
+
+def check_continuation(config, previous):
+    """Permit a new output/source revision and increased total steps only."""
+    for key in CONTINUATION_MATCH_KEYS:
+        if config.get(key) != previous.get(key):
+            raise ValueError("Continuation config mismatch: " + key)
+    if config["steps"] <= previous["steps"]:
+        raise ValueError("Continuation total steps must increase")
 
 
 @torch.no_grad()
@@ -105,9 +119,14 @@ def train_one(args):
     if set(data['parent_ids'][train_ids]) & set(data['parent_ids'][dev_ids]):
         raise ValueError('parent split leakage detected')
     out = Path(args.output)
+    continue_from = getattr(args, "continue_from", None)
+    if continue_from and (Path(continue_from).resolve().parent == out.resolve()):
+        raise ValueError("Continuation output must differ from the preserved source run")
     out.mkdir(parents=True, exist_ok=True)
     if (out / "last.pt").exists() and not args.resume:
         raise RuntimeError("Existing checkpoint: use a new run_id or --resume")
+    if continue_from and not args.resume and (out / "best.pt").exists():
+        raise RuntimeError("Continuation requires a fresh output without an existing best checkpoint")
     lock = out / "active.lock"
     try:
         descriptor = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -134,11 +153,17 @@ def train_one(args):
         groups = [np.flatnonzero((data["parent_ids"][train_ids] == parent)) for parent in parents]
         start_step, best, elapsed_before, exposures, positive_access = 0, -float("inf"), 0., 0, 0
         history, losses = [], []
+        cost_origin = dict(prior_elapsed_s=0., prior_trajectory_exposures=0,
+                           prior_positive_pool_access=0, start_step=0)
         if args.resume:
             checkpoint = torch.load(out / "last.pt", map_location=args.device, weights_only=False)
             for key in ("dataset_sha256", "arm", "steps", "batch_size", "width", "depth", "lr", "seed", "proxy_threshold", "aux_weight"):
                 if config[key] != checkpoint["config"][key]:
                     raise ValueError("Resume config mismatch: " + key)
+            if continue_from:
+                recorded_source = checkpoint["config"].get("continuation", {}).get("source_checkpoint")
+                if recorded_source != str(Path(continue_from).resolve()):
+                    raise ValueError("Resume continuation source differs from the original initialization")
             model.load_state_dict(checkpoint["model"])
             optimizer.load_state_dict(checkpoint["optimizer"])
             scheduler.load_state_dict(checkpoint["scheduler"])
@@ -147,6 +172,52 @@ def train_one(args):
             start_step, best, elapsed_before = checkpoint["step"], checkpoint["best"], checkpoint["elapsed_s"]
             exposures, positive_access = checkpoint["trajectory_exposures"], checkpoint["positive_pool_access"]
             history, losses = checkpoint["history"], checkpoint["loss_tail"]
+            cost_origin = checkpoint.get("cost_origin", cost_origin)
+            # The original continuation provenance persists through resumptions.
+            if "continuation" in checkpoint["config"]:
+                config["continuation"] = checkpoint["config"]["continuation"]
+                config["continue_from"] = checkpoint["config"].get("continue_from")
+        elif continue_from:
+            source = Path(continue_from).resolve()
+            if source.name != "last.pt":
+                raise ValueError("Continue from the source last.pt, not a selected-best model")
+            checkpoint = torch.load(source, map_location=args.device, weights_only=False)
+            check_continuation(config, checkpoint["config"])
+            source_best = source.parent / "best.pt"
+            best_checkpoint = torch.load(source_best, map_location="cpu", weights_only=False)
+            check_continuation(config, best_checkpoint["config"])
+            if best_checkpoint["step"] > checkpoint["step"]:
+                raise ValueError("source best occurs after its last checkpoint")
+            # Restore all optimization and sampling state. No warm-start-only
+            # interpretation: this is the same training run extended in a new
+            # output tree, preserving the original completed experiment.
+            model.load_state_dict(checkpoint["model"])
+            optimizer.load_state_dict(checkpoint["optimizer"])
+            scheduler.load_state_dict(checkpoint["scheduler"])
+            restore_rng(checkpoint["rng"], rng)
+            sampler.bit_generator.state = checkpoint["sampler_state"]
+            start_step, best = checkpoint["step"], checkpoint["best"]
+            exposures, positive_access = checkpoint["trajectory_exposures"], checkpoint["positive_pool_access"]
+            history, losses = checkpoint["history"], checkpoint["loss_tail"]
+            # last.pt predates the final selected-checkpoint evaluation. If a
+            # verified completed summary exists, count that real prior cost too.
+            prior_elapsed = checkpoint.get("cumulative_elapsed_s", checkpoint["elapsed_s"])
+            summary_path = source.parent / "summary.json"
+            prior_summary_hash = None
+            if summary_path.exists():
+                source_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+                if source_summary["trajectory_exposures"] != exposures or source_summary["best_checkpoint_sha256"] != sha256(source_best):
+                    raise ValueError("source summary/checkpoint provenance mismatch")
+                prior_elapsed = max(prior_elapsed, source_summary.get("cumulative_elapsed_s", source_summary["elapsed_s"]))
+                prior_summary_hash = sha256(summary_path)
+            cost_origin = dict(prior_elapsed_s=prior_elapsed, prior_trajectory_exposures=exposures,
+                               prior_positive_pool_access=positive_access, start_step=start_step)
+            config["continuation"] = dict(source_checkpoint=str(source), source_checkpoint_sha256=sha256(source),
+                source_best_checkpoint=str(source_best), source_best_checkpoint_sha256=sha256(source_best),
+                source_summary_sha256=prior_summary_hash, source_code_commit=checkpoint["config"].get("code_commit"),
+                source_total_steps=checkpoint["config"]["steps"], source_checkpoint_step=start_step,
+                source_best_step=best_checkpoint["step"], cost_origin=cost_origin)
+            shutil.copy2(source_best, out / "best.pt")
         write_json(out / "config.json", config)
         write_json(out / "status.json", dict(status="running", pid=os.getpid(), step=start_step,
                                                resume_command="repeat the recorded command with --resume"))
@@ -196,7 +267,9 @@ def train_one(args):
                 checkpoint = dict(model=model.state_dict(), optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict(),
                     scaler=None, step=step, config=config, rng=rng_state(rng), sampler_state=sampler.bit_generator.state,
                     best=best, history=history, loss_tail=losses, elapsed_s=elapsed, trajectory_exposures=exposures,
-                    positive_pool_access=positive_access)
+                    positive_pool_access=positive_access, cost_origin=cost_origin,
+                    cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + elapsed,
+                    incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"])
                 atomic_checkpoint(out / "last.pt", checkpoint)
                 if improved:
                     atomic_checkpoint(out / "best.pt", checkpoint)
@@ -216,6 +289,13 @@ def train_one(args):
             peak_cuda_memory_mb=torch.cuda.max_memory_allocated() / 2**20 if args.device.startswith("cuda") else 0.,
             best_checkpoint_sha256=sha256(out / "best.pt"),
             prediction_sha256={"b%d" % k: sha256(out / "dev_model" / ("b%d" % k) / "predictions.npz") for k in (1, 2)})
+        summary.update(cost_origin=cost_origin, incremental_elapsed_s=elapsed,
+            cumulative_elapsed_s=cost_origin["prior_elapsed_s"] + elapsed,
+            incremental_trajectory_exposures=exposures - cost_origin["prior_trajectory_exposures"],
+            incremental_positive_pool_access=positive_access - cost_origin["prior_positive_pool_access"],
+            cumulative_gpu_hours_reserved=(cost_origin["prior_elapsed_s"] + elapsed) / 3600 if args.device.startswith("cuda") else 0.,
+            selected_checkpoint_from_prior_run=best_checkpoint["step"] <= cost_origin["start_step"],
+            cost_scope="elapsed_s/gpu_hours_reserved are additional cost in this output tree; cumulative_* include prior source cost exactly once")
         write_json(out / "summary.json", summary)
         write_json(out / "status.json", dict(status="completed", step=args.steps, exit_code=0))
         print(json.dumps(dict(arm=args.arm, summary=summary)), flush=True)
@@ -243,12 +323,15 @@ def main():
     parser.add_argument("--aux-weight", type=float, default=.01)
     parser.add_argument("--proxy-threshold", type=float, default=.02)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--continue-from", help="Source last.pt; preserve old output, restore full state, increase --steps")
     parser.add_argument("--stop-after", type=int)
     args = parser.parse_args()
     if min(args.steps, args.batch_size, args.eval_every) < 1 or not 1 <= args.threads <= 4:
         parser.error("positive step/batch/eval counts and 1--4 threads required")
     if args.proxy_threshold < 0 or args.aux_weight < 0:
         parser.error("nonnegative proxy threshold and auxiliary weight required")
+    if args.continue_from and args.arm == "all":
+        parser.error("--continue-from requires one explicit arm; --resume restores the new output without reinitializing")
     if args.arm == "all":
         for arm in ARMS:
             paired = copy.copy(args)

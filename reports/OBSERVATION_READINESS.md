@@ -172,3 +172,23 @@ CPU1验证已实际完成：6项测试通过；真实两样本各12,544点前后
 正式作业 `observation_reach_fast256_20261002` 已于2026-10-02 08:45:32 UTC启动，PID159691，CPU线程1、软件渲染、无GPU。使用全新seed262000–262255，前192父为TRAIN、后64父为DEV_MODEL，全部开发用途；与旧32父及试采父不重叠。计划256父、768指令、2304提案不能写成已成功数量。启动后73秒的持久化快照仅有3父、27/27成功、零恢复/等价失败；最终结果待作业实际完成后审计。按单父试采粗估约2小时，不能保证此耗时。
 
 运行证据、PID、实际命令、源码hash和下一步审计见 `reports/observation_reach_fast256_job.json`；早期快照见 `observation_reach_fast256_progress_snapshot.json`。服务器每完成一父原子更新data目录summary，并逐尝试落盘。不要重复启动同run；若中断，保留父场景/attempt日志与已写数据，当前采集器会拒绝覆盖现有目录，不能盲目同命令重跑。会话后的后台进程只执行既定采集，不代表仍会自主分析或改代码。
+
+### 已完成父场景的版本化开发学习曲线
+
+`scripts/snapshot_observation_learning_curve.py` 在不修改运行collector或正式256划分的前提下，对已完成父场景原子生成快照。完整性要求为每父3条观测、3条监督、9个已执行提案结局，且每个监督route列表严格对应实际成功记录；缺参考指令仍保留，不按成功条数挑父。源行和所有父场景文件逐项hash，生成前后复核一致，未完整父和正在追加的JSON尾行不能进入快照。标准库自测覆盖这些边界。
+
+第一份32新TRAIN父＋旧8DEV父快照于08:59:15 UTC发布为 `data/observation_curve_new32_olddev8_v1`；主任务08:59:41创建的 `data/observation_learning_curve_new32_v1` 具有完全相同的输入manifest SHA `b10909644f66dd86e3275b181e86318b2c459bbc2e77869f8b8d4765beda1f11`。**实际缓存/训练只使用后者**；前者只是同内容只读备份，不能计作额外样本或独立结果。共120观测，96条新TRAIN监督指令，DEV严格语义24条、参考评价23条。旧8DEV已经反复参与选择，该学习曲线只作探索性开发证据，不宣称独立确认。64新TRAIN父版本将在满足完整性后另行选定唯一目录，不改变正式256的192/64划分。
+
+64新TRAIN父的唯一快照已于09:15:21 UTC从固定release `a85096a197d0a34c147396a874ec3aef95f0abbe` 实际生成：`data/observation_learning_curve_new64_v1`。共216条观测，192条新TRAIN有参考监督、旧DEV语义24条/参考23条，输入manifest SHA `43205853a21731b3be3f133210031f50016d1ca9208d5c50e26b23a3c9252c31`；父文件来源及逐项hash见 `reports/observation_learning_curve_new64_manifest.json`。前64个新父的576次采集尝试中568次成功、8次路径规划失败，全部576次严格状态/RGB恢复通过；失败保留在快照，不以成功率挑选父场景。缓存和训练由主任务统一排队，不重复创建同内容版本。
+
+### 全Qwen＋当前RGB-D＋集合头的实际逐请求推理
+
+`scripts/benchmark_observed_full_inference.py` 已由主任务在 `runs/observed_full_inference_v1/grounded_seed0` 实际运行，使用原grounding auxiliary seed0 best权重，逐次处理24个不同DEV输入。每次重新读RGB/当前观测、反投影、调用原processor和真实冻结Qwen、再调用可训练几何编码器及集合头；没有使用缓存Qwen或缓存点特征。模型加载7.812秒，首请求760.76ms，24请求中位数54.99ms；排除前两请求后中位数54.96ms、P95 56.38ms，峰值allocated显存4,300,630,016 bytes（约4.005GiB）。文件系统页可能已热。计时覆盖从观测到预测路线，**不含尚未实现的碰撞验收、评分器或机器人执行**。详细逐阶段值见 `reports/observation_full_inference_measured.json`。
+
+`scripts/observation_compare_full_inference.py` 已用实际输出与原缓存特征评价逐元素核对：24×4×24×3轨迹坐标最大差3.576e-7m、平均差2.697e-8m，最大末端间距2.468e-7m；夹爪open最大差1.192e-7。96个候选的严格身份＋3cm判定完全相同，语义目标正确率均33.3333%。原权重及两个预测文件SHA、逐场景一致性见 `reports/observation_full_inference_agreement.json`。这验证了真实完整观测推理链路与所报头部评价一致，不增加泛化或执行成功的主张。
+
+### 传统颜色RGB-D定位对照高于当前学习头
+
+固定 `7474782` 的 `observation_prototype_grounding.py` 已分别用旧TRAIN71指令、新32父TRAIN96指令学习颜色原型，再按同一旧8DEV/24指令严格3cm＋身份验收：分别19/24（79.17%）、20/24（83.33%），CPU完整单请求中位12.49/10.73ms。该对照使用TRAIN参考末端附近的当前可见RGB学习原型，测试只看RGB-D、相机与instruction，未知词表明确拒绝；没有测试目标/几何/mask筛点。
+
+它仅输出一个观测表面端点，不产生路线；不能据此报告多路线Valid或执行成功。少数非目标颜色区域会造成米级错误，全部保留后目标误差均值仍33.50/21.22cm。旧版本失败5条、新版本失败4条，包括完整保留的无参考DEV。它显示普通神经空间attention在当前颜色数据上的定位尚不充分；不将这种定位修复包装为研究创新。具体机制、所有失败、语言交换与运行成本见 `reports/OBSERVATION_PROTOTYPE_BASELINE.md` 和对应逐场景JSON。

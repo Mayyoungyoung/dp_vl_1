@@ -112,6 +112,50 @@ class ConstraintUpdateTests(unittest.TestCase):
             for key in a["model"]:
                 torch.testing.assert_close(a["model"][key], b["model"][key], atol=0, rtol=0)
 
+    def test_new_output_continuation_is_exact_and_rejects_data_or_lr_changes(self):
+        import copy
+        from routeset.common import sha256
+        from scripts.train_constraint_update import train_one
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            selected = []
+            for split in ("TRAIN", "DEV_MODEL"):
+                parent = self.data["parent_ids"][np.flatnonzero(self.data["splits"] == split)[0]]
+                selected.extend(np.flatnonzero(self.data["parent_ids"] == parent).tolist())
+            small = {k: v[selected] for k, v in self.data.items()}
+            np.savez_compressed(root / "data.npz", **small)
+            changed = {k: v.copy() for k, v in small.items()}
+            changed["old_paths"][0, 0, 3, 1] += .001
+            np.savez_compressed(root / "changed.npz", **changed)
+            common = dict(data=str(root / "data.npz"), arm="local_paired", batch_size=2,
+                width=16, depth=1, lr=3e-4, seed=5, eval_every=2, threads=1, device="cpu",
+                aux_weight=.01, proxy_threshold=.02, resume=False, stop_after=None)
+            train_one(Namespace(**common, steps=4, output=str(root / "continuous"), continue_from=None))
+            train_one(Namespace(**common, steps=2, output=str(root / "source"), continue_from=None))
+            source_hashes = {name: sha256(root / "source" / name) for name in ("last.pt", "best.pt", "config.json", "summary.json")}
+            continuation = Namespace(**common, steps=4, output=str(root / "continued"), continue_from=str(root / "source" / "last.pt"))
+            for key, value in (("lr", 1e-4), ("data", str(root / "changed.npz"))):
+                rejected = copy.copy(continuation)
+                rejected.output = str(root / ("rejected_" + key))
+                setattr(rejected, key, value)
+                with self.assertRaisesRegex(ValueError, "Continuation config mismatch"):
+                    train_one(rejected)
+                self.assertFalse((Path(rejected.output) / "best.pt").exists())
+            train_one(continuation)
+            a = torch.load(root / "continuous" / "last.pt", weights_only=False)
+            b = torch.load(root / "continued" / "last.pt", weights_only=False)
+            self.assertEqual(b["trajectory_exposures"], 12)
+            self.assertEqual(b["incremental_trajectory_exposures"], 6)
+            self.assertEqual(b["cost_origin"]["prior_trajectory_exposures"], 6)
+            self.assertEqual(b["config"]["continuation"]["source_checkpoint_sha256"], source_hashes["last.pt"])
+            self.assertGreater(b["cumulative_elapsed_s"], b["elapsed_s"])
+            for key in a["model"]:
+                torch.testing.assert_close(a["model"][key], b["model"][key], atol=0, rtol=0)
+            self.assertEqual(a["scheduler"], b["scheduler"])
+            self.assertEqual(a["sampler_state"], b["sampler_state"])
+            for name, expected in source_hashes.items():
+                self.assertEqual(sha256(root / "source" / name), expected)
+
 
 if __name__ == "__main__":
     unittest.main()

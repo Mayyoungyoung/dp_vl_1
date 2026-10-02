@@ -9,7 +9,9 @@ def main():
     path = root/'experiments/registry.jsonl'
     previous = [json.loads(line) for line in path.read_text(encoding='utf-8-sig').splitlines() if line.strip()]
     # Recorded path uniquely identifies same-named seeds across experimental families.
-    records = {record.get('record_path', record.get('log', record['run_id'])): record for record in previous}
+    import hashlib
+    records = {record.get('record_path') or record.get('log') or record.get('run_id') or
+               hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest(): record for record in previous}
     for record in snapshot['records']:
         record = dict(record, snapshot_utc=snapshot['snapshot_utc'])
         records[record['record_path']] = record

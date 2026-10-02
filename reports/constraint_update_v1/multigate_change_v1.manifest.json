@@ -1,0 +1,89 @@
+{
+  "version": "multigate_change_v1",
+  "dataset_sha256": "e5658451e937ca4f07196d9779fee62746c21ae2a5b470121e8518a970a8e687",
+  "source_dataset_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+  "frozen_checkpoint_sha256": "b2cb51ae0de50785a12f129c2ff12ecc981a9df826b5ee7ae1462de6366f102c",
+  "frozen_checkpoint_path": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0/best.pt",
+  "frozen_checkpoint_step": 1500,
+  "frozen_training_config": {
+    "data": "/home/wzy/dpvlm/route_set_v1/data/multigate_v1_partitions/development.npz",
+    "output": "/home/wzy/dpvlm/route_set_v1/runs/v2_round2/saturation_k4_seed0",
+    "objective": "saturation",
+    "steps": 3000,
+    "batch_size": 64,
+    "candidates": 4,
+    "width": 192,
+    "depth": 3,
+    "lr": 0.0003,
+    "seed": 0,
+    "eval_every": 500,
+    "device": "cuda",
+    "resume": false,
+    "stop_after": null,
+    "dataset_sha256": "f93c8c4b54e44c365d323e4efe0bdf9f6c895fd611a830338971a242d233e057",
+    "horizon": 24,
+    "cond_dim": 34,
+    "code_commit": "1a1b6bb7600419504f5c1b2f5534435de7a1cf6e",
+    "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+    "selection_split": "DEV_MODEL",
+    "information": "controlled true geometry and endpoints",
+    "supervision": "same full positive reference pool; matching objective differs"
+  },
+  "code_commit": "bb307709ecfb81b39eaf266012a64b7a9810bcc7",
+  "parent_counts": {
+    "TRAIN": 381,
+    "DEV_MODEL": 57
+  },
+  "change_counts": {
+    "TRAIN": 2364,
+    "DEV_MODEL": 356
+  },
+  "old_invalid_after_change_histogram": {
+    "0": 736,
+    "1": 447,
+    "2": 1528,
+    "3": 8,
+    "4": 1
+  },
+  "elapsed_s": 14.8260888409568,
+  "threads": 1,
+  "timings": {
+    "0": {
+      "two_request_head_and_checks_cpu_ms_median": 2.604319481179118,
+      "two_request_head_and_checks_cpu_ms_p95": 2.7654369361698627
+    },
+    "1": {
+      "two_request_head_and_checks_cpu_ms_median": 3.8839845219627023,
+      "two_request_head_and_checks_cpu_ms_p95": 4.35526820947416
+    },
+    "2": {
+      "two_request_head_and_checks_cpu_ms_median": 3.9794030017219484,
+      "two_request_head_and_checks_cpu_ms_p95": 4.570949531625955
+    },
+    "4": {
+      "two_request_head_and_checks_cpu_ms_median": 4.218565998598933,
+      "two_request_head_and_checks_cpu_ms_p95": 4.720894614001735
+    }
+  },
+  "training_proxy_diagnostic": {
+    "b1": {
+      "mean_point_edit_fraction": 0.771246731272112,
+      "fraction_routes_editing_all_points": 0.19458544839255498,
+      "fraction_routes_editing_no_points": 0.004653130287648054,
+      "threshold_m": 0.02,
+      "scope": "TRAIN-only source-nearest positive distance proxy; not causal impact truth"
+    },
+    "b2": {
+      "mean_point_edit_fraction": 0.7668820181510537,
+      "fraction_routes_editing_all_points": 0.23392554991539763,
+      "fraction_routes_editing_no_points": 0.0025380710659898475,
+      "threshold_m": 0.02,
+      "scope": "TRAIN-only source-nearest positive distance proxy; not causal impact truth"
+    }
+  },
+  "model_inputs": "old/new exact geometry, four actual old predictions, common whole-route validity; no reference/mode/edit labels",
+  "intervention": "every single closure for R>=6 with another opening remaining in that wall; physical indices preserved",
+  "split_unit": "original independent parent; no resplit; equal-parent sampling and aggregation",
+  "budget": "old4 + each fresh complete route, including invalid/discarded routes; no hidden repair",
+  "limitations": "controlled known geometry/endpoints only; frozen K1/K2 heads were trained at K4, zero-adaptation controls"
+}
