@@ -6,6 +6,7 @@ unlearned RGBXYZ grids may be preprocessed once for training; evaluation reads
 the raw RGB-D again for each request. All geometry/head parameters keep training.
 """
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,7 @@ from routeset.observed_geometry import ObservedGeometryRouteHead, positive_endpo
 from routeset.observed_route_head import QWEN_REVISION, OBSERVATION_EVAL_PROTOCOL
 from routeset.train_v2 import atomic_checkpoint, positive_assignment_loss, restore_rng, rng_state, synchronized_time
 from scripts.train_observed_lora import (install_lora, adapters, adapter_state, load_adapters,
-    tensor_hash, head_state_hash, begin_audit, audit_gradients, finish_audit,
+    begin_audit, audit_gradients, finish_audit,
     load_raw_observations, online_feature)
 from scripts.train_observed_geometry import load_geometry, read_geometry, POINT_FIELDS
 from scripts.train_observed_routes import observation_metrics, paired_language_indices
@@ -27,6 +28,18 @@ DEPENDENCIES = [PROJECT/name for name in (
     'scripts/train_observed_lora.py', 'scripts/train_observed_geometry.py',
     'scripts/train_observed_routes.py', 'routeset/observed_geometry.py',
     'routeset/observed_route_head.py', 'routeset/train_v2.py')]
+
+
+def tensor_hash(tensor):
+    # RGB-D geometry adds a scalar log_attention_scale. Flatten before viewing
+    # bytes so scalar, vector and matrix parameters share the same audit path.
+    value = tensor.detach().cpu().contiguous().reshape(-1)
+    return hashlib.sha256(value.view(torch.uint8).numpy().tobytes()).hexdigest()
+
+
+def head_state_hash(head):
+    payload = {name:tensor_hash(value) for name,value in head.state_dict().items()}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
 def geometry_inputs(feature, data, geometry, idx, device, reread=False, pixel_stride=2):

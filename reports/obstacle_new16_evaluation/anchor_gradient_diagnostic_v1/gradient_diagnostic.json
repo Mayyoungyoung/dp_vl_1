@@ -1,0 +1,314 @@
+{
+  "scope": "local gradient diagnostic on one predeclared TRAIN batch; not proof of general conflict or improvement",
+  "run": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_new16_v1/aux_seed0",
+  "selected_training_ids": [
+    "obstacle_reach_272000_target0",
+    "obstacle_reach_272000_target2",
+    "obstacle_reach_272001_target0",
+    "obstacle_reach_272001_target1",
+    "obstacle_reach_272001_target2",
+    "obstacle_reach_272002_target0"
+  ],
+  "batch_size": 6,
+  "assignment_policy": "original full path+event saturation assignment fixed separately at each checkpoint; reused unchanged for every component",
+  "loss_scaling": "interior xyz, endpoint xyz and events preserve their exact contribution to original mean path loss; grounding uses original training weight",
+  "gradient_scope": "shared learned geometry PARAMETERS, including attention producers; grounding need not depend on the intermediate anchor tensor to update attention",
+  "model_updated": false,
+  "original_ADE_checkpoint_selection_preserved": true,
+  "script_sha256": "80af3868affc08fec7a1025d4d8f912a1f7846c345eeb9dd881812f488838df1",
+  "dataset_fingerprint": "d96975b63e6aefaf22f0204c94528f3753b5c5cef3fade94e96961efe53462ca",
+  "records": [
+    {
+      "checkpoint": "best.pt",
+      "step": 250,
+      "checkpoint_sha256": "7bc630b1d88ea5131f4ad963e6adfb42687718bf0e901a542fe5f6e505d3743d",
+      "fixed_target_assignment_indices": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "loss_components": {
+        "interior": 0.011356215924024582,
+        "endpoint": 0.00040152895962819457,
+        "events": 4.442080535227433e-05,
+        "weighted_grounding": 0.10300804674625397,
+        "original_path": 0.011802167631685734
+      },
+      "loss_reconstruction_abs_difference": 2.7939677238464355e-09,
+      "gradients": {
+        "all_geometry": {
+          "parameter_names": [
+            "geometry.log_attention_scale",
+            "geometry.task_query.0.weight",
+            "geometry.task_query.0.bias",
+            "geometry.task_query.1.weight",
+            "geometry.task_query.1.bias",
+            "geometry.state_query.0.weight",
+            "geometry.state_query.0.bias",
+            "geometry.state_query.2.weight",
+            "geometry.state_query.2.bias",
+            "geometry.point_encoder.0.weight",
+            "geometry.point_encoder.0.bias",
+            "geometry.point_encoder.2.weight",
+            "geometry.point_encoder.2.bias",
+            "geometry.fusion.0.weight",
+            "geometry.fusion.0.bias",
+            "geometry.fusion.2.weight",
+            "geometry.fusion.2.bias"
+          ],
+          "interior_vs_endpoint_plus_grounding": {
+            "first_norm": 0.011417355388402939,
+            "second_norm": 0.04367882013320923,
+            "first_over_second_norm": 0.2613934019642226,
+            "cosine": 0.20514275133609772,
+            "dot_product": 0.00010230400221189484
+          },
+          "interior_vs_grounding": {
+            "first_norm": 0.011417355388402939,
+            "second_norm": 0.043567705899477005,
+            "first_over_second_norm": 0.26206005463647775,
+            "cosine": 0.1987777203321457,
+            "dot_product": 9.887760097626597e-05
+          },
+          "endpoint_vs_grounding": {
+            "first_norm": 0.0009628944681026042,
+            "second_norm": 0.043567705899477005,
+            "first_over_second_norm": 0.022101105583210497,
+            "cosine": 0.10451190173625946,
+            "dot_product": 4.384389285405632e-06
+          },
+          "component_norms": {
+            "interior": 0.011417355388402939,
+            "endpoint": 0.0009628944681026042,
+            "weighted_grounding": 0.043567705899477005,
+            "events": 0.00014299813483376056
+          }
+        },
+        "attention_producer": {
+          "parameter_names": [
+            "geometry.log_attention_scale",
+            "geometry.task_query.0.weight",
+            "geometry.task_query.0.bias",
+            "geometry.task_query.1.weight",
+            "geometry.task_query.1.bias",
+            "geometry.state_query.0.weight",
+            "geometry.state_query.0.bias",
+            "geometry.state_query.2.weight",
+            "geometry.state_query.2.bias",
+            "geometry.point_encoder.0.weight",
+            "geometry.point_encoder.0.bias",
+            "geometry.point_encoder.2.weight",
+            "geometry.point_encoder.2.bias"
+          ],
+          "interior_vs_endpoint_plus_grounding": {
+            "first_norm": 0.007179384585469961,
+            "second_norm": 0.04367882013320923,
+            "first_over_second_norm": 0.16436764005013585,
+            "cosine": 0.32632118463516235,
+            "dot_product": 0.00010233010107185692
+          },
+          "interior_vs_grounding": {
+            "first_norm": 0.007179384585469961,
+            "second_norm": 0.043567705899477005,
+            "first_over_second_norm": 0.16478684009745265,
+            "cosine": 0.3161156475543976,
+            "dot_product": 9.887760097626597e-05
+          },
+          "endpoint_vs_grounding": {
+            "first_norm": 0.0009624327649362385,
+            "second_norm": 0.043567705899477005,
+            "first_over_second_norm": 0.02209050821167501,
+            "cosine": 0.10456203669309616,
+            "dot_product": 4.384389285405632e-06
+          },
+          "component_norms": {
+            "interior": 0.007179384585469961,
+            "endpoint": 0.0009624327649362385,
+            "weighted_grounding": 0.043567705899477005,
+            "events": 7.85110896686092e-05
+          }
+        }
+      },
+      "cpu_seconds": 1.4689404760720208
+    },
+    {
+      "checkpoint": "last.pt",
+      "step": 1000,
+      "checkpoint_sha256": "dfbe18a9db4143cea00fb9f57947cb2d75badb1e4092d9e6ffb7e08d835dc600",
+      "fixed_target_assignment_indices": [
+        [
+          1,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "loss_components": {
+        "interior": 0.0005724298534914851,
+        "endpoint": 9.837121979217045e-07,
+        "events": 8.374464414373506e-06,
+        "weighted_grounding": 0.07205372303724289,
+        "original_path": 0.0005817883065901697
+      },
+      "loss_reconstruction_abs_difference": 2.9103830456733704e-10,
+      "gradients": {
+        "all_geometry": {
+          "parameter_names": [
+            "geometry.log_attention_scale",
+            "geometry.task_query.0.weight",
+            "geometry.task_query.0.bias",
+            "geometry.task_query.1.weight",
+            "geometry.task_query.1.bias",
+            "geometry.state_query.0.weight",
+            "geometry.state_query.0.bias",
+            "geometry.state_query.2.weight",
+            "geometry.state_query.2.bias",
+            "geometry.point_encoder.0.weight",
+            "geometry.point_encoder.0.bias",
+            "geometry.point_encoder.2.weight",
+            "geometry.point_encoder.2.bias",
+            "geometry.fusion.0.weight",
+            "geometry.fusion.0.bias",
+            "geometry.fusion.2.weight",
+            "geometry.fusion.2.bias"
+          ],
+          "interior_vs_endpoint_plus_grounding": {
+            "first_norm": 0.025378340855240822,
+            "second_norm": 0.0702802985906601,
+            "first_over_second_norm": 0.36110177907829033,
+            "cosine": 0.07142793387174606,
+            "dot_product": 0.00012739867088384926
+          },
+          "interior_vs_grounding": {
+            "first_norm": 0.025378340855240822,
+            "second_norm": 0.07020872086286545,
+            "first_over_second_norm": 0.3614699220173921,
+            "cosine": 0.0738515555858612,
+            "dot_product": 0.00013158729416318238
+          },
+          "endpoint_vs_grounding": {
+            "first_norm": 0.00040069251554086804,
+            "second_norm": 0.07020872086286545,
+            "first_over_second_norm": 0.005707161597823682,
+            "cosine": 0.175942525267601,
+            "dot_product": 4.9496343308419455e-06
+          },
+          "component_norms": {
+            "interior": 0.025378340855240822,
+            "endpoint": 0.00040069251554086804,
+            "weighted_grounding": 0.07020872086286545,
+            "events": 0.00039823693805374205
+          }
+        },
+        "attention_producer": {
+          "parameter_names": [
+            "geometry.log_attention_scale",
+            "geometry.task_query.0.weight",
+            "geometry.task_query.0.bias",
+            "geometry.task_query.1.weight",
+            "geometry.task_query.1.bias",
+            "geometry.state_query.0.weight",
+            "geometry.state_query.0.bias",
+            "geometry.state_query.2.weight",
+            "geometry.state_query.2.bias",
+            "geometry.point_encoder.0.weight",
+            "geometry.point_encoder.0.bias",
+            "geometry.point_encoder.2.weight",
+            "geometry.point_encoder.2.bias"
+          ],
+          "interior_vs_endpoint_plus_grounding": {
+            "first_norm": 0.025253303349018097,
+            "second_norm": 0.07028030604124069,
+            "first_over_second_norm": 0.3593226149897438,
+            "cosine": 0.0717824250459671,
+            "dot_product": 0.00012740015517920256
+          },
+          "interior_vs_grounding": {
+            "first_norm": 0.025253303349018097,
+            "second_norm": 0.07020872086286545,
+            "first_over_second_norm": 0.3596889822041322,
+            "cosine": 0.07421722263097763,
+            "dot_product": 0.00013158729416318238
+          },
+          "endpoint_vs_grounding": {
+            "first_norm": 0.0004006881208624691,
+            "second_norm": 0.07020872086286545,
+            "first_over_second_norm": 0.005707099003343325,
+            "cosine": 0.17594444751739502,
+            "dot_product": 4.9496343308419455e-06
+          },
+          "component_norms": {
+            "interior": 0.025253303349018097,
+            "endpoint": 0.0004006881208624691,
+            "weighted_grounding": 0.07020872086286545,
+            "events": 0.0003941805916838348
+          }
+        }
+      },
+      "cpu_seconds": 1.3063514209352434
+    }
+  ]
+}

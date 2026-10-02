@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/releases/093a1b4c04533740acbea7a3d78e98f2c037da63/scripts/train_observed_geometry_lora.py", line 505, in <module>
+    main()
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/releases/093a1b4c04533740acbea7a3d78e98f2c037da63/scripts/train_observed_geometry_lora.py", line 491, in main
+    self_test()
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/releases/093a1b4c04533740acbea7a3d78e98f2c037da63/scripts/train_observed_geometry_lora.py", line 376, in self_test
+    initial_head = {name:tensor_hash(parameter) for name,parameter in head.named_parameters()}
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/releases/093a1b4c04533740acbea7a3d78e98f2c037da63/scripts/train_observed_geometry_lora.py", line 376, in <dictcomp>
+    initial_head = {name:tensor_hash(parameter) for name,parameter in head.named_parameters()}
+                         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/releases/093a1b4c04533740acbea7a3d78e98f2c037da63/scripts/train_observed_lora.py", line 70, in tensor_hash
+    return hashlib.sha256(value.view(torch.uint8).numpy().tobytes()).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: self.dim() cannot be 0 to view Float as Byte (different element sizes)

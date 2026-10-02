@@ -1,0 +1,1377 @@
+{
+  "scope": "single-seed paired DEVELOPMENT analysis; all four reused DEV parents, not independent final confirmation",
+  "box_only_warning": "TipValid checks the supplied physical boxes only. Full arm, table/walls/other bodies, IK and execution remain unverified.",
+  "reference_audit": {
+    "TRAIN": {
+      "examples": 48,
+      "reference_trajectories": 90,
+      "examples_with_reference": 47,
+      "reference_count_distribution": {
+        "2": 25,
+        "0": 1,
+        "1": 13,
+        "3": 9
+      },
+      "known_type_count_distribution": {
+        "0": 14,
+        "2": 17,
+        "1": 15,
+        "3": 2
+      },
+      "at_least_two_known_type_examples": 19,
+      "unknown_reference_trajectories": 35,
+      "known_type_frequency": {
+        "negative_x": 24,
+        "positive_y": 27,
+        "positive_x": 4
+      }
+    },
+    "DEV_MODEL": {
+      "examples": 12,
+      "reference_trajectories": 20,
+      "examples_with_reference": 12,
+      "reference_count_distribution": {
+        "1": 5,
+        "2": 6,
+        "3": 1
+      },
+      "known_type_count_distribution": {
+        "0": 2,
+        "2": 5,
+        "1": 4,
+        "3": 1
+      },
+      "at_least_two_known_type_examples": 6,
+      "unknown_reference_trajectories": 3,
+      "known_type_frequency": {
+        "negative_x": 7,
+        "positive_y": 9,
+        "positive_x": 1
+      }
+    }
+  },
+  "matched_config_fields": {
+    "dataset_fingerprint": "d96975b63e6aefaf22f0204c94528f3753b5c5cef3fade94e96961efe53462ca",
+    "feature_dim": 4096,
+    "horizon": 24,
+    "candidates": 4,
+    "width": 128,
+    "depth": 2,
+    "steps": 1000,
+    "seed": 0,
+    "lr": 0.0003,
+    "batch_size": 32,
+    "event_scale": 0.2,
+    "pooling": "both",
+    "pixel_stride": 2,
+    "point_width": 64,
+    "endpoint_residual_bound": 0.05
+  },
+  "training_objective_weights": {
+    "plain": 0.0,
+    "aux": 0.02
+  },
+  "config_hashes": {
+    "plain": "aa04910aa9a49afcf523e39c98ffe1d2fa6237d5d524c9c19656c9807a3909f4",
+    "aux": "0f4de1512854c7b40cec45c5d07ade4a0ba8c9ed288ff7c1eabcd439e6bb212c"
+  },
+  "comparisons": {
+    "DEV_MODEL": {
+      "semantic_goal_accuracy": {
+        "plain": 0.020833333333333332,
+        "aux": 0.08333333333333333,
+        "aux_minus_plain": 0.0625
+      },
+      "AnySemanticGoalAtK": {
+        "plain": 0.08333333333333333,
+        "aux": 0.08333333333333333,
+        "aux_minus_plain": 0.0
+      },
+      "endpoint_error_m": {
+        "plain": 0.15102351325310173,
+        "aux": 0.16370709334550934,
+        "aux_minus_plain": 0.01268358009240761
+      },
+      "TipClearAtK": {
+        "plain": 0.625,
+        "aux": 0.5,
+        "aux_minus_plain": -0.125
+      },
+      "EventSequenceCorrectAtK": {
+        "plain": 1.0,
+        "aux": 1.0,
+        "aux_minus_plain": 0.0
+      },
+      "TipValidAtK": {
+        "plain": 0.020833333333333332,
+        "aux": 0.041666666666666664,
+        "aux_minus_plain": 0.020833333333333332
+      },
+      "AnyTipValidAtK": {
+        "plain": 0.08333333333333333,
+        "aux": 0.08333333333333333,
+        "aux_minus_plain": 0.0
+      },
+      "UniqueClassifiedTipValidAtK": {
+        "plain": 0.08333333333333333,
+        "aux": 0.16666666666666666,
+        "aux_minus_plain": 0.08333333333333333
+      },
+      "UnknownTypeTipValidCount": {
+        "plain": 0.0,
+        "aux": 0.0,
+        "aux_minus_plain": 0.0
+      },
+      "DuplicateClassifiedTipValidCount": {
+        "plain": 0.0,
+        "aux": 0.0,
+        "aux_minus_plain": 0.0
+      },
+      "KnownReferenceTypeCoverageAtK": {
+        "plain": 0.05,
+        "aux": 0.1,
+        "aux_minus_plain": 0.05
+      },
+      "mean_path_length_m": {
+        "plain": 1.0790740512311459,
+        "aux": 1.066743664443493,
+        "aux_minus_plain": -0.01233038678765297
+      }
+    },
+    "TRAIN": {
+      "semantic_goal_accuracy": {
+        "plain": 0.0,
+        "aux": 0.15625,
+        "aux_minus_plain": 0.15625
+      },
+      "AnySemanticGoalAtK": {
+        "plain": 0.0,
+        "aux": 0.16666666666666666,
+        "aux_minus_plain": 0.16666666666666666
+      },
+      "endpoint_error_m": {
+        "plain": 0.12246502711950102,
+        "aux": 0.15238197143230134,
+        "aux_minus_plain": 0.029916944312800314
+      },
+      "TipClearAtK": {
+        "plain": 0.5052083333333334,
+        "aux": 0.4739583333333333,
+        "aux_minus_plain": -0.031250000000000056
+      },
+      "EventSequenceCorrectAtK": {
+        "plain": 0.9947916666666666,
+        "aux": 1.0,
+        "aux_minus_plain": 0.00520833333333337
+      },
+      "TipValidAtK": {
+        "plain": 0.0,
+        "aux": 0.078125,
+        "aux_minus_plain": 0.078125
+      },
+      "AnyTipValidAtK": {
+        "plain": 0.0,
+        "aux": 0.16666666666666666,
+        "aux_minus_plain": 0.16666666666666666
+      },
+      "UniqueClassifiedTipValidAtK": {
+        "plain": 0.0,
+        "aux": 0.22916666666666666,
+        "aux_minus_plain": 0.22916666666666666
+      },
+      "UnknownTypeTipValidCount": {
+        "plain": 0.0,
+        "aux": 0.0,
+        "aux_minus_plain": 0.0
+      },
+      "DuplicateClassifiedTipValidCount": {
+        "plain": 0.0,
+        "aux": 0.08333333333333333,
+        "aux_minus_plain": 0.08333333333333333
+      },
+      "KnownReferenceTypeCoverageAtK": {
+        "plain": 0.0,
+        "aux": 0.10294117647058823,
+        "aux_minus_plain": 0.10294117647058823
+      },
+      "mean_path_length_m": {
+        "plain": 1.3603905839845538,
+        "aux": 1.1610678527504206,
+        "aux_minus_plain": -0.19932273123413324
+      }
+    }
+  },
+  "independent_gate_failures": {
+    "DEV_MODEL": {
+      "plain": {
+        "candidate_budget": 48,
+        "independent_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 47,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 18,
+          "event_state_sequence_correct": 0,
+          "TipValid": 47
+        },
+        "valid_unclassified": 0,
+        "type_frequency_all_submitted": {
+          "negative_y": 1,
+          "positive_y": 26,
+          "unknown": 7,
+          "negative_x": 14
+        }
+      },
+      "aux": {
+        "candidate_budget": 48,
+        "independent_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 44,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 24,
+          "event_state_sequence_correct": 0,
+          "TipValid": 46
+        },
+        "valid_unclassified": 0,
+        "type_frequency_all_submitted": {
+          "negative_x": 24,
+          "positive_y": 17,
+          "unknown": 7
+        }
+      }
+    },
+    "TRAIN": {
+      "plain": {
+        "candidate_budget": 192,
+        "independent_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 192,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 95,
+          "event_state_sequence_correct": 1,
+          "TipValid": 192
+        },
+        "valid_unclassified": 0,
+        "type_frequency_all_submitted": {
+          "unknown": 83,
+          "positive_y": 62,
+          "negative_x": 43,
+          "positive_x": 2,
+          "negative_y": 2
+        }
+      },
+      "aux": {
+        "candidate_budget": 192,
+        "independent_failures": {
+          "finite_xyz": 0,
+          "finite_event_values": 0,
+          "semantic_goal_correct": 162,
+          "starts_at_current_state": 0,
+          "tip_segments_clear": 101,
+          "event_state_sequence_correct": 0,
+          "TipValid": 177
+        },
+        "valid_unclassified": 0,
+        "type_frequency_all_submitted": {
+          "unknown": 56,
+          "positive_y": 56,
+          "negative_x": 54,
+          "negative_y": 26
+        }
+      }
+    }
+  },
+  "per_scene_deltas": {
+    "DEV_MODEL": [
+      {
+        "scene_id": "obstacle_reach_271100_target0",
+        "parent_id": "obstacle_reach_271100",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.009400383732520612,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.22857779264450073
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271100_target1",
+        "parent_id": "obstacle_reach_271100",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.08937792769782665,
+          "TipClearAtK": -0.75,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.3255789875984192
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271100_target2",
+        "parent_id": "obstacle_reach_271100",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.08456703684456138,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.5,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 2,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 1.0,
+          "mean_path_length_m": -0.1002960056066513
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271101_target0",
+        "parent_id": "obstacle_reach_271101",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.08954086354347426,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.04677243530750275
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271101_target1",
+        "parent_id": "obstacle_reach_271101",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.16852238893401317,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.10627098381519318
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271101_target2",
+        "parent_id": "obstacle_reach_271101",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.11696005539380067,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.001818537712097168
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271102_target0",
+        "parent_id": "obstacle_reach_271102",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": -0.25,
+          "AnySemanticGoalAtK": -1.0,
+          "endpoint_error_m": 0.016966125703972892,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": -0.25,
+          "AnyTipValidAtK": -1.0,
+          "UniqueClassifiedTipValidAtK": -1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": -0.5,
+          "mean_path_length_m": -0.003256559371948242
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271102_target1",
+        "parent_id": "obstacle_reach_271102",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.07914969714730455,
+          "TipClearAtK": 0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.262307733297348
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271102_target2",
+        "parent_id": "obstacle_reach_271102",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.0581205371213762,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.13983219861984253
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271103_target0",
+        "parent_id": "obstacle_reach_271103",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.1195087489656137,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.18850311636924744
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271103_target1",
+        "parent_id": "obstacle_reach_271103",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.17350879024324029,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.14026300609111786
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_271103_target2",
+        "parent_id": "obstacle_reach_271103",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.03226618472391321,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.0028140395879745483
+        }
+      }
+    ],
+    "TRAIN": [
+      {
+        "scene_id": "obstacle_reach_272000_target0",
+        "parent_id": "obstacle_reach_272000",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.021217870376599113,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.6711907386779785
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272000_target1",
+        "parent_id": "obstacle_reach_272000",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.011335260024845112,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.25,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": 0.01230505108833313
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272000_target2",
+        "parent_id": "obstacle_reach_272000",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.12384512062828446,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.15761610865592957
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272001_target0",
+        "parent_id": "obstacle_reach_272001",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.029289568519648146,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.383662611246109
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272001_target1",
+        "parent_id": "obstacle_reach_272001",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.05910782972262615,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 1.0,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 2,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 2,
+          "KnownReferenceTypeCoverageAtK": 1.0,
+          "mean_path_length_m": 0.20747435092926025
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272001_target2",
+        "parent_id": "obstacle_reach_272001",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.09698453977954391,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.24301190674304962
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272002_target0",
+        "parent_id": "obstacle_reach_272002",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.0023411656208808806,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.022202014923095703
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272002_target1",
+        "parent_id": "obstacle_reach_272002",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.11875516419985027,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.3773590475320816
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272002_target2",
+        "parent_id": "obstacle_reach_272002",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.09188166962049282,
+          "TipClearAtK": 0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 1.0,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 2,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 2,
+          "KnownReferenceTypeCoverageAtK": 1.0,
+          "mean_path_length_m": 0.38131290674209595
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272003_target0",
+        "parent_id": "obstacle_reach_272003",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.0977993481707699,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.1236562430858612
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272003_target1",
+        "parent_id": "obstacle_reach_272003",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.02297682223020303,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.1489240527153015
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272003_target2",
+        "parent_id": "obstacle_reach_272003",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.75,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.061477229999797336,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.25,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 1.0,
+          "mean_path_length_m": -0.25213366746902466
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272004_target0",
+        "parent_id": "obstacle_reach_272004",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.1117710776885964,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.1691940277814865
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272004_target1",
+        "parent_id": "obstacle_reach_272004",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.017520104976275083,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.14816051721572876
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272004_target2",
+        "parent_id": "obstacle_reach_272004",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.0005493183922987005,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.25007687509059906
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272005_target0",
+        "parent_id": "obstacle_reach_272005",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.029477974472383525,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.25,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.19459271430969238
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272005_target1",
+        "parent_id": "obstacle_reach_272005",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.09006448898370259,
+          "TipClearAtK": -1.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.40883195400238037
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272005_target2",
+        "parent_id": "obstacle_reach_272005",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.022646226244858875,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.19255217909812927
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272006_target0",
+        "parent_id": "obstacle_reach_272006",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.09388215044992879,
+          "TipClearAtK": 0.75,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.7135504186153412
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272006_target1",
+        "parent_id": "obstacle_reach_272006",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.035860194947525376,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.6012614071369171
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272006_target2",
+        "parent_id": "obstacle_reach_272006",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.03331873042413906,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.22448758780956268
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272007_target0",
+        "parent_id": "obstacle_reach_272007",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.03855807305979794,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -1.3288648128509521
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272007_target1",
+        "parent_id": "obstacle_reach_272007",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.05669781175642047,
+          "TipClearAtK": -0.75,
+          "EventSequenceCorrectAtK": 0.25,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -1.262172132730484
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272007_target2",
+        "parent_id": "obstacle_reach_272007",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.009587797337992213,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -1.2207807302474976
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272008_target0",
+        "parent_id": "obstacle_reach_272008",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.0328381737819253,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.0725763589143753
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272008_target1",
+        "parent_id": "obstacle_reach_272008",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.09934009434755436,
+          "TipClearAtK": 0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.7562077343463898
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272008_target2",
+        "parent_id": "obstacle_reach_272008",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.05082853021313633,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.08802475035190582
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272009_target0",
+        "parent_id": "obstacle_reach_272009",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.07432644942217878,
+          "TipClearAtK": -0.75,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.19298332929611206
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272009_target1",
+        "parent_id": "obstacle_reach_272009",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.07746546081769645,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.01986554265022278
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272009_target2",
+        "parent_id": "obstacle_reach_272009",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.75,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.025483779511103748,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.25,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.16826683282852173
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272010_target0",
+        "parent_id": "obstacle_reach_272010",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.05338931677067579,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.3800235390663147
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272010_target1",
+        "parent_id": "obstacle_reach_272010",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.002176197167499061,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.25160516798496246
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272010_target2",
+        "parent_id": "obstacle_reach_272010",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.040192591751632895,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.6079122424125671
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272011_target0",
+        "parent_id": "obstacle_reach_272011",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.1726281489572088,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.06905058026313782
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272011_target1",
+        "parent_id": "obstacle_reach_272011",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.003582256798741225,
+          "TipClearAtK": -0.75,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -0.4560292512178421
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272011_target2",
+        "parent_id": "obstacle_reach_272011",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.05977322003016891,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.6791833639144897
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272012_target0",
+        "parent_id": "obstacle_reach_272012",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.018250622713712198,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.5,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 2,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": 0.06327566504478455
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272012_target1",
+        "parent_id": "obstacle_reach_272012",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.06998510725296611,
+          "TipClearAtK": 0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.37100404500961304
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272012_target2",
+        "parent_id": "obstacle_reach_272012",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.043249068814253666,
+          "TipClearAtK": 0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.18356305360794067
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272013_target0",
+        "parent_id": "obstacle_reach_272013",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.11410466959139404,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.07864817976951599
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272013_target1",
+        "parent_id": "obstacle_reach_272013",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.020597293304606745,
+          "TipClearAtK": 0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -0.26262345910072327
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272013_target2",
+        "parent_id": "obstacle_reach_272013",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.008792685877683296,
+          "TipClearAtK": 0.0,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.16050879657268524
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272014_target0",
+        "parent_id": "obstacle_reach_272014",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.034763530031519746,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.20031259953975677
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272014_target1",
+        "parent_id": "obstacle_reach_272014",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.10306831716144915,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": 0.1655164361000061
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272014_target2",
+        "parent_id": "obstacle_reach_272014",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": -0.012623806034281926,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": 0.14186859130859375
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272015_target0",
+        "parent_id": "obstacle_reach_272015",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.12325724888060398,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.0,
+          "mean_path_length_m": -1.0146514773368835
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272015_target1",
+        "parent_id": "obstacle_reach_272015",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 0.0,
+          "AnySemanticGoalAtK": 0.0,
+          "endpoint_error_m": 0.027030086965854766,
+          "TipClearAtK": -0.25,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.0,
+          "AnyTipValidAtK": 0.0,
+          "UniqueClassifiedTipValidAtK": 0,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": null,
+          "mean_path_length_m": -1.3867290914058685
+        }
+      },
+      {
+        "scene_id": "obstacle_reach_272015_target2",
+        "parent_id": "obstacle_reach_272015",
+        "aux_minus_plain": {
+          "semantic_goal_accuracy": 1.0,
+          "AnySemanticGoalAtK": 1.0,
+          "endpoint_error_m": -0.061945265591122484,
+          "TipClearAtK": -0.5,
+          "EventSequenceCorrectAtK": 0.0,
+          "TipValidAtK": 0.25,
+          "AnyTipValidAtK": 1.0,
+          "UniqueClassifiedTipValidAtK": 1,
+          "UnknownTypeTipValidCount": 0,
+          "DuplicateClassifiedTipValidCount": 0,
+          "KnownReferenceTypeCoverageAtK": 0.5,
+          "mean_path_length_m": -0.9307658076286316
+        }
+      }
+    ]
+  },
+  "model_run_dirs": {
+    "plain": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_new16_v1/plain_seed0",
+    "aux": "/home/wzy/dpvlm/route_set_v1/runs/observed_obstacle_new16_v1/aux_seed0"
+  },
+  "prediction_files_repaired_or_filtered": false
+}

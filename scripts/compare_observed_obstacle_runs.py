@@ -21,6 +21,10 @@ COMPARISON_METRICS = ("semantic_goal_accuracy", "AnySemanticGoalAtK", "endpoint_
     "UniqueClassifiedTipValidAtK", "UnknownTypeTipValidCount", "DuplicateClassifiedTipValidCount",
     "KnownReferenceTypeCoverageAtK", "mean_path_length_m")
 
+# AUX is a reserved Windows device name even inside a directory. Keep the
+# statistical/run alias for compatibility, but emit portable artifact paths.
+OUTPUT_DIRECTORY_ALIASES = {"plain": "plain", "aux": "auxiliary"}
+
 
 def reference_audit(data):
     rows = jsonl(Path(data) / "supervision.jsonl")
@@ -115,7 +119,7 @@ def compare(data, plain, aux, output, make_plots=True):
         results[split], gates[split] = {}, {}
         scene_rows, predictions = {}, {}
         for name, run in [("plain", plain), ("aux", aux)]:
-            destination = output / name / folder
+            destination = output / OUTPUT_DIRECTORY_ALIASES[name] / folder
             predictions_file = run / folder / "predictions.npz"
             results[split][name] = evaluate(data, predictions_file, destination, split=split)
             scene_rows[name] = {row["scene_id"]: row for row in json.loads((destination / "per_scene.json").read_text())}
@@ -139,7 +143,9 @@ def compare(data, plain, aux, output, make_plots=True):
         training_objective_weights={name: config.get("grounding_weight") for name, config in configs.items()},
         config_hashes={"plain": sha256(plain / "config.json"), "aux": sha256(aux / "config.json")},
         comparisons=comparisons, independent_gate_failures=gates, per_scene_deltas=scene_deltas,
-        model_run_dirs={"plain": str(plain), "aux": str(aux)}, prediction_files_repaired_or_filtered=False)
+        model_run_dirs={"plain": str(plain), "aux": str(aux)},
+        output_directory_aliases=OUTPUT_DIRECTORY_ALIASES,
+        prediction_files_repaired_or_filtered=False)
     (output / "paired_comparison.json").write_text(json.dumps(result, indent=2, allow_nan=False), encoding="utf-8")
     (output / "reference_type_audit.json").write_text(json.dumps(reference, indent=2), encoding="utf-8")
     return result

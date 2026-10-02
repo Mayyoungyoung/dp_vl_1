@@ -29,7 +29,22 @@ Endpoint grounding remains the dominant obstacle. The auxiliary DEV learned surf
 
 The auxiliary model also shows a checkpoint-selection tradeoff: strict semantic candidate accuracy at steps 250/500/750/1000 was 0.0833/0/0.2708/0.2292, while candidate ADE selected step 250. This is recorded as a diagnostic observation; the reported checkpoint is not retrospectively changed.
 
-The route head uses its learned target anchor to construct every point on an initial straight reference line. Thus the interior-path objective can send gradients through both that line and the shared geometric context. A minimal next hypothesis is to detach only the anchor used by the interior reference line, keeping endpoint and attention-grounding learning active. This is a hypothesis, not an implemented improvement or established contribution. A predeclared TRAIN-batch gradient decomposition at the unchanged step-250 and step-1000 checkpoints will test whether shared-geometry gradients actually oppose each other. Grounding gradients must be measured on the attention-producing parameters: zero derivative with respect to a downstream anchor tensor would not imply absent attention learning.
+The route head uses its learned target anchor to construct every point on an initial straight reference line. Thus the interior-path objective can send gradients through both that line and the shared geometric context. The proposed minimal hypothesis was to detach only the anchor used by the interior reference line, keeping endpoint and attention-grounding learning active. Before implementing it, we tested whether shared-geometry gradients actually opposed each other. Grounding gradients were measured on the attention-producing parameters: zero derivative with respect to a downstream anchor tensor would not imply absent attention learning.
+
+## Actual fixed-batch gradient diagnostic
+
+The unchanged step-250 best and step-1000 last checkpoints were evaluated on the same lexicographically first six eligible TRAIN instructions, declared before gradient measurement. Saturation assignments were computed from the original whole-path-plus-event objective once at each checkpoint and reused unchanged across all components. Interior XYZ, endpoint XYZ, and event losses retained their exact original mean-loss scaling; grounding retained weight 0.02. Loss reconstruction errors were below 3e-9. No optimizer update or checkpoint reselection occurred.
+
+| Checkpoint | Shared parameters | Interior versus endpoint+grounding cosine | Interior / endpoint+grounding norm |
+|---|---|---:|---:|
+| best, step 250 | all geometry | +0.2051 | 0.2614 |
+| best, step 250 | attention producer | +0.3263 | 0.1644 |
+| last, step 1000 | all geometry | +0.0714 | 0.3611 |
+| last, step 1000 | attention producer | +0.0718 | 0.3593 |
+
+The actual result does **not support an opposing aggregate-gradient conflict on this batch**. The weighted grounding gradient is nonzero, with norm 0.0436 at best and 0.0702 at last; endpoint norms are much smaller, 0.000963 and 0.000401. The proposed detach change has not been implemented, and these positive cosines cannot be cited as evidence for it. This small local test does not rule out conflict in other batches or gradient paths. The next priority remains improving observed target localization against the strong observation-only prototype baseline, while retaining the current route failures and fixed evaluation protocol.
+
+The actual diagnostic used immutable release `093a1b4c04533740acbea7a3d78e98f2c037da63`, PID 202197 (child 202198), CPU1, 5.88 seconds, exit 0. Exact chosen TRAIN IDs, checkpoint/source hashes, assignments, norms and commands are recorded in `obstacle_new16_evaluation/anchor_gradient_diagnostic_v1/gradient_diagnostic.json` and `execution.json`.
 
 ## Reference support and limits
 
@@ -43,7 +58,8 @@ The 55 classified TRAIN references contain 24 negative-x, 27 positive-y, and 4 p
 - `obstacle_new16_evaluation/paired_analysis_v1/reference_type_audit.json`: all reference counts and known/unknown type frequencies.
 - `obstacle_new16_evaluation/paired_analysis_v1/all_dev_routes_xy.png` and `all_dev_routes_xz.png`: every DEV parent and target, every candidate, and reference paths. Projections are visual aids; the numeric checker uses complete 3D segments.
 - `obstacle_new16_evaluation/paired_analysis_v1/execution.json`: immutable source release `7474782f903ed104fd590b6bc3181da1e3675175`, script hash, exact command, exit 0, and 7.44 CPU seconds.
-- `scripts/compare_observed_obstacle_runs.py`: fixed evaluator and exhaustive paired plotting; `scripts/diagnose_observed_anchor_gradients.py`: pending actual gradient diagnostic at the time this note was created.
+- `scripts/compare_observed_obstacle_runs.py`: fixed evaluator and exhaustive paired plotting; `scripts/diagnose_observed_anchor_gradients.py`: actual unchanged-checkpoint diagnostic above.
+- Local paired artifacts use `auxiliary/` because `AUX` is a reserved Windows device path. Both old export directories were renamed without content changes (12 files checked by SHA256); `windows_export_path_migration.json` preserves the mapping. Future script outputs use the portable name; JSON model aliases remain `aux` for compatibility.
 
 The comparison command, run from the recorded immutable release, is:
 
