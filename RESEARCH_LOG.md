@@ -1,3 +1,13 @@
+## Geometric coverage / fresh DEV32 round completed — 2026-10-04
+
+This entry supersedes the historical active/running descriptions below. All registered32 DEV_MODEL parents400256..400287 were collected under explicit user authorization, unchanged immutable5c8 protocol:864 slots,570 accepted/294 failures,96 requests,32 successful workers. Original DEV_SCORE32 was NOT substituted. Frozen evaluation source6a6339e; no checkpoint/q/threshold tuning; TEST_LOCKED never accessed. NewDEV32 is now used development evidence.
+
+Actual ordinary/current results: CandidateValid31.25/32.55%, AnyValid87.50/91.67%, ValidCount2.500/2.604, GeometricModeCount2.063/2.063, TwoDistinct K2 43.75/51.04%, K4 63.54/69.79%, ReferenceCoverage K4 16.59/17.13%, q Top1 79.17/87.50%. Candidate advantage +1.30pp parent CI[-3.13,+5.99], so strong old generation advantage does not reliably reproduce. Fixed q vs same-pool random retains +54.95pp gain CI[49.61,60.03]. Current K4 preserves all67 multimode requests; K2 loses18. Unknown124 valid routes yield87 unknown-only condition-mode occurrences. Not87 global classes. Finite reference coverage is not exhaustive true distribution.
+
+Old task1 collapse gate FALSE:3/36 current seed0 requests exactly one valid mode,2 zero-valid. No relation-conditioned generator, q training, selector modification or extra seeds executed. Stop this bounded round; next possible work is observation-only K2 passage dedup, not evaluation-oracle selection. New32 result cannot retroactively change this gate.
+
+All9 evaluation/test/analysis jobs closed:8 completed/1 preserved failure,115.035238s total. Collection outer2657s, two-worker sum5287.785s separately. Server27tests passed/0skip; downloaded241 new artifacts and456 source hashes verified. Final process inspection2026-10-03T18:40:27Z finds no project processes or active lock. No tasks running; do not relaunch fresh commands. Full Chinese report, commands, negative cases and all96 route plots: reports/geometric_modes_v1/RESULTS_REPORT.md; final receipts/hash index: FINAL_AUDIT.json. Raw pools and RNG also saved locally under runs/geometric_modes_v1/dev32_pools.
+
 # Research log
 
 ## 核心三臂进入真实训练；数据全量质量封存 — 2026-10-03 07:46 UTC
