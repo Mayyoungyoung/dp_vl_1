@@ -28,17 +28,42 @@ def plot(folder):
     ax=axes[1,0];families=list(data['paired_comparisons']);pos=np.arange(len(families));width=.32
     for offset,arm,color in [(-width/2,'ordinary','#aab7c4'),(width/2,'balanced','#227c9d')]:
         vals=[data['paired_comparisons'][k]['mean'][arm]['TipValidAtK']*100 for k in families]
-        bars=ax.bar(pos+offset,vals,width,label=arm,color=color);ax.bar_label(bars,fmt='%.1f')
+        std=[(data['paired_comparisons'][k]['sample_std'][arm]['TipValidAtK'] or 0)*100 for k in families]
+        bars=ax.bar(pos+offset,vals,width,yerr=std,capsize=4,label=arm,color=color);ax.bar_label(bars,fmt='%.1f',padding=8)
     ax.set_xticks(pos,['95 parents (seed0)' if x=='v2' else '191 parents (%d seeds)'%len(data['paired_comparisons'][x]['replicates']) for x in families])
     ax.set_ylabel('Candidate tip validity (%)');ax.set_ylim(0,100);ax.legend();ax.set_title('M8 paired generators: fixed last3000')
     ax=axes[1,1]
     for offset,arm,color in [(-width/2,'ordinary','#aab7c4'),(width/2,'balanced','#227c9d')]:
         vals=[data['paired_comparisons'][k]['mean'][arm]['UniqueClassifiedTipValidAtK'] for k in families]
-        bars=ax.bar(pos+offset,vals,width,label=arm,color=color);ax.bar_label(bars,fmt='%.2f')
+        std=[data['paired_comparisons'][k]['sample_std'][arm]['UniqueClassifiedTipValidAtK'] or 0 for k in families]
+        bars=ax.bar(pos+offset,vals,width,yerr=std,capsize=4,label=arm,color=color);ax.bar_label(bars,fmt='%.2f',padding=8)
     ax.set_xticks(pos,['95 parents (seed0)' if x=='v2' else '191 parents (%d seeds)'%len(data['paired_comparisons'][x]['replicates']) for x in families]);ax.set_ylim(0,max(2,ax.get_ylim()[1]*1.2))
     ax.set_ylabel('Mean distinct classified valid routes');ax.set_title('Incomplete known types; valid unknown routes retained')
     fig.suptitle('Observed multi-route planning: measured development evidence',fontsize=15)
     fig.savefig(folder/'RESULTS.png',dpi=160);plt.close(fig)
+
+    m8=[k for k in data['scorer_families'] if k!='M4']
+    if m8:
+        fig,axes=plt.subplots(2,len(m8),figsize=(7*len(m8),9),squeeze=False,constrained_layout=True)
+        for col,name in enumerate(m8):
+            scorers=data['scorer_families'][name]['scorers']
+            calibrated=[s['calibration']['dev_model_calibrated'] for s in scorers.values() if 'calibration' in s]
+            if not calibrated:continue
+            m=calibrated[0];ax=axes[0,col]
+            vals=[m['first_valid'],m['random_expected_valid'],m['shortest_valid']]+[v['selected_valid'] for v in calibrated]+[m['any_valid']]
+            names=['First','Random','Shortest']+list(scorers)+['AnyValid']
+            bars=ax.bar(names,np.array(vals)*100,color=['#aab7c4']*3+['#227c9d']*len(calibrated)+['#b7a57a'])
+            ax.bar_label(bars,fmt='%.1f',padding=3);ax.set_ylim(0,100);ax.tick_params(axis='x',labelsize=8)
+            ax.set_ylabel('Selected valid (%)');ax.set_title(name.replace('M8_','').replace('_seed0_expanded_scores',''))
+            ax=axes[1,col];ax.plot([0,1],[0,1],':',color='gray',label='Ideal')
+            for field,label in [('dev_model_uncalibrated','Raw q'),('dev_model_calibrated','Calibrated q')]:
+                bins=scorers['q_seed0']['calibration'][field]['reliability_bins']
+                bins=[b for b in bins if b['n']]
+                ax.plot([b['confidence'] for b in bins],[b['valid'] for b in bins],'o-',label=label)
+            ax.set_xlim(0,1);ax.set_ylim(0,1);ax.set_xlabel('Mean predicted validity');ax.set_ylabel('Observed valid fraction')
+            ax.legend();ax.set_title('q seed0: 288 candidates, 12 reused DEV parents')
+        fig.suptitle('M8 scoring: three q seeds per fixed seed0 generator; bins are correlated, small-sample evidence')
+        fig.savefig(folder/'M8_SCORING.png',dpi=160);plt.close(fig)
 
     # Every old DEV condition is shown, with full path extents and q labels.
     pool=np.load(folder/'M4/DEV_MODEL/predictions.npz',allow_pickle=False)

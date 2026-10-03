@@ -1,3 +1,25 @@
+## Probability-aware route round completed — 2026-10-04
+
+M4/M8 route/pi/q implementation and this registered experiment round completed. No running probability jobs; do not relaunch fresh wrappers. Final57 jobs:55completed/2failed,1664.431483s cumulative including failures/testing/analysis (<21600s). Latest actual server21tests/0skip. Both failures preserved. Source531623c packaging passes actual cached-Qwen/RGB-D comparison and exact reload for M4,ordinaryM8,balancedM8. Three bundles locally SHA verified under runs/probability_delivery. Analysis source5d42f14,63 exported files SHA verified; final audit adds analysis job timing to the earlier RESULT snapshot.
+
+Expanded191 M8 paired3generator seeds from immutable53357d7: ordinary/proposed mean Tip31.713/36.227%, Any87.963/91.667%, classifiedUnique.944/.963. Candidate validity improves all3seeds; classified diversity falls seed2 and parent-bootstrap difference interval[-.287,.296], so stable multimodal coverage NOT established. Original95seed0 negative result retained. q3seeds per fixed seed0 M8 generator: ordinary oldDEV selected30/36,29/36,30/36; proposed33/36,32/36,33/36. These are scorer replications, not3full-system replications. Calibration has no consistent Brier gain. pi highest-mass selection30.56% is not validity confidence. All oldDEV12parents/36conditions are reused development evidence; newDEV32 and TEST_LOCKED remain sealed. Scorer/calibration128parents remain permanently excluded from generator training.
+
+Deliverable and limitations: reports/observed_probability_v1/RESULTS_REPORT.md, DEPLOYMENT.md, evidence_v1/RESULTS.json and figures, FINAL_AUDIT.json. Proposed model runs/probability_delivery/M8_balanced/planner.pt. No further training/tuning started; next research should address invalid-route generation, unstable mode coverage and pi distribution accuracy, not treat current q selection as proof of calibrated multimodal prediction or robot success.
+
+## Live continuation — 2026-10-04
+
+Status request audited: all35 previous probability jobs closed,2 failures retained, cumulative919.863380s;21 server tests pass. No jobs were running at inspection. Original191-parent seed0 pair now complete: ordinary/balanced Tip.302083/.399306, Any.861111/.944444, knownUnique.944444/1.083333, semantic.899306/.934028. Exact shared initialization and sampler digest verified; generator replication gate passed. M8 separate q seed0 also complete on DEV_SCORE96: ordinary80/96 versus random.328125; balanced77/96 versus random.282552; both q gates passed. This split is scorer development only and must not drive generator method selection.
+
+After reporting status, continued existing authorized work: immutable53357d7 launcher now runs m8_ordinary_expanded_seed1 then m8_balanced_probability_expanded_seed1 sequentially (SSH session76618). Check jobs/*/receipt.json and PIDs; do not repeat fresh commands. Remaining seed2 pairs, M8 q seeds1/2, M8 calibration/oldDEV pools, integrated packaging and final analysis. Source531623c includes package/load equality verification; package not yet run. Analysis-only multi-seed aggregation changes are local and not yet frozen. Overall21600s budget remains shared.
+
+## Probability-aware routes in progress — 2026-10-03
+
+Current user selections1A–6A/7B authorize implementation and experiments under6h cumulative serial job budget. Main new family: server runs/observed_probability_v1; role exports data/observed_probability_v2. Parent generator is original95 last12000 SHA ce0b186b1f73beab2bd09b0582622e1d1b012fc88b892ab909479dd7deb250b3. Extension32–95 SCORE_TRAIN,96–127 DEV_SCORE,128–159 CALIBRATION are permanently excluded from generator training;160–255 are additional generator TRAIN. NewDEV32 and locked tests stay sealed. Do not relaunch fresh wrappers or overwrite outputs.
+
+M4 q three seeds completed. DEV_SCORE SelectedValid60/96,61/96,61/96 vs random33.854%; oldDEV_MODEL25/36,25/36,23/36 vs random38.889% and first9/36. Calibration independently fitted but no consistent Brier improvement. See reports/observed_probability_v1/FIRST_STAGE_RESULTS.md. Three scorer seeds share one frozen generator.
+
+M8 original95 paired3000 runs completed from1654dea; identical initial/model and sampled input hashes. Ordinary/balanced fixed-last Tip35.764/29.167%, Any83.333/86.111%, knownUnique1.111/.889: no generator advantage; no replication gate. Failed initial500-step evaluation70684b retained, no checkpoint existed; fixed driver checkpoints before evaluation. First exporter Python3.8 failure also retained. Current scaling source53357d7, packaging sourcedff8236. Additional96-role export complete; Qwen cache job cache_generator_extra96 was launched and must be checked before GPU work. All PID/commands/status/source hashes and failed times in runs/observed_probability_v1/jobs/*/receipt.json. Root budget wrapper enforces shared21600seconds. Active export/source hashes are recorded in chat; inspect status rather than assuming completion. Remaining:191-parent pair, M8 q and pi evaluation/deployment, result QA and final archive.
+
 # State — 2026-10-02
 
 ## 核心三臂进入真实训练；数据全量质量封存 — 2026-10-03 07:46 UTC
