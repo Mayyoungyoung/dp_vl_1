@@ -1,5 +1,11 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-03：extension TRAIN64 完整质量核验
+
+前64父/192条件/1728请求槽全部保留：1131接受、597失败、465有效unknown、0已知重复，50条件已知R>K4；严格恢复1728/1728。新增32父576接受/288失败、20种颜色；长弧最长6.569m，未过滤。新96路线图及32front全目视，旧32图逐字节一致。仍为窄几何范围的RLBench-derived reach，不是OOD或新任务，不是全部解集或连续全臂安全证书。[完整数据报告与成本](observed_two_row_extension64_quality_v1/TRAIN64_RESULTS.md)。
+
+原5c8 collector的train128 resume于01:16:26UTC独立启动，仅新增indices64..127；新DEV继续封存。该采集不改变当前composite108训练285输入。全321前缀实际等价检查已通过，正式frozen/LoRA续训尚未启动；不将数据量或缓存成功计为方法成绩。
+
 ## 2026-10-03 01:10 UTC：真实前缀回放/LoRA技术门禁已通过
 
 真实Qwen的6条TRAIN输入、两独立分支各2次更新已实测：原完整forward与冻结layer26输入回放在初始/更新后特征、损失、梯度、optimizer及RNG上逐值一致；8adapter+60head张量变化、625冻结参数hash不变。37真实测试0skip，10full+10tail+4head/16状态预算全部计入。[技术原件与成本](observed_qwen_prefix_replay_probe_v1/TECHNICAL_RESULTS.md)。这是普通LoRA基线的串行计算工程验证，不是质量收益或创新，未证明padding/batched replay。

@@ -1,5 +1,11 @@
 # 多路线研究 V2：实施进展与实测证据
 
+## 2026-10-03：extension TRAIN64 完整质量核验
+
+前64父/192条件/1728请求槽全部保留：1131接受、597失败、465有效unknown、0已知重复，50条件已知R>K4；严格恢复1728/1728。新增32父576接受/288失败、20种颜色；长弧最长6.569m，未过滤。新96路线图及32front全目视，旧32图逐字节一致。仍为窄几何范围的RLBench-derived reach，不是OOD或新任务，不是全部解集或连续全臂安全证书。[完整数据报告与成本](observed_two_row_extension64_quality_v1/TRAIN64_RESULTS.md)。
+
+原5c8 collector的train128 resume于01:16:26UTC独立启动，仅新增indices64..127；新DEV继续封存。该采集不改变当前composite108训练285输入。全321前缀实际等价检查已通过，正式frozen/LoRA续训尚未启动；不将数据量或缓存成功计为方法成绩。
+
 ## 2026-10-03：composite108普通数据控制已完成
 
 固定总12000×32/K4，实际TRAIN输入189→285、参考1108→1663；原DEV best Tip59→63/144，但last62→56/144。公共TRAIN last76.06→85.05%，新增TRAIN90.10%。全部原件/逐场景/失败/成本见 [完整报告](OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md)。仅单种子、重复使用DEV的小幅best收益；不是同逐输入曝光、方法贡献或机器人执行证据。下一步骤先核真实Qwen末两层LoRA的冻结前缀回放与梯度，再预登记同common-head续训对照。此处尚无LoRA正式训练结果。MAIN273。

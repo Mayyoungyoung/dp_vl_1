@@ -419,3 +419,15 @@ probe主体46.065015726秒/.0127958377保守GPUh，外层47.309122秒/.013141422
 extension train64 session20261003T001613Z_train64_651720已于01:00:01UTC两shard exit0，SSH57754结束。root随后独立启动source1a3eef1完整TRAIN64分析，PID670625/670626，01:02:48.257755UTC，SSH16931，CPU1/无GPU；输出 runs/observed_two_row_extension288_quality_v1/train64。此处尚未记录分析完成结果。前32闭合父不重采，分析读全部64已闭合TRAIN；质量读完再决定train128，不能自动开始。reserved原始数据继续封存。
 
 MAIN保持273，技术probe不增加质量行。JOBS快照 2026-10-03T01:09:30.156504+00:00 共578条，registry已同步。核心方法优势/论文A–H仍未成立；当前活跃会话继续正式配对实施，没有会话外自动研究服务。恢复先读最新status与实际PID，不能根据下方历史段重启已完成作业。
+
+## 全量前缀准备与采集接续 — 2026-10-03 01:28 UTC
+
+本段覆盖下方待全量cache和旧采集状态。source4371e5b98a8bbab91d2107ed79de7d9e107b9bea已推送核验、冻结部署；53真实Linux/Torch测试0skip通过（4.63秒）。全321输入prefix于01:24:34.126730–01:25:55.993691UTC完成exit0，PID678871/678872，SSH12675已结束。285TRAIN+36旧DEV全部实际官方特征=原缓存=写盘重读尾层回放逐值相同，321full+321tail、0head/0optimizer；无新DEV。manifest SHA4a3152db319e67c158f692a4b88e8575fd5e00b7ebe483ebfe4fafec1552bf15；固定位置 data/observation_two_row_composite108_v1/qwen_prefix_corpus。主体80.600073171秒/.0223889092GPUh，外层81.866961秒，peak4278929920B；嵌套不能相加。这是计算等价性，不是质量收益。
+
+正式frozen/LoRA同common-head续训实现已完成主体独立复核；正补受控完整step暂停入口（总3000预算不变）及最后恢复测试。训练尚未启动，须冻结source/实际测试后单独两臂。固定285输入、同96000抽样、每臂384000新增路径状态/3000更新/12旧DEV选择、头3e-4/LoRA1e-5；fixed-last285另启。不自动扩大数据或更新次数。
+
+TRAIN64全量质量已于01:09:44.533514UTC exit0，CPU主体415.200162秒/外层416.275759秒；192条件1728槽，1131accepted597failed、465有效unknown、0已知类型重复、50条件已知R>K4，1728严格恢复全过。新增32为576accepted/288failed，最长6.569m、10条>4m，unknown仍保留。新96全槽图+32front实际目视，旧128图字节一致。1138服务器原件/1155本地索引已逐SHA复核，见 reports/observed_two_row_extension64_quality_v1/TRAIN64_RESULTS.md。唯一15.56MB原all_requested_slots.json保留服务器与本地并索引，按大数据原则不进普通Git；未删数据。
+
+依据完整质量，root已于01:16:26UTC启动原source5c8f8e4 train128 resume，仅追加注册64..127；session20261003T011626Z_train128_675690，SSH89647，coord675720/675722、child675723/675724，CPU2/3。前64不重采，新DEV继续封存；全128闭合后独立质量分析，不自动train256。当前续训固定人口285不随采集增加而变化。
+
+JOBS实际快照 2026-10-03T01:28:18.974503+00:00 共593条，registry已同步，MAIN273保持。恢复先核活跃PID、status和冻结命令，不能重复fresh已完成probe/cache。尚无新的核心方法有效性证据；当前活跃会话继续真实训练与分析，没有会话外自主研究服务。
