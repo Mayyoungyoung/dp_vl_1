@@ -1,5 +1,17 @@
 # Resume
 
+## 当前实际进展 — 2026-10-03 00:26 UTC
+
+本段覆盖下方旧状态。首32新增TRAIN完整质量报告及全部96图/32front已核验、归档：reports/observed_two_row_extension288_quality_v1/TRAIN32_RESULTS.md。555正例/309失败、247unknown原样保留，未发现系统采集错误；仅窄±5mm同分布，不称复杂场景或OOD。主报告包括每槽失败、19色分布、长弧和全部hash。
+
+composite source71cf0c1实际70测试0skip通过，1663/1663TRAIN正参考通过H24/端点容量；真实新增96条Qwen编码完成，旧225份NPZ（含36DEV）容器字节全部保持，三阶段cost来源已归档。见 reports/observed_two_row_composite108_preparation_v1/QUALITY_CACHE_RESULTS.md。cache外层21.775545秒/.0060487625GPUh，编码body11.501351秒含加载，嵌套不相加。没有过时LoRA条件缓存或新DEV数据进入这轮冻结Qwen控制。
+
+root独立启动同总12000步普通模型训练：source71cf0c11d5b642672594bc28e8a69e5b1f4bdd0c，PID652623/child652624，00:17:54.174724UTC开始，SSH64194，CPU1/GPU1/35%；00:24进度7750/12000、31/48原DEV选择。当前仍运行，不用中间结果作新主结论。输出 /home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_v1；完成后必须单独fixed-last-train诊断，再读原189TRAIN公共子集/新增96TRAIN/固定36DEV配对。初始化/总1536000路径状态同原constant，数据人口及每输入曝光不同，不能称方法贡献。
+
+另按已读质量独立启动train64 resume，仍为原5c8f8e4 collector，session20261003T001613Z_train64_651720，SSH57754，CPU2/3，00:16:13UTC开始；仅追加注册indices32..63，不重采已闭合前32。该阶段全64闭合前不读取新增raw结果，不自动启动train128。新DEV继续封存。服务器实际job路径/PID/命令以JOBS与registry为准，禁止根据旧running段重复启动。
+
+MAIN271保持。JOBS快照 2026-10-03T00:25:15.049030+00:00 共549条，registry同步最新转移。尚无核心方法优势；当前活跃会话继续实际训练后的分析和研究决定，没有会话结束后自动思考服务。
+
 ## 当前执行 — 2026-10-03 00:13 UTC
 
 本段覆盖下方旧状态。source1fccf48的88项服务器测试通过，两臂各36次真实Qwen/K4已完成exit0，72份特征字节及288候选检查决定均与原best一致。完整请求中位constant/no-direct为74.5681/74.5213ms，P95为86.1414/91.2371ms；未显示可靠加速。原质量59/144对52/144保留。MAIN271，原269字段未改，新两行只记在线成本；见 reports/observed_two_row_12000_online_v1/ONLINE_RESULTS.md。

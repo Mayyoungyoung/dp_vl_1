@@ -383,3 +383,15 @@ extension288首批train32已于00:02:21UTC结束，两shard exit0，原SSH89814�
 source1fcc的composite108 readiness/export已独立完成，export于00:08:26UTC exit0；321输入=285TRAIN+36原DEV，1868正参考=1663TRAIN+205DEV。原225行字节保留，旧3缺失输入不替换。新DEV封存。下一步是新冻结pipeline的真实Torch测试、完整TRAIN表示/端点容量检查、仅新96条Qwen编码，然后同总12000步普通模型训练；所有阶段分别启动，当前尚未运行后四阶段，不把export成功称训练完成。pipeline已独立复核，本地22pass，3项Torch待服务器验证。
 
 JOBS快照 2026-10-03T00:11:37.242427+00:00 共534条；registry实际同步。当前没有GPU训练或采集作业运行。待读完32质量后才单独启动train64 resume，使用原5c8f8e4固定collector，不重采前32。核心新方法优势仍未成立，数据扩大是普通基线控制。恢复需先核实际PID/status/immutable source；不重启上述已完成作业。
+
+## 当前实际进展 — 2026-10-03 00:26 UTC
+
+本段覆盖下方旧状态。首32新增TRAIN完整质量报告及全部96图/32front已核验、归档：reports/observed_two_row_extension288_quality_v1/TRAIN32_RESULTS.md。555正例/309失败、247unknown原样保留，未发现系统采集错误；仅窄±5mm同分布，不称复杂场景或OOD。主报告包括每槽失败、19色分布、长弧和全部hash。
+
+composite source71cf0c1实际70测试0skip通过，1663/1663TRAIN正参考通过H24/端点容量；真实新增96条Qwen编码完成，旧225份NPZ（含36DEV）容器字节全部保持，三阶段cost来源已归档。见 reports/observed_two_row_composite108_preparation_v1/QUALITY_CACHE_RESULTS.md。cache外层21.775545秒/.0060487625GPUh，编码body11.501351秒含加载，嵌套不相加。没有过时LoRA条件缓存或新DEV数据进入这轮冻结Qwen控制。
+
+root独立启动同总12000步普通模型训练：source71cf0c11d5b642672594bc28e8a69e5b1f4bdd0c，PID652623/child652624，00:17:54.174724UTC开始，SSH64194，CPU1/GPU1/35%；00:24进度7750/12000、31/48原DEV选择。当前仍运行，不用中间结果作新主结论。输出 /home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_v1；完成后必须单独fixed-last-train诊断，再读原189TRAIN公共子集/新增96TRAIN/固定36DEV配对。初始化/总1536000路径状态同原constant，数据人口及每输入曝光不同，不能称方法贡献。
+
+另按已读质量独立启动train64 resume，仍为原5c8f8e4 collector，session20261003T001613Z_train64_651720，SSH57754，CPU2/3，00:16:13UTC开始；仅追加注册indices32..63，不重采已闭合前32。该阶段全64闭合前不读取新增raw结果，不自动启动train128。新DEV继续封存。服务器实际job路径/PID/命令以JOBS与registry为准，禁止根据旧running段重复启动。
+
+MAIN271保持。JOBS快照 2026-10-03T00:25:15.049030+00:00 共549条，registry同步最新转移。尚无核心方法优势；当前活跃会话继续实际训练后的分析和研究决定，没有会话结束后自动思考服务。

@@ -1,0 +1,77 @@
+from pathlib import Path
+from collections import Counter
+import csv, hashlib, json, re
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+B = Path('reports/observed_two_row_extension288_quality_v1')
+A = json.loads((B/'analysis_run/train32/analysis.json').read_text())
+S = json.loads((B/'analysis_run/train32/all_requested_slots.json').read_text())
+G = [s for s in S if s['status'] == 'accepted']
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def dump(p,v): p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+colors=Counter(); inputs={}
+for i in range(32):
+    pid=f'two_row_reach_{400000+i}'
+    for line in (B/f'corpus/parents/{pid}/observations.jsonl').read_text().splitlines():
+        o=json.loads(line); color=re.fullmatch(r'Move the gripper to touch the (.+) sphere while avoiding the gray posts\.',o['instruction']).group(1)
+        colors[color]+=1; inputs[o['id']]={'color':color,'instruction':o['instruction']}
+rows=[]
+for c in A['conditions']:
+    row={**c,**inputs[c['id']]}; row['failed']=c['statuses'].get('failed',0)
+    row['original_plot']=f"analysis_run/train32/{c['parent_id']}/target{c['target']}_all9.png"
+    row['original_plot_sha256']=sha(B/row['original_plot'])
+    row['visual_qa']='Displayed in parent-index order, all three conditions/all nine slots; curve/goal/post extent and failed partial paths visible. Source labels have occasional axis-title overlap; no collector-system mismatch observed.'
+    row['qa_view']=f"qa_views/{c['parent_id']}_all3.png"
+    rows.append(row)
+dump(B/'condition_quality_and_visual_qa.json',rows)
+with (B/'condition_quality.csv').open('w',newline='',encoding='utf-8') as f:
+    fields=['id','parent_id','target','color','requested_slots','valid_references','failed','distinct_known_types','unknown_valid_references','known_duplicate_references','known_over_references','distinct_lateral_types','has_more_than_K4_known_types','original_plot_sha256']
+    w=csv.DictWriter(f,fields); w.writeheader()
+    for row in rows: w.writerow({k:row[k] for k in fields})
+lengths=np.asarray([s['recomputed_fields']['length_m'] for s in G])
+endpoint=np.asarray([s['recomputed_fields']['endpoint_error_m'] for s in G])
+unknown=[s for s in G if s['actual_accepted_type'] is None]
+cross_counts=Counter()
+for s in unknown:
+    counts=tuple(sum(c['row']==r for c in s['actual_row_crossings']) for r in (0,1))
+    cross_counts[str(counts)]+=1
+def quant(v): return {str(q):float(np.quantile(v,q)) for q in [0,.25,.5,.75,.9,.95,1]}
+failed=[s for s in S if s['status']=='failed']
+extra={
+ 'accepted_known':len(G)-len(unknown),'accepted_known_with_over':sum(c['known_over_references'] for c in rows),
+ 'accepted_known_lateral':sum(c['valid_references']-c['unknown_valid_references']-c['known_over_references'] for c in rows),
+ 'accepted_unknown_fraction':len(unknown)/len(G),'zero_reference_conditions':sum(c['valid_references']==0 for c in rows),
+ 'min_max_positive_references_per_condition':[min(c['valid_references'] for c in rows),max(c['valid_references'] for c in rows)],
+ 'known_R_histogram':dict(sorted(Counter(c['distinct_known_types'] for c in rows).items())),
+ 'accepted_length_quantiles_m':quant(lengths),'accepted_endpoint_error_quantiles_m':quant(endpoint),
+ 'accepted_lengths_over_2m':int((lengths>2).sum()),'accepted_lengths_over_4m':int((lengths>4).sum()),
+ 'unknown_recorded_crossing_count_patterns':dict(cross_counts),
+ 'unknown_with_multiple_recorded_row_crossings':sum(any(sum(c['row']==r for c in s['actual_row_crossings'])>1 for r in (0,1)) for s in unknown),
+ 'all_slots_event_transition_histogram':dict(Counter(s['event_transitions'] for s in S)),
+ 'failure_endpoint_over_original_003m':sum(s['recomputed_fields']['endpoint_error_m']>.03 for s in failed),
+ 'failure_missing_recomputed_fields':sum(not s.get('recomputed_fields') for s in failed),
+ 'color_condition_counts':dict(sorted(colors.items())), 'color_count':len(colors),'missing_official_color':['green'],
+ 'same_image_three_instructions_parents':sum(p['same_image_three_distinct_instructions'] for p in A['parents']),
+ 'front_byte_distinct_count':len({sha(B/f'analysis_run/train32/two_row_reach_{400000+i}/front.png') for i in range(32)}),
+ 'actual_geometry_1mm_distinct_count':len({p['closure']['actual_geometry_1mm_sha256'] for p in A['parents']}),
+ 'positive_tip_recheck_passed':sum(s['diagnostic_tip_endpoint_h24_passed'] for s in G),
+ 'longest_positive_references':[{'id':s['input_id'],'attempt':s['attempt'],'length_m':s['recomputed_fields']['length_m'],'trace_file':s['trace_file'],'trace_sha256':s['trace_sha256']} for s in sorted(G,key=lambda s:s['recomputed_fields']['length_m'],reverse=True)[:10]],
+ 'parent_condition_summary':[{'parent_id':p['parent_id'],'accepted':sum(c['valid_references'] for c in rows if c['parent_id']==p['parent_id']),'failed':sum(c['failed'] for c in rows if c['parent_id']==p['parent_id']),'known_R':[c['distinct_known_types'] for c in rows if c['parent_id']==p['parent_id']],'unknown':[c['unknown_valid_references'] for c in rows if c['parent_id']==p['parent_id']]} for p in A['parents']],
+ 'model_H24_capacity_audited_in_this_report':False,'new_dev_or_old_reserved_raw_opened':False,
+ 'new_model_forward_count':0,'new_search_or_simulation_count':0,
+ 'source_analysis_sha256':sha(B/'analysis_run/train32/analysis.json'),
+ 'source_all_slots_sha256':sha(B/'analysis_run/train32/all_requested_slots.json')}
+dump(B/'TRAIN32_SUPPLEMENT.json',extra)
+fig,ax=plt.subplots(2,2,figsize=(14,9),layout='constrained')
+rhist=Counter(c['distinct_known_types'] for c in rows)
+ax[0,0].bar(range(8),[rhist.get(i,0) for i in range(8)],color='#287b8d')
+ax[0,0].set(xlabel='Known reference types R (incomplete)',ylabel='Conditions',title='All 96 requested TRAIN conditions',xticks=range(8))
+ax[0,1].hist(lengths,bins=24,color='#287b8d');ax[0,1].set(xlabel='Raw reference length (m)',ylabel='Positive references',title='All 555 positives, no length filtering')
+cn=sorted(colors); ax[1,0].bar(cn,[colors[c] for c in cn],color='#287b8d');ax[1,0].tick_params(axis='x',rotation=65);ax[1,0].set(ylabel='Conditions',title='Recorded TRAIN instruction colors (green absent)')
+fk=['robot collision','raw tip','collector H24 tip','type change','endpoint > 3cm'];fv=[50,183,176,90,extra['failure_endpoint_over_original_003m']]
+ax[1,1].barh(fk,fv,color='#bd584c');ax[1,1].set(xlabel='Failure predicates (overlap allowed)',title='309 failed slots; counts are not additive')
+fig.savefig(B/'quality_summary.png',dpi=140);plt.close(fig)
+print(json.dumps(extra,ensure_ascii=False,indent=2))

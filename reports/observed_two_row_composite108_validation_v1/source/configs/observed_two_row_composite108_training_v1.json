@@ -1,0 +1,43 @@
+{
+  "protocol": "ordinary_two_row_composite108_constant12000_v1",
+  "requested_train_parents": 96,
+  "requested_reused_dev_parents": 12,
+  "requested_train_inputs": 288,
+  "fixed_dev_inputs": 36,
+  "steps": 12000,
+  "batch_size": 32,
+  "candidates": 4,
+  "observation_draws": 384000,
+  "candidate_path_states": 1536000,
+  "dev_selection_opportunities": 48,
+  "seed": 0,
+  "eval_every": 250,
+  "lr": 0.0003,
+  "old_cache_inputs": 225,
+  "new_qwen_inputs_max": 96,
+  "new_dev_raw_allowed": false,
+  "automatic_stage_chaining": false,
+  "initial_state": {
+    "initial_model_sha256": "7f81eba70dfcef2a3df19ebd5661ace3881abd552a1f2d4614cf490bf153bc13",
+    "initial_torch_cpu_rng_sha256": "c35b449a11db8b8af5620fb2377adf1709091f5d451783a0894523b68370a154",
+    "initial_sampler_state_sha256": "48a64e771100689dadc6faec20d1a9d312e0e35cbd828ef0c10e20de352a56b6"
+  },
+  "old_cache_metadata_sha256": {
+    "cache_config_json": "a70af2f4b16eb833f466cfc8cbc7ba34dbf965797244858f581d121d41656dbb",
+    "samples_jsonl": "cbc17b382cddc076f40a62a3992ab097504b33521638984521738b66bbdf0989",
+    "status_json": "abac30b3f6ef90e242219a800b3595f44038ff1eb66b9a72e1c6ebd953f111cc"
+  },
+  "extractor_sha256": "9b8121ec8c95e4e95d89e191c0fae3b9251db120c7b621bed18dad7fc820d4bf",
+  "model_options": {
+    "steps": 12000, "batch_size": 32, "candidates": 4, "horizon": 24,
+    "width": 128, "depth": 2, "point_width": 64, "lr": 0.0003,
+    "seed": 0, "eval_every": 250, "pooling": "both", "pixel_stride": 2,
+    "event_scale": 0.2, "anchor_mode": "straight_through_peak",
+    "endpoint_mode": "surface_anchor", "endpoint_residual_bound": 0.05,
+    "grounding_target": "endpoint", "grounding_weight": 0.02, "grounding_sigma": 0.025,
+    "sampling_mode": "uniform", "sample_stream_audit": true,
+    "refinement_mode": "none", "objective": "saturation"
+  },
+  "interpretation": "Same total12000-step ordinary baseline budget, larger actual TRAIN population. Per-parent/input exposure and positive reference count are not matched. Reused DEV is development evidence; new DEV remains sealed.",
+  "status": "Implementation preregistration only; actual quality, new encoding and training require independent root launches."
+}
