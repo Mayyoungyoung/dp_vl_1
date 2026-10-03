@@ -1,0 +1,151 @@
+"""One separately authorized tests or full1 stage. No following stage."""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT='04ed74fbc2912af58d65c487ce9947ea5cc71dc1'
+MANIFEST_SHA='401b6a3528fe3eb7b5b490b47bb1becea0792177f030d0e5df4129643654a676'
+EXPECTED_CASES=[('tests.test_hamster3d_full1', 'test_registered_one_request_policy_binds_every_actual_prior_file'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[generate_calls-2]'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[max_new_tokens-1025]'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[request_timeout_seconds-901]'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[resident_layers-value3]'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[read_supervision-True]'), ('tests.test_hamster3d_full1', 'test_scope_expansion_rejected[gpu_fraction-0.36]'), ('tests.test_hamster3d_full1', 'test_omitted_evidence_or_changed_source_rejected'), ('tests.test_hamster3d_full1', 'test_gate_needs_outer_completion_and_actual_budget'), ('tests.test_hamster3d_full1', 'test_speed_cannot_mask_one_logit_or_resource_mismatch'), ('tests.test_hamster3d_full1', 'test_full_evidence_rehash_refuses_mutation_without_loading_torch'), ('tests.test_hamster3d_full1', 'test_prefix_handles_short_partial_without_claiming87_verified'), ('tests.test_hamster3d_full1', 'test_whole_clock_truncates_phase_and_never_extends_request'), ('tests.test_hamster3d_full1', 'test_official_partial_parse_is_not_complete_and_signed_camera_unchanged'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_3d":[1,2,3],"gripper":"none"}]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[<ans>[[1,2,3]]</ans>]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_2d":[1,2],"gripper":"open"}]]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_3d":[1,2,NaN],"gripper":"open"}]]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_3d":[1,2,3],"gripper":"other"}]]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_3d":[1,2,3]}]]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[[{"point_3d":[1,2,3],"gripper":"open","gripper":"close"}]]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[comment ```json\\n[{"point_3d":[1,2,3],"gripper":"none"}]\\n```]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_refuses_malformed_schema_and_substring_fallback[```json\\n[{"point_3d":[1,2,3],"gripper":"none"}]\\n``` trailing]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_accepts_complete_official_format[False]'), ('tests.test_hamster3d_full1', 'test_strict_whole_json_accepts_complete_official_format[True]'), ('tests.test_hamster3d_full1', 'test_parser_failure_preserved_without_repair'), ('tests.test_hamster3d_full1', 'test_source_has_one_generate_no_old_arm_and_preserves_failures'), ('tests.test_hamster3d_full1', 'test_actual_torch_tiny_one_generate_and_partial_issued_budget[None]'), ('tests.test_hamster3d_full1', 'test_actual_torch_tiny_one_generate_and_partial_issued_budget[5]'), ('tests.test_hamster3d_train6_probe', 'test_fixed_contract_and_conserved_budget'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[split-DEV_MODEL]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[maximum_generate_calls-7]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[retry-True]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[dtype-float16]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[candidates_per_input-4]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[gpu_memory_fraction-0.36]'), ('tests.test_hamster3d_train6_probe', 'test_exact_six_lines_never_parse_following_dev_line'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[role]'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[extra_goal]'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[id]'), ('tests.test_hamster3d_train6_probe', 'test_signed_intrinsics_matches_official_inverse_projection_no_flip'), ('tests.test_hamster3d_train6_probe', 'test_projection_does_not_clamp_or_replace_predicted_depth'), ('tests.test_hamster3d_train6_probe', 'test_empty_official_parse_is_empty_candidate_not_retry'), ('tests.test_hamster3d_train6_probe', 'test_raw_path_escape_rejected'), ('tests.test_hamster3d_train6_probe', 'test_streamed_tokens_preserve_partial_without_forward'), ('tests.test_hamster3d_train6_probe', 'test_streamer_rejects_prompt_or_batch_change'), ('tests.test_hamster3d_train6_probe', 'test_offline_network_scope_restores_socket'), ('tests.test_hamster3d_train6_probe', 'test_resident_set_keeps_encode_and_direct_device_readers_off_meta')]
+TEST_FILES=['tests/test_hamster3d_full1.py', 'tests/test_hamster3d_train6_probe.py']
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+INCOMING=P/'research_v2/incoming'
+MANIFEST=INCOMING/('hamster_full1_sources_'+COMMIT[:7]+'.json')
+VALIDATION=P/'runs/hamster3d_full1_validation_v1'/COMMIT
+PROBE=P/'runs/hamster3d_pinned_full1_v1'
+GPU='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+THREADS=('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS')
+OLD_SHA='63a561d8c12fafe2fbe07eafbf3d72bf69db6d507203f14fa316ae10f60fc76d'
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+def read(path):return json.loads(Path(path).read_text(encoding='utf8'))
+def write(path,value):
+    path=Path(path);temporary=path.with_name(path.name+'.writing')
+    temporary.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf8');temporary.replace(path)
+
+def validate_junit(path):
+    root=ET.parse(path).getroot();suites=list(root.iter('testsuite'));actual=[]
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Require all48 actual tests without errors/failures/skips')
+    for case in root.iter('testcase'):
+        if any(case.find(k)is not None for k in ('error','failure','skipped')):raise ValueError('Every testcase must pass')
+        actual.append((case.get('classname'),case.get('name')))
+    if (len(actual)!=48 or len(set(actual))!=48 or sorted(actual)!=sorted(EXPECTED_CASES)
+            or sum(int(s.get('tests','0')) for s in suites)!=48):
+        raise ValueError('Exact29 full1 including2 CPU Torch and19 old tests required')
+    return dict(tests=48,passed=48,skipped=0,full1=29,real_CPU_Torch=2,old_probe=19,
+                cuda_or_official_model_calls=0,actual_testcases=actual)
+
+def verify_source():
+    if sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen manifest changed')
+    value=read(MANIFEST)
+    if value['code_commit']!=COMMIT:raise ValueError('Commit differs')
+    for name,item in value['files'].items():
+        file=SOURCE/name
+        if file.is_symlink() or not file.is_file() or file.stat().st_size!=item['bytes'] or sha(file)!=item['sha256']:
+            raise ValueError('Frozen Git archive bytes changed: '+name)
+    if sha(SOURCE/'scripts/probe_hamster3d_train6.py')!=OLD_SHA:
+        raise ValueError('Original b127 actually executed source bytes changed')
+    dependencies=read(SOURCE/'configs/hamster3d_pinned_full1_v1.json')['dependency_sources']
+    for name,item in dependencies.items():
+        if sha(SOURCE/name)!=item['sha256']:raise ValueError('Previously executed dependency bytes changed: '+name)
+    return dict(path=str(MANIFEST),sha256=MANIFEST_SHA,code_commit=COMMIT,files=len(value['files']),
+                archive_sha256=value['archive_sha256'],original_b127_source_sha256=OLD_SHA)
+
+def preparation_gate():
+    root=P/'runs/hamster3d_preparation_v1';identity=read(root/'preparation_identity.json');result={}
+    for stage in ('assets','environment'):
+        marker=root/(stage+'.completed.json');value=read(marker);folder=Path(value['session'])
+        folder.resolve().relative_to(root.resolve());state=read(folder/'status.json')
+        if (value['identity']!=identity or sha(folder/'receipt.json')!=value['receipt_sha256']
+                or state.get('status')!='completed' or state.get('exit_code')!=0):
+            raise ValueError('Fixed actual private HAMSTER '+stage+' preparation missing')
+        result[stage]=dict(marker_sha256=sha(marker),receipt_sha256=sha(folder/'receipt.json'),status_sha256=sha(folder/'status.json'))
+    return result
+
+def prior_tests():
+    state=read(VALIDATION/'tests.status.json');receipt=read(VALIDATION/'tests_receipt.json')
+    identity=read(VALIDATION/'tests_identity.json')
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or state.get('code_commit')!=COMMIT
+            or receipt.get('status')!='passed' or receipt.get('code_commit')!=COMMIT
+            or receipt.get('child_exit_code')!=0 or receipt.get('identity_sha256')!=sha(VALIDATION/'tests_identity.json')
+            or receipt.get('pytest_xml_sha256')!=sha(VALIDATION/'pytest.xml')
+            or identity.get('runner_sha256')!=sha(__file__) or identity.get('source',{}).get('sha256')!=MANIFEST_SHA
+            or identity.get('stage')!='tests' or identity.get('runtime',{}).get('cuda_visible_devices')!=''):
+        raise ValueError('Exact actual48 tests must complete before a separate technical call')
+    validate_junit(VALIDATION/'pytest.xml')
+    return {name:sha(VALIDATION/name) for name in ('tests.status.json','tests_receipt.json','tests_identity.json','pytest.xml')}
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--stage',choices=('tests','probe'),required=True)
+    stage=parser.parse_args().stage;out=VALIDATION if stage=='tests' else PROBE;started=time.perf_counter()
+    wrapper=Path(os.environ.get('FROZEN_HAMSTER_FULL1_WRAPPER',''));cuda='' if stage=='tests' else GPU
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,11) or Path(sys.prefix).resolve()!=(P/'.venv-hamster3d').resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or sorted(os.sched_getaffinity(0))!=[0] or os.environ.get('CUDA_VISIBLE_DEVICES')!=cuda
+            or any(os.environ.get(k)!='1' for k in THREADS)
+            or wrapper.resolve()!=INCOMING/('hamster_full1_'+stage+'_'+COMMIT[:7]+'.sh')):
+        raise ValueError('Immutable source/private Python3.11/CPU0/CUDA/thread/wrapper mismatch')
+    source=verify_source();identity_path=out/(stage+'_identity.json');receipt_path=out/(stage+'_receipt.json')
+    if identity_path.exists() or receipt_path.exists():raise FileExistsError('Fresh one-shot stage only')
+    identity=dict(protocol='hamster_full1_frozen_recipe_v1',stage=stage,code_commit=COMMIT,source=source,
+        runner_sha256=sha(__file__),wrapper_sha256=sha(wrapper),wrapper=str(wrapper),preparation=preparation_gate(),
+        runtime=dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,cpu_affinity=[0],cuda_visible_devices=cuda,
+                     threads={k:os.environ[k] for k in THREADS}),fresh_only=True,retry=False,resume=False,
+        automatic_following_stage=False,started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+    if stage=='tests':
+        if (out/'pytest.xml').exists():raise FileExistsError('Existing test output cannot be overwritten')
+        command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider','--junitxml='+str(out/'pytest.xml')]+TEST_FILES
+        identity.update(expected_tests=48,expected_skips=0,model_calls=0,simulator_calls=0)
+    else:
+        identity['actual_tests']=prior_tests()
+        if (out/'probe').exists():raise FileExistsError('Preserve prior technical attempt; no retry')
+        command=[sys.executable,'-m','scripts.probe_hamster3d_full1','--config',
+                 str(SOURCE/'configs/hamster3d_pinned_full1_v1.json'),'--output',str(out/'probe')]
+        identity.update(maximum_generate_calls=1,candidate_budget=1,maximum_model_forwards=1024,maximum_generated_tokens=1024,
+            maximum_gpu_fraction=.35,gpu_cap_bytes=8864694272,rss_cap_bytes=32*2**30,resident_decoder_indices=[0,1,2,3],
+            minimum_workspace_bytes=2*2**30,major_phase_elapsed_allowance_seconds=1800,request_deadline_seconds=900,whole_process_hard_alarm=False,quality_metrics=None,full_request_authorized=True)
+    identity['command']=command;write(identity_path,identity)
+    result=dict(stage=stage,code_commit=COMMIT,status='failed',child_exit_code=None,identity_sha256=sha(identity_path))
+    try:
+        child=subprocess.run(command,cwd=SOURCE);result['child_exit_code']=child.returncode
+        if child.returncode!=0:raise RuntimeError('Frozen stage failed; preserve all partials, no retry or automatic next stage')
+        if stage=='tests':
+            result['junit']=validate_junit(out/'pytest.xml');result['pytest_xml_sha256']=sha(out/'pytest.xml')
+        else:
+            inner=read(out/'probe/status.json');prediction=read(out/'probe/two_row_reach_283200_target0/result.json')
+            if (inner.get('status')!='completed' or inner.get('exit_code')!=0 or inner.get('generate_calls')!=1
+                    or inner.get('candidates_issued')!=1 or inner.get('candidates_unattempted')!=0
+                    or not 8<=inner.get('forward_calls',0)<=1024
+                    or inner.get('forward_calls')!=inner.get('generated_tokens')
+                    or prediction.get('state')!='completed' or prediction.get('generate_calls')!=1
+                    or prediction.get('quality_metrics')is not None
+                    or inner.get('quality_metrics')is not None or inner.get('task_success')is not None):
+                raise ValueError('Actual single full-request budget receipt differs')
+            if inner['complete_parsed_output']!=prediction['parse']['complete_parsed_output']:
+                raise ValueError('Output parsing completeness receipts differ')
+            result.update(complete_parsed_output=inner['complete_parsed_output'],inner_status_sha256=sha(out/'probe/status.json'),
+                prediction_result_sha256=sha(out/'probe/two_row_reach_283200_target0/result.json'),
+                actual_generate_calls=inner['generate_calls'],actual_forward_calls=inner['forward_calls'],
+                actual_generated_tokens=inner['generated_tokens'],quality_metrics=None,task_success=None,
+                artifact_index_sha256=sha(out/'probe/artifact_index.json'))
+        result.update(source_postcheck=verify_source(),source_unchanged=True,status='passed' if stage=='tests' else 'completed')
+    except BaseException as error:
+        result['exception']=repr(error);raise
+    finally:
+        result.update(elapsed_seconds=time.perf_counter()-started,finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        write(receipt_path,result)
+    print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()

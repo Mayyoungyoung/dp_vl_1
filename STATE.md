@@ -1,5 +1,19 @@
 # State — 2026-10-02
 
+## 完整外部模型请求封存、恢复修复、全256质量开始 — 2026-10-03 06:42 UTC
+
+HAMSTER full1实际于06:10:10.143589UTC完成，唯一TRAIN0请求151forward/151tokens、EOS及严格完整JSON4点。前8logits与exact8逐值相同，前87token与原超时输出一致；旧失败保留。完整外层504.697245秒/0.140193679GPUh，生成183.939749秒、hook转换137.595700秒均嵌套；peak reserved6.6228GB、RSS21.799GB。root已实际看完整RGB投影/3D四点图及prompt；质量尚null，已授权独立原4点/3线段、事件[0,0,0,1]的只读TRAIN0检查，不补起点/修复/重生成。[封存结果](reports/hamster3d_pinned_full1_v1/FULL1_RESULTS.md)。
+
+Min-SNR原755实际测试14pass2fail，原因已真实CPU定位为Adam state load复用父dict的storage alias。f72e1aa最小deepcopy修复后18实际测试0skip，完整state/RNG/四流等值比较不放松；原失败与四case反证封存。诊断+修复验证outer8.757316秒，0真实data/PT/GPU。新immutable f72配方准备中，尚未parent真实inspect或两臂训练；原500步/360秒/285TRAIN-only与判据不变。[修复证据](reports/observed_diffusion_minsnr_alias_fix_v1/ALIAS_FIX_RESULTS.md)。
+
+有序观测关系损失四源和决策卡已e69ab8a提交推送，root全文审查及独立数学审查通过；本地3pass17Torchskip，不替代服务器20测试。下一独立真实CPU测试后，以B32/K4/R9/H24/N12544的完整成本/XX/YY/指派/backward测GPU预算，三臂3000训练尚未启动。标准Soft-DTW及局部几何描述不当创新，C的非负性无一般定理；原segment v1仍underpowered。[协议](reports/OBSERVED_ORDERED_RELATION_PROTOCOL.md)。
+
+可变布局原eba全部12父已06:18:35.498615UTC闭合，324请求槽、270attempted、54unattempted。全量质量初核108接受/162路线失败，15unknown保留；两个未尝试父5/7已保存证据表明±.0275m坐标的float32读回触发1mm半格量化hash差，不是无解。原失败状态、布局与验收不改，开闭配对尚不能认证；质量归档/全图QA收尾，修复只进入后续独立版本。
+
+原TRAIN256采集两shard均completed/exit0，最后06:26:07.255157UTC结束（原SSH26105已关闭）。root原1a3 mechanical snapshot实际256闭合、6912/6912attempted、0missing/unattempted；旧128归档2238文件全SHA相同，4append-only registry单独排除。原1a3全256质量于06:38:54.555292UTC启动，PID826284/826289、SSH28219、CPU1/CUDA隐藏。命令：`ssh wzy3090 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/extension256_quality_1a3eef1.sh`，fresh已启动不可重发；status为`runs/observed_two_row_extension288_quality_v1/train256.status.json`，等待完成后完整6912槽/768图分析。新DEV32封存，现训练人口仍95父285条件，不自动扩充。
+
+JOBS冻结快照06:40:26.042436UTC共844条，registry追加38条保留原历史。MAIN仍293，技术调试/采集不追加模型质量行。研究核心、多种子独立观测优势与A–H仍未成立；下一实际工作是完成Min-SNR配对修复实验、关系损失预算门和全256质量结果分析。
+
 ## 真正K条件强基线完成，下一轮实际进行 — 2026-10-03 06:15 UTC
 
 443ea31普通K条件baseline从pause2真实恢复至3000，45实际测试0skip。K1/2/4/8的Valid为99.21875/100/100/99.70703125%，Unique为0.9921875/1.9375/3.3984375/4.9765625。best=last3000，K2/K4达到本受控已知类型预算容量，K8为637/639，只差两个父各一类；三个K8无效槽与唯一K1无效都是碰撞。384有效重复主要来自R<K，不能作为去重机制空间。完整24原池11520候选按原checker复核，全部750参考通过，0新forward/修复。root实际看全部128容量图和三个残差池全部17候选，长有效绕行和失败均保留。[完整证据](reports/budget_conditioned_regression_v1/BUDGET_RESULTS.md)。

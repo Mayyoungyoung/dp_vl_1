@@ -1,0 +1,102 @@
+"""Input-only provenance, plots, accounting. Never open supervision/GT geometry."""
+from pathlib import Path
+from datetime import datetime
+import hashlib,json,subprocess,tarfile
+import numpy as np
+from PIL import Image
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+ROOT=Path('F:/dpvlm');OUT=ROOT/'reports/hamster3d_pinned_full1_v1';BIN=ROOT/'runs/synced_hamster3d_pinned_full1_v1'
+ARCHIVE=ROOT/'.bootstrap/hamster_full1_observation_input.tar.gz'
+assert not ARCHIVE.exists()
+remote=r'''
+from pathlib import Path
+import io,json,hashlib,sys,tarfile
+r=Path('/home/wzy/dpvlm/route_set_v1/runs/hamster3d_pinned_full1_v1/probe')
+q=json.loads((r/'preflight.json').read_text());assert q['read_labels'] is False
+expected=Path('/home/wzy/dpvlm/route_set_v1/data/observed_two_row_formal116_v1/parents/TRAIN/two_row_reach_283200/two_row_reach_283200')
+assert set(Path(n).name for n in q['input_sha256'])=={'front.png','observation.npz'}
+rows=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+ for name,digest in q['input_sha256'].items():
+  p=Path(name);assert p.parent==expected and not p.is_symlink()
+  data=p.read_bytes();assert hashlib.sha256(data).hexdigest()==digest
+  info=tarfile.TarInfo(p.name);info.size=len(data);tar.addfile(info,io.BytesIO(data))
+  rows.append(dict(path=p.name,remote_path=p.as_posix(),sha256=digest,bytes=len(data)))
+ b=(json.dumps(dict(files=rows,supervision_reads=0),indent=2)+'\n').encode();info=tarfile.TarInfo('INPUT_ARTIFACT_INDEX.json');info.size=len(b);tar.addfile(info,io.BytesIO(b))
+'''
+with ARCHIVE.open('wb') as f:
+ p=subprocess.run(['ssh','wzy3090','taskset','-c','1','env','CUDA_VISIBLE_DEVICES=-1','/home/wzy/dpvlm/route_set_v1/.venv/bin/python','-'],input=remote.encode(),stdout=f,stderr=subprocess.PIPE)
+assert p.returncode==0,p.stderr.decode()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+with tarfile.open(ARCHIVE) as tar:
+ idx=json.load(tar.extractfile('INPUT_ARTIFACT_INDEX.json'));by={r['path']:r for r in idx['files']}
+ for m in tar.getmembers():
+  assert m.name in {'front.png','observation.npz','INPUT_ARTIFACT_INDEX.json'}
+  b=tar.extractfile(m).read()
+  if m.name in by:assert hashlib.sha256(b).hexdigest()==by[m.name]['sha256']
+  q=(BIN if m.name.endswith('.npz') else OUT)/'input_observation'/m.name;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(b)
+
+sid='two_row_reach_283200_target0';r=json.loads((OUT/'probe'/sid/'result.json').read_text())
+s=json.loads((OUT/'probe/status.json').read_text());outer=json.loads((OUT/'probe.status.json').read_text())
+pred=BIN/'probe'/sid/'predicted_coordinates.npz'
+with np.load(pred,allow_pickle=False) as z:coords={k:z[k].copy() for k in z.files}
+with np.load(BIN/'input_observation/observation.npz',allow_pickle=False) as z:
+ assert set(z.files)=={'depth','gripper_pose','gripper_open','camera_intrinsics','camera_extrinsics'}
+ observed={k:z[k].copy() for k in z.files}
+uvd=coords['uvd'];world=coords['world_xyz'];camera=coords['camera_xyz'];assert uvd.shape==world.shape==camera.shape==(4,3)
+for key in ('camera_intrinsics','camera_extrinsics'):assert np.array_equal(coords[key],observed[key])
+K=observed['camera_intrinsics'].astype(float);T=observed['camera_extrinsics'].astype(float)
+camera_roundtrip=(world-T[:3,3])@T[:3,:3]
+pix=camera_roundtrip@K.T;pix=pix[:,:2]/pix[:,2:3]
+assert np.allclose(pix,uvd[:,:2]*224/1000,atol=1e-4,rtol=0)
+pixels=uvd[:,:2]*.640
+rgb=Image.open(OUT/'probe/prepared_input/frame_0_640.png').convert('RGB');assert rgb.size==(640,640)
+fig,axes=plt.subplots(1,2,figsize=(11,5.3),dpi=150)
+axes[0].imshow(Image.open(OUT/'input_observation/front.png'));axes[0].set_title('Original observed RGB (224 x 224)');axes[0].axis('off')
+ax=axes[1];ax.imshow(rgb);ax.plot(pixels[:,0],pixels[:,1],color='#fcbe32',lw=2,zorder=3)
+labels=['1: Close','2: None','3: None','4: Open'];colors=['#f83c65','#3bcff0','#3bcff0','#58ec79']
+for i,(point,label,col) in enumerate(zip(pixels,labels,colors)):
+ ax.scatter(*point,s=55,color=col,edgecolor='black',zorder=4)
+ offset=(8,10) if i!=3 else (8,15)
+ ax.annotate(label,point,xytext=offset,textcoords='offset points',color='white',fontsize=9,bbox=dict(boxstyle='round,pad=.18',fc='black',alpha=.8),zorder=5)
+ if i<3:ax.annotate('',xy=pixels[i+1],xytext=point,arrowprops=dict(arrowstyle='->',lw=1.2,color='#fcbe32'))
+ax.set_title('All four returned points; lines are display only');ax.set_xlim(0,639);ax.set_ylim(639,0);ax.axis('off')
+fig.suptitle('HAMSTER full1 | TRAIN0 | saved K=1 output | no target/obstacle labels',fontsize=11)
+fig.tight_layout();(OUT/'figures').mkdir();fig.savefig(OUT/'figures/RGB_FOUR_POINT_OVERLAY.png');plt.close(fig)
+fig=plt.figure(figsize=(11,4.5),dpi=150);ax=fig.add_subplot(121,projection='3d');ax.plot(*world.T,'o-',color='#3a69b4')
+for i,w in enumerate(world):ax.text(*w,str(i+1))
+ax.set(xlabel='World X (m)',ylabel='World Y (m)',zlabel='World Z (m)',title='Returned world coordinates; no scene labels')
+ax=fig.add_subplot(122);ax.plot(np.arange(1,5),uvd[:,2],'o-',label='Generated optical depth');ax.set(xlabel='Returned point',ylabel='Depth (m)',title='Official raw UVD depths');ax.set_xticks(range(1,5));ax.grid(alpha=.25)
+fig.tight_layout();fig.savefig(OUT/'figures/FOUR_POINT_COORDINATES.png');plt.close(fig)
+
+times=np.asarray([x['seconds'] for x in r['forwards']]);assert len(times)==151 and all(x['state']=='completed' for x in r['forwards'])
+new_tokens=np.load(BIN/'probe'/sid/'streamed_generated_token_ids.npy',allow_pickle=False)
+old_tokens=np.load(BIN/'probe/original_failure/probe'/sid/'streamed_generated_token_ids.npy',allow_pickle=False)
+assert len(new_tokens)==151 and len(old_tokens)==87 and np.array_equal(new_tokens[:87],old_tokens)
+assert np.array_equal(np.load(BIN/'probe/prepared_input/prompt_token_ids.npy'),np.load(BIN/'probe/original_failure/probe'/sid/'prompt_token_ids.npy'))
+outersec=(datetime.fromisoformat(outer['end_utc'])-datetime.fromisoformat(outer['start_utc'])).total_seconds()
+audit=dict(source_commit=outer['code_commit'],sample_id=sid,generate_calls=1,candidate_budget=1,
+ forward_calls=151,generated_tokens=151,eos=True,strict_json_whole_output=True,official_parsed_points=4,
+ generated_events=r['parse']['official_actions'],quality_metrics=None,task_success=None,
+ input_calibration_arrays_exact=True,uvd_world_projection_roundtrip_max_pixel_abs=float(np.max(np.abs(pix-uvd[:,:2]*224/1000))),
+ original_prompt_tokens_exact=True,old87_generated_token_prefix_exact=True,first8_logits_exact=all(x['exact'] and x['finite'] for x in r['logit_prefix_comparisons']),
+ all_predicted_values_finite=bool(np.isfinite(world).all()),world_coordinates=world.tolist(),
+ original_observed_current_position=observed['gripper_pose'][:3].tolist(),original_observed_open=float(observed['gripper_open']),
+ first_point_to_observed_start_m=float(np.linalg.norm(world[0]-observed['gripper_pose'][:3])),
+ observed_state_scope='Descriptive input/returned-coordinate relation only; no acceptance labels or repair used.',
+ outer_seconds=outersec,outer_gpu_reserved_hours=outersec/3600,body_seconds=s['elapsed_seconds'],
+ body_gpu_reserved_hours=s['gpu_reservation_hours'],model_load_seconds=s['model_load_seconds'],
+ input_prepare_seconds=s['input_prepare_seconds'],transport_conversion_seconds=s['transport_conversion_seconds'],
+ request_seconds=r['elapsed_seconds'],post_tensor_verification_seconds=s['post_tensor_verification_seconds'],
+ prefill_forward_seconds=float(times[0]),decode_forward_median_seconds=float(np.median(times[1:])),
+ logit_finite_check_and_CPU_capture_seconds=sum(x['check_and_CPU_capture_seconds'] for x in r['forwards']),
+ peak_reserved_bytes=s['whole_max_memory_reserved_bytes'],peak_allocated_bytes=s['whole_max_memory_allocated_bytes'],
+ peak_rss_bytes=s['process_peak_rss_bytes'],cost_scope='All inner timings nested within outer, not additive. Previous failed probe/exact8/assets are separately recorded and not charged again.',
+ archive_additional_model_calls=0,supervision_reads=0,checker_calls=0,new_candidates=0,
+ predicted_coordinates_sha256=sha(pred),input_archive_sha256=sha(ARCHIVE))
+(OUT/'ACCOUNTING_AND_FORMAT_AUDIT.json').write_text(json.dumps(audit,indent=2)+'\n',encoding='utf8')
+(OUT/'finalize_source.py.txt').write_bytes(Path(__file__).read_bytes())
+print(json.dumps(audit,indent=2))

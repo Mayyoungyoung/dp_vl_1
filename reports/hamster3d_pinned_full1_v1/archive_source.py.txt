@@ -1,0 +1,61 @@
+"""Archive only the completed one-request HAMSTER run; no model/data labels."""
+from pathlib import Path
+import hashlib,json,subprocess,tarfile
+ROOT=Path('F:/dpvlm');OUT=ROOT/'reports/hamster3d_pinned_full1_v1'
+BIN=ROOT/'runs/synced_hamster3d_pinned_full1_v1'
+ARCHIVE=ROOT/'.bootstrap/hamster_full1_completed.tar.gz'
+assert not OUT.exists() and not BIN.exists() and not ARCHIVE.exists()
+remote=r'''
+from pathlib import Path
+import hashlib,io,json,tarfile,sys
+p=Path('/home/wzy/dpvlm/route_set_v1');r=p/'runs/hamster3d_pinned_full1_v1'
+sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+outer=json.loads((r/'probe.status.json').read_text());inner=json.loads((r/'probe/status.json').read_text())
+assert outer['status']=='completed' and outer['exit_code']==0 and inner['status']=='completed' and inner['exit_code']==0
+assert inner['generate_calls']==1 and inner['forward_calls']==151 and inner['generated_tokens']==151
+assert inner['quality_metrics'] is None and inner['task_success'] is None
+sealed=json.loads((r/'probe/artifact_index.json').read_text())
+for name,item in sealed.items():
+ f=r/'probe'/name;f.resolve().relative_to((r/'probe').resolve())
+ assert not f.is_symlink() and f.is_file() and sha(f)==item['sha256'] and f.stat().st_size==item['bytes']
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as t:
+ for f in sorted(r.rglob('*')):
+  if not f.is_file():continue
+  assert not f.is_symlink() and f.stat().st_size<10*2**20
+  name=f.relative_to(r).as_posix()
+  kind='remote_only_logits' if f.suffix=='.pt' else 'ignored_numpy' if f.suffix in ('.npy','.npz') else 'report_original'
+  index.append(dict(path=name,remote_path=f.as_posix(),bytes=f.stat().st_size,sha256=sha(f),disposition=kind))
+  if kind!='remote_only_logits':t.add(f,arcname=name,recursive=False)
+ b=(json.dumps(dict(source_commit=outer['code_commit'],files=index,sealed_artifacts_verified=len(sealed),new_model_calls=0,supervision_reads=0,weight_downloads=0),indent=2)+'\n').encode()
+ m=tarfile.TarInfo('REMOTE_ARTIFACT_INDEX.json');m.size=len(b);t.addfile(m,io.BytesIO(b))
+'''
+with ARCHIVE.open('wb') as f:
+ p=subprocess.run(['ssh','wzy3090','taskset','-c','1','env','CUDA_VISIBLE_DEVICES=-1','OMP_NUM_THREADS=1','/home/wzy/dpvlm/route_set_v1/.venv/bin/python','-'],input=remote.encode(),stdout=f,stderr=subprocess.PIPE)
+assert p.returncode==0,p.stderr.decode()
+with tarfile.open(ARCHIVE) as tar:
+ index=json.load(tar.extractfile('REMOTE_ARTIFACT_INDEX.json'));by={x['path']:x for x in index['files']}
+ for member in tar.getmembers():
+  assert member.isfile() and not Path(member.name).is_absolute() and '..' not in Path(member.name).parts
+  data=tar.extractfile(member).read();dest=OUT/member.name
+  if member.name!='REMOTE_ARTIFACT_INDEX.json':
+   row=by[member.name];assert hashlib.sha256(data).hexdigest()==row['sha256']
+   if row['disposition']=='ignored_numpy':dest=BIN/member.name
+  dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data)
+PREP=ROOT/'reports/hamster3d_full1_preparation_v1'
+for prefix in ('source','actual_incoming','local_evidence'):
+ for f in (PREP/prefix).rglob('*'):
+  if f.is_file():
+   q=OUT/'preparation'/f.relative_to(PREP);q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(f.read_bytes())
+for name in ('ARCHIVE_AUDIT.json','LOCAL_ARTIFACT_INDEX.json'):
+ q=OUT/'preparation'/name;q.write_bytes((PREP/name).read_bytes())
+for name in ('hamster_full1_final_status.json','hamster_full1_final_result.json','hamster_full1_final_outer.json'):
+ q=OUT/'root_completed_metadata'/name;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes((ROOT/'.bootstrap'/name).read_bytes())
+(OUT/'archive_source.py.txt').write_bytes(Path(__file__).read_bytes())
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(OUT/'SYNC_RECEIPT.json').write_text(json.dumps(dict(remote_files=len(index['files']),remote_sha_all_passed=True,
+  sealed_artifacts_verified=index['sealed_artifacts_verified'],archive_sha256=sha(ARCHIVE),
+  ignored_numpy=sum(x['disposition']=='ignored_numpy' for x in index['files']),
+  remote_only_logits=sum(x['disposition']=='remote_only_logits' for x in index['files']),
+  new_model_calls=0,supervision_reads=0,weights_downloaded=0),indent=2)+'\n',encoding='utf8')
+print((OUT/'SYNC_RECEIPT.json').read_text())

@@ -551,3 +551,17 @@ HAMSTER full1 source04ed74f实际442文件部署一致，48服务器测试0skip�
 Min-SNR source75586c5的431文件已部署核hash，实际16测试与CPU parent inspection暂等HAMSTER退出后独立执行，不与其计时竞争；两臂500步和TRAIN-only诊断计划不变。下一唯一方法候选是完整正参考内有序局部观测关系参与训练匹配，先核成熟Soft-DTW divergence/DILATE等强先例、落地数值与预算检查，再决定同源三臂实训。它目前不是已证明新颖核心；MTR局部attention/DTW本身不当贡献，原segment v1 underpowered保留，不改判据补过线。
 
 JOBS只读冻结af333c9快照2026-10-03T05:59:59.921173UTC为812条，registry新增63，保留历史状态。论文核心、多种子独立观测优势和A–H仍未成立；继续数据、强基线修复与单机制验证。
+
+## 完整外部模型请求封存、恢复修复、全256质量开始 — 2026-10-03 06:42 UTC
+
+HAMSTER full1实际于06:10:10.143589UTC完成，唯一TRAIN0请求151forward/151tokens、EOS及严格完整JSON4点。前8logits与exact8逐值相同，前87token与原超时输出一致；旧失败保留。完整外层504.697245秒/0.140193679GPUh，生成183.939749秒、hook转换137.595700秒均嵌套；peak reserved6.6228GB、RSS21.799GB。root已实际看完整RGB投影/3D四点图及prompt；质量尚null，已授权独立原4点/3线段、事件[0,0,0,1]的只读TRAIN0检查，不补起点/修复/重生成。[封存结果](reports/hamster3d_pinned_full1_v1/FULL1_RESULTS.md)。
+
+Min-SNR原755实际测试14pass2fail，原因已真实CPU定位为Adam state load复用父dict的storage alias。f72e1aa最小deepcopy修复后18实际测试0skip，完整state/RNG/四流等值比较不放松；原失败与四case反证封存。诊断+修复验证outer8.757316秒，0真实data/PT/GPU。新immutable f72配方准备中，尚未parent真实inspect或两臂训练；原500步/360秒/285TRAIN-only与判据不变。[修复证据](reports/observed_diffusion_minsnr_alias_fix_v1/ALIAS_FIX_RESULTS.md)。
+
+有序观测关系损失四源和决策卡已e69ab8a提交推送，root全文审查及独立数学审查通过；本地3pass17Torchskip，不替代服务器20测试。下一独立真实CPU测试后，以B32/K4/R9/H24/N12544的完整成本/XX/YY/指派/backward测GPU预算，三臂3000训练尚未启动。标准Soft-DTW及局部几何描述不当创新，C的非负性无一般定理；原segment v1仍underpowered。[协议](reports/OBSERVED_ORDERED_RELATION_PROTOCOL.md)。
+
+可变布局原eba全部12父已06:18:35.498615UTC闭合，324请求槽、270attempted、54unattempted。全量质量初核108接受/162路线失败，15unknown保留；两个未尝试父5/7已保存证据表明±.0275m坐标的float32读回触发1mm半格量化hash差，不是无解。原失败状态、布局与验收不改，开闭配对尚不能认证；质量归档/全图QA收尾，修复只进入后续独立版本。
+
+原TRAIN256采集两shard均completed/exit0，最后06:26:07.255157UTC结束（原SSH26105已关闭）。root原1a3 mechanical snapshot实际256闭合、6912/6912attempted、0missing/unattempted；旧128归档2238文件全SHA相同，4append-only registry单独排除。原1a3全256质量于06:38:54.555292UTC启动，PID826284/826289、SSH28219、CPU1/CUDA隐藏。命令：`ssh wzy3090 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/extension256_quality_1a3eef1.sh`，fresh已启动不可重发；status为`runs/observed_two_row_extension288_quality_v1/train256.status.json`，等待完成后完整6912槽/768图分析。新DEV32封存，现训练人口仍95父285条件，不自动扩充。
+
+JOBS冻结快照06:40:26.042436UTC共844条，registry追加38条保留原历史。MAIN仍293，技术调试/采集不追加模型质量行。研究核心、多种子独立观测优势与A–H仍未成立；下一实际工作是完成Min-SNR配对修复实验、关系损失预算门和全256质量结果分析。

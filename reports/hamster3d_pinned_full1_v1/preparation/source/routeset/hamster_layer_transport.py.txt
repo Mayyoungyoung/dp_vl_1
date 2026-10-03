@@ -1,0 +1,208 @@
+"""Project-owned bounded HAMSTER transport hooks; official arithmetic is unchanged.
+
+Torch and Accelerate are imported only by runtime functions. No installed module
+or global function is patched. The old probe and its hooks remain independent.
+"""
+import hashlib
+from pathlib import Path
+
+PROTOCOL = 'hamster_pinned_layer_transport_v1'
+CAP_BYTES = 8864694272
+RSS_CAP_BYTES = 32 * 2**30
+WORKSPACE_BYTES = 2 * 2**30
+RESIDENT_LAYERS = (0, 1, 2, 3)
+LAYER_BYTES = 385892864
+BASE_RESIDENT_BYTES = 4387590624
+
+
+def memory_plan(base_bytes, layer_bytes, buffer_bytes=0):
+    if base_bytes != BASE_RESIDENT_BYTES or list(layer_bytes) != [LAYER_BYTES]*36:
+        raise ValueError('Pinned official bf16 parameter inventory differs')
+    if not isinstance(buffer_bytes, int) or buffer_bytes < 0:
+        raise ValueError('Nonnegative actual buffer inventory required')
+    resident = base_bytes + sum(layer_bytes[i] for i in RESIDENT_LAYERS)
+    working_layer = max(layer_bytes[4:])
+    required = resident + working_layer + buffer_bytes + WORKSPACE_BYTES
+    if required > CAP_BYTES:
+        raise ValueError('Less than fixed2GiB workspace after resident and active layer')
+    return dict(gpu_cap_bytes=CAP_BYTES,rss_cap_bytes=RSS_CAP_BYTES,
+        base_resident_bytes=base_bytes,resident_layers=list(RESIDENT_LAYERS),
+        resident_parameter_bytes=resident,active_layer_parameter_bytes=working_layer,
+        all_buffer_bytes_conservative=buffer_bytes,workspace_bytes=WORKSPACE_BYTES,
+        required_bytes=required,unassigned_bytes=CAP_BYTES-required,
+        pinned_parameter_bytes=sum(layer_bytes[4:]))
+
+
+def rss_bytes():
+    for line in Path('/proc/self/status').read_text().splitlines():
+        if line.startswith('VmRSS:'):return int(line.split()[1])*1024
+    raise RuntimeError('Linux RSS evidence unavailable')
+
+
+def check_rss(extra_bytes=0):
+    import resource
+    actual=rss_bytes()
+    peak=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+    if extra_bytes < 0 or max(actual+extra_bytes,peak) > RSS_CAP_BYTES:
+        raise RuntimeError('Registered32GiB process RSS budget exceeded/projected')
+    return actual
+
+
+def tensor_hash(tensor):
+    import torch
+    raw=tensor.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy()
+    return hashlib.sha256(memoryview(raw)).hexdigest()
+
+
+def all_tensors(module):
+    # Official decoder has no tied parameter aliases. Reject rather than copy
+    # aliased entries independently if the upstream architecture changes.
+    pairs=list(module.named_parameters(recurse=True,remove_duplicate=False))
+    pairs+=list(module.named_buffers(recurse=True,remove_duplicate=False))
+    if len({name for name,_ in pairs}) != len(pairs):raise ValueError('Duplicate tensor name')
+    pointers=[(str(v.device),v.data_ptr()) for _,v in pairs if v.numel()]
+    if len(set(pointers)) != len(pointers):raise ValueError('Unexpected layer tensor alias')
+    return dict(pairs)
+
+
+def make_layer_hook(weights, audit, *, execution_device='cuda:0'):
+    """Only the production CUDA/pinned construction is exposed."""
+    import torch
+    from accelerate.hooks import ModelHook
+    from accelerate.utils.modeling import set_module_tensor_to_device
+    if execution_device != 'cuda:0' or not weights:
+        raise ValueError('Fixed CUDA0 with nonempty pinned CPU dictionary required')
+    for value in weights.values():
+        if value.device.type!='cpu' or not value.is_pinned():
+            raise ValueError('Every offload tensor must already be pinned CPU storage')
+
+    class PinnedWholeLayerHook(ModelHook):
+        no_grad=True
+
+        def __init__(self):
+            self.weights=weights;self.audit=audit;self.active=False
+
+        def init_hook(self,module):
+            current=all_tensors(module)
+            if set(current)!=set(self.weights):raise ValueError('Complete layer tensor map required')
+            for name,value in current.items():
+                if value.device.type!='cpu' or value.shape!=self.weights[name].shape or value.dtype!=self.weights[name].dtype:
+                    raise ValueError('CPU original/pinned tensor schema differs')
+                if not torch.equal(value,self.weights[name]):raise ValueError('Pinning changed parameter values')
+            self._offload(module)
+            return module
+
+        def _offload(self,module):
+            for name in self.weights:
+                set_module_tensor_to_device(module,name,'meta',clear_cache=False,non_blocking=False)
+            self.active=False
+
+        def pre_forward(self,module,*args,**kwargs):
+            if self.active:raise RuntimeError('Reentrant decoder forward forbidden')
+            self.audit['pre_issued']+=1
+            try:
+                for name,value in self.weights.items():
+                    set_module_tensor_to_device(module,name,execution_device,value=value,
+                                                clear_cache=False,non_blocking=False)
+                self.active=True
+                self.audit['pre_completed']+=1
+            except BaseException:
+                self.audit['failed_pre']+=1;self._offload(module);raise
+            return args,kwargs
+
+        def post_forward(self,module,output):
+            self._offload(module);self.audit['post_completed']+=1
+            return output
+
+        def detach_hook(self,module):
+            for name,value in self.weights.items():
+                set_module_tensor_to_device(module,name,'cpu',value=value,clear_cache=False,non_blocking=False)
+            self.active=False
+            return module
+
+    return PinnedWholeLayerHook()
+
+
+def install_transport(model,persist):
+    """Remove original hooks, restore CPU once, then install the bounded variant.
+
+    No model forward is made. The caller discards the first call's generation
+    cache before entry. Any error ends this fresh probe; no placement fallback.
+    """
+    import torch
+    from accelerate.hooks import add_hook_to_module,remove_hook_from_module
+    layers=model.model.language_model.layers
+    if len(layers)!=36:raise ValueError('Exactly36 official layers required')
+    audit=dict(protocol=PROTOCOL,status='converting',layers=[],clear_cache_per_tensor=False,
+               non_blocking=False,asynchronous_streams=False)
+    persist(audit)
+    # detach_hook uses the original Accelerate implementation. Its one-time
+    # restoration cost remains part of conversion, not claimed decode speed.
+    for layer in layers:remove_hook_from_module(layer,recurse=True)
+    if any(hasattr(m,'_hf_hook') for layer in layers for m in layer.modules()):
+        raise ValueError('Original decoder hook survived recursive removal')
+    if any(p.device.type!='cpu' or p.dtype!=torch.bfloat16 for layer in layers for p in layer.parameters()):
+        raise ValueError('Original hooks did not restore the exact bf16 CPU decoder')
+    decoder={id(p) for layer in layers for p in layer.parameters()}
+    resident=[p for p in model.parameters() if id(p) not in decoder]
+    if any(p.device.type!='cuda' for p in resident):raise ValueError('Original nondecoder resident placement changed')
+    base=sum(p.numel()*p.element_size() for p in resident)
+    layer_bytes=[sum(p.numel()*p.element_size() for p in layer.parameters()) for layer in layers]
+    buffers=sum(v.numel()*v.element_size() for v in model.buffers())
+    audit['memory_plan']=memory_plan(base,layer_bytes,buffers)
+    hooks=[];pinned_total=0
+    for index,layer in enumerate(layers):
+        check_rss();original=all_tensors(layer)
+        initial={name:tensor_hash(value) for name,value in original.items()}
+        row=dict(index=index,parameter_bytes=layer_bytes[index],original_sha256=initial,
+                 resident=index in RESIDENT_LAYERS,pre_issued=0,pre_completed=0,post_completed=0,failed_pre=0)
+        audit['layers'].append(row);persist(audit)
+        if index in RESIDENT_LAYERS:
+            layer.to('cuda:0')
+            for name,value in all_tensors(layer).items():
+                if tensor_hash(value)!=initial[name]:raise ValueError('Resident transfer changed tensor bytes')
+        else:
+            projected=sum(v.numel()*v.element_size() for v in original.values())
+            check_rss(projected);weights={}
+            for name,value in original.items():
+                pinned=value.detach().pin_memory()
+                if not torch.equal(pinned,value) or tensor_hash(pinned)!=initial[name]:
+                    raise ValueError('Pinned copy changed official tensor bytes')
+                weights[name]=pinned
+            hook=make_layer_hook(weights,row)
+            add_hook_to_module(layer,hook);hooks.append(hook)
+            pinned_total+=projected
+            row['pinned_bytes']=projected
+        del original
+        row['rss_after_bytes']=check_rss()
+        if torch.cuda.memory_reserved()>CAP_BYTES:raise RuntimeError('CUDA reserved exceeds fixed cap during conversion')
+        persist(audit)
+    # One explicit phase-boundary allocator cleanup; never inside per-token hooks.
+    torch.cuda.synchronize();torch.cuda.empty_cache()
+    audit.update(status='installed',pinned_total_bytes=pinned_total,rss_after_bytes=check_rss())
+    persist(audit)
+    return hooks,audit
+
+
+def verify_after(model,hooks,audit,expected_forwards):
+    import torch
+    layers=model.model.language_model.layers
+    if len(hooks)!=32 or expected_forwards!=8:raise ValueError('Fixed technical forward budget differs')
+    for index,layer in enumerate(layers):
+        row=audit['layers'][index]
+        if index in RESIDENT_LAYERS:
+            actual=all_tensors(layer)
+            if any(v.device.type!='cuda' for v in actual.values()):raise ValueError('Resident layer moved')
+        else:
+            hook=hooks[index-4];actual=hook.weights
+            if hook.active or any(p.device.type!='meta' for p in layer.parameters()):
+                raise ValueError('Offloaded layer retained CUDA parameters')
+            if any(row[k]!=8 for k in ('pre_issued','pre_completed','post_completed')) or row['failed_pre']:
+                raise ValueError('Layer call accounting differs from eight model forwards')
+            if any(v.device.type!='cpu' or not v.is_pinned() for v in actual.values()):
+                raise ValueError('Pinned immutable offload state changed placement')
+        if {name:tensor_hash(value) for name,value in actual.items()}!=row['original_sha256']:
+            raise ValueError('Official tensor values changed during technical calls')
+    if torch.cuda.max_memory_reserved()>CAP_BYTES:raise RuntimeError('Fixed VRAM cap exceeded')
+    audit.update(status='verified',rss_final_bytes=check_rss(),official_tensor_bytes_unchanged=True)
+    return audit

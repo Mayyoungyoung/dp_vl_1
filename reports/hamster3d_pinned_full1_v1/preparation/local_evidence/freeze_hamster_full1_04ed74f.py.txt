@@ -1,0 +1,280 @@
+"""Local-only exact-commit archive and two independent server recipes. No SSH."""
+import argparse
+import ast
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tarfile
+import tempfile
+import xml.etree.ElementTree as ET
+
+ROOT=Path(__file__).resolve().parents[1]
+COMMIT='04ed74fbc2912af58d65c487ce9947ea5cc71dc1';SHORT=COMMIT[:7]
+OLD_SHA='63a561d8c12fafe2fbe07eafbf3d72bf69db6d507203f14fa316ae10f60fc76d'
+TEST_FILES=['tests/test_hamster3d_full1.py','tests/test_hamster3d_train6_probe.py']
+PATHS=['.gitattributes','.gitignore','AGENTS.md','README.md','RESOURCE_ENVELOPE.md','requirements.txt',
+       'configs','routeset','scripts','tests','reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md',
+       'reports/HAMSTER3D_TRANSPORT_EXACT8_PROTOCOL.md','reports/HAMSTER3D_PINNED_FULL1_PROTOCOL.md','reports/HAMSTER3D_PREPARATION_PROTOCOL.md']
+
+RUNNER=r'''"""One separately authorized tests or full1 stage. No following stage."""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT=__COMMIT__
+MANIFEST_SHA=__MANIFEST_SHA__
+EXPECTED_CASES=__CASES__
+TEST_FILES=__TEST_FILES__
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+INCOMING=P/'research_v2/incoming'
+MANIFEST=INCOMING/('hamster_full1_sources_'+COMMIT[:7]+'.json')
+VALIDATION=P/'runs/hamster3d_full1_validation_v1'/COMMIT
+PROBE=P/'runs/hamster3d_pinned_full1_v1'
+GPU='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+THREADS=('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS')
+OLD_SHA='63a561d8c12fafe2fbe07eafbf3d72bf69db6d507203f14fa316ae10f60fc76d'
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+def read(path):return json.loads(Path(path).read_text(encoding='utf8'))
+def write(path,value):
+    path=Path(path);temporary=path.with_name(path.name+'.writing')
+    temporary.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf8');temporary.replace(path)
+
+def validate_junit(path):
+    root=ET.parse(path).getroot();suites=list(root.iter('testsuite'));actual=[]
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Require all48 actual tests without errors/failures/skips')
+    for case in root.iter('testcase'):
+        if any(case.find(k)is not None for k in ('error','failure','skipped')):raise ValueError('Every testcase must pass')
+        actual.append((case.get('classname'),case.get('name')))
+    if (len(actual)!=48 or len(set(actual))!=48 or sorted(actual)!=sorted(EXPECTED_CASES)
+            or sum(int(s.get('tests','0')) for s in suites)!=48):
+        raise ValueError('Exact29 full1 including2 CPU Torch and19 old tests required')
+    return dict(tests=48,passed=48,skipped=0,full1=29,real_CPU_Torch=2,old_probe=19,
+                cuda_or_official_model_calls=0,actual_testcases=actual)
+
+def verify_source():
+    if sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen manifest changed')
+    value=read(MANIFEST)
+    if value['code_commit']!=COMMIT:raise ValueError('Commit differs')
+    for name,item in value['files'].items():
+        file=SOURCE/name
+        if file.is_symlink() or not file.is_file() or file.stat().st_size!=item['bytes'] or sha(file)!=item['sha256']:
+            raise ValueError('Frozen Git archive bytes changed: '+name)
+    if sha(SOURCE/'scripts/probe_hamster3d_train6.py')!=OLD_SHA:
+        raise ValueError('Original b127 actually executed source bytes changed')
+    dependencies=read(SOURCE/'configs/hamster3d_pinned_full1_v1.json')['dependency_sources']
+    for name,item in dependencies.items():
+        if sha(SOURCE/name)!=item['sha256']:raise ValueError('Previously executed dependency bytes changed: '+name)
+    return dict(path=str(MANIFEST),sha256=MANIFEST_SHA,code_commit=COMMIT,files=len(value['files']),
+                archive_sha256=value['archive_sha256'],original_b127_source_sha256=OLD_SHA)
+
+def preparation_gate():
+    root=P/'runs/hamster3d_preparation_v1';identity=read(root/'preparation_identity.json');result={}
+    for stage in ('assets','environment'):
+        marker=root/(stage+'.completed.json');value=read(marker);folder=Path(value['session'])
+        folder.resolve().relative_to(root.resolve());state=read(folder/'status.json')
+        if (value['identity']!=identity or sha(folder/'receipt.json')!=value['receipt_sha256']
+                or state.get('status')!='completed' or state.get('exit_code')!=0):
+            raise ValueError('Fixed actual private HAMSTER '+stage+' preparation missing')
+        result[stage]=dict(marker_sha256=sha(marker),receipt_sha256=sha(folder/'receipt.json'),status_sha256=sha(folder/'status.json'))
+    return result
+
+def prior_tests():
+    state=read(VALIDATION/'tests.status.json');receipt=read(VALIDATION/'tests_receipt.json')
+    identity=read(VALIDATION/'tests_identity.json')
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or state.get('code_commit')!=COMMIT
+            or receipt.get('status')!='passed' or receipt.get('code_commit')!=COMMIT
+            or receipt.get('child_exit_code')!=0 or receipt.get('identity_sha256')!=sha(VALIDATION/'tests_identity.json')
+            or receipt.get('pytest_xml_sha256')!=sha(VALIDATION/'pytest.xml')
+            or identity.get('runner_sha256')!=sha(__file__) or identity.get('source',{}).get('sha256')!=MANIFEST_SHA
+            or identity.get('stage')!='tests' or identity.get('runtime',{}).get('cuda_visible_devices')!=''):
+        raise ValueError('Exact actual48 tests must complete before a separate technical call')
+    validate_junit(VALIDATION/'pytest.xml')
+    return {name:sha(VALIDATION/name) for name in ('tests.status.json','tests_receipt.json','tests_identity.json','pytest.xml')}
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--stage',choices=('tests','probe'),required=True)
+    stage=parser.parse_args().stage;out=VALIDATION if stage=='tests' else PROBE;started=time.perf_counter()
+    wrapper=Path(os.environ.get('FROZEN_HAMSTER_FULL1_WRAPPER',''));cuda='' if stage=='tests' else GPU
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,11) or Path(sys.prefix).resolve()!=(P/'.venv-hamster3d').resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or sorted(os.sched_getaffinity(0))!=[0] or os.environ.get('CUDA_VISIBLE_DEVICES')!=cuda
+            or any(os.environ.get(k)!='1' for k in THREADS)
+            or wrapper.resolve()!=INCOMING/('hamster_full1_'+stage+'_'+COMMIT[:7]+'.sh')):
+        raise ValueError('Immutable source/private Python3.11/CPU0/CUDA/thread/wrapper mismatch')
+    source=verify_source();identity_path=out/(stage+'_identity.json');receipt_path=out/(stage+'_receipt.json')
+    if identity_path.exists() or receipt_path.exists():raise FileExistsError('Fresh one-shot stage only')
+    identity=dict(protocol='hamster_full1_frozen_recipe_v1',stage=stage,code_commit=COMMIT,source=source,
+        runner_sha256=sha(__file__),wrapper_sha256=sha(wrapper),wrapper=str(wrapper),preparation=preparation_gate(),
+        runtime=dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,cpu_affinity=[0],cuda_visible_devices=cuda,
+                     threads={k:os.environ[k] for k in THREADS}),fresh_only=True,retry=False,resume=False,
+        automatic_following_stage=False,started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+    if stage=='tests':
+        if (out/'pytest.xml').exists():raise FileExistsError('Existing test output cannot be overwritten')
+        command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider','--junitxml='+str(out/'pytest.xml')]+TEST_FILES
+        identity.update(expected_tests=48,expected_skips=0,model_calls=0,simulator_calls=0)
+    else:
+        identity['actual_tests']=prior_tests()
+        if (out/'probe').exists():raise FileExistsError('Preserve prior technical attempt; no retry')
+        command=[sys.executable,'-m','scripts.probe_hamster3d_full1','--config',
+                 str(SOURCE/'configs/hamster3d_pinned_full1_v1.json'),'--output',str(out/'probe')]
+        identity.update(maximum_generate_calls=1,candidate_budget=1,maximum_model_forwards=1024,maximum_generated_tokens=1024,
+            maximum_gpu_fraction=.35,gpu_cap_bytes=8864694272,rss_cap_bytes=32*2**30,resident_decoder_indices=[0,1,2,3],
+            minimum_workspace_bytes=2*2**30,major_phase_elapsed_allowance_seconds=1800,request_deadline_seconds=900,whole_process_hard_alarm=False,quality_metrics=None,full_request_authorized=True)
+    identity['command']=command;write(identity_path,identity)
+    result=dict(stage=stage,code_commit=COMMIT,status='failed',child_exit_code=None,identity_sha256=sha(identity_path))
+    try:
+        child=subprocess.run(command,cwd=SOURCE);result['child_exit_code']=child.returncode
+        if child.returncode!=0:raise RuntimeError('Frozen stage failed; preserve all partials, no retry or automatic next stage')
+        if stage=='tests':
+            result['junit']=validate_junit(out/'pytest.xml');result['pytest_xml_sha256']=sha(out/'pytest.xml')
+        else:
+            inner=read(out/'probe/status.json');prediction=read(out/'probe/two_row_reach_283200_target0/result.json')
+            if (inner.get('status')!='completed' or inner.get('exit_code')!=0 or inner.get('generate_calls')!=1
+                    or inner.get('candidates_issued')!=1 or inner.get('candidates_unattempted')!=0
+                    or not 8<=inner.get('forward_calls',0)<=1024
+                    or inner.get('forward_calls')!=inner.get('generated_tokens')
+                    or prediction.get('state')!='completed' or prediction.get('generate_calls')!=1
+                    or prediction.get('quality_metrics')is not None
+                    or inner.get('quality_metrics')is not None or inner.get('task_success')is not None):
+                raise ValueError('Actual single full-request budget receipt differs')
+            if inner['complete_parsed_output']!=prediction['parse']['complete_parsed_output']:
+                raise ValueError('Output parsing completeness receipts differ')
+            result.update(complete_parsed_output=inner['complete_parsed_output'],inner_status_sha256=sha(out/'probe/status.json'),
+                prediction_result_sha256=sha(out/'probe/two_row_reach_283200_target0/result.json'),
+                actual_generate_calls=inner['generate_calls'],actual_forward_calls=inner['forward_calls'],
+                actual_generated_tokens=inner['generated_tokens'],quality_metrics=None,task_success=None,
+                artifact_index_sha256=sha(out/'probe/artifact_index.json'))
+        result.update(source_postcheck=verify_source(),source_unchanged=True,status='passed' if stage=='tests' else 'completed')
+    except BaseException as error:
+        result['exception']=repr(error);raise
+    finally:
+        result.update(elapsed_seconds=time.perf_counter()-started,finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        write(receipt_path,result)
+    print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()
+'''
+
+WRAPPER=r'''#!/usr/bin/env bash
+set -euo pipefail
+[[ $# -eq 0 ]] || exit 2
+P=/home/wzy/dpvlm/route_set_v1
+REV=__COMMIT__
+STAGE=__STAGE__
+SRC="$P/research_v2/releases/$REV"
+OUT="__OUTPUT__"
+PY="$P/.venv-hamster3d/bin/python"
+RUNNER="$P/research_v2/incoming/hamster_full1_runner___SHORT__.py"
+export FROZEN_HAMSTER_FULL1_WRAPPER="$(readlink -f "${BASH_SOURCE[0]}")"
+[[ "$FROZEN_HAMSTER_FULL1_WRAPPER" == "$P/research_v2/incoming/hamster_full1_${STAGE}_${REV:0:7}.sh" ]] || exit 2
+[[ "$(sha256sum "$RUNNER" | awk '{print $1}')" == __RUNNER_SHA__ ]] || exit 2
+[[ ! -e "$OUT/$STAGE.status.json" && ! -e "$OUT/$STAGE.lock" && ! -e "$OUT/${STAGE}_identity.json" && ! -e "$OUT/${STAGE}_receipt.json" ]] || exit 2
+cd "$SRC"
+export CODE_COMMIT="$REV" PYTHONPATH="$SRC:$SRC/tests" PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+export OMP_NUM_THREADS=1 OMP_THREAD_LIMIT=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+export CUDA_VISIBLE_DEVICES=__CUDA__
+__GPU_ENV__
+exec taskset -c 0 "$PY" -m scripts.record_job --output "$OUT" --run-id "$STAGE" --resume-strategy none -- \
+  "$PY" "$RUNNER" --stage "$STAGE"
+'''
+
+def digest(raw):return hashlib.sha256(raw).hexdigest()
+def frozen(path,raw):
+    if path.exists():
+        if path.read_bytes()!=raw:raise FileExistsError('Refuse to replace frozen bytes: '+str(path))
+    else:
+        with path.open('xb') as f:f.write(raw)
+
+def synthetic_tests(runner):
+    scope={'__name__':'local_recipe_fixture'};exec(compile(runner,'<frozen_recipe>','exec'),scope)
+    def xml(kind):
+        root=ET.Element('testsuites');suite=ET.SubElement(root,'testsuite',tests='48',errors='0',failures='0',skipped='0')
+        for index,(group,name) in enumerate(scope['EXPECTED_CASES']):
+            if kind=='missing' and index==0:continue
+            case=ET.SubElement(suite,'testcase',classname=group,name=name)
+            if index==0:
+                if kind in ('error','failure','skipped'):ET.SubElement(case,kind)
+                if kind=='substitution':case.set('name','unrelated_test')
+        if kind=='duplicate':ET.SubElement(suite,'testcase',classname=group,name=name)
+        if kind=='count':suite.set('tests','49')
+        return ET.tostring(root)
+    with tempfile.TemporaryDirectory() as folder:
+        path=Path(folder)/'junit.xml';path.write_bytes(xml('valid'))
+        assert scope['validate_junit'](path)['tests']==48
+        for kind in ('missing','error','failure','skipped','substitution','duplicate','count'):
+            path.write_bytes(xml(kind))
+            try:scope['validate_junit'](path)
+            except ValueError:pass
+            else:raise AssertionError('Accepted '+kind)
+
+def prepare():
+    actual=subprocess.check_output(['git','rev-parse',COMMIT+'^{commit}'],cwd=ROOT,text=True).strip()
+    if actual!=COMMIT:raise ValueError('Immutable commit unavailable')
+    target=ROOT/'.bootstrap';archive=target/('hamster_full1_code_'+SHORT+'.tar')
+    if archive.exists():raise FileExistsError('Never overwrite prior archive')
+    for name in TEST_FILES:
+        raw=subprocess.check_output(['git','show',COMMIT+':'+name],cwd=ROOT)
+        if raw.replace(b'\r\n',b'\n')!=(ROOT/name).read_bytes().replace(b'\r\n',b'\n'):
+            raise ValueError('Local testcase source differs from fixed commit')
+    collection=subprocess.check_output(['python','-m','pytest','--collect-only','-q',*TEST_FILES],cwd=ROOT,text=True)
+    cases=[]
+    for line in collection.splitlines():
+        if line.startswith('tests/') and '::' in line:
+            path,name=line.split('::',1);cases.append((path[:-3].replace('/','.'),name))
+    if len(cases)!=48 or len(set(cases))!=48:raise ValueError('Expected29 new +19 old exact case identities')
+    subprocess.run(['git','archive','--format=tar','--output='+str(archive),COMMIT,*PATHS],cwd=ROOT,check=True)
+    files={}
+    with tarfile.open(archive) as tar:
+        for member in tar.getmembers():
+            if member.isfile():
+                raw=tar.extractfile(member).read();files[member.name]=dict(sha256=digest(raw),bytes=len(raw))
+            elif not member.isdir():raise ValueError('No special/archive symlink members')
+    if files['scripts/probe_hamster3d_train6.py']['sha256']!=OLD_SHA:
+        raise ValueError('Archive must preserve actual b127 source exact bytes, no newline normalization')
+    config_raw=next(iter([]),None)
+    with tarfile.open(archive) as tar:config_raw=tar.extractfile('configs/hamster3d_pinned_full1_v1.json').read()
+    for name,item in json.loads(config_raw)['dependency_sources'].items():
+        if files[name]!=item:raise ValueError('Original executed dependency differs in archive: '+name)
+    manifest=dict(protocol='hamster_full1_archive_v1',code_commit=COMMIT,archive_sha256=digest(archive.read_bytes()),
+        expected_tests=48,expected_pytest_cases=cases,files=files,old_b127_actual_source_sha256=OLD_SHA)
+    manifest_bytes=(json.dumps(manifest,indent=2)+'\n').encode();mp=target/('hamster_full1_sources_'+SHORT+'.json');frozen(mp,manifest_bytes)
+    runner=RUNNER.replace('__COMMIT__',repr(COMMIT)).replace('__MANIFEST_SHA__',repr(digest(manifest_bytes)))
+    runner=runner.replace('__CASES__',repr(cases)).replace('__TEST_FILES__',repr(TEST_FILES));ast.parse(runner)
+    synthetic_tests(runner);rp=target/('hamster_full1_runner_'+SHORT+'.py');frozen(rp,runner.encode());wrappers={}
+    for stage in ('tests','probe'):
+        out='$P/runs/hamster3d_full1_validation_v1/$REV' if stage=='tests' else '$P/runs/hamster3d_pinned_full1_v1'
+        value=WRAPPER.replace('__COMMIT__',COMMIT).replace('__STAGE__',stage).replace('__OUTPUT__',out)
+        value=value.replace('__SHORT__',SHORT).replace('__RUNNER_SHA__',digest(runner.encode()))
+        value=value.replace('__CUDA__',"''" if stage=='tests' else "'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'")
+        value=value.replace('__GPU_ENV__','unset RESEARCH_GPU_UUID' if stage=='tests' else 'export RESEARCH_GPU_UUID="$CUDA_VISIBLE_DEVICES"')
+        path=target/f'hamster_full1_{stage}_{SHORT}.sh';frozen(path,value.encode());wrappers[stage]=path
+        subprocess.run([r'F:\Git\bin\bash.exe','-n',str(path)],check=True,cwd=ROOT)
+    result=dict(code_commit=COMMIT,source_files=len(files),local_only=True,ssh_or_scp_calls=0,server_execution=False,model_calls=0,
+        old_b127_actual_source_sha256=OLD_SHA,archive_paths=PATHS,
+        artifacts={p.name:dict(path=str(p),sha256=digest(p.read_bytes()),bytes=p.stat().st_size) for p in [archive,mp,rp,*wrappers.values()]},
+        independent_commands={stage:['taskset','-c','0','bash','/home/wzy/dpvlm/route_set_v1/research_v2/incoming/'+path.name] for stage,path in wrappers.items()},
+        local_checks=dict(collected_exact_tests=48,generated_runner_AST=True,synthetic_JUnit_checks=8,bash_n=2,server_tests_executed=False),
+        order='Root deploy/hash then actual48 tests first. Only after root reads completed receipt may separately launch one full1 request; no auto chain/retry.')
+    receipt=target/('hamster_full1_freeze_'+SHORT+'.json');frozen(receipt,(json.dumps(result,indent=2)+'\n').encode())
+    print(json.dumps(result,indent=2))
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prepare',action='store_true');args=parser.parse_args()
+    if not args.prepare:parser.error('Explicit local-only --prepare required')
+    prepare()

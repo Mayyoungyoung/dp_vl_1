@@ -1,0 +1,183 @@
+import copy
+import json
+from pathlib import Path
+
+import numpy as np
+import pytest
+from scripts import probe_hamster3d_full1 as p
+
+
+def config():return json.loads(Path('configs/hamster3d_pinned_full1_v1.json').read_text())
+
+
+def gate_fixture():
+    status=dict(status='completed',exit_code=0,gate_passed=True,code_commit=p.PRIOR_COMMIT,
+        generate_calls=2,forward_calls=16,generated_tokens=16,partial_candidates_unattempted=0,
+        whole_max_memory_reserved_bytes=6618611712,process_peak_rss_bytes=22116167680)
+    outer=dict(status='completed',exit_code=0,end_utc='2026-10-03T05:25:20Z',code_commit=p.PRIOR_COMMIT)
+    receipt=dict(status='completed',child_exit_code=0,source_unchanged=True,gate_passed=True,code_commit=p.PRIOR_COMMIT)
+    comparison=dict(exact=True,finite=True,maximum_abs_difference=0,shape_original=[1,1,151936],
+        shape_new=[1,1,151936],dtype_original='torch.bfloat16',dtype_new='torch.bfloat16')
+    report=dict(passed=True,tokens_and_logits_exact=True,memory_passed=True,actual_forward_calls=16,
+        decode_median_ratio=.340491,logit_comparisons=[copy.deepcopy(comparison) for _ in range(8)])
+    return report,status,outer,receipt
+
+
+def test_registered_one_request_policy_binds_every_actual_prior_file():
+    c=p.validate_policy(config());assert len(c['exact8_files'])==41
+    assert c['policy']['generate_calls']==c['policy']['candidate_budget']==1
+    assert c['policy']['max_new_tokens']==1024 and c['policy']['request_timeout_seconds']==900
+    assert c['policy']['original_hook_generate_calls']==c['policy']['warmup_calls']==0
+    assert not c['policy']['retry'] and not c['policy']['resume']
+
+
+@pytest.mark.parametrize('key,value',[('generate_calls',2),('max_new_tokens',1025),('request_timeout_seconds',901),
+    ('resident_layers',[0,1,2,3,4]),('read_supervision',True),('gpu_fraction',.36)])
+def test_scope_expansion_rejected(key,value):
+    c=config();c['policy'][key]=value
+    with pytest.raises(ValueError):p.validate_policy(c)
+
+
+def test_omitted_evidence_or_changed_source_rejected():
+    c=config();c['exact8_files'].pop('probe.status.json')
+    with pytest.raises(ValueError):p.validate_policy(c)
+    c=config();c['dependency_sources']['scripts/probe_hamster3d_train6.py']['sha256']='0'*64
+    with pytest.raises(ValueError):p.validate_policy(c)
+
+
+def test_gate_needs_outer_completion_and_actual_budget():
+    x=gate_fixture();p.check_completed_gate(*x)
+    x[2]['status']='running'
+    with pytest.raises(ValueError):p.check_completed_gate(*x)
+    x=gate_fixture();x[1]['forward_calls']=15
+    with pytest.raises(ValueError):p.check_completed_gate(*x)
+
+
+def test_speed_cannot_mask_one_logit_or_resource_mismatch():
+    x=gate_fixture();x[0]['logit_comparisons'][4]['exact']=False
+    with pytest.raises(ValueError):p.check_completed_gate(*x)
+    x=gate_fixture();x[1]['whole_max_memory_reserved_bytes']=p.transport.CAP_BYTES+1
+    with pytest.raises(ValueError):p.check_completed_gate(*x)
+
+
+def test_full_evidence_rehash_refuses_mutation_without_loading_torch(tmp_path):
+    target=tmp_path/'probe';target.mkdir();(target/'report.json').write_text('{}')
+    c={'exact8_files':{'probe/report.json':{'bytes':2,'sha256':'0'*64}}}
+    with pytest.raises(ValueError,match='artifact changed'):p.verify_exact8(c,tmp_path)
+
+
+def test_prefix_handles_short_partial_without_claiming87_verified():
+    result=p.prefix_check(list(range(8)),list(range(87)))
+    assert result['all_compared_equal'] and result['compared_tokens']==8 and not result['complete_87_token_prefix']
+    assert p.prefix_check(list(range(90)),list(range(87)))['complete_87_token_prefix']
+    assert p.prefix_check([0,1,99],list(range(87)))['first_mismatch']==2
+
+
+def test_whole_clock_truncates_phase_and_never_extends_request(monkeypatch):
+    monkeypatch.setattr(p.time,'perf_counter',lambda:1000.)
+    assert p.remaining(0.,900)==800.
+    monkeypatch.setattr(p.time,'perf_counter',lambda:1800.)
+    with pytest.raises(TimeoutError):p.remaining(0.,900)
+
+
+def test_official_partial_parse_is_not_complete_and_signed_camera_unchanged(tmp_path,monkeypatch):
+    import sys,types
+    name='hamster3d.inference.postprocessing'
+    module=types.ModuleType(name);module.parse_trajectory=lambda raw,kind:([[500,500,2]],['Open Gripper'])
+    monkeypatch.setitem(sys.modules,name,module)
+    sample=dict(rgb=types.SimpleNamespace(size=(100,80)),observed=dict(camera_intrinsics=np.diag([-100.,80.,1.]),camera_extrinsics=np.eye(4)))
+    result=p.parse_output('unchanged partial',sample,tmp_path,ended_eos=False,limited=True)
+    assert result['official_parse_nonempty'] and not result['complete_parsed_output']
+    with np.load(tmp_path/'predicted_coordinates.npz') as z:np.testing.assert_array_equal(z['world_xyz'],[[-1.,1.,2.]])
+    valid='```json\n[{"point_3d":[500,500,2],"label":"1","gripper":"open"}]\n```'
+    assert p.parse_output(valid,sample,tmp_path,True,False)['complete_parsed_output']
+    malformed='not JSON, but official fallback found [[500,500,2]]'
+    fallback=p.parse_output(malformed,sample,tmp_path,True,False)
+    assert fallback['official_parse_nonempty'] and not fallback['complete_parsed_output']
+    assert not fallback['strict_format']['whole_output_closed']
+
+
+@pytest.mark.parametrize('raw',[
+    '[{"point_3d":[1,2,3],"gripper":"none"}',
+    '<ans>[[1,2,3]]</ans>',
+    '[{"point_2d":[1,2],"gripper":"open"}]',
+    '[{"point_3d":[1,2,NaN],"gripper":"open"}]',
+    '[{"point_3d":[1,2,3],"gripper":"other"}]',
+    '[{"point_3d":[1,2,3]}]',
+    '[{"point_3d":[1,2,3],"gripper":"open","gripper":"close"}]',
+    'comment ```json\n[{"point_3d":[1,2,3],"gripper":"none"}]\n```',
+    '```json\n[{"point_3d":[1,2,3],"gripper":"none"}]\n``` trailing',
+])
+def test_strict_whole_json_refuses_malformed_schema_and_substring_fallback(raw):
+    assert not p.strict_v5_format(raw)['strict_v5_structure']
+
+
+@pytest.mark.parametrize('fenced',[False,True])
+def test_strict_whole_json_accepts_complete_official_format(fenced):
+    raw='[{"point_3d":[316,863,1.22],"label":"1","gripper":"close"}]'
+    if fenced:raw='  ```json\n'+raw+'\n``` \n'
+    result=p.strict_v5_format(raw)
+    assert result['whole_output_closed'] and result['strict_json_syntax'] and result['strict_v5_structure']
+    assert result['waypoint_count']==1
+
+
+def test_parser_failure_preserved_without_repair(tmp_path,monkeypatch):
+    import sys,types
+    module=types.ModuleType('hamster3d.inference.postprocessing')
+    def fail(raw,kind):raise ValueError('raw invalid')
+    module.parse_trajectory=fail;monkeypatch.setitem(sys.modules,module.__name__,module)
+    result=p.parse_output('broken',{},tmp_path,True,False)
+    assert result['parse_exception']=='ValueError' and not result['complete_parsed_output']
+    assert not (tmp_path/'predicted_coordinates.npz').exists()
+
+
+def test_source_has_one_generate_no_old_arm_and_preserves_failures():
+    import ast
+    tree=ast.parse(Path(p.__file__).read_text())
+    calls=[n for n in ast.walk(tree) if isinstance(n,ast.Call)]
+    assert sum(isinstance(n.func,ast.Attribute) and n.func.attr=='generate' for n in calls)==1
+    assert not any(isinstance(n.func,ast.Attribute) and n.func.attr in ('run_arm','verify_after') for n in calls)
+    assert sum(isinstance(n.func,ast.Name) and n.func.id=='generate_one' for n in calls)==1
+
+
+@pytest.mark.parametrize('fail_at',[None,5])
+def test_actual_torch_tiny_one_generate_and_partial_issued_budget(tmp_path,monkeypatch,fail_at):
+    """Real CPU hooks/stream serialization; no official weights or CUDA call."""
+    torch=pytest.importorskip('torch')
+    import contextlib,types
+    for name in ('synchronize','reset_peak_memory_stats'):
+        monkeypatch.setattr(torch.cuda,name,lambda:None)
+    for name in ('max_memory_allocated','max_memory_reserved'):
+        monkeypatch.setattr(torch.cuda,name,lambda:0)
+    monkeypatch.setattr(p.transport,'check_rss',lambda:1)
+    monkeypatch.setattr(p.original,'deadline',lambda seconds:contextlib.nullcontext())
+    monkeypatch.setattr(p,'parse_output',lambda *args:dict(complete_parsed_output=False,quality_metrics=None))
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__();self.calls=0;self.generations=0
+            self.model=types.SimpleNamespace(rope_deltas=None)
+            self.generation_config=types.SimpleNamespace(eos_token_id=10)
+        def forward(self,input_ids):
+            self.calls+=1
+            if self.calls==fail_at:raise TimeoutError('bounded synthetic interruption')
+            return types.SimpleNamespace(logits=torch.zeros(1,1,13))
+        def generate(self,input_ids,streamer,**kwargs):
+            self.generations+=1
+            assert kwargs['max_new_tokens']==1024 and not kwargs['do_sample']
+            streamer.put(input_ids)
+            for i in range(1,11):
+                self(input_ids=input_ids if i==1 else torch.tensor([[i-1]]))
+                streamer.put(torch.tensor([i]))
+            return torch.cat([input_ids,torch.arange(1,11).reshape(1,-1)],dim=1)
+    model=Model();ledger=[];processor=types.SimpleNamespace(decode=lambda ids,**kwargs:str(ids))
+    args=(model,processor,dict(input_ids=torch.tensor([[11,12]])),{},tmp_path/'call',list(range(1,88)),
+          [torch.zeros(1,1,13) for _ in range(8)],ledger,lambda:None,900)
+    if fail_at:
+        with pytest.raises(TimeoutError):p.generate_one(*args)
+    else:p.generate_one(*args)
+    assert model.generations==1 and len(ledger)==1
+    row=json.loads((tmp_path/'call/result.json').read_text())
+    assert row['forward_calls']==(5 if fail_at else 10)
+    assert row['completed_forwards']==row['generated_tokens']==(4 if fail_at else 10)
+    assert row['state']==('failed' if fail_at else 'completed')
+    np.testing.assert_array_equal(np.load(tmp_path/'call/streamed_generated_token_ids.npy'),np.arange(1,5 if fail_at else 11))
