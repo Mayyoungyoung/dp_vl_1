@@ -1,5 +1,11 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-03 01:10 UTC：真实前缀回放/LoRA技术门禁已通过
+
+真实Qwen的6条TRAIN输入、两独立分支各2次更新已实测：原完整forward与冻结layer26输入回放在初始/更新后特征、损失、梯度、optimizer及RNG上逐值一致；8adapter+60head张量变化、625冻结参数hash不变。37真实测试0skip，10full+10tail+4head/16状态预算全部计入。[技术原件与成本](observed_qwen_prefix_replay_probe_v1/TECHNICAL_RESULTS.md)。这是普通LoRA基线的串行计算工程验证，不是质量收益或创新，未证明padding/batched replay。
+
+composite数据控制已完成：best DEV59→63/144，last62→56/144，公共TRAIN last76.06→85.05%；保留不稳定开发收益。下一唯一普通对照为同last头、新AdamW、各3000×32的frozen/LoRA续训（头3e-4、LoRA1e-5、同285TRAIN/36旧DEV）。全321prefix缓存和恢复训练器正在实现，尚无正式续训结果。新TRAIN64已闭合并正在完整质量分析，未进入当前固定训练人口。旧补全/分支删除/细化负结果继续保留；论文核心方法证据仍欠缺。
+
 ## 2026-10-03：composite108普通数据控制已完成
 
 固定总12000×32/K4，实际TRAIN输入189→285、参考1108→1663；原DEV best Tip59→63/144，但last62→56/144。公共TRAIN last76.06→85.05%，新增TRAIN90.10%。全部原件/逐场景/失败/成本见 [完整报告](OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md)。仅单种子、重复使用DEV的小幅best收益；不是同逐输入曝光、方法贡献或机器人执行证据。下一步骤先核真实Qwen末两层LoRA的冻结前缀回放与梯度，再预登记同common-head续训对照。此处尚无LoRA正式训练结果。MAIN273。

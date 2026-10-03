@@ -1,5 +1,17 @@
 # State — 2026-10-02
 
+## 实际技术门禁完成 — 2026-10-03 01:10 UTC
+
+此段覆盖旧待probe/采集运行描述。eddfacaddab2d12c67f5a56fd775de173c05f9b2已推送核验、冻结部署；37服务器测试0skip通过。真实Qwen TRAIN6 probe PID669594/669595于01:00:36.984377–01:01:24.293499UTC完成exit0。历史初始缓存6/6、写盘重读prefix回放6/6、两步full/replay特征/损失/梯度/optimizer/RNG及更新后特征全部逐值一致。8LoRA张量及60head张量真实改变、625冻结参数hash全同。实际10full+10tail+4head/16候选状态、4optimizer执行，无DEV、无额外重试。见 reports/observed_qwen_prefix_replay_probe_v1/TECHNICAL_RESULTS.md；49本地文件逐SHA核验，13PT仅远端索引。
+
+probe主体46.065015726秒/.0127958377保守GPUh，外层47.309122秒/.0131414228GPUh，嵌套不能相加；allocated峰值4375957504B，reserved4406116352B。6prefix共2495388字节。仅支持串行原长度回放，不是方法质量、端到端时延或正式训练加速证据。私有.venv-qwen仅新增固定pytest8.4.2及测试依赖，原Torch/transformers版本未改；安装记录保留。不要重跑已完成fresh-only probe。
+
+下一轮普通强基线已决定：同一composite last12000权重、两个新AdamW、各追加3000×32/K4曝光，frozen vs末2层q/v LoRA（rank8/alpha16，头3e-4、LoRA1e-5），同固定draws、12个旧DEV选择，fixed-last285独立诊断。技术前置已通过；321输入prefix corpus与完整训练/恢复/调用账本实现中，尚未冻结或正式运行，仍需实际工程测试和全321缓存等价检查。没有更改训练人口285/参考1663或解封新DEV。
+
+extension train64 session20261003T001613Z_train64_651720已于01:00:01UTC两shard exit0，SSH57754结束。root随后独立启动source1a3eef1完整TRAIN64分析，PID670625/670626，01:02:48.257755UTC，SSH16931，CPU1/无GPU；输出 runs/observed_two_row_extension288_quality_v1/train64。此处尚未记录分析完成结果。前32闭合父不重采，分析读全部64已闭合TRAIN；质量读完再决定train128，不能自动开始。reserved原始数据继续封存。
+
+MAIN保持273，技术probe不增加质量行。JOBS快照 2026-10-03T01:09:30.156504+00:00 共578条，registry已同步。核心方法优势/论文A–H仍未成立；当前活跃会话继续正式配对实施，没有会话外自动研究服务。恢复先读最新status与实际PID，不能根据下方历史段重启已完成作业。
+
 ## 实际完成与接续 — 2026-10-03 00:50 UTC
 
 本段覆盖下方旧running状态。composite108普通12000已于00:27:47UTC exit0，固定last285 TRAIN诊断于00:28:48UTC exit0。source71cf0c1，70服务器测试通过。全部46服务器原件、18离线分析产物、12父全图和权重hash已核验；见 reports/OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md 及 reports/observed_two_row_composite108_v1/INDEX.md。此轮不重启。

@@ -1,5 +1,11 @@
 # 方法实现与证据边界
 
+## 2026-10-03 01:10 UTC：真实前缀回放/LoRA技术门禁已通过
+
+真实Qwen的6条TRAIN输入、两独立分支各2次更新已实测：原完整forward与冻结layer26输入回放在初始/更新后特征、损失、梯度、optimizer及RNG上逐值一致；8adapter+60head张量变化、625冻结参数hash不变。37真实测试0skip，10full+10tail+4head/16状态预算全部计入。[技术原件与成本](observed_qwen_prefix_replay_probe_v1/TECHNICAL_RESULTS.md)。这是普通LoRA基线的串行计算工程验证，不是质量收益或创新，未证明padding/batched replay。
+
+composite数据控制已完成：best DEV59→63/144，last62→56/144，公共TRAIN last76.06→85.05%；保留不稳定开发收益。下一唯一普通对照为同last头、新AdamW、各3000×32的frozen/LoRA续训（头3e-4、LoRA1e-5、同285TRAIN/36旧DEV）。全321prefix缓存和恢复训练器正在实现，尚无正式续训结果。新TRAIN64已闭合并正在完整质量分析，未进入当前固定训练人口。旧补全/分支删除/细化负结果继续保留；论文核心方法证据仍欠缺。
+
 ## 最新实际快照 — 2026-10-02 22:41 UTC
 
 本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。
