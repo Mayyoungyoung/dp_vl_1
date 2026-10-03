@@ -11,6 +11,7 @@ def checked(path):
 
 def load_references(data, ids):
     from routeset.observed_route_head import resample_event_segments
+    from routeset.observed_probability import reference_cluster_weights
     from scripts.evaluate_observed_two_row import scene_metrics
     labels = {r['id']:r for r in lines(checked(data/'supervision.jsonl')) if r['id'] in set(ids)}
     result = {}
@@ -31,7 +32,9 @@ def load_references(data, ids):
         if paths:
             _, candidates = scene_metrics(np.array(paths),np.array(events),current,truth,label['semantic_targets'],label['route_types'],cfg)
         words = [encode_word(portal_word(p,cfg)) if c['TipValid'] else None for p,c in zip(paths,candidates)]
+        weights = reference_cluster_weights(np.array(paths)[None],np.ones((1,len(paths)),dtype=bool))[0] if paths else []
         result[identifier] = dict(config=cfg, paths=np.array(paths), words=words,
+            balanced_reference_weights=list(map(float,weights)),
             reference_valid=[c['TipValid'] for c in candidates], current=current, truth=truth, label=label)
     return result
 
@@ -61,6 +64,9 @@ def evaluate_pool(paths, valid, ids, parents, candidates, refs, q=None, pi=None)
         if pi is not None:
             row['pi_mass'] = {w:float(sum(pi[n,i] for i in range(8) if words[i]==w)) for w in set(words) if w is not None}
             row['pi_invalid_mass'] = float(pi[n][~valid[n]].sum())
+            target_mass={w:sum(weight for word,weight in zip(ref['words'],ref['balanced_reference_weights']) if word==w) for w in refwords}
+            row['pi_reference_target_mass']=target_mass
+            row['pi_valid_mode_mass_TV']=.5*(row['pi_invalid_mass']+sum(abs(row['pi_mass'].get(w,0)-target_mass.get(w,0)) for w in set(row['pi_mass'])|set(target_mass))) if refwords else None
         rows.append(row)
     summary = aggregate(rows)
     eligible = [r for r in rows if len(r['reference_words'])>=2]
@@ -125,6 +131,12 @@ def plots(output, datasets, refs):
                     color='crimson' if not row['valid'][i] else ('darkorange' if row['candidates'][i]['declared_passage_type'] is None else 'royalblue')
                     ax.plot(*p.T,color=color,alpha=.75,lw=1.3 if row['valid'][i] else .8,ls='-' if row['valid'][i] else '--')
                     ax.text(*p[len(p)//2],str(i),fontsize=6,color=color)
+                # Shared per-request bounds cover both arms, all references and boxes.
+                allpoints=[datasets[key][0][n].reshape(-1,3) for key in names]
+                if len(ref['paths']):allpoints.append(ref['paths'].reshape(-1,3))
+                allpoints.extend([ref['truth']['obstacle_centers']-ref['truth']['obstacle_halfsizes'],ref['truth']['obstacle_centers']+ref['truth']['obstacle_halfsizes']])
+                points=np.concatenate(allpoints);lo=points.min(0)-.03;hi=points.max(0)+.03
+                ax.set_xlim(lo[0],hi[0]);ax.set_ylim(lo[1],hi[1]);ax.set_zlim(lo[2],hi[2]);ax.set_box_aspect(hi-lo)
                 ax.set_title('%s %s\nvalid=%d modes=%d unknown=%d'%(name,row['id'].replace('two_row_reach_',''),row['K']['8']['ValidCount'],row['K']['8']['GeometricModeCount'],row['unknown_valid']),fontsize=9)
                 ax.set_xlabel('x');ax.set_ylabel('y');ax.set_zlabel('z');ax.view_init(25,-65)
         fig.suptitle('All M8 candidates: blue=known valid, orange=unknown valid, red dashed=invalid; gray=references/boxes')
