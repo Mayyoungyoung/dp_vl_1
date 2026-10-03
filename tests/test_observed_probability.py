@@ -7,6 +7,12 @@ from routeset.observed_probability import (RouteValidityHead,route_observation_f
 from scripts.run_observed_probability import role_for_index
 
 
+def test_export_containment_python38(tmp_path):
+    from scripts.run_observed_probability import contained
+    assert contained(tmp_path/'parent'/'observation.npz',tmp_path/'parent')
+    assert not contained(tmp_path/'parent'/'..'/'other'/'secret',tmp_path/'parent')
+
+
 def test_roles_exclude_historical_and_sealed():
     assert role_for_index(32)=='SCORE_TRAIN'
     assert role_for_index(96)=='DEV_SCORE'

@@ -16,7 +16,7 @@ import numpy as np
 ROOT = Path('/home/wzy/dpvlm/route_set_v1')
 SOURCE = Path(__file__).resolve().parents[1]
 POLICY = SOURCE/'configs/observed_probability_v1.json'
-DATA = ROOT/'data/observed_probability_v1'
+DATA = ROOT/'data/observed_probability_v2'
 RUN = ROOT/'runs/observed_probability_v1'
 PARENT = ROOT/'runs/observed_two_row_composite108_v1/peak_seed0'
 OLD = ROOT/'data/observation_two_row_composite108_v1'
@@ -43,6 +43,15 @@ def write(path, value):
 
 def lines(path):
     return [json.loads(x) for x in Path(path).read_text().splitlines() if x.strip()]
+
+
+def contained(path, folder):
+    # The preserved shared runtime is Python3.8 (no Path.is_relative_to).
+    try:
+        Path(path).resolve().relative_to(Path(folder).resolve())
+        return True
+    except ValueError:
+        return False
 
 
 def role_for_index(index):
@@ -117,7 +126,7 @@ def export_role(role):
             raise ValueError('Measured geometry identity mismatch')
         def checked(name):
             path = (folder/name).resolve()
-            if not path.is_relative_to(folder) or name not in artifacts or sha(path) != artifacts[name]:
+            if not contained(path,folder) or name not in artifacts or sha(path) != artifacts[name]:
                 raise ValueError('Raw artifact changed or escaped parent: '+name)
             hashes[str(path)] = artifacts[name]
             return str(path)
