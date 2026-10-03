@@ -1,0 +1,176 @@
+"""Pure policy/data tests and CPU-only hook semantics; no official model load."""
+import copy
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+import numpy as np
+import pytest
+from PIL import Image
+from scripts import probe_hamster3d_transport as p
+from routeset import hamster_layer_transport as t
+
+
+def policy():return json.loads(Path('configs/hamster3d_transport_exact8_v1.json').read_text())
+
+
+def test_complete_registration_and_two_partial_budget():
+    assert p.validate_policy(policy())['policy']==p.EXPECTED
+    assert p.EXPECTED['maximum_generate_calls']*p.EXPECTED['max_new_tokens']==16
+    assert len(policy()['old_failure_files'])==15
+    assert not p.EXPECTED['automatic_full_request'] and not p.EXPECTED['full_request_authorized']
+
+
+@pytest.mark.parametrize('key,value',[('max_new_tokens',9),('gpu_cap_bytes',9*2**30),('resident_layers',[0,1,2,3,4]),
+    ('asynchronous_streams',True),('clear_cache_per_tensor',True),('retry',True),('official_dtype','float16')])
+def test_policy_rejects_scope_expansion(key,value):
+    c=policy();c['policy'][key]=value
+    with pytest.raises(ValueError):p.validate_policy(c)
+
+
+def test_complete_original_failure_evidence_required():
+    c=policy();c['old_failure_files'].pop('probe.log')
+    with pytest.raises(ValueError):p.validate_policy(c)
+    c=policy();c['installed_source_sha256'].pop('hooks.py')
+    with pytest.raises(ValueError):p.validate_policy(c)
+
+
+def test_memory_formula_counts_whole_active_layer_and_rejects_overflow():
+    value=t.memory_plan(t.BASE_RESIDENT_BYTES,[t.LAYER_BYTES]*36)
+    assert value['required_bytes']==8464538592
+    assert value['workspace_bytes']==2*2**30 and value['pinned_parameter_bytes']==12348571648
+    with pytest.raises(ValueError):t.memory_plan(t.BASE_RESIDENT_BYTES,[t.LAYER_BYTES]*35)
+    with pytest.raises(ValueError):t.memory_plan(t.BASE_RESIDENT_BYTES,[t.LAYER_BYTES]*36,400155681)
+
+
+def arrays():return [np.zeros((1,1,13),np.float32) for _ in range(8)]
+
+
+def gate(logits=None,tokens=None,ratio=.7,memory=True):
+    return p.technical_gate(list(range(8)),tokens or list(range(8)),np.arange(87),
+        logits or p.compare_arrays(arrays(),arrays()),[2.]*8,[2.*ratio]*8,memory)
+
+
+def test_full_vocab_change_is_detected_even_if_chosen_token_unchanged():
+    changed=arrays();changed[3][0,0,12]=.001
+    rows=p.compare_arrays(arrays(),changed)
+    assert not rows[3]['exact'] and not gate(logits=rows)['passed']
+    changed=arrays();changed[0][0,0,0]=np.nan
+    assert not gate(logits=p.compare_arrays(arrays(),changed))['passed']
+
+
+def test_gate_has_no_speed_only_pass_and_boundary_is_fixed():
+    assert gate(ratio=.75)['passed']
+    assert not gate(ratio=.7501)['passed']
+    assert not gate(tokens=[0,1,2,3,4,5,6,99])['passed']
+    assert not gate(memory=False)['passed']
+    with pytest.raises(ValueError):p.technical_gate([],[],[],[],[0.]*8,[1.]*8,True)
+
+
+def test_logits_shape_and_dtype_cannot_be_silently_normalized():
+    changed=arrays();changed[0]=changed[0].astype(np.float64)
+    assert not p.compare_arrays(arrays(),changed)[0]['exact']
+    changed=arrays();changed[0]=np.zeros((1,2,13),np.float32)
+    assert not p.compare_arrays(arrays(),changed)[0]['exact']
+    with pytest.raises(ValueError):p.compare_arrays(arrays()[:7],arrays())
+
+
+def test_absolute_total_budget_limits_each_phase(monkeypatch):
+    monkeypatch.setattr(p.time,'perf_counter',lambda:1190.)
+    assert p.remaining_seconds(0.,180.)==10
+    monkeypatch.setattr(p.time,'perf_counter',lambda:1200.)
+    with pytest.raises(TimeoutError):p.remaining_seconds(0.,180.)
+
+
+class FakeTensor:
+    def __init__(self,value):self.value=value
+    def detach(self):return self
+    def cpu(self):return self
+    def tolist(self):return self.value
+
+
+def test_partial_stream_preserves_eight_and_refuses_ninth():
+    stream=p.ExactEightStream([11,12]);stream.put(FakeTensor([[11,12]]))
+    for k in range(8):stream.put(FakeTensor([k]))
+    assert stream.generated_ids==list(range(8))
+    with pytest.raises(RuntimeError):stream.put(FakeTensor([8]))
+
+
+def test_first_only_reader_does_not_parse_later_rows_or_labels(tmp_path,monkeypatch):
+    root=tmp_path;data=root/'data/observation_two_row_composite108_v1';data.mkdir(parents=True)
+    parent=root/'original/parents/TRAIN/two_row_reach_283200';parent.mkdir(parents=True)
+    image=parent/'front.png';Image.fromarray(np.zeros((224,224,3),np.uint8)).save(image)
+    obs=parent/'observation.npz';np.savez(obs,depth=np.ones((224,224)),gripper_pose=np.zeros(7),gripper_open=np.ones(1),
+                                      camera_intrinsics=np.eye(3),camera_extrinsics=np.eye(4))
+    row=dict(id=p.FIRST,parent_id='two_row_reach_283200',split='TRAIN',image=str(image),instruction='Reach black')
+    path=data/'observations.jsonl';path.write_text(json.dumps(row)+'\nTHIS DEV PAYLOAD MUST NOT BE PARSED\n')
+    manifest=dict(output_files_sha256={'observations.jsonl':p.sha(path)},sources={'old':{'source_dataset':str(root/'original')}},
+                  source_files_sha256={str(x):p.sha(x) for x in (image,obs)})
+    target=data/'export_manifest.json';target.write_text(json.dumps(manifest))
+    monkeypatch.setattr(p,'ROOT',root);monkeypatch.setattr(p.original,'EXPORT_SHA',p.sha(target))
+    sample,hashes=p.load_first()
+    assert sample['row']==row and set(hashes)=={str(image),str(obs)}
+
+
+def test_import_has_no_torch_or_accelerate_side_effect():
+    code='import sys;import scripts.probe_hamster3d_transport;assert not any(x in sys.modules for x in ("torch","accelerate","transformers"))'
+    result=subprocess.run([sys.executable,'-c',code],capture_output=True,text=True)
+    assert result.returncode==0,result.stderr
+
+
+def cpu_hook_fixture(monkeypatch):
+    torch=pytest.importorskip('torch');pytest.importorskip('accelerate')
+    import accelerate.utils.modeling as modeling
+    original=modeling.set_module_tensor_to_device;calls=[]
+    # Test hook state/value semantics with real CPU tensors/meta; CUDA transport
+    # and actual pinned allocation remain the separately gated real probe.
+    monkeypatch.setattr(torch.Tensor,'is_pinned',lambda _:True)
+    def setter(module,name,device,**kwargs):
+        assert kwargs['clear_cache'] is False and kwargs['non_blocking'] is False
+        calls.append((name,str(device)))
+        return original(module,name,'cpu' if str(device)=='cuda:0' else device,**kwargs)
+    monkeypatch.setattr(modeling,'set_module_tensor_to_device',setter)
+    module=torch.nn.Linear(4,4,dtype=torch.float32)
+    weights={name:value.detach().clone() for name,value in module.named_parameters()}
+    audit=dict(pre_issued=0,pre_completed=0,post_completed=0,failed_pre=0)
+    return torch,module,weights,audit,calls
+
+
+def test_torch_hook_value_and_meta_roundtrip_without_cuda(monkeypatch):
+    torch,module,weights,audit,calls=cpu_hook_fixture(monkeypatch)
+    from accelerate.hooks import add_hook_to_module,remove_hook_from_module
+    x=torch.arange(4,dtype=torch.float32)[None];expected=module(x).detach().clone()
+    hook=t.make_layer_hook(weights,audit);add_hook_to_module(module,hook)
+    assert all(value.is_meta for value in module.parameters())
+    for _ in range(2):
+        assert torch.equal(module(x),expected)
+        assert all(value.is_meta for value in module.parameters())
+    assert audit==dict(pre_issued=2,pre_completed=2,post_completed=2,failed_pre=0)
+    remove_hook_from_module(module)
+    assert torch.equal(module(x),expected) and all(value.device.type=='cpu' for value in module.parameters())
+    assert sum(device=='cuda:0' for _,device in calls)==4
+
+
+def test_torch_hook_pre_failure_releases_partial_layer(monkeypatch):
+    torch,module,weights,audit,calls=cpu_hook_fixture(monkeypatch)
+    from accelerate.hooks import add_hook_to_module
+    import accelerate.utils.modeling as modeling
+    normal=modeling.set_module_tensor_to_device
+    def setter(module,name,device,**kwargs):
+        if str(device)=='cuda:0' and name=='bias':raise RuntimeError('synthetic transfer failure')
+        return normal(module,name,device,**kwargs)
+    monkeypatch.setattr(modeling,'set_module_tensor_to_device',setter)
+    add_hook_to_module(module,t.make_layer_hook(weights,audit))
+    with pytest.raises(RuntimeError,match='synthetic'):module(torch.ones(1,4))
+    assert audit['pre_issued']==audit['failed_pre']==1 and audit['pre_completed']==0
+    assert all(value.is_meta for value in module.parameters())
+
+
+def test_torch_bfloat16_hash_and_alias_rejection():
+    torch=pytest.importorskip('torch')
+    a=torch.tensor([1.,2.],dtype=torch.bfloat16)
+    assert t.tensor_hash(a)==t.tensor_hash(a.clone())
+    b=a.clone();b[1]=3.;assert t.tensor_hash(a)!=t.tensor_hash(b)
+    module=torch.nn.Module();module.register_parameter('one',torch.nn.Parameter(a));module.register_parameter('two',module.one)
+    with pytest.raises(ValueError,match='alias'):t.all_tensors(module)
