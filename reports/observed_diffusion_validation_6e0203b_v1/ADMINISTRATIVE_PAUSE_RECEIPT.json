@@ -1,0 +1,70 @@
+{
+  "source_commit": "6e0203ba1335f9fa9975c523c657959f8bc9ab60",
+  "original_local_path": "F:/dpvlm/.bootstrap/diffusion_independent_pause2_inner_status.json",
+  "original_local_sha256": "f13c0564e01b135c61d0f4ea6c57966a2d4a2012745a3eb6ac98958e4e956a58",
+  "inner_status": {
+    "protocol": "observed_two_row_diffusion_driver_v1",
+    "stage": "train",
+    "arm": "independent",
+    "status": "paused",
+    "pid": 734837,
+    "step": 2,
+    "actual_calls": {
+      "records": 6,
+      "sha256": "f807dc6beeb97a0db9f11eab8c6057fc4696d7c556e86c79159f8f9bcf7a5dcd",
+      "counts": {
+        "train_geometry": 2,
+        "train_denoise": 2,
+        "optimizer": 2
+      }
+    },
+    "process_elapsed_seconds": 10.90865495800972
+  },
+  "outer_job": {
+    "run_id": "independent_train_pause2",
+    "pid": 734833,
+    "host": "wzy3090",
+    "command": [
+      "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+      "-m",
+      "scripts.train_observed_two_row_diffusion",
+      "--stage",
+      "train",
+      "--arm",
+      "independent",
+      "--config",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/releases/6e0203ba1335f9fa9975c523c657959f8bc9ab60/configs/observed_two_row_diffusion_v1.json",
+      "--data",
+      "/home/wzy/dpvlm/route_set_v1/data/observation_two_row_composite108_v1",
+      "--quality-audit",
+      "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_preparation_v1/train_quality.json",
+      "--ordinary-run",
+      "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_v1/peak_seed0",
+      "--output",
+      "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_diffusion_v1_fixed_receipt/independent",
+      "--stop-after",
+      "2"
+    ],
+    "resume_command": null,
+    "resume_strategy": "none",
+    "resume_note": null,
+    "cwd": "/home/wzy/dpvlm/route_set_v1/research_v2/releases/6e0203ba1335f9fa9975c523c657959f8bc9ab60",
+    "log": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_diffusion_v1_fixed_receipt/job_records/independent_train_pause2.log",
+    "code_commit": "6e0203ba1335f9fa9975c523c657959f8bc9ab60",
+    "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+    "start_utc": "2026-10-03T03:24:53.313741+00:00",
+    "status": "completed",
+    "child_pid": 734837,
+    "exit_code": 0,
+    "end_utc": "2026-10-03T03:25:05.967551+00:00"
+  },
+  "outer_gpu_reserved_seconds": 12.65381,
+  "outer_gpu_reserved_hours": 0.0035149472222222224,
+  "logical_total_training_steps_remain": 12000,
+  "pause_observation_draws": 64,
+  "pause_training_path_states": 256,
+  "additional_exposure_beyond_original_budget": 0,
+  "actual_training_wrapper_sha256": "f44019ff27212b00cf6665c80290873b8a54ee4a822697ec45731c597a9fe552",
+  "archive_new_forward_calls": 0,
+  "running_training_outputs_read": false
+}

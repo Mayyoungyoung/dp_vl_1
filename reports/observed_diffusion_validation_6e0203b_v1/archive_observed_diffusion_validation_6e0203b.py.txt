@@ -1,0 +1,104 @@
+"""Reuse the verified archive recipe for fixed 6e CPU validation/pause metadata."""
+from pathlib import Path
+import datetime
+import hashlib
+import json
+
+ROOT=Path(__file__).resolve().parents[1]
+OLD='0f1d5bfbd4ff788a6ea311339adfe77449db9634'
+NEW='6e0203ba1335f9fa9975c523c657959f8bc9ab60'
+WRAPPER_SHA='f44019ff27212b00cf6665c80290873b8a54ee4a822697ec45731c597a9fe552'
+OUT=ROOT/'reports/observed_diffusion_validation_6e0203b_v1'
+sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+read=lambda p:json.loads(Path(p).read_text(encoding='utf8'))
+write=lambda p,v:Path(p).write_text(json.dumps(v,indent=2,ensure_ascii=False)+'\n',encoding='utf8')
+
+
+def main():
+    template=(ROOT/'.bootstrap/archive_observed_diffusion_validation.py').read_text(encoding='utf8')
+    text=template.replace(OLD,NEW).replace('0f1d5bf','6e0203b')
+    text=text.replace("OUT=ROOT/'reports/observed_diffusion_validation_v1'", "OUT=ROOT/'reports/observed_diffusion_validation_6e0203b_v1'")
+    for old,new in [("receipt['junit']['tests']==35","receipt['junit']['tests']==37"),('len(cases)==35','len(cases)==37'),
+                    ('actual_passed=35','actual_passed=37'),('pure=13','pure=15'),('**35 passed','**37 passed'),
+                    ('pure协议13项','pure协议15项'),('no_training_output_read=True','running_training_outputs_read=False,completed_pause_job_read=True'),
+                    ('archive_new_forward_calls=0,training_outputs_read=False','archive_new_forward_calls=0,running_training_outputs_read=False,completed_pause_job_read=True')]:
+        text=text.replace(old,new)
+    marker="archive=root/'research_v2/incoming/observed_diffusion_code_6e0203b.tar'"
+    addition="""training_wrapper=root/'research_v2/incoming/observed_diffusion_train_6e0203b_v2.sh'
+assert sha(training_wrapper)=='f44019ff27212b00cf6665c80290873b8a54ee4a822697ec45731c597a9fe552'
+files.append(('incoming/'+training_wrapper.name,training_wrapper))
+# Only immutable completed pause2 job records; never current inner status/history.
+training_root=root/'runs/observed_two_row_diffusion_v1_fixed_receipt'
+pause=training_root/'job_records/independent_train_pause2.status.json'
+ps=json.loads(pause.read_text())
+assert ps['status']=='completed' and ps['exit_code']==0 and ps['code_commit']==commit
+for name in ('independent_train_pause2.status.json','independent_train_pause2.preflight.json','independent_train_pause2.log'):
+ files.append(('administrative/'+name,training_root/'job_records'/name))
+files.append(('administrative/training_wrapper_identity.json',training_root/'training_wrapper_identity.json'))
+"""
+    assert marker in text
+    text=text.replace(marker,addition+marker)
+    text=text.replace('扩散正式GPU训练与各repeat/固定last285/去噪技术诊断仍待root逐阶段调度，未因测试通过自动启动。',
+        '正式训练已由ROOT独立启动并行政暂停后恢复；下面仅归档已封存pause2，不读取正在运行的结果。repeat/固定last285/去噪诊断仍分别调度。')
+    text=text.replace('测试使用合成fixture', '模型/数据机制测试使用合成fixture，新增schema测试使用真实历史receipt')
+    text=text.replace('archive_observed_diffusion_validation.py.txt','archive_observed_diffusion_validation_6e0203b.py.txt')
+    # Preserve the empty first download from a generated-script syntax rejection.
+    # No original archive or already downloaded file is overwritten.
+    text=text.replace('observed_diffusion_validation_download_6e0203b.tar','observed_diffusion_validation_download_6e0203b_read2.tar')
+    text=text.replace('OUT.mkdir(parents=True,exist_ok=False)', "assert not OUT.exists() or not any(OUT.iterdir())\n    OUT.mkdir(parents=True,exist_ok=True)")
+    namespace={'__name__':'isolated_archive_recipe','__file__':__file__}
+    exec(compile(text,'isolated_archive_recipe','exec'),namespace)
+    compile(namespace['REMOTE'],'remote_archive_readonly','exec')
+    namespace['main']()
+    original_index=read(OUT/'LOCAL_ARTIFACT_INDEX.json')
+    for row in original_index['files']:assert sha(OUT/row['path'])==row['sha256']
+    actual_wrapper=OUT/'incoming/observed_diffusion_train_6e0203b_v2.sh'
+    assert sha(actual_wrapper)==sha(ROOT/'.bootstrap'/actual_wrapper.name)==WRAPPER_SHA
+    fixture=OUT/'source/tests/fixtures/composite108_training_receipt.json'
+    historical=ROOT/'reports/observed_two_row_composite108_v1/peak_seed0/composite_training_receipt.json'
+    assert fixture.read_bytes().replace(b'\r\n',b'\n')==historical.read_bytes().replace(b'\r\n',b'\n')
+    assert read(fixture)==read(historical)
+    write(OUT/'FIXTURE_PROVENANCE.json',dict(deployed_fixture_sha256=sha(fixture),deployed_fixture_bytes=fixture.stat().st_size,
+        historical_original_sha256=sha(historical),historical_original_bytes=historical.stat().st_size,
+        original_bytes_equal=fixture.read_bytes()==historical.read_bytes(),newline_normalized_bytes_equal=True,json_equal=True,
+        deployed_fixture_matches_immutable_archive=True,original_files_modified=False))
+    local_pause=ROOT/'.bootstrap/diffusion_independent_pause2_inner_status.json'
+    paused=read(local_pause)
+    assert (paused['stage'],paused['arm'],paused['status'],paused['step'])==('train','independent','paused',2)
+    assert paused['actual_calls']['records']==6 and paused['actual_calls']['counts']==dict(train_geometry=2,train_denoise=2,optimizer=2)
+    (OUT/'administrative/diffusion_independent_pause2_inner_status.json').write_bytes(local_pause.read_bytes())
+    job=read(OUT/'administrative/independent_train_pause2.status.json')
+    assert job['child_pid']==paused['pid']
+    seconds=(datetime.datetime.fromisoformat(job['end_utc'])-datetime.datetime.fromisoformat(job['start_utc'])).total_seconds()
+    write(OUT/'ADMINISTRATIVE_PAUSE_RECEIPT.json',dict(source_commit=NEW,original_local_path=local_pause.as_posix(),
+        original_local_sha256=sha(local_pause),inner_status=paused,outer_job=job,outer_gpu_reserved_seconds=seconds,
+        outer_gpu_reserved_hours=seconds/3600,logical_total_training_steps_remain=12000,
+        pause_observation_draws=64,pause_training_path_states=256,additional_exposure_beyond_original_budget=0,
+        actual_training_wrapper_sha256=WRAPPER_SHA,archive_new_forward_calls=0,running_training_outputs_read=False))
+    report=OUT/'VALIDATION_RESULTS.md'
+    report.write_text(report.read_text(encoding='utf8')+f'''
+## 已完成的行政暂停与实际训练脚本
+
+本次修复只从真实历史receipt的 `budget.actual_index_chain_sha256` 读取抽样链，完整历史receipt fixture已归档/核验；数据、损失、抽样、预算不变。旧0f失败证据仍保留在 `reports/observed_diffusion_startup_failure_v1`，旧验证目录不改。
+
+fixture的部署字节与原始历史JSON只存在Git导出的换行差异：部署CRLF {fixture.stat().st_size} B / SHA `{sha(fixture)}`；历史原件LF {historical.stat().st_size} B / SHA `{sha(historical)}`。归一换行后的字节和JSON内容完全相同，但不声称原始字节相同。实际测试使用已冻结部署fixture，证据见 `FIXTURE_PROVENANCE.json`；两份原件均未修改。
+
+实际incoming是 `observed_diffusion_train_6e0203b_v2.sh`，SHA `{WRAPPER_SHA}`。v1草稿曾误把新输出family替换到config路径，ROOT在发出模型调用前修正为v2；v1没有正式模型调用。v2仍读取原 `configs/observed_two_row_diffusion_v1.json`，输出新family `observed_two_row_diffusion_v1_fixed_receipt`，不覆盖旧失败。
+
+ROOT实际independent pause2的外层PID{job['pid']}/child{job['child_pid']}，`{job['start_utc']}`→`{job['end_utc']}`，exit0。原内部状态step2/paused，6条issued=2次batch32 geometry+2次denoiser+2次optimizer，64draw/256训练路径状态。全部属于原12000步预算，额外曝光0；不是新一轮smoke。原内部状态按字节保存于administrative/，没有读取正在恢复训练的状态或质量。
+
+暂停进程主体{paused['process_elapsed_seconds']:.9f}秒；外层{seconds:.6f}秒/{seconds/3600:.9f}GPU小时，嵌套不相加，且与CPU验证GPU小时0分列。ROOT已另行resume。本归档没有重跑测试、启动/停止/恢复训练或新模型调用；不能由验证或step2宣称生成质量有效。
+''',encoding='utf8')
+    sync=read(OUT/'SYNC_RECEIPT.json')
+    sync.update(administrative_local_original_sha256=sha(local_pause),actual_training_wrapper_sha256=WRAPPER_SHA,
+        source_template_sha256=sha(ROOT/'.bootstrap/archive_observed_diffusion_validation.py'))
+    write(OUT/'SYNC_RECEIPT.json',sync)
+    files=[dict(path=p.relative_to(OUT).as_posix(),bytes=p.stat().st_size,sha256=sha(p))
+        for p in sorted(OUT.rglob('*')) if p.is_file() and p.name!='LOCAL_ARTIFACT_INDEX.json']
+    write(OUT/'LOCAL_ARTIFACT_INDEX.json',dict(files=files,local_file_count=len(files),source_commit=NEW,
+        server_original_files=original_index['server_original_files'],all_original_sha256_verified=True))
+    print(json.dumps(dict(local_files=len(files),server_original_files=original_index['server_original_files'],
+        index_sha256=sha(OUT/'LOCAL_ARTIFACT_INDEX.json'),report_sha256=sha(report),pause_outer_seconds=seconds)))
+
+
+if __name__=='__main__':main()
