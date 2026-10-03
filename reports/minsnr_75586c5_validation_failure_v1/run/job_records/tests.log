@@ -1,0 +1,69 @@
+............FF..                                                         [100%]
+=================================== FAILURES ===================================
+_______ test_real_torch_parent_fork_four_vs_two_plus_two_exact[uniform] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-wzy/pytest-108/test_real_torch_parent_fork_fo0')
+arm = 'uniform'
+
+    @pytest.mark.parametrize('arm',['uniform','min_snr_5'])
+    def test_real_torch_parent_fork_four_vs_two_plus_two_exact(tmp_path,arm):
+        torch=pytest.importorskip('torch')
+        parent,j,data=tiny(tmp_path,'parent')
+        for _ in range(2):parent.train_step(tiny_loss(parent,data),j)
+        saved=copy.deepcopy(parent.state_dict(j,0.))
+        full,jf,data=tiny(tmp_path,'full');probe.restore_components(full,saved)
+        incf=probe.empty_additional_audit()
+        for _ in range(4):full.train_step(tiny_loss(full,data,arm,incf),jf)
+        expected=full.state_dict(jf,0.)
+        split,js,data=tiny(tmp_path,'split');probe.restore_components(split,saved)
+        incs=probe.empty_additional_audit()
+        for _ in range(2):split.train_step(tiny_loss(split,data,arm,incs),js)
+        checkpoint=copy.deepcopy(split.state_dict(js,0.))
+        restored,jr,data=tiny(tmp_path,'split');restored.load_state_dict(checkpoint,jr)
+        for _ in range(2):restored.train_step(tiny_loss(restored,data,arm,incs),jr)
+>       assert probe.nested_digest(expected)==probe.nested_digest(restored.state_dict(jr,0.))
+E       AssertionError: assert '7543fe0859a4...e380fc86e52a6' == '88242ba0caff...913e742d0a673'
+E         
+E         - 88242ba0caffdf83280726d607fed3278b3dc0d2d33b06dbbf6913e742d0a673
+E         + 7543fe0859a485ffefefae1dc0520d1145e3efc49ce8d20ba61e380fc86e52a6
+
+tests/test_observed_diffusion_minsnr_probe.py:188: AssertionError
+______ test_real_torch_parent_fork_four_vs_two_plus_two_exact[min_snr_5] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-wzy/pytest-108/test_real_torch_parent_fork_fo1')
+arm = 'min_snr_5'
+
+    @pytest.mark.parametrize('arm',['uniform','min_snr_5'])
+    def test_real_torch_parent_fork_four_vs_two_plus_two_exact(tmp_path,arm):
+        torch=pytest.importorskip('torch')
+        parent,j,data=tiny(tmp_path,'parent')
+        for _ in range(2):parent.train_step(tiny_loss(parent,data),j)
+        saved=copy.deepcopy(parent.state_dict(j,0.))
+        full,jf,data=tiny(tmp_path,'full');probe.restore_components(full,saved)
+        incf=probe.empty_additional_audit()
+        for _ in range(4):full.train_step(tiny_loss(full,data,arm,incf),jf)
+        expected=full.state_dict(jf,0.)
+        split,js,data=tiny(tmp_path,'split');probe.restore_components(split,saved)
+        incs=probe.empty_additional_audit()
+        for _ in range(2):split.train_step(tiny_loss(split,data,arm,incs),js)
+        checkpoint=copy.deepcopy(split.state_dict(js,0.))
+        restored,jr,data=tiny(tmp_path,'split');restored.load_state_dict(checkpoint,jr)
+        for _ in range(2):restored.train_step(tiny_loss(restored,data,arm,incs),jr)
+>       assert probe.nested_digest(expected)==probe.nested_digest(restored.state_dict(jr,0.))
+E       AssertionError: assert '57f23ad62144...8ef31a46f68f5' == '24bab56d002a...97b02820da6ec'
+E         
+E         - 24bab56d002a25a0eb858db3595a89b396a6beeb65823b41eb697b02820da6ec
+E         + 57f23ad621447ab1c8a8819502581c1a57a5ab5bc79783710a58ef31a46f68f5
+
+tests/test_observed_diffusion_minsnr_probe.py:188: AssertionError
+- generated xml file: /home/wzy/dpvlm/route_set_v1/runs/observed_diffusion_minsnr_probe_v1/validation/pytest.xml -
+=========================== short test summary info ============================
+FAILED tests/test_observed_diffusion_minsnr_probe.py::test_real_torch_parent_fork_four_vs_two_plus_two_exact[uniform]
+FAILED tests/test_observed_diffusion_minsnr_probe.py::test_real_torch_parent_fork_four_vs_two_plus_two_exact[min_snr_5]
+2 failed, 14 passed in 13.65s
+Traceback (most recent call last):
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/minsnr_runner_75586c5.py", line 182, in <module>
+    if __name__=='__main__':main()
+  File "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/minsnr_runner_75586c5.py", line 172, in main
+    if child.returncode!=0:raise RuntimeError('Explicit stage child failed; no retry/next stage')
+RuntimeError: Explicit stage child failed; no retry/next stage

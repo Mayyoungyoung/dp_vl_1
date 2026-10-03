@@ -1,0 +1,94 @@
+"""Bounded synthetic CPU diagnosis of original755 test checkpoint aliasing."""
+import os
+for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS'):os.environ[k]='1'
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import sys
+import time
+
+ROOT=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=ROOT/'research_v2/releases/75586c573d8d67b3a3a0d33ee2a027538a1bacad'
+
+
+def differing(a,b,prefix=''):
+    import torch
+    import numpy as np
+    if type(a)!=type(b):return [dict(path=prefix,reason='type')]
+    if isinstance(a,dict):
+        if set(a)!=set(b):return [dict(path=prefix,reason='keys')]
+        return [r for k in a for r in differing(a[k],b[k],prefix+'/'+str(k))]
+    if isinstance(a,(list,tuple)):
+        if len(a)!=len(b):return [dict(path=prefix,reason='length')]
+        return [r for i in range(len(a)) for r in differing(a[i],b[i],prefix+'/'+str(i))]
+    if torch.is_tensor(a):
+        if torch.equal(a,b):return []
+        return [dict(path=prefix,reason='tensor',shape=list(a.shape),dtype=str(a.dtype),
+                     max_abs=float((a.double()-b.double()).abs().max()),changed_elements=int((a!=b).sum()))]
+    if isinstance(a,np.ndarray):
+        return [] if np.array_equal(a,b) else [dict(path=prefix,reason='numpy')]
+    return [] if a==b else [dict(path=prefix,reason='scalar',left=a,right=b)]
+
+
+def main():
+    started=time.perf_counter();cpu=time.process_time()
+    out=Path(sys.argv[1]);out.mkdir(parents=True,exist_ok=False)
+    assert os.environ['CUDA_VISIBLE_DEVICES']=='' and sorted(os.sched_getaffinity(0))==[0]
+    assert Path.cwd()==SOURCE
+    sys.path.insert(0,str(SOURCE))
+    import torch
+    torch.set_num_threads(1)
+    path=SOURCE/'tests/test_observed_diffusion_minsnr_probe.py'
+    spec=importlib.util.spec_from_file_location('frozen_minsnr_tests',path)
+    t=importlib.util.module_from_spec(spec);spec.loader.exec_module(t)
+    cases=[]
+    for arm in ('uniform','min_snr_5'):
+        for isolated in (False,True):
+            work=out/(arm+('_isolated' if isolated else '_shared'));work.mkdir()
+            parent,j,data=t.tiny(work,'parent')
+            for _ in range(2):parent.train_step(t.tiny_loss(parent,data),j)
+            saved=copy.deepcopy(parent.state_dict(j,0.));pristine=copy.deepcopy(saved)
+            full,jf,data=t.tiny(work,'full');t.probe.restore_components(full,copy.deepcopy(saved) if isolated else saved)
+            aliases=[]
+            for (name,p),key in zip(full.model.named_parameters(),saved['optimizer']['param_groups'][0]['params']):
+                for field,value in full.optimizer.state[p].items():
+                    if torch.is_tensor(value):aliases.append(dict(parameter=name,field=field,
+                        aliases_saved_parent=value.data_ptr()==saved['optimizer']['state'][key][field].data_ptr()))
+            incf=t.probe.empty_additional_audit()
+            for _ in range(4):full.train_step(t.tiny_loss(full,data,arm,incf),jf)
+            expected=copy.deepcopy(full.state_dict(jf,0.))
+            contamination=differing(pristine,saved)
+            split,js,data=t.tiny(work,'split');t.probe.restore_components(split,copy.deepcopy(saved) if isolated else saved)
+            incs=t.probe.empty_additional_audit()
+            for _ in range(2):split.train_step(t.tiny_loss(split,data,arm,incs),js)
+            checkpoint=copy.deepcopy(split.state_dict(js,0.))
+            restored,jr,data=t.tiny(work,'split');restored.load_state_dict(checkpoint,jr)
+            for _ in range(2):restored.train_step(t.tiny_loss(restored,data,arm,incs),jr)
+            actual=restored.state_dict(jr,0.)
+            fields={key:t.probe.nested_digest(expected[key])==t.probe.nested_digest(actual[key]) for key in expected}
+            case=dict(arm=arm,isolated_parent_deserializations=isolated,optimizer_tensor_aliases=aliases,
+                parent_mutations_after_full_branch=contamination,differing_state_leaves=differing(expected,actual),
+                field_equalities=fields,full_sha=t.probe.nested_digest(expected),resumed_sha=t.probe.nested_digest(actual),
+                exact_full_state=t.probe.nested_digest(expected)==t.probe.nested_digest(actual),
+                additional_draw_noise_chain_equal=incf==incs,journal_equal=jf.snapshot()==jr.snapshot(),
+                actual_calls=jf.counts)
+            assert case['exact_full_state']==isolated
+            assert case['additional_draw_noise_chain_equal'] and case['journal_equal']
+            if isolated:assert not contamination and not any(a['aliases_saved_parent'] for a in aliases)
+            cases.append(case)
+    result=dict(status='completed',protocol='minsnr_synthetic_cpu_checkpoint_alias_diagnostic_v1',
+        source_commit='75586c573d8d67b3a3a0d33ee2a027538a1bacad',
+        test_source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        diagnostic_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),torch_version=torch.__version__,
+        cpu_affinity=[0],cuda_visible_devices='',real_dataset_reads=0,real_checkpoint_reads=0,gpu_calls=0,
+        cases=cases,wall_seconds=time.perf_counter()-started,cpu_seconds=time.process_time()-cpu)
+    (out/'DIAGNOSIS.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps(dict(status=result['status'],wall_seconds=result['wall_seconds'],cpu_seconds=result['cpu_seconds'],
+        cases=[dict(arm=c['arm'],isolated=c['isolated_parent_deserializations'],exact=c['exact_full_state'],
+                    parent_mutation_paths=[r['path'] for r in c['parent_mutations_after_full_branch']],
+                    different_fields=[k for k,v in c['field_equalities'].items() if not v]) for c in cases]),indent=2))
+
+
+if __name__=='__main__':main()

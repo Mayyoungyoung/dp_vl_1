@@ -1,0 +1,597 @@
+{
+  "status": "completed",
+  "protocol": "minsnr_synthetic_cpu_checkpoint_alias_diagnostic_v1",
+  "source_commit": "75586c573d8d67b3a3a0d33ee2a027538a1bacad",
+  "test_source_sha256": "3e809c19acf4dcbbf879c4453892b5940cf475b533823ab1ab5e9354ed098155",
+  "diagnostic_sha256": "68fec75ce6bedbb521ee430298829d24941742db85760a8f368f6f9529ea6b85",
+  "torch_version": "2.4.1+cu121",
+  "cpu_affinity": [
+    0
+  ],
+  "cuda_visible_devices": "",
+  "real_dataset_reads": 0,
+  "real_checkpoint_reads": 0,
+  "gpu_calls": 0,
+  "cases": [
+    {
+      "arm": "uniform",
+      "isolated_parent_deserializations": false,
+      "optimizer_tensor_aliases": [
+        {
+          "parameter": "linear.weight",
+          "field": "step",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "step",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": true
+        }
+      ],
+      "parent_mutations_after_full_branch": [
+        {
+          "path": "/optimizer/state/0/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.004070229129865766,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 9.259266180450254e-07,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/1/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.003916696994565427,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 6.832396266531759e-07,
+          "changed_elements": 92
+        }
+      ],
+      "differing_state_leaves": [
+        {
+          "path": "/model/linear.weight",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0009380616247653961,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/model/linear.bias",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0008566528558731079,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/0/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.002651539398357272,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 9.13654162104649e-07,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/1/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0025564664974808693,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 6.759686357327155e-07,
+          "changed_elements": 92
+        },
+        {
+          "path": "/gradient_audit/linear.weight/norm",
+          "reason": "scalar",
+          "left": 0.4180086724324129,
+          "right": 0.41458042016536534
+        },
+        {
+          "path": "/gradient_audit/linear.bias/norm",
+          "reason": "scalar",
+          "left": 0.05698842456110578,
+          "right": 0.056508148751569925
+        }
+      ],
+      "field_equalities": {
+        "protocol": true,
+        "config": true,
+        "model": false,
+        "optimizer": false,
+        "scheduler": true,
+        "rng": true,
+        "stream": true,
+        "stream_audit": true,
+        "schedule": true,
+        "step": true,
+        "history": true,
+        "best": true,
+        "observation_draws": true,
+        "gradient_path_slots": true,
+        "gradient_audit": false,
+        "journal": true,
+        "pending_gradients": true,
+        "elapsed_seconds": true,
+        "recovered_sealed_evaluation_seconds": true
+      },
+      "full_sha": "f0dcd9625a8f9c4f14a821b3c57f0a5bc26b5262fd98d339ae08595983179f07",
+      "resumed_sha": "8b30d7602132c4528721836e15ab27424ee7b7307ed2e04d275f08c06a5c3b89",
+      "exact_full_state": false,
+      "additional_draw_noise_chain_equal": true,
+      "journal_equal": true,
+      "actual_calls": {
+        "train_geometry": 4,
+        "train_denoise": 4,
+        "optimizer": 4
+      }
+    },
+    {
+      "arm": "uniform",
+      "isolated_parent_deserializations": true,
+      "optimizer_tensor_aliases": [
+        {
+          "parameter": "linear.weight",
+          "field": "step",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "step",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": false
+        }
+      ],
+      "parent_mutations_after_full_branch": [],
+      "differing_state_leaves": [],
+      "field_equalities": {
+        "protocol": true,
+        "config": true,
+        "model": true,
+        "optimizer": true,
+        "scheduler": true,
+        "rng": true,
+        "stream": true,
+        "stream_audit": true,
+        "schedule": true,
+        "step": true,
+        "history": true,
+        "best": true,
+        "observation_draws": true,
+        "gradient_path_slots": true,
+        "gradient_audit": true,
+        "journal": true,
+        "pending_gradients": true,
+        "elapsed_seconds": true,
+        "recovered_sealed_evaluation_seconds": true
+      },
+      "full_sha": "f0dcd9625a8f9c4f14a821b3c57f0a5bc26b5262fd98d339ae08595983179f07",
+      "resumed_sha": "f0dcd9625a8f9c4f14a821b3c57f0a5bc26b5262fd98d339ae08595983179f07",
+      "exact_full_state": true,
+      "additional_draw_noise_chain_equal": true,
+      "journal_equal": true,
+      "actual_calls": {
+        "train_geometry": 4,
+        "train_denoise": 4,
+        "optimizer": 4
+      }
+    },
+    {
+      "arm": "min_snr_5",
+      "isolated_parent_deserializations": false,
+      "optimizer_tensor_aliases": [
+        {
+          "parameter": "linear.weight",
+          "field": "step",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "step",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg",
+          "aliases_saved_parent": true
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": true
+        }
+      ],
+      "parent_mutations_after_full_branch": [
+        {
+          "path": "/optimizer/state/0/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0010599950037430972,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 8.53684980484104e-08,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/1/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0010053064906969666,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 1.9975181686504584e-07,
+          "changed_elements": 92
+        }
+      ],
+      "differing_state_leaves": [
+        {
+          "path": "/model/linear.weight",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0007981359958648682,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/model/linear.bias",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0004842616617679596,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/0/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.000693928828695789,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/0/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92,
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 8.46439291990464e-08,
+          "changed_elements": 8464
+        },
+        {
+          "path": "/optimizer/state/1/step",
+          "reason": "tensor",
+          "shape": [],
+          "dtype": "torch.float32",
+          "max_abs": 4.0,
+          "changed_elements": 1
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 0.0006569914985448122,
+          "changed_elements": 92
+        },
+        {
+          "path": "/optimizer/state/1/exp_avg_sq",
+          "reason": "tensor",
+          "shape": [
+            92
+          ],
+          "dtype": "torch.float32",
+          "max_abs": 1.9836465980915818e-07,
+          "changed_elements": 92
+        },
+        {
+          "path": "/gradient_audit/linear.weight/norm",
+          "reason": "scalar",
+          "left": 0.03687992697741429,
+          "right": 0.036810882539355175
+        },
+        {
+          "path": "/gradient_audit/linear.bias/norm",
+          "reason": "scalar",
+          "left": 0.005026702473790106,
+          "right": 0.0050179250500412475
+        }
+      ],
+      "field_equalities": {
+        "protocol": true,
+        "config": true,
+        "model": false,
+        "optimizer": false,
+        "scheduler": true,
+        "rng": true,
+        "stream": true,
+        "stream_audit": true,
+        "schedule": true,
+        "step": true,
+        "history": true,
+        "best": true,
+        "observation_draws": true,
+        "gradient_path_slots": true,
+        "gradient_audit": false,
+        "journal": true,
+        "pending_gradients": true,
+        "elapsed_seconds": true,
+        "recovered_sealed_evaluation_seconds": true
+      },
+      "full_sha": "10c1643574b84a4a1b4fe55a7ec1800350316d6ec5f8a608da875b7265037075",
+      "resumed_sha": "48b448b1a93eae830b066650844897fa28160c540e0d7782ea554be1e3c70ea4",
+      "exact_full_state": false,
+      "additional_draw_noise_chain_equal": true,
+      "journal_equal": true,
+      "actual_calls": {
+        "train_geometry": 4,
+        "train_denoise": 4,
+        "optimizer": 4
+      }
+    },
+    {
+      "arm": "min_snr_5",
+      "isolated_parent_deserializations": true,
+      "optimizer_tensor_aliases": [
+        {
+          "parameter": "linear.weight",
+          "field": "step",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.weight",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "step",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg",
+          "aliases_saved_parent": false
+        },
+        {
+          "parameter": "linear.bias",
+          "field": "exp_avg_sq",
+          "aliases_saved_parent": false
+        }
+      ],
+      "parent_mutations_after_full_branch": [],
+      "differing_state_leaves": [],
+      "field_equalities": {
+        "protocol": true,
+        "config": true,
+        "model": true,
+        "optimizer": true,
+        "scheduler": true,
+        "rng": true,
+        "stream": true,
+        "stream_audit": true,
+        "schedule": true,
+        "step": true,
+        "history": true,
+        "best": true,
+        "observation_draws": true,
+        "gradient_path_slots": true,
+        "gradient_audit": true,
+        "journal": true,
+        "pending_gradients": true,
+        "elapsed_seconds": true,
+        "recovered_sealed_evaluation_seconds": true
+      },
+      "full_sha": "10c1643574b84a4a1b4fe55a7ec1800350316d6ec5f8a608da875b7265037075",
+      "resumed_sha": "10c1643574b84a4a1b4fe55a7ec1800350316d6ec5f8a608da875b7265037075",
+      "exact_full_state": true,
+      "additional_draw_noise_chain_equal": true,
+      "journal_equal": true,
+      "actual_calls": {
+        "train_geometry": 4,
+        "train_denoise": 4,
+        "optimizer": 4
+      }
+    }
+  ],
+  "wall_seconds": 3.75827631901484,
+  "cpu_seconds": 3.4968329000000002
+}

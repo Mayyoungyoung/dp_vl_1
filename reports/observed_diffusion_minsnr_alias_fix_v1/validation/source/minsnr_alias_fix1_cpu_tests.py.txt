@@ -1,0 +1,38 @@
+"""Test-only fixed helper overlay; all unchanged imports use immutable755."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+started=time.perf_counter();cpu=time.process_time()
+SOURCE=Path('/home/wzy/dpvlm/route_set_v1/research_v2/releases/75586c573d8d67b3a3a0d33ee2a027538a1bacad')
+HERE=Path(__file__).resolve().parent
+OUT=Path(sys.argv[1]);OUT.mkdir(exist_ok=False,parents=True)
+assert sorted(os.sched_getaffinity(0))==[0] and os.environ['CUDA_VISIBLE_DEVICES']==''
+assert Path.cwd()==SOURCE
+sys.path.insert(0,str(SOURCE))
+import scripts
+name='scripts.train_observed_diffusion_minsnr_probe'
+spec=importlib.util.spec_from_file_location(name,HERE/'train_observed_diffusion_minsnr_probe.py')
+module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module)
+# Only policy path resolution is redirected to the frozen source. No production call.
+module.PROJECT=SOURCE
+setattr(scripts,'train_observed_diffusion_minsnr_probe',module)
+import pytest
+xml=OUT/'pytest.xml'
+code=pytest.main([str(HERE/'test_observed_diffusion_minsnr_probe.py'),'-q','-p','no:cacheprovider','--junitxml',str(xml)])
+suite=ET.parse(str(xml)).getroot().find('testsuite')
+assert suite is not None
+result=dict(status='completed' if code==0 else 'failed',exit_code=code,counts=dict(suite.attrib),
+    source_commit='75586c573d8d67b3a3a0d33ee2a027538a1bacad',
+    source_scope='Frozen755 dependencies plus two hash-recorded incoming test/helper snapshots; policy path points to frozen755.',
+    files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in (Path(__file__),HERE/'train_observed_diffusion_minsnr_probe.py',HERE/'test_observed_diffusion_minsnr_probe.py')},
+    wall_seconds=time.perf_counter()-started,cpu_seconds=time.process_time()-cpu,cpu_affinity=[0],
+    cuda_visible_devices='',real_dataset_reads=0,real_checkpoint_reads=0,gpu_calls=0)
+(OUT/'TEST_RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
+assert code==0 and int(suite.attrib['tests'])==18 and int(suite.attrib['skipped'])==0
+print(json.dumps(result,indent=2))

@@ -200,9 +200,7 @@ def restore_components(trainer, state):
     """Strict restoration without pretending the new journal contains old work."""
     from routeset.train_v2 import restore_rng
     trainer.model.load_state_dict(state['model'],strict=True)
-    # CPU optimizer restoration may retain the checkpoint tensor storage.
-    # A fork must not let later Adam updates mutate its parent's saved state.
-    trainer.optimizer.load_state_dict(copy.deepcopy(state['optimizer']))
+    trainer.optimizer.load_state_dict(state['optimizer'])
     trainer.scheduler.load_state_dict(state['scheduler'])
     trainer.stream.load_state_dict(state['stream'])
     restore_rng(state['rng'],trainer.rng)

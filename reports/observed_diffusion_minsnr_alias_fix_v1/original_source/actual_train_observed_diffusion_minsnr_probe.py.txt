@@ -1,0 +1,662 @@
+"""One bounded TRAIN-only continuation control; historical sources stay unchanged.
+
+The metadata inspection, either arm, and paired comparison are explicit stages.
+No argument enables another gamma, DEV selection, candidate repair, or replay.
+"""
+import argparse
+import copy
+from contextlib import contextmanager
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import sys
+import time
+
+PROCESS_STARTED = time.perf_counter()
+import numpy as np
+
+from scripts import train_observed_two_row_diffusion as old
+from routeset.observed_qwen_continuation import (
+    RequestJournal, atomic_torch_save, canonical, digest, exclusive_lock, write_json)
+
+PROJECT = Path(__file__).resolve().parents[1]
+PROTOCOL = 'observed_diffusion_minsnr_train_probe_v1'
+POLICY_FILE = 'configs/observed_diffusion_minsnr_probe_v1.json'
+SOURCES = tuple(dict.fromkeys(old.SOURCE_FILES + (
+    'scripts/train_observed_diffusion_minsnr_probe.py', POLICY_FILE,
+    'scripts/export_observation_roles.py', 'scripts/observation_cache_qwen.py')))
+PARENT_FIELDS = {'protocol', 'config', 'model', 'optimizer', 'scheduler', 'rng',
+    'stream', 'stream_audit', 'schedule', 'step', 'history', 'best',
+    'observation_draws', 'gradient_path_slots', 'gradient_audit', 'journal',
+    'pending_gradients', 'elapsed_seconds', 'recovered_sealed_evaluation_seconds'}
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def policy():
+    value = read(PROJECT/POLICY_FILE)
+    if (value.get('protocol') != PROTOCOL or value.get('arms') != ['uniform', 'min_snr_5']
+            or (value['parent_step'], value['additional_steps'], value['final_step']) != (12000, 500, 12500)
+            or (value['batch_size'], value['candidates'], value['gamma']) != (32, 4, 5.)
+            or value['per_arm_wall_cap_seconds'] != 360. or value['dev_forward_calls'] != 0):
+        raise ValueError('Only the fixed500 Min-SNR5 TRAIN protocol is supported')
+    return value
+
+
+def nested_digest(value):
+    """Deterministic actual state hash, retaining dtype/shape and container types."""
+    h = hashlib.sha256()
+    def visit(x):
+        if hasattr(x, 'detach'):
+            y = x.detach().cpu().contiguous()
+            h.update(canonical(['tensor', str(y.dtype), list(y.shape)]))
+            h.update(y.numpy().tobytes())
+        elif isinstance(x, np.ndarray):
+            h.update(canonical(['numpy', str(x.dtype), list(x.shape)])); h.update(x.tobytes())
+        elif isinstance(x, dict):
+            h.update(b'dict')
+            for key in sorted(x, key=lambda v: (type(v).__name__, str(v))):
+                visit(key); visit(x[key])
+        elif isinstance(x, (list, tuple)):
+            h.update(type(x).__name__.encode()); h.update(str(len(x)).encode())
+            for item in x: visit(item)
+        elif isinstance(x, np.generic):
+            visit(x.item())
+        else:
+            h.update(canonical([type(x).__name__, x]))
+    visit(value)
+    return h.hexdigest()
+
+
+def parent_state_guard(state, config, summary, expected_step=12000):
+    missing = PARENT_FIELDS - set(state)
+    if missing:
+        raise ValueError('Missing actual checkpoint state: '+','.join(sorted(missing)))
+    if (state['protocol'] != old.PROTOCOL or state['config'] != config or
+            state['step'] != expected_step or state['pending_gradients'] is not False or
+            state['observation_draws'] != expected_step*config['batch_size'] or
+            state['gradient_path_slots'] != expected_step*config['batch_size']*4 or
+            state['stream_audit'] != summary['stream'] or state['journal'] != summary['actual_calls'] or
+            state['scheduler'].get('last_epoch') != expected_step):
+        raise ValueError('Parent checkpoint/config/stream/budget mismatch')
+    if (set(state['stream']) != {'identity','parents','positives','times','noise','audit'} or
+            set(state['rng']) != {'numpy_generator','numpy','python','torch','cuda'} or
+            state['stream']['audit'] != state['stream_audit'] or
+            state['schedule'].get('ddim_steps') != 40 or state['config'].get('arm') != 'independent'):
+        raise ValueError('Parent lacks the actual four streams/training RNG/independent schedule')
+    return {key: nested_digest(state[key]) for key in ('model','optimizer','scheduler','rng','stream')}
+
+
+def parent_metadata(parent, p):
+    parent = Path(parent)
+    for file, key in [('last.pt','parent_checkpoint_sha256'),('config.json','parent_config_sha256'),
+                      ('summary.json','parent_summary_sha256')]:
+        if digest(parent/file) != p[key]:
+            raise ValueError('Fixed independent parent artifact changed: '+file)
+    cfg, summary = read(parent/'config.json'), read(parent/'summary.json')
+    if (summary['status'] != 'completed' or summary['last_step'] != 12000 or
+            read(parent/'status.json')['status'] != 'completed' or
+            summary['last_checkpoint_sha256'] != p['parent_checkpoint_sha256'] or
+            cfg['code_commit'] != p['parent_source_commit']):
+        raise ValueError('Completed original independent last12000 required')
+    for name, sha in cfg['source_sha256'].items():
+        if digest(PROJECT/name) != sha:
+            raise ValueError('Immutable historical helper bytes differ: '+name)
+    return cfg, summary
+
+
+def inspect_parent(args):
+    """The one explicit CPU metadata read: no model or dataset is constructed."""
+    import torch
+    p = policy()
+    if os.environ.get('CUDA_VISIBLE_DEVICES') != '' or torch.cuda.is_available():
+        raise ValueError('Parent metadata inspection requires CUDA hidden')
+    if (not hasattr(os,'sched_getaffinity') or len(os.sched_getaffinity(0))!=1 or
+            os.environ.get('CODE_COMMIT')!=PROJECT.name):
+        raise ValueError('Immutable source and one CPU affinity required for inspection')
+    torch.set_num_threads(1)
+    output = Path(args.output)
+    if output.exists(): raise FileExistsError('Fresh metadata inspection file required')
+    cfg, summary = parent_metadata(args.parent_run, p)
+    state = torch.load(Path(args.parent_run)/'last.pt', map_location='cpu', weights_only=False)
+    components = parent_state_guard(state, cfg, summary)
+    result = dict(protocol=PROTOCOL, stage='inspect_parent', status='completed',code_commit=PROJECT.name,
+        parent_checkpoint_sha256=p['parent_checkpoint_sha256'], parent_config_sha256=p['parent_config_sha256'],
+        parent_summary_sha256=p['parent_summary_sha256'], actual_keys=sorted(state),
+        restored_components_sha256=components, optimizer_state_entries=len(state['optimizer']['state']),
+        scheduler_keys=sorted(state['scheduler']), scheduler_last_epoch=state['scheduler']['last_epoch'],
+        rng_keys=sorted(state['rng']), stream_keys=sorted(state['stream']),
+        step=state['step'], model_forward_calls=0, optimizer_calls=0, data_raw_reads=0,
+        source_sha256={name:digest(PROJECT/name) for name in SOURCES})
+    write_json(output, result)
+
+
+def min_snr_weights(alpha_bars, gamma=5.):
+    """x0/START_X weights, not epsilon's min(SNR,gamma)/SNR weights."""
+    import torch
+    if gamma != 5. or alpha_bars.ndim != 1 or len(alpha_bars) != 100:
+        raise ValueError('Fixed gamma5 and original100 alpha values required')
+    if not bool(torch.isfinite(alpha_bars).all()) or not bool(((alpha_bars>0)&(alpha_bars<1)).all()):
+        raise ValueError('Finite alpha in (0,1) required')
+    raw = (alpha_bars/(1-alpha_bars)).clamp(max=gamma)
+    return raw/raw.mean()
+
+
+def weighted_x0_mse(prediction, target, times, weights, arm):
+    if arm == 'uniform':
+        # Preserve the historical reduction order exactly for the control.
+        return (prediction-target).square().mean()
+    if arm != 'min_snr_5': raise ValueError('Unknown arm')
+    loss = (prediction-target).square().flatten(1).mean(1)
+    return (loss*weights.to(prediction.device)[times]).mean()
+
+
+class WallCap(RuntimeError):
+    pass
+
+
+class Clock:
+    def __init__(self, prior=0., limit=360., now=time.perf_counter):
+        if not math.isfinite(prior) or prior<0: raise ValueError('Invalid recorded elapsed time')
+        self.prior, self.limit, self.now, self.started = prior, limit, now, now()
+    def elapsed(self): return self.prior+self.now()-self.started
+    def check(self):
+        if self.elapsed() >= self.limit:
+            raise WallCap('Per-arm360s boundary cap reached; no implicit budget extension')
+
+
+class BoundedJournal(RequestJournal):
+    def __init__(self, path, clock):
+        super().__init__(path); self.clock=clock
+    def issue(self, kind, key):
+        self.clock.check()
+        super().issue(kind, key)
+
+
+def new_calls(updates=500):
+    return dict(train_geometry=updates, train_denoise=updates, optimizer=updates)
+
+
+def additional_audit(previous, draw):
+    """Actual new observations/reference permutation/t/epsilon, not just a seed."""
+    h=hashlib.sha256(bytes.fromhex(previous['sha256']))
+    for key in ('indices','reference_indices','reference_permutations','timesteps','epsilon'):
+        x=draw[key]
+        if hasattr(x,'detach'): x=x.detach().cpu().numpy()
+        h.update(old.array_digest(x).encode())
+    return dict(batches=previous['batches']+1, input_draws=previous['input_draws']+len(draw['indices']),
+        target_states=previous['target_states']+4*len(draw['indices']), sha256=h.hexdigest())
+
+
+def empty_additional_audit():
+    return dict(batches=0,input_draws=0,target_states=0,sha256=hashlib.sha256(PROTOCOL.encode()).hexdigest())
+
+
+def restore_components(trainer, state):
+    """Strict restoration without pretending the new journal contains old work."""
+    from routeset.train_v2 import restore_rng
+    trainer.model.load_state_dict(state['model'],strict=True)
+    trainer.optimizer.load_state_dict(state['optimizer'])
+    trainer.scheduler.load_state_dict(state['scheduler'])
+    trainer.stream.load_state_dict(state['stream'])
+    restore_rng(state['rng'],trainer.rng)
+    trainer.step=state['step'];trainer.history=copy.deepcopy(state['history']);trainer.best=copy.deepcopy(state['best'])
+    trainer.gradient_audit=copy.deepcopy(state['gradient_audit'])
+    trainer.recovered_sealed_evaluation_seconds=state['recovered_sealed_evaluation_seconds']
+    if (trainer.scheduler.last_epoch!=trainer.step or trainer.scheduler.base_lrs!=[trainer.config['lr']] or
+            any(g['lr']!=trainer.config['lr'] or g['weight_decay']!=trainer.config['weight_decay'] for g in trainer.optimizer.param_groups)):
+        raise ValueError('Restored constant optimizer/scheduler mismatch')
+
+
+@contextmanager
+def selected_loader_rows(loader, observations, supervision, rows, labels):
+    previous=loader._jsonl
+    def selected(path):
+        if Path(path)==observations:return rows
+        if Path(path)==supervision:return labels
+        raise ValueError('Unexpected metadata loader path')
+    loader._jsonl=selected
+    try: yield
+    finally: loader._jsonl=previous
+
+
+def train_inputs(args, parent_config, parent_summary, p, output):
+    """Read TRAIN raw only; retain empty old DEV indices for exact stream restore."""
+    from routeset import observed_route_head as loader
+    from scripts import train_observed_geometry as base
+    from scripts.export_observation_roles import selected_rows
+    root=Path(args.data);observations=root/'observations.jsonl';supervision=root/'supervision.jsonl'
+    if digest(args.ordinary_source_hashes)!=p['ordinary_source_hashes_sha256']:
+        raise ValueError('Fixed ordinary source-byte index changed')
+    expected=read(args.ordinary_source_hashes)
+    def checked(path):
+        path=Path(path)
+        if expected.get(str(path))!=digest(path): raise ValueError('Original TRAIN/cache bytes changed: '+str(path))
+    for file in (observations,supervision,root/'qwen_cache/cache_config.json'): checked(file)
+    for key,file in [('export_manifest_sha256',root/'export_manifest.json'),
+                     ('quality_sha256',Path(args.quality_audit)),
+                     ('cache_receipt_sha256',root/'qwen_cache/composite_cache_receipt.json')]:
+        if digest(file)!=parent_config[key]: raise ValueError('Completed export/quality/cache identity changed')
+    all_rows=[json.loads(line) for line in observations.read_text().splitlines() if line.strip()]
+    ids=np.asarray([i for i,r in enumerate(all_rows) if r['split']=='TRAIN'],np.int64)
+    if len(all_rows)!=321 or len(ids)!=285 or ids.tolist()!=parent_summary['stream']['identity']['train_ids']:
+        raise ValueError('Original321 identities and285 canonical TRAIN indices required')
+    rows=[all_rows[i] for i in ids];parents={r['parent_id'] for r in rows}
+    labels=selected_rows(supervision,parents);by_id={r['id']:r for r in labels}
+    if (len(labels)!=285 or set(by_id)!={r['id'] for r in rows} or
+            any(r['split']!='TRAIN' or r['parent_id'] not in parents for r in labels)):
+        raise ValueError('Only exact TRAIN label rows may be decoded')
+    cache=read(root/'qwen_cache/composite_cache_receipt.json')
+    for row in rows:
+        label=by_id[row['id']]
+        for name in [row['image'],label['observation']]+label['routes']:
+            checked(Path(name) if Path(name).is_absolute() else root/name)
+        key=hashlib.sha256(json.dumps(row,sort_keys=True).encode()).hexdigest()[:20]+'.npz'
+        checked(root/'qwen_cache'/key)
+        if cache['artifact_sha256'].get(key)!=digest(root/'qwen_cache'/key):
+            raise ValueError('TRAIN merged feature receipt differs')
+    with selected_loader_rows(loader,observations,supervision,rows,labels):
+        compact=loader.load_observed_dataset(observations,supervision,root/'qwen_cache',24,'both')
+    if (list(compact['scene_ids'])!=[r['id'] for r in rows] or int(compact['path_mask'].sum())!=1663):
+        raise ValueError('TRAIN canonical data or all1663 positives changed')
+    for name,sha in compact['source_hashes'].items():
+        if expected.get(name)!=sha: raise ValueError('Loaded TRAIN source differs from original index')
+    # Geometry is constructed from TRAIN observation bytes only, using the original reader.
+    clouds=[];sources=[];cloud_indices=[];seen={}
+    for row in rows:
+        parent=row['parent_id'];label=by_id[row['id']]
+        pair=(str(Path(row['image'])),str(Path(label['observation'])))
+        if parent not in seen:
+            seen[parent]=len(clouds);sources.append(pair)
+            clouds.append(base.read_geometry(*pair,pixel_stride=2))
+        elif sources[seen[parent]]!=pair: raise ValueError('Same-parent current observation differs')
+        cloud_indices.append(seen[parent])
+    original_r=len(parent_summary['stream']['reference_frequencies'][0])
+    data=dict(compact)
+    for key in ('features','current','paths','events','path_mask'):
+        a=compact[key]
+        shape=(321,)+a.shape[1:]
+        if key in ('paths','events','path_mask'): shape=(321,original_r)+a.shape[2:]
+        b=np.zeros(shape,dtype=a.dtype)
+        if key in ('paths','events','path_mask'): b[ids,:a.shape[1]]=a
+        else:b[ids]=a
+        data[key]=b
+    for key in ('scene_ids','parent_ids','splits'):
+        field={'scene_ids':'id','parent_ids':'parent_id','splits':'split'}[key]
+        data[key]=np.asarray([r[field] for r in all_rows])
+    for key in ('semantic_targets','instructions','image_hashes','tasks'):
+        values=[None]*321
+        for pos,index in enumerate(ids):values[index]=compact[key][pos]
+        data[key]=np.asarray(values) if key=='image_hashes' else values
+    # This is a historical identity reference, not a claim that DEV was re-read.
+    data['fingerprint']=parent_config['dataset_fingerprint']
+    index=np.full(321,-1,dtype=np.int64);index[ids]=cloud_indices
+    geometry=dict(points={key:np.stack([cloud[key] for cloud in clouds]) for key in base.POINT_FIELDS},
+        index=index,sources=sources,metadata={'scope':'TRAIN-only observed geometry'})
+    view=Path(output)/'train_evaluation_view';view.mkdir(exist_ok=True)
+    for name,contents in [('observations.jsonl',rows),('supervision.jsonl',labels)]:
+        payload=''.join(json.dumps(row)+'\n' for row in contents).encode()
+        path=view/name
+        if path.exists() and path.read_bytes()!=payload:raise ValueError('TRAIN-only metadata view changed')
+        if not path.exists():path.write_bytes(payload)
+    receipt=dict(original_source_index_sha256=digest(args.ordinary_source_hashes),
+        loaded_train_inputs=285,positive_references=1663,dev_raw_arrays_opened=0,
+        old_dev_empty_index_placeholders=36,canonical_train_indices=ids.tolist(),
+        original_full_dataset_fingerprint_reference=parent_config['dataset_fingerprint'],
+        loaded_train_subset_fingerprint=compact['fingerprint'],
+        actual_train_source_hashes=compact['source_hashes'],
+        metadata_view_sha256={name:digest(view/name) for name in ('observations.jsonl','supervision.jsonl')})
+    return data,geometry,ids,view,read(root/'export_manifest.json'),receipt
+
+
+def loss_function(trainer, data, geometry, device, arm, weights, increment):
+    import torch
+    from routeset.observed_geometry import positive_endpoint_attention_loss
+    from routeset.observed_route_diffusion import targets_to_state
+    from scripts import train_observed_geometry as base
+    def loss(draw, step, journal):
+        updated=additional_audit(increment,draw);increment.clear();increment.update(updated)
+        ids,refs=draw['indices'],draw['reference_indices']
+        if any(data['splits'][i]!='TRAIN' for i in ids):raise ValueError('Non-TRAIN draw forbidden')
+        inputs=base.batch_inputs(data,geometry,ids,device)
+        target=targets_to_state(torch.as_tensor(data['paths'][ids[:,None],refs],device=device),
+            torch.as_tensor(data['events'][ids[:,None],refs],device=device),inputs['current'])
+        times=draw['timesteps'].to(device);noise=draw['epsilon'].to(device)
+        noisy=trainer.schedule.q_sample(target,times,noise)
+        journal.issue('train_geometry',step);encoded=trainer.model.encode_observation(inputs)
+        journal.issue('train_denoise',step);pred=trainer.model.forward_x0(noisy,times,encoded)
+        route=weighted_x0_mse(pred,target,times,weights,arm)
+        ground=positive_endpoint_attention_loss(encoded['attention'],inputs['world_xyz'],inputs['valid_mask'],
+            torch.as_tensor(data['paths'][ids,:,-1],device=device),
+            torch.as_tensor(data['path_mask'][ids],device=device),trainer.config['grounding_sigma'])
+        return route+trainer.config['grounding_weight']*ground,dict(
+            unweighted_route_x0_mse=float((pred-target).square().mean().detach()),
+            weighted_route_x0_mse=float(route.detach()),grounding_loss=float(ground.detach()))
+    return loss
+
+
+def validate_increment(state, step, batch_size=32, parent_step=12000):
+    updates=step-parent_step
+    if (updates<0 or state['batches']!=updates or state['input_draws']!=updates*batch_size or
+            state['target_states']!=updates*batch_size*4 or len(bytes.fromhex(state['sha256']))!=32):
+        raise ValueError('Additional exposure/digest checkpoint mismatch')
+
+
+def sealed_stage(folder, identity, required):
+    receipt=read(Path(folder)/'receipt.json')
+    if receipt.get('identity')!=identity or set(receipt.get('artifacts',{}))!=set(required):
+        raise ValueError('Sealed stage identity or exact artifact set differs')
+    for name,sha in receipt['artifacts'].items():
+        if Path(name).name!=name or digest(Path(folder)/name)!=sha:
+            raise ValueError('Sealed stage artifact changed')
+    journal=RequestJournal(Path(folder)/'requests.jsonl')
+    if journal.snapshot()!=receipt['journal']:raise ValueError('Sealed stage journal differs')
+    return receipt
+
+
+def teacher_stage(trainer,data,geometry,train_ids,output,clock,identity):
+    """Same original30 noises; preserve NaNs/issued work on any partial failure."""
+    import torch
+    from routeset.observed_route_diffusion import targets_to_state,decode_state
+    from scripts import train_observed_geometry as base
+    output=Path(output);required={'teacher.json','predictions.npz','requests.jsonl'}
+    if output.exists():return sealed_stage(output,identity,required)
+    staging=output.with_name(output.name+'.staging')
+    if staging.exists():raise ValueError('Partial teacher preserved; no automatic repeat')
+    staging.mkdir();journal=BoundedJournal(staging/'requests.jsonl',clock)
+    rows=[];predictions=np.full((30,4,23,4),np.nan,np.float32);ids=np.asarray(train_ids[:6]);position=0
+    if len(ids)!=6 or any(data['splits'][i]!='TRAIN' for i in ids):raise ValueError('Original first6 TRAIN required')
+    rng=np.random.default_rng(400000);before=old.model_digest(trainer.model);started=old.synchronize()
+    def persist():
+        np.savez_compressed(staging/'predictions.npz',predictions=predictions,
+            ids=np.repeat(data['scene_ids'][ids],5),timesteps=np.tile([0,25,50,75,99],6))
+        write_json(staging/'teacher.json',dict(rows=rows,completed_denoise=len(rows),requested_denoise=30,
+            requested_inputs=6,requested_intermediate_states=120,actual_calls=journal.snapshot(),
+            elapsed_seconds=old.synchronize()-started,scope='Known TRAIN reference noise; not free generation'))
+    try:
+        trainer.model.eval()
+        with torch.no_grad(),old.isolated_evaluation_rng(trainer):
+            for index in ids:
+                identifier=str(data['scene_ids'][index]);chosen=np.resize(np.flatnonzero(data['path_mask'][index]),4)
+                inputs=base.batch_inputs(data,geometry,np.asarray([index]),'cuda')
+                journal.issue('diagnostic_geometry',identifier);encoded=trainer.model.encode_observation(inputs)
+                paths=torch.as_tensor(data['paths'][index,chosen][None],device='cuda')
+                events=torch.as_tensor(data['events'][index,chosen][None],device='cuda')
+                clean=targets_to_state(paths,events,inputs['current'])
+                for t in (0,25,50,75,99):
+                    noise=rng.standard_normal((1,4,23,4)).astype(np.float32)
+                    times=torch.tensor([t],device='cuda',dtype=torch.long)
+                    noisy=trainer.schedule.q_sample(clean,times,torch.as_tensor(noise,device='cuda'))
+                    journal.issue('diagnostic_denoise',identifier+':'+str(t))
+                    predicted=trainer.model.forward_x0(noisy,times,encoded)
+                    xyz,opened=decode_state(predicted,inputs['current']);delta=predicted-clean
+                    rows.append(dict(id=identifier,t=t,reference_indices=chosen.tolist(),
+                        noise_sha256=old.array_digest(noise),x0_mse=float(delta.square().mean()),
+                        xyz_rmse_m=float(delta[...,:3].square().mean().sqrt()),
+                        body_xyz_rmse_m=float(delta[:,:,:-1,:3].square().mean().sqrt()),
+                        endpoint_error_m=float((xyz[:,:,-1]-paths[:,:,-1]).norm(dim=-1).mean()),
+                        event_mae=float((opened[:,:,1:]-events[:,:,1:]).abs().mean())))
+                    predictions[position]=predicted.cpu().numpy()[0];position+=1
+        if journal.counts!=dict(diagnostic_geometry=6,diagnostic_denoise=30) or old.model_digest(trainer.model)!=before:
+            raise ValueError('Teacher budget or fixed weights changed')
+        persist()
+        receipt=dict(identity=identity,journal=journal.snapshot(),
+            artifacts={name:digest(staging/name) for name in required})
+        write_json(staging/'receipt.json',receipt);staging.rename(output);return receipt
+    except BaseException as exc:
+        persist();write_json(staging/'failure.json',dict(exception=repr(exc),actual_calls=journal.snapshot(),
+            completed_rows=len(rows),unknown_issued_completion=True,retried=False));raise
+
+
+@contextmanager
+def train_view_verifier(view, manifest, expected_files):
+    """Old checker, selected TRAIN JSONL and fixed original label hashes only."""
+    from scripts import export_two_row_composite_observations as exporter
+    previous=exporter.verify_export
+    def verify(path):
+        if Path(path)!=Path(view):raise ValueError('Only the sealed TRAIN metadata view can be evaluated')
+        for name,sha in expected_files.items():
+            if digest(Path(view)/name)!=sha:raise ValueError('TRAIN metadata view changed')
+        return manifest,dict(scope='Original fixed export identity; TRAIN arrays independently revalidated')
+    exporter.verify_export=verify
+    try:yield
+    finally:exporter.verify_export=previous
+
+
+def read_attempt_cost(output):
+    total=0.
+    for path in sorted((Path(output)/'attempts').glob('*.json')):
+        value=read(path)
+        if value.get('status')=='running' or 'process_seconds' not in value:
+            raise ValueError('Prior process cost unknown after hard interruption; no silent budget reset')
+        seconds=value['process_seconds']
+        if not math.isfinite(seconds) or seconds<0:raise ValueError('Invalid prior actual elapsed time')
+        total+=seconds
+    return total
+
+
+def resume_argv(args):
+    command=[sys.executable,'-m','scripts.train_observed_diffusion_minsnr_probe','--stage','run',
+        '--arm',args.arm,'--parent-run',str(args.parent_run),'--parent-inspection',str(args.parent_inspection),
+        '--ordinary-source-hashes',str(args.ordinary_source_hashes),'--data',str(args.data),
+        '--quality-audit',str(args.quality_audit),'--output',str(args.output),'--resume']
+    return command
+
+
+def run(args):
+    import torch
+    from routeset.common import seed_all
+    from routeset.observed_route_diffusion import ObservedRouteDiffusion,ObservedX0Schedule
+    from routeset.observed_diffusion_stream import PairedPositiveStream
+    p=policy();output=Path(args.output);started=PROCESS_STARTED
+    if args.arm not in p['arms']:raise ValueError('Explicit uniform or min_snr_5 arm required')
+    if args.resume:
+        if not output.is_dir():raise FileNotFoundError('Resume requires its existing lineage')
+        if (output/'summary.json').exists():raise ValueError('Completed arm cannot be issued again')
+    else:
+        if output.exists():raise FileExistsError('Fresh independent output lineage required')
+        output.mkdir(parents=True)
+    with exclusive_lock(output/'train.lock'):
+        prior=read_attempt_cost(output);clock=Clock(prior=prior);clock.started=started
+        attempts=output/'attempts';attempts.mkdir(exist_ok=True)
+        attempt=attempts/('%04d.json'%len(list(attempts.glob('*.json'))))
+        status=dict(protocol=PROTOCOL,status='running',pid=os.getpid(),arm=args.arm,
+            resume_command=resume_argv(args),resume_note='Only checkpoint boundaries or complete sealed stages; hard issued work is not replayed')
+        write_json(attempt,status);write_json(output/'status.json',status)
+        try:
+            clock.check();runtime=old.require_runtime()
+            if os.environ.get('CODE_COMMIT')!=PROJECT.name:
+                raise ValueError('Run only from a named immutable release')
+            parent_cfg,parent_summary=parent_metadata(args.parent_run,p)
+            inspection=read(args.parent_inspection)
+            actual_sources={name:digest(PROJECT/name) for name in SOURCES}
+            if (inspection.get('protocol')!=PROTOCOL or inspection.get('status')!='completed' or
+                    inspection.get('stage')!='inspect_parent' or inspection['source_sha256']!=actual_sources or
+                    inspection.get('code_commit')!=PROJECT.name or
+                    inspection['parent_checkpoint_sha256']!=p['parent_checkpoint_sha256']):
+                raise ValueError('Actual CPU parent inspection from this exact source required')
+            data,geometry,train_ids,view,manifest,data_receipt=train_inputs(args,parent_cfg,parent_summary,p,output)
+            seed_all(0);model=ObservedRouteDiffusion(set_attention=False).to('cuda');schedule=ObservedX0Schedule()
+            weights=min_snr_weights(schedule.alpha_bars)
+            config=dict(parent_cfg,steps=12500,probe_protocol=PROTOCOL,probe_arm=args.arm,probe_policy=p,
+                probe_source_sha256=actual_sources,probe_runtime=runtime,
+                parent_inspection_sha256=digest(args.parent_inspection),
+                train_view_receipt_sha256=hashlib.sha256(canonical(data_receipt)).hexdigest(),
+                weights_sha256=old.array_digest(weights.numpy()),weights=weights.tolist())
+            trainer=old.DiffusionTrainer(model,schedule,PairedPositiveStream(data,train_ids,seed=0,k=4),config)
+            journal=BoundedJournal(output/'requests.jsonl',clock)
+            increment=empty_additional_audit()
+            identity=dict(protocol=PROTOCOL,arm=args.arm,parent_checkpoint_sha256=p['parent_checkpoint_sha256'],
+                parent_config_sha256=p['parent_config_sha256'],policy=p,source_sha256=actual_sources,
+                parent_inspection_sha256=digest(args.parent_inspection))
+            if args.resume:
+                if read(output/'identity.json')!=identity or read(output/'config.json')!=config:
+                    raise ValueError('Resume lineage/source/data/arm differs')
+                saved=torch.load(output/'last.pt',map_location='cuda',weights_only=False)
+                if saved['protocol']!=PROTOCOL or saved['identity']!=identity:raise ValueError('Wrong probe checkpoint')
+                trainer.load_state_dict(saved['trainer'],journal)
+                increment=saved['additional_stream'];validate_increment(increment,trainer.step)
+                if journal.counts!=new_calls(trainer.step-12000):raise ValueError('New-only journal exposure mismatch')
+            else:
+                if journal.snapshot()['records']:raise ValueError('Fresh lineage cannot inherit issued calls')
+                parent=torch.load(Path(args.parent_run)/'last.pt',map_location='cpu',weights_only=False)
+                components=parent_state_guard(parent,parent_cfg,parent_summary)
+                if components!=inspection['restored_components_sha256']:raise ValueError('Parent inspection state changed')
+                restore_components(trainer,parent)
+                restored=trainer.state_dict(journal,0.)
+                actual={key:nested_digest(restored[key]) for key in components}
+                if actual!=components:raise ValueError('Actual restored tensors/Adam/scheduler/RNG/four streams differ')
+                write_json(output/'identity.json',identity);write_json(output/'config.json',config)
+                write_json(output/'train_input_receipt.json',data_receipt)
+                write_json(output/'restore_receipt.json',dict(parent_components_sha256=components,
+                    actual_restored_components_sha256=actual,original_step=12000,additional_issued_calls=0,
+                    old_history_retained_as_lineage_only=len(parent['history']),old_cost_not_recharged=parent['elapsed_seconds']))
+            def save():
+                validate_increment(increment,trainer.step)
+                atomic_torch_save(output/'last.pt',dict(protocol=PROTOCOL,identity=identity,
+                    trainer=trainer.state_dict(journal,clock.elapsed()),additional_stream=copy.deepcopy(increment)))
+            if not args.resume:save()
+            if args.stop_after is not None and not trainer.step<=args.stop_after<=12500:
+                raise ValueError('stop-after is an unreached absolute boundary through12500')
+            loss=loss_function(trainer,data,geometry,'cuda',args.arm,weights,increment)
+            while trainer.step<12500:
+                if args.stop_after==trainer.step:
+                    save();status.update(status='paused',step=trainer.step);return
+                clock.check();row=trainer.train_step(loss,journal)
+                if trainer.step%25==0:
+                    save()
+                    with (output/'training_history.jsonl').open('a') as stream:
+                        stream.write(json.dumps(dict(row,additional_stream=increment,elapsed_seconds=clock.elapsed()))+'\n')
+                    print(json.dumps(row),flush=True)
+            save()
+            if args.stop_after==trainer.step:
+                status.update(status='paused',step=trainer.step);return
+            if journal.counts!=new_calls() or increment['target_states']!=64000:
+                raise ValueError('Exactly500 updates/64k new targets required')
+            final_identity=dict(identity,step=12500,model_sha256=old.model_digest(model))
+            teacher=teacher_stage(trainer,data,geometry,train_ids,output/'teacher',clock,final_identity)
+            if teacher['journal']['counts']!=dict(diagnostic_geometry=6,diagnostic_denoise=30):
+                raise ValueError('Exactly6/30 teacher calls required, including sealed reuse')
+            free_journal=BoundedJournal(output/'free_requests.jsonl',clock)
+            with train_view_verifier(view,manifest,data_receipt['metadata_view_sha256']):
+                pool=old.evaluate_pool(trainer,data,geometry,train_ids,view,output/'fixed_last_train',
+                    'train_minsnr_probe',0,300000,free_journal,'cuda')
+            if (free_journal.counts!=dict(eval_geometry=285,eval_denoise=11400) or
+                    pool['journal_after']!=free_journal.snapshot()):
+                raise ValueError('Exactly285 TRAIN/40 calls each required')
+            # The same input and helper bytes must still hold at closure.
+            for name,sha in data_receipt['actual_train_source_hashes'].items():
+                if digest(name)!=sha:raise ValueError('TRAIN source changed while running')
+            if any(digest(PROJECT/name)!=sha for name,sha in actual_sources.items()):
+                raise ValueError('Source changed while running')
+            parent_metadata(args.parent_run,p)
+            measured_elapsed=clock.elapsed()
+            summary=dict(protocol=PROTOCOL,status='completed',arm=args.arm,identity=identity,final_step=12500,
+                parent_step=12000,additional_steps=500,additional_input_draws=16000,additional_target_states=64000,
+                additional_stream=increment,cumulative_stream=trainer.stream.audit(),
+                actual_train_calls=journal.snapshot(),actual_teacher_calls=teacher['journal'],
+                actual_free_calls=free_journal.snapshot(),total_geometry_calls=791,total_denoise_calls=11930,
+                new_qwen_calls=0,dev_calls=0,dev_selection_opportunities=0,main_result_eligible=False,
+                fixed_train_metrics=pool['metrics'],elapsed_seconds=measured_elapsed,
+                gpu_hours_reserved=measured_elapsed/3600,peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated(),
+                cost_scope='New lineage only; body/stage times nested in attempt elapsed, original12000 never recharged',
+                final_checkpoint_sha256=digest(output/'last.pt'),final_model_sha256=final_identity['model_sha256'],
+                restore_receipt_sha256=digest(output/'restore_receipt.json'),
+                teacher_receipt_sha256=digest(output/'teacher/receipt.json'),
+                fixed_train_receipt_sha256=digest(output/'fixed_last_train/pool_receipt.json'),
+                gradient_audit=trainer.gradient_audit)
+            write_json(output/'summary.json',summary);status.update(status='completed',step=12500)
+        except BaseException as exc:
+            status.update(status='budget_exhausted' if isinstance(exc,WallCap) else 'failed',exception=repr(exc),
+                issued_counts_are_not_completed_claims=True,automatic_replay_allowed=False)
+            raise
+        finally:
+            status.update(process_seconds=time.perf_counter()-started,cumulative_process_seconds=clock.elapsed(),
+                cap_seconds=360.,boundary_overshoot_seconds=max(0.,clock.elapsed()-360.))
+            write_json(attempt,status);write_json(output/'status.json',status)
+
+
+def compare(args):
+    """No Torch/data loader import; compare sealed TRAIN outputs without reselecting."""
+    output=Path(args.output)
+    if output.exists():raise FileExistsError('Fresh pair comparison output required')
+    paths=[Path(args.uniform_run),Path(args.weighted_run)];summaries=[read(p/'summary.json') for p in paths]
+    pools=[]
+    for path,s,arm in zip(paths,summaries,['uniform','min_snr_5']):
+        if s['status']!='completed' or s['arm']!=arm or read(path/'status.json')['status']!='completed':
+            raise ValueError('Both actual completed arms required')
+        for name,key in [('last.pt','final_checkpoint_sha256'),('restore_receipt.json','restore_receipt_sha256'),
+                         ('teacher/receipt.json','teacher_receipt_sha256'),('fixed_last_train/pool_receipt.json','fixed_train_receipt_sha256')]:
+            if digest(path/name)!=s[key]:raise ValueError('Completed pair artifact changed')
+        teacher=sealed_stage(path/'teacher',read(path/'teacher/receipt.json')['identity'],{'teacher.json','predictions.npz','requests.jsonl'})
+        pool=read(path/'fixed_last_train/pool_receipt.json');old.verify_pool(path/'fixed_last_train',pool['identity'])
+        if (pool['metrics']!=s['fixed_train_metrics'] or pool['identity']['model_sha256']!=s['final_model_sha256'] or
+                teacher['identity']['model_sha256']!=s['final_model_sha256']):
+            raise ValueError('Summary/pool/teacher fixed model or metrics differ')
+        pools.append(pool)
+    a,b=summaries
+    for key in ('policy','parent_checkpoint_sha256','parent_config_sha256','source_sha256','parent_inspection_sha256'):
+        if a['identity'][key]!=b['identity'][key]:raise ValueError('Pair differs in common '+key)
+    if (a['additional_stream']!=b['additional_stream'] or a['cumulative_stream']!=b['cumulative_stream'] or
+            read(paths[0]/'restore_receipt.json')!=read(paths[1]/'restore_receipt.json')):
+        raise ValueError('Pair actual initial state or additional full stream differs')
+    if pools[0]['identity']['noise']!=pools[1]['identity']['noise'] or pools[0]['identity']['ids']!=pools[1]['identity']['ids']:
+        raise ValueError('Fixed TRAIN free pools differ in actual seeds/noise/identities')
+    teachers=[read(path/'teacher/teacher.json')['rows'] for path in paths]
+    if [(r['id'],r['t'],r['reference_indices'],r['noise_sha256']) for r in teachers[0]]!=[
+            (r['id'],r['t'],r['reference_indices'],r['noise_sha256']) for r in teachers[1]]:
+        raise ValueError('Teacher references/noises differ')
+    teacher_metrics=[]
+    for rows in teachers:
+        teacher_metrics.append({str(t):{key:float(np.mean([r[key] for r in rows if r['t']==t]))
+            for key in ('xyz_rmse_m','body_xyz_rmse_m','endpoint_error_m','event_mae')} for t in [0,25,50,75,99]})
+    lowt=all(teacher_metrics[1][str(t)]['body_xyz_rmse_m']<teacher_metrics[0][str(t)]['body_xyz_rmse_m'] for t in [0,25])
+    free=all(b['fixed_train_metrics'][key]>a['fixed_train_metrics'][key] for key in ('TipValidAtK','TipClearAtK'))
+    per_input=[];per_scene=[read(path/'fixed_last_train/per_scene.json') for path in paths]
+    if ([r['scene_id'] for r in per_scene[0]]!=[r['scene_id'] for r in per_scene[1]] or len(per_scene[0])!=285):
+        raise ValueError('All285 paired TRAIN rows required')
+    fields=('TipValidAtK','TipClearAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK')
+    for left,right in zip(*per_scene):
+        if left['parent_id']!=right['parent_id']:raise ValueError('Paired parent mismatch')
+        per_input.append(dict(id=left['scene_id'],parent_id=left['parent_id'],
+            uniform=left['tip_evaluation'],min_snr_5=right['tip_evaluation'],
+            difference={key:right['tip_evaluation'][key]-left['tip_evaluation'][key] for key in fields},
+            semantic_difference=right['semantic_goal_accuracy']-left['semantic_goal_accuracy']))
+    result=dict(protocol=PROTOCOL,status='completed',teacher=teacher_metrics,
+        free_metrics=[s['fixed_train_metrics'] for s in summaries],additional_stream=a['additional_stream'],
+        per_input=per_input,
+        same_initial_state=True,same_parent_reference_t_epsilon=True,lowt_body_improved=lowt,
+        free_tip_valid_and_clear_improved=free,eligible_for_further_review=lowt and free,
+        interpretation='One seed, TRAIN continuation diagnostic; strict improvements are a screening condition, not a method claim',
+        source_summary_sha256=[digest(path/'summary.json') for path in paths],
+        new_attempt_gpu_hours=[read_attempt_cost(path)/3600 for path in paths],
+        model_calls=0,checker_calls=0,labels_read=0,main_result_eligible=False)
+    write_json(output,result)
+
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--stage',choices=['inspect-parent','run','compare'],required=True)
+    parser.add_argument('--arm',choices=['uniform','min_snr_5'])
+    for name in ('parent-run','parent-inspection','ordinary-source-hashes','data','quality-audit','uniform-run','weighted-run'):
+        parser.add_argument('--'+name,type=Path)
+    parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--resume',action='store_true');parser.add_argument('--stop-after',type=int)
+    args=parser.parse_args()
+    if args.stage=='inspect-parent':
+        if args.parent_run is None:parser.error('--parent-run required')
+        inspect_parent(args)
+    elif args.stage=='compare':
+        if args.uniform_run is None or args.weighted_run is None:parser.error('Both pair directories required')
+        compare(args)
+    else:
+        for key in ('arm','parent_run','parent_inspection','ordinary_source_hashes','data','quality_audit'):
+            if getattr(args,key) is None:parser.error('--'+key.replace('_','-')+' required')
+        run(args)
+
+
+if __name__=='__main__':main()

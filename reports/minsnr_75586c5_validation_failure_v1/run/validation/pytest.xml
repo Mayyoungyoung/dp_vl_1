@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="16" time="13.660" timestamp="2026-10-03T14:16:34.875244+08:00" hostname="dell-Precision-7920-Tower"><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_fixed500_counts_and_single_setting" time="0.001" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_nested_digest_preserves_type_shape_and_values" time="0.001" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_clock_denies_issue_before_call_and_retains_previous_issued" time="0.005" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_prior_attempt_cost_cannot_reset_or_assume_killed_process_zero" time="0.004" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_increment_hash_covers_refs_permutation_time_and_actual_noise" time="0.001" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_resume_command_drops_administrative_stop_after" time="0.000" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_selected_loader_context_never_returns_dev_rows_and_restores_on_error" time="0.000" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_sealed_teacher_requires_exact_file_set_and_byte_hash" time="0.004" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_invalid_additional_budget_rejected" time="0.000" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_old_checker_verifier_is_scoped_and_restored" time="0.257" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_expired_budget_cannot_issue_optimizer_after_gradient_work" time="0.003" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_real_torch_x0_weights_and_exact_historical_uniform_reduction" time="6.113" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_real_torch_parent_fork_four_vs_two_plus_two_exact[uniform]" time="6.482"><failure message="AssertionError: assert '7543fe0859a4...e380fc86e52a6' == '88242ba0caff...913e742d0a673'&#10;  &#10;  - 88242ba0caffdf83280726d607fed3278b3dc0d2d33b06dbbf6913e742d0a673&#10;  + 7543fe0859a485ffefefae1dc0520d1145e3efc49ce8d20ba61e380fc86e52a6">tmp_path = PosixPath('/tmp/pytest-of-wzy/pytest-108/test_real_torch_parent_fork_fo0')
+arm = 'uniform'
+
+    @pytest.mark.parametrize('arm',['uniform','min_snr_5'])
+    def test_real_torch_parent_fork_four_vs_two_plus_two_exact(tmp_path,arm):
+        torch=pytest.importorskip('torch')
+        parent,j,data=tiny(tmp_path,'parent')
+        for _ in range(2):parent.train_step(tiny_loss(parent,data),j)
+        saved=copy.deepcopy(parent.state_dict(j,0.))
+        full,jf,data=tiny(tmp_path,'full');probe.restore_components(full,saved)
+        incf=probe.empty_additional_audit()
+        for _ in range(4):full.train_step(tiny_loss(full,data,arm,incf),jf)
+        expected=full.state_dict(jf,0.)
+        split,js,data=tiny(tmp_path,'split');probe.restore_components(split,saved)
+        incs=probe.empty_additional_audit()
+        for _ in range(2):split.train_step(tiny_loss(split,data,arm,incs),js)
+        checkpoint=copy.deepcopy(split.state_dict(js,0.))
+        restored,jr,data=tiny(tmp_path,'split');restored.load_state_dict(checkpoint,jr)
+        for _ in range(2):restored.train_step(tiny_loss(restored,data,arm,incs),jr)
+&gt;       assert probe.nested_digest(expected)==probe.nested_digest(restored.state_dict(jr,0.))
+E       AssertionError: assert '7543fe0859a4...e380fc86e52a6' == '88242ba0caff...913e742d0a673'
+E         
+E         - 88242ba0caffdf83280726d607fed3278b3dc0d2d33b06dbbf6913e742d0a673
+E         + 7543fe0859a485ffefefae1dc0520d1145e3efc49ce8d20ba61e380fc86e52a6
+
+tests/test_observed_diffusion_minsnr_probe.py:188: AssertionError</failure></testcase><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_real_torch_parent_fork_four_vs_two_plus_two_exact[min_snr_5]" time="0.082"><failure message="AssertionError: assert '57f23ad62144...8ef31a46f68f5' == '24bab56d002a...97b02820da6ec'&#10;  &#10;  - 24bab56d002a25a0eb858db3595a89b396a6beeb65823b41eb697b02820da6ec&#10;  + 57f23ad621447ab1c8a8819502581c1a57a5ab5bc79783710a58ef31a46f68f5">tmp_path = PosixPath('/tmp/pytest-of-wzy/pytest-108/test_real_torch_parent_fork_fo1')
+arm = 'min_snr_5'
+
+    @pytest.mark.parametrize('arm',['uniform','min_snr_5'])
+    def test_real_torch_parent_fork_four_vs_two_plus_two_exact(tmp_path,arm):
+        torch=pytest.importorskip('torch')
+        parent,j,data=tiny(tmp_path,'parent')
+        for _ in range(2):parent.train_step(tiny_loss(parent,data),j)
+        saved=copy.deepcopy(parent.state_dict(j,0.))
+        full,jf,data=tiny(tmp_path,'full');probe.restore_components(full,saved)
+        incf=probe.empty_additional_audit()
+        for _ in range(4):full.train_step(tiny_loss(full,data,arm,incf),jf)
+        expected=full.state_dict(jf,0.)
+        split,js,data=tiny(tmp_path,'split');probe.restore_components(split,saved)
+        incs=probe.empty_additional_audit()
+        for _ in range(2):split.train_step(tiny_loss(split,data,arm,incs),js)
+        checkpoint=copy.deepcopy(split.state_dict(js,0.))
+        restored,jr,data=tiny(tmp_path,'split');restored.load_state_dict(checkpoint,jr)
+        for _ in range(2):restored.train_step(tiny_loss(restored,data,arm,incs),jr)
+&gt;       assert probe.nested_digest(expected)==probe.nested_digest(restored.state_dict(jr,0.))
+E       AssertionError: assert '57f23ad62144...8ef31a46f68f5' == '24bab56d002a...97b02820da6ec'
+E         
+E         - 24bab56d002a25a0eb858db3595a89b396a6beeb65823b41eb697b02820da6ec
+E         + 57f23ad621447ab1c8a8819502581c1a57a5ab5bc79783710a58ef31a46f68f5
+
+tests/test_observed_diffusion_minsnr_probe.py:188: AssertionError</failure></testcase><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_real_torch_parent_schema_rejects_missing_scheduler_optimizer_rng" time="0.022" /><testcase classname="tests.test_observed_diffusion_minsnr_probe" name="test_real_torch_failed_forward_boundary_does_not_replay" time="0.013" /></testsuite></testsuites>
