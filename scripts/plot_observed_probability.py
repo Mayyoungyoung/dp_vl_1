@@ -27,15 +27,15 @@ def plot(folder):
     ax.set_title('Calibration: no consistent development improvement')
     ax=axes[1,0];families=list(data['paired_comparisons']);pos=np.arange(len(families));width=.32
     for offset,arm,color in [(-width/2,'ordinary','#aab7c4'),(width/2,'balanced','#227c9d')]:
-        vals=[data['paired_comparisons'][k][arm]['TipValidAtK']*100 for k in families]
+        vals=[data['paired_comparisons'][k]['mean'][arm]['TipValidAtK']*100 for k in families]
         bars=ax.bar(pos+offset,vals,width,label=arm,color=color);ax.bar_label(bars,fmt='%.1f')
-    ax.set_xticks(pos,['95 training parents' if x=='v2' else '191 training parents' for x in families])
+    ax.set_xticks(pos,['95 parents (seed0)' if x=='v2' else '191 parents (%d seeds)'%len(data['paired_comparisons'][x]['replicates']) for x in families])
     ax.set_ylabel('Candidate tip validity (%)');ax.set_ylim(0,100);ax.legend();ax.set_title('M8 paired generators: fixed last3000')
     ax=axes[1,1]
     for offset,arm,color in [(-width/2,'ordinary','#aab7c4'),(width/2,'balanced','#227c9d')]:
-        vals=[data['paired_comparisons'][k][arm]['UniqueClassifiedTipValidAtK'] for k in families]
+        vals=[data['paired_comparisons'][k]['mean'][arm]['UniqueClassifiedTipValidAtK'] for k in families]
         bars=ax.bar(pos+offset,vals,width,label=arm,color=color);ax.bar_label(bars,fmt='%.2f')
-    ax.set_xticks(pos,['95 training parents' if x=='v2' else '191 training parents' for x in families]);ax.set_ylim(0,max(2,ax.get_ylim()[1]*1.2))
+    ax.set_xticks(pos,['95 parents (seed0)' if x=='v2' else '191 parents (%d seeds)'%len(data['paired_comparisons'][x]['replicates']) for x in families]);ax.set_ylim(0,max(2,ax.get_ylim()[1]*1.2))
     ax.set_ylabel('Mean distinct classified valid routes');ax.set_title('Incomplete known types; valid unknown routes retained')
     fig.suptitle('Observed multi-route planning: measured development evidence',fontsize=15)
     fig.savefig(folder/'RESULTS.png',dpi=160);plt.close(fig)

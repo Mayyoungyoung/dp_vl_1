@@ -79,6 +79,47 @@ def analyze(output):
         comparisons[suffix]=dict(initialization_exact=True,sampling_stream_exact=True,replication_gate_passed=gate,
             ordinary={k:a[k] for k in ('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','semantic_goal_accuracy')},
             balanced={k:b[k] for k in ('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK','semantic_goal_accuracy')})
+        replicates=[]
+        for seed in (0,1,2):
+            oa=generators.get('M8_ordinary_seed%d_%s'%(seed,suffix))
+            pb=generators.get('M8_balanced_probability_seed%d_%s'%(seed,suffix))
+            if oa is None or pb is None:continue
+            if oa['initial_sha256']!=pb['initial_sha256'] or oa['draw_sha256']!=pb['draw_sha256']:
+                raise ValueError('Replication pair initialization or sampling differs')
+            replicates.append(dict(seed=seed,ordinary={k:oa['fixed_last_metrics'][k] for k in comparisons[suffix]['ordinary']},
+                                   balanced={k:pb['fixed_last_metrics'][k] for k in comparisons[suffix]['ordinary']}))
+            for name in ('M8_ordinary_seed%d_%s'%(seed,suffix),'M8_balanced_probability_seed%d_%s'%(seed,suffix)):
+                dest=output/'generator_predictions'/name;dest.mkdir(parents=True,exist_ok=True)
+                for file in ('predictions.npz','per_scene.json'):
+                    path=RUN/name/'dev/step03000'/file
+                    shutil.copyfile(path,dest/file);sources[str(path)]=sha(path)
+        comparisons[suffix]['replicates']=replicates
+        comparisons[suffix]['mean']={arm:{k:float(np.mean([r[arm][k] for r in replicates]))
+            for k in comparisons[suffix]['ordinary']} for arm in ('ordinary','balanced')}
+        comparisons[suffix]['sample_std']={arm:{k:float(np.std([r[arm][k] for r in replicates],ddof=1)) if len(replicates)>1 else None
+            for k in comparisons[suffix]['ordinary']} for arm in ('ordinary','balanced')}
+        comparisons[suffix]['seed_scope']='Different extra-query initialization and training RNG, shared pretrained95-parent generator; not independent backbone pretraining'
+        parent_delta={}
+        for replicate in replicates:
+            seed=replicate['seed']
+            paired=[]
+            for arm in ('ordinary','balanced_probability'):
+                rows=read(RUN/('M8_%s_seed%d_%s'%(arm,seed,suffix))/'dev/step03000/per_scene.json')
+                paired.append({row['scene_id']:row for row in rows})
+            if set(paired[0])!=set(paired[1]):raise ValueError('Paired development scenes differ')
+            for scene in paired[0]:
+                a,b=paired[0][scene],paired[1][scene]
+                if a['parent_id']!=b['parent_id']:raise ValueError('Parent identity differs')
+                parent_delta.setdefault(a['parent_id'],[]).append({k:b['tip_evaluation'][k]-a['tip_evaluation'][k]
+                    for k in ('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK')})
+        rng=np.random.default_rng(78123)
+        boot_indices=rng.integers(len(parent_delta),size=(2000,len(parent_delta)))
+        comparisons[suffix]['paired_parent_bootstrap95']={}
+        for metric in ('TipValidAtK','AnyTipValidAtK','UniqueClassifiedTipValidAtK'):
+            delta=np.array([np.mean([r[metric] for r in rows]) for rows in parent_delta.values()])
+            comparisons[suffix]['paired_parent_bootstrap95'][metric]=dict(mean_difference=float(delta.mean()),
+                interval=np.quantile(delta[boot_indices].mean(1),[.025,.975]).tolist(),parents=len(delta))
+        comparisons[suffix]['bootstrap_scope']='Resample parents, average target conditions and observed seeds within each parent; conditional on these seeds and reused DEV, no selection correction or final-test claim'
     jobs=[checked(p) for p in sorted((RUN/'jobs').glob('*/receipt.json')) if read(p)['status']!='running']
     spent=sum(j['elapsed_seconds'] for j in jobs)
     write(output/'RESULTS.json',dict(scorer_families=results,generators=generators,paired_comparisons=comparisons,
