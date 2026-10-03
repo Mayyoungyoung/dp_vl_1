@@ -16,6 +16,16 @@ MODEL_REVISION = "ddc5987a56cdcb14e5e2297817612532e46e912b"
 CODE_REVISION = "97216a8493f46301bf569d398462b8bb21c458c5"
 
 
+class IntegrityError(ValueError):
+    """Only our explicit asset path/size/hash integrity checks use this type."""
+
+
+def safe_exception_info(error):
+    cause = error.__cause__ if error.__cause__ is not None else error.__context__
+    return {"exception_type": type(error).__name__,
+            "cause_type": type(cause).__name__ if cause is not None else None}
+
+
 def sha(path):
     h = hashlib.sha256()
     with Path(path).open("rb") as f:
@@ -66,7 +76,7 @@ def valid_existing(path, row):
     if not path.exists():
         return False
     if not path.is_file() or path.stat().st_size != row["bytes"] or sha(path) != row["expected_sha256"]:
-        raise ValueError("existing complete file differs; preserving it without overwrite")
+        raise IntegrityError("existing complete file differs; preserving it without overwrite")
     return True
 
 
@@ -132,7 +142,7 @@ def prepare_assets(root, m, session):
                                 revision=MODEL_REVISION, token=False, local_dir=str(directory),
                                 force_download=False, etag_timeout=30))
                             if downloaded.resolve() != target:
-                                raise ValueError("hub returned unexpected path")
+                                raise IntegrityError("hub returned unexpected path")
                         else:
                             target.parent.mkdir(parents=True, exist_ok=True)
                             partial = target.with_name(target.name + ".partial." + str(os.getpid()) + "." + str(attempt))
@@ -141,18 +151,18 @@ def prepare_assets(root, m, session):
                             # Validate before publishing; a bad partial is retained.
                             valid_existing(partial, row)
                             if target.exists():
-                                raise ValueError("target appeared while downloading")
+                                raise IntegrityError("target appeared while downloading")
                             os.replace(partial, target)
                         valid_existing(target, row)
                         record.update(status="downloaded_verified", library_calls=attempt, sha256=row["expected_sha256"])
                         break
-                    except ValueError:
+                    except IntegrityError:
                         append_record(ledger, dict(record, status="integrity_failure_preserved", library_call=attempt))
                         raise
                     except Exception as error:
                         # Do not print signed redirect URLs, authorization headers, or environment values.
                         append_record(ledger, dict(record, status="network_or_library_failure", library_call=attempt,
-                                                  exception_type=type(error).__name__))
+                                                  **safe_exception_info(error)))
                         if target.exists():
                             valid_existing(target, row)
                         if attempt == 3:
@@ -285,7 +295,7 @@ def main(argv=None):
                    "session": str(session), "receipt_sha256": sha(session / "receipt.json")})
         status.update(status="completed", exit_code=0)
     except Exception as error:
-        status.update(status="failed", exit_code=1, exception_type=type(error).__name__)
+        status.update(status="failed", exit_code=1, **safe_exception_info(error))
         # Error messages from HTTP/pip libraries may contain signed URLs; detailed per-file
         # safe categories and pip subprocess logs remain available without dumping environment.
     finally:
