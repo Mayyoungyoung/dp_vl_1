@@ -1,0 +1,440 @@
+"""Bounded TRAIN12 variable layouts; existing collector source is unchanged.
+
+The variable-N initialization and nine-slot enumeration are intentionally local.
+Snapshot, restore, body collision, route execution and mechanical accounting use
+the same frozen helpers as the existing canonical-start corpus, including its
+scoped phase_guard that intercepts forbidden initialization/planning entries.
+"""
+import argparse
+import copy
+import datetime
+import json
+import os
+from pathlib import Path
+import random
+import subprocess
+import sys
+import time
+import traceback
+from types import SimpleNamespace
+
+import numpy as np
+from PIL import Image
+
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from scripts import observed_layout_variation as registration
+from scripts import collect_two_row_formal as old
+from scripts import collect_two_row_extension as bounded
+physical=old.physical;pilot=physical.pilot;legacy=physical.legacy;endpoint=physical.endpoint
+PROTOCOL=registration.PROTOCOL;STAGES={'pilot4':range(4),'pilot12':range(4,12)}
+SERVER_BASE=Path('/home/wzy/dpvlm/route_set_v1')
+
+
+def source_hashes():
+    paths=[Path(__file__),Path(registration.__file__),registration.CONFIG,
+        Path(old.__file__),Path(bounded.__file__),Path(physical.__file__),Path(pilot.__file__),
+        Path(legacy.__file__),Path(legacy.native_snapshot.__code__.co_filename),
+        Path(endpoint.__file__),Path(physical.static.__file__),Path(physical.batch.__file__),
+        Path(registration.prior.__file__),ROOT/'scripts/record_job.py',
+        ROOT/'configs/observed_two_row_extension288_v1.json']
+    paths.extend(ROOT/p for p in registration.HISTORY_FILES)
+    return {p.relative_to(ROOT).as_posix():registration.sha(p) for p in paths}
+
+
+def names_only_presence(roots,parent_ids):
+    """Inventory names only; do not open any old observation or outcome file."""
+    ids=set(parent_ids);seeds={p.rsplit('_',1)[1] for p in ids};hits=[]
+    for top in roots:
+        if not top.is_dir():raise ValueError('Required historical metadata root absent')
+        for folder,dirs,files in os.walk(str(top),followlinks=False):
+            for name in dirs+files:
+                p=Path(folder)/name
+                if any(token in name for token in ids|seeds):hits.append(str(p))
+    return dict(roots=[str(p) for p in roots],parent_ids=sorted(ids),collisions=hits,
+                payload_files_opened=0,available=not hits)
+
+
+def prepare(output):
+    # Production uses the one existing server project, never a guessed new root.
+    spec=registration.read(registration.CONFIG);excluded,history=registration.historical_metadata()
+    value=registration.build_registration(spec,excluded,history)
+    presence=names_only_presence([SERVER_BASE/'data',SERVER_BASE/'runs'],[p['parent_id'] for p in value['parent_plan']])
+    if not presence['available']:raise ValueError('Registered parent ID/seed name already exists')
+    output.mkdir(parents=True,exist_ok=False)
+    old.atomic_write(output/'registration.json',value)
+    old.atomic_write(output/'corpus_manifest.json',dict(protocol=PROTOCOL,source_sha256=source_hashes(),
+        registration_sha256=registration.sha(output/'registration.json'),presence=presence,
+        requested_parents=12,requested_routes=324,all_roles='TRAIN',new_dev_raw_opened=False))
+    return value
+
+
+def verify_corpus(output):
+    if output.is_symlink():raise ValueError('Corpus symlink forbidden')
+    manifest=registration.read(output/'corpus_manifest.json')
+    if manifest['protocol']!=PROTOCOL or manifest['source_sha256']!=source_hashes():raise ValueError('Frozen collector source changed')
+    if registration.sha(output/'registration.json')!=manifest['registration_sha256']:raise ValueError('Registration changed')
+    value=registration.read(output/'registration.json')
+    excluded,history=registration.historical_metadata()
+    expected=registration.build_registration(registration.read(registration.CONFIG),excluded,history)
+    if value!=expected:raise ValueError('One-shot TRAIN12 registration differs')
+    if not manifest['presence']['available'] or manifest['presence']['payload_files_opened']!=0:raise ValueError('No initial metadata availability proof')
+    return value,manifest
+
+
+def checked_closures(output,value):
+    plans={p['parent_id']:p for p in value['parent_plan']};rows=[]
+    for path in sorted((output/'closures').glob('*.json')):
+        row=registration.read(path)
+        if path.name!='%03d.json'%row['index']:raise ValueError('Closure index/name mismatch')
+        old.validate_closure(output,row,plans);rows.append(row)
+    if len({r['index'] for r in rows})!=len(rows):raise ValueError('Duplicate closure index')
+    return rows
+
+
+def live_layout_gate(output):
+    value,_=verify_corpus(output);rows=checked_closures(output,value)
+    blocked=set(value['duplicate_gate']['blocked_parent_ids']);groups={}
+    prior={r['geometry_1mm_sha256'] for r in value['excluded_hashes']}
+    for r in rows:
+        actual=r.get('actual_geometry_1mm_sha256')
+        if actual:
+            groups.setdefault(actual,[]).append(r['parent_id'])
+            if actual in prior or not r['actual_matches_registered']:blocked.add(r['parent_id'])
+    for ids in groups.values():
+        if len(ids)>1:blocked.update(ids)
+    return dict(closed_parents=len(rows),blocked_parent_ids=sorted(blocked),
+                unavailable_initial_parent_ids=[r['parent_id'] for r in rows if not r['initial_observation_saved']],
+                mechanical_only=True,raw_reserved_opened=False)
+
+
+def validate_initial_geometry(plan,centers,halves,goals):
+    cs,hs=registration.geometry(plan['config'])
+    if (not np.allclose(centers,cs,atol=1e-6,rtol=0) or not np.allclose(halves,hs,atol=1e-6,rtol=0)
+            or not np.allclose(goals,plan['config']['goal_xyz'],atol=1e-6,rtol=0)):
+        raise ValueError('Actual complete variable-N geometry differs')
+    digest=registration.physical_hash(centers,halves,goals,.001)
+    if digest!=plan['registered_geometry_1mm_sha256']:raise ValueError('Actual geometry 1mm registration mismatch')
+    return digest
+
+
+def route_acceptance(xyz,goals,target,config):
+    cs,hs=registration.geometry(config);h24=legacy.resample(xyz,24)
+    actual=registration.crossing_signature(xyz,config);sampled=registration.crossing_signature(h24,config)
+    fields=dict(endpoint_error_m=float(np.linalg.norm(xyz[-1]-goals[target])),
+        length_m=float(np.linalg.norm(np.diff(xyz,axis=0),axis=1).sum()),
+        tip_polyline_clear=legacy.tip_polyline_clear(xyz,cs,hs,.02),
+        tip_polyline_24_clear=legacy.tip_polyline_clear(h24,cs,hs,.02),
+        actual_route_type=actual,h24_route_type=sampled)
+    return fields,h24,bool(fields['endpoint_error_m']<=.03 and fields['tip_polyline_clear'] and
+                          fields['tip_polyline_24_clear'] and sampled==actual)
+
+
+def unattempted_records(plan,reason):
+    return [dict(parent_id=plan['parent_id'],input_id=plan['parent_id']+'_target%d'%target,
+        attempt=s['slot'],attempted=False,success=False,outcome='unattempted',reason=reason,
+        registered_slot_reason=s['precheck_reason'],planning_segments=[],simulated_steps=0)
+        for target,row in enumerate(plan['guide_plans']) for s in row]
+
+
+def call_budget_error(counts,guards):
+    if any(v for k,v in guards.items() if not k.startswith('route:')):
+        return 'Forbidden initialization/restore/audit planning entry intercepted; no fallback allowed'
+    if counts.get('route_attempts',0)>27 or counts.get('get_path_calls',0)>243:
+        return 'Registered parent route/get_path budget exceeded'
+    return None
+
+
+def durable_slot(path,event,parent,identifier,attempt):
+    """Same old mechanical schema, fsynced before an irreversible sim call."""
+    with path.open('a',encoding='utf-8') as stream:
+        stream.write(json.dumps(dict(event=event,parent_id=parent,input_id=identifier,attempt=attempt))+'\n')
+        stream.flush();os.fsync(stream.fileno())
+
+
+def collect_routes(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,external_shapes):
+    c=plan['config'];parent=plan['parent_id'];folder=output/parent;initial=saved['initial']
+    centers,halves=registration.geometry(c);goals=np.asarray([t.get_position() for t in targets])
+    Image.fromarray(initial.front_rgb).save(folder/'front.png')
+    np.savez_compressed(folder/'observation.npz',depth=initial.front_depth,gripper_pose=initial.gripper_pose,
+        gripper_open=initial.gripper_open,camera_intrinsics=initial.misc['front_camera_intrinsics'],
+        camera_extrinsics=initial.misc['front_camera_extrinsics'])
+    np.savez_compressed(folder/'verification_only.npz',mask=initial.front_mask,obstacle_centers=centers,
+                       obstacle_halfsizes=halves,target_centers=goals)
+    witnesses=[];summaries=[];fatal_restore=False
+    for target,slots in enumerate(plan['guide_plans']):
+        identifier=parent+'_target%d'%target;routes=[];types=[];seen=set()
+        instruction='Move the gripper to touch the %s sphere while avoiding the gray posts.'%plan['target_colors'][target]['name']
+        legacy.append_json(output/'observations.jsonl',dict(id=identifier,parent_id=parent,split='TRAIN',
+                           image=parent+'/front.png',instruction=instruction))
+        for slot in slots:
+            attempt=slot['slot'];record=dict(parent_id=parent,input_id=identifier,attempt=attempt,
+                attempted=False,success=False,simulated_steps=0,actual_route_type=None,
+                proposed_type_supervision_only=slot['intent_supervision_only'])
+            if fatal_restore or not slot['collection_allowed']:
+                record.update(outcome='unattempted',reason='prior_strict_restore_failure' if fatal_restore else slot['precheck_reason'])
+                legacy.append_json(output/'attempts.jsonl',record);continue
+            clock=time.perf_counter();trace=[];record['attempted']=True;counts['route_attempts']+=1
+            durable_slot(output/'slot_ledger.jsonl','started',parent,identifier,attempt)
+            try:
+                record['camera_flags']={k:bool(getattr(task._obsconfig.front_camera,k)) for k in ('rgb','depth','mask','depth_in_meters')}
+                if not all(record['camera_flags'].values()):raise RuntimeError('Registered camera flags changed')
+                phase['name']='restore'
+                check,_,obs=physical.restore_check(task,posts,saved,gripper_shapes,external_shapes)
+                record['strict_restore']=check;counts['strict_route_restores']+=1
+                trace.append(pilot.state_sample(task))
+                if not np.array_equal(trace[0][0],obs.gripper_pose) or trace[0][1]!=obs.gripper_open:raise RuntimeError('Direct initial state differs')
+                guides=slot['waypoints_supervision_only']
+                if guides!=registration.guide_plan(c,target)[attempt]['waypoints_supervision_only'] or len(guides)>9:raise ValueError('Frozen guides changed')
+                record['collection_guides_supervision_only']=guides;phase['name']='route'
+                pilot.execute(task,guides,trace[0][0][3:],gripper_shapes,external_shapes,trace,record,c)
+                phase['name']='audit';final=task.get_observation()
+                if not np.array_equal(trace[-1][0],final.gripper_pose) or trace[-1][1]!=final.gripper_open:raise RuntimeError('Direct terminal state differs')
+                xyz=np.asarray([s[0][:3] for s in trace]);fields,h24,passed=route_acceptance(xyz,goals,target,c);record.update(fields)
+                if not passed:raise RuntimeError('Fixed endpoint/raw/H24 clearance or type-stability check failed')
+                name='target%d_route%d.npz'%(target,attempt)
+                record['trajectory']=pilot.save_trace(folder/name,trace,dict(xyz_24=h24,xyz_64=legacy.resample(xyz)))
+                actual=fields['actual_route_type'];record['duplicate_passage_type']=None if actual is None else actual in seen
+                if actual is not None:seen.add(actual)
+                record.update(success=True,outcome='accepted');counts['accepted_routes']+=1
+                routes.append(parent+'/'+name);types.append(actual)
+                witnesses.append(dict(input_id=identifier,slot=attempt,actual_route_type=actual,
+                                      file=parent+'/'+name,sha256=record['trajectory']['sha256']))
+            except Exception as error:
+                record.update(outcome='failed',error=repr(error),traceback=traceback.format_exc(),
+                              restore_failure=getattr(error,'restore_evidence',None))
+                record['failed_partial_trajectory']=pilot.save_trace(folder/('failed_target%d_attempt%d.npz'%(target,attempt)),trace)
+                if phase['name']=='restore':fatal_restore=True;record['fatal_restore_gate']=True
+            finally:
+                phase['name']='audit';record['seconds']=time.perf_counter()-clock
+                pilot.add_execution_totals(counts,record);legacy.append_json(output/'attempts.jsonl',record)
+                durable_slot(output/'slot_ledger.jsonl','completed',parent,identifier,attempt)
+                print(legacy.json_text(record),flush=True)
+        legacy.append_json(output/'supervision.jsonl',dict(id=identifier,parent_id=parent,split='TRAIN',
+            task='rlbench_derived_variable_post_reach',observation=parent+'/observation.npz',routes=routes,route_types=types,
+            verification_only=parent+'/verification_only.npz',reference_set_complete=False,all_solution_count=None,
+            route_config='route_configs/'+parent+'.json',semantic_targets=dict(centers=goals.tolist(),target_index=target,tolerance=.03)))
+        summaries.append(dict(id=identifier,requested_slots=9,accepted=len(routes),known_types=len(seen),
+                              unknown_accepted=sum(t is None for t in types),all_solution_count=None))
+    return witnesses,summaries,fatal_restore
+
+
+def physical_worker(value,manifest,plan,config_path,output):
+    from pyrep.backend import sim
+    from pyrep.const import ObjectType,PrimitiveShape
+    from pyrep.objects.shape import Shape
+    from pyrep.robots.arms.arm import Arm
+    from rlbench.action_modes.action_mode import MoveArmThenGripper
+    from rlbench.action_modes.arm_action_modes import JointVelocity
+    from rlbench.action_modes.gripper_action_modes import Discrete
+    from rlbench.environment import Environment
+    from rlbench import environment as env_module,const
+    from rlbench.observation_config import ObservationConfig
+    from rlbench.tasks.reach_target import ReachTarget
+    output.mkdir(parents=True,exist_ok=False);parent=plan['parent_id'];folder=output/parent;folder.mkdir()
+    started=time.perf_counter();env=None;fatal=None;shutdown=None;phase=dict(name='initialization');guards={}
+    counts=dict(route_attempts=0,accepted_routes=0,strict_route_restores=0);witnesses=[];per_target=[]
+    init=value['canonical_init'];c=plan['config'];record=dict(parent_id=parent,passed=False,initial_observation_saved=False)
+    pilot.write_json(output/'manifest.json',dict(protocol=PROTOCOL,role='TRAIN',plan=plan,
+        parent_config_sha256=registration.sha(config_path),source_sha256=manifest['source_sha256'],
+        input_contract=['RGB','instruction','depth','camera','current gripper pose/open'],
+        labels_only=['goal/post coordinates','guide intent','route types','masks'],
+        old_dynamic_state_reproduced=False,executed_setup_trajectory=False,full_robot_continuous_certificate=False))
+    (output/'route_configs').mkdir();pilot.write_json(output/'route_configs'/(parent+'.json'),c)
+    try:
+        if registration.sha(const.__file__)!=value['specification']['color_source_sha256']:raise ValueError('Official color source changed')
+        assets=physical.static.verify_assets(init,env_module.DIR_PATH)
+        if registration.sha(Arm.solve_ik_via_sampling.__code__.co_filename)!=init['original_arm_py_sha256']:raise ValueError('Pinned Arm source changed')
+        anchor=physical.checked_json(Path(init['source_v4'])/init['anchor_file'],init['anchor_sha256'])
+        q=np.asarray(anchor['state']['_robot']['arm_joints']);g=np.asarray(anchor['state']['_robot']['gripper_joints'])
+        if not np.array_equal(q,init['canonical_arm_joints']) or not np.array_equal(g,init['canonical_gripper_joints']):raise ValueError('Frozen canonical joints changed')
+        pilot.write_json(output/'model_assets.json',dict(assets=assets,arm_py_sha256=init['original_arm_py_sha256']))
+        with physical.phase_guard(Arm,sim,phase,guards):
+            obsconfig=ObservationConfig();obsconfig.set_all(False)
+            obsconfig.front_camera.rgb=obsconfig.front_camera.depth=obsconfig.front_camera.mask=True
+            obsconfig.front_camera.depth_in_meters=obsconfig.front_camera.masks_as_one_channel=True
+            obsconfig.front_camera.image_size=(224,224);obsconfig.gripper_pose=obsconfig.gripper_open=True
+            env=Environment(MoveArmThenGripper(JointVelocity(),Discrete()),obs_config=obsconfig,headless=True);env.launch()
+            model=ReachTarget(env._pyrep,env._robot);env._scene.load(model);env._scene.init_task()
+            task=SimpleNamespace(_task=model,_robot=env._robot,_scene=env._scene,_pyrep=env._pyrep,
+                                 _obsconfig=obsconfig,get_observation=env._scene.get_observation)
+            targets=[model.target,model.distractor0,model.distractor1];posts=[];centers,halves=registration.geometry(c)
+            for i,half in enumerate(halves):
+                post=Shape.create(PrimitiveShape.CUBOID,(2*half).tolist(),static=True,respondable=True,color=[.32,.34,.38])
+                post.set_name('derived_variable_post_%d'%i);post.set_collidable(True);post.set_detectable(True);posts.append(post)
+            robot_handles={o.get_handle() for part in (task._robot.arm,task._robot.gripper) for o in part.get_objects_in_tree(exclude_base=False)}
+            gripper_shapes=[o for o in task._robot.gripper.get_objects_in_tree(object_type=ObjectType.SHAPE,exclude_base=False) if o.is_collidable()]
+            external_shapes=[o for o in task._pyrep.get_objects_in_tree(object_type=ObjectType.SHAPE,exclude_base=False) if o.is_collidable() and o.get_handle() not in robot_handles]
+            if not gripper_shapes:raise RuntimeError('Missing gripper collision shapes')
+            try:
+                random.seed(plan['seed']);np.random.seed(plan['seed']);task._pyrep.stop()
+                for post,center in zip(posts,centers):post.set_position(center.tolist())
+                for target,xyz,color in zip(targets,c['goal_xyz'],plan['target_colors']):
+                    target.set_pose(list(xyz)+[0.,0.,0.,1.]);target.set_color(color['rgb'])
+                record['actual_target_colors']=[t.get_color() for t in targets]
+                if len({tuple(v) for v in record['actual_target_colors']})!=3:raise RuntimeError('Distinct target colors required')
+                if not np.allclose(record['actual_target_colors'],[r['rgb'] for r in plan['target_colors']],atol=1e-6,rtol=0):raise ValueError('Actual target colors changed')
+                for part,joints in ((task._robot.arm,q),(task._robot.gripper,g)):
+                    part.set_joint_positions(joints.tolist(),disable_dynamics=False);part.set_joint_target_positions(joints.tolist())
+                    part.set_joint_target_velocities([0.]*len(joints))
+                    if not np.array_equal(part.get_joint_positions(),joints):raise RuntimeError('Canonical joint readback differs')
+                record['initial_collision']=legacy.robot_collision_check(task,gripper_shapes,external_shapes)
+                if record['initial_collision']:raise RuntimeError('Registered static q collides')
+                snapshot=legacy.full_snapshot(task,posts)
+                with physical.monitor_settling(task,gripper_shapes,external_shapes,record):legacy.canonical_restore(task,snapshot,2)
+                initial=task.get_observation();reference=endpoint.audited_world(task,posts)
+                record['actual_initial_fk_pose']=initial.gripper_pose
+                record['canonical_entry_error_m']=float(np.linalg.norm(initial.gripper_pose[:3]-np.asarray(init['canonical_entry_xyz'])))
+                if record['canonical_entry_error_m']>.01:raise RuntimeError('Canonical entry FK differs')
+                ac=np.asarray([p.get_position() for p in posts])
+                ah=np.asarray([np.diff(np.asarray(p.get_bounding_box()).reshape(3,2),axis=1).ravel()/2 for p in posts])
+                goals=np.asarray([t.get_position() for t in targets])
+                record['actual_geometry_1mm_sha256']=validate_initial_geometry(plan,ac,ah,goals)
+                record['actual_geometry_exact_sha256']=registration.physical_hash(ac,ah,goals)
+                record['actual_low_gap_certificates']=registration.gap_certificates(c,ac,ah)
+                record['post_depth_audit']=legacy.observed_box_depth_audit(initial,posts,centers,halves)
+                record['target_visible_pixels']=[int(np.sum(initial.front_mask==t.get_handle())) for t in targets]
+                if min(record['target_visible_pixels'])<10:raise RuntimeError('Insufficient target visibility')
+                saved=dict(snapshot=snapshot,initial=initial,reference=reference)
+                phase['name']='restore';record['strict_restore'],_,_=physical.restore_check(task,posts,saved,gripper_shapes,external_shapes)
+                pilot.save_observation_evidence(folder/'new_initial',initial,reference)
+                scene=folder/'new_initial.ttt';task._pyrep.export_scene(str(scene))
+                record['native_scene_export']=dict(file=scene.name,sha256=registration.sha(scene),roundtrip_verified=False)
+                record.update(passed=True,initial_observation_saved=True)
+            except Exception as error:
+                record.update(error=repr(error),traceback=traceback.format_exc(),restore_failure=getattr(error,'restore_evidence',None))
+                try:pilot.save_observation_evidence(folder/'failed_initialization',task.get_observation(),endpoint.audited_world(task,posts))
+                except Exception as diagnostic:record['diagnostic_capture_error']=repr(diagnostic)
+            finally:
+                phase['name']='audit';pilot.write_json(folder/'initialization_audit.json',record)
+            if record['passed']:
+                witnesses,per_target,failed_restore=collect_routes(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,external_shapes)
+                if failed_restore:raise RuntimeError('Strict restore failed; remaining slots closed without replay')
+            else:
+                for row in unattempted_records(plan,'initialization_gate_closed'):legacy.append_json(output/'attempts.jsonl',row)
+    except Exception as error:
+        fatal=repr(error);pilot.write_json(output/'failure.json',dict(error=fatal,traceback=traceback.format_exc()))
+    finally:
+        if env is not None:
+            try:env.shutdown()
+            except Exception as error:shutdown=repr(error)
+        fatal=fatal or call_budget_error(counts,guards)
+        summary=dict(protocol=PROTOCOL,status='error' if fatal or shutdown else ('collection_finished' if record['passed'] else 'initialization_gate_closed'),
+            requested_route_proposals=27,unattempted_route_proposals=27-counts['route_attempts'],**counts,
+            per_target=per_target,initialization=record,planning_api_entry_counts=guards,
+            elapsed_seconds=time.perf_counter()-started,fatal_error=fatal,shutdown_error=shutdown,
+            old_dynamic_initial_state_reproduced=False,executed_setup_trajectory=False,all_solution_count=None)
+        pilot.write_json(output/'summary.json',summary)
+        pilot.write_json(output/'type_witness_receipt.json',dict(index=plan['index'],parent_id=parent,
+            initialization_passed=record['passed'],actual_low_gap_certificates=record.get('actual_low_gap_certificates',[]),
+            accepted_route_witnesses=witnesses,reference_set_complete=False,all_solution_count=None))
+        started_slots,completed_slots,_=old.slot_counts(output/'slot_ledger.jsonl',parent)
+        pilot.write_json(output/'mechanical_receipt.json',dict(protocol=PROTOCOL,role='TRAIN',requested_route_proposals=27,
+            started_slots=started_slots,completed_slots=completed_slots,unattempted_slots=27-started_slots,
+            runtime_error=bool(fatal or shutdown),elapsed_seconds=summary['elapsed_seconds'],
+            layouts=[dict(parent_id=parent,actual_geometry_1mm_sha256=record.get('actual_geometry_1mm_sha256'),
+                          initial_observation_saved=record['initial_observation_saved'])],no_route_validity_or_success_metrics=True))
+        pilot.write_json(output/'artifact_hashes.json',{p.relative_to(output).as_posix():registration.sha(p)
+            for p in output.rglob('*') if p.is_file() and p.name!='artifact_hashes.json'})
+    return summary
+
+
+def worker(output,index,data):
+    value,manifest=verify_corpus(output)
+    if index not in range(12):raise ValueError('Unregistered index')
+    plan=value['parent_plan'][index]
+    if data!=output/'parents'/'TRAIN'/plan['parent_id'] or not plan['collection_allowed']:raise ValueError('Worker path/registration gate')
+    cfgpath=output/'parent_configs'/('%03d.json'%index)
+    if registration.read(cfgpath)!=plan:raise ValueError('Frozen parent configuration differs')
+    return physical_worker(value,manifest,plan,cfgpath,data)
+
+
+def run_stage(output,run_root,sim_python,stage,resume=False):
+    value,_=verify_corpus(output);rows=checked_closures(output,value)
+    if stage=='pilot12' and not set(range(4))<={r['index'] for r in rows}:raise ValueError('All first four closures required')
+    state=run_root/stage
+    if state.exists() and not resume:raise ValueError('Existing stage requires explicit resume')
+    state.mkdir(parents=True,exist_ok=resume);jobs=run_root/'parents';jobs.mkdir(exist_ok=True)
+    with old.shard_lock(run_root/'coordinator.lock'):
+        for index in STAGES[stage]:
+            rows=checked_closures(output,value)
+            if any(r['index']==index for r in rows):continue
+            if any(r['worker_elapsed_unknown'] for r in rows):raise RuntimeError('Unknown interrupted cost; manual review required before more parents')
+            spent=sum(r['worker_elapsed_seconds'] for r in rows)
+            if spent>=2700:raise bounded.InternalBudgetPause('45min parent-boundary soft cap; no new parent')
+            bounded.budget_status(output,run_root,bounded.NEXT_PARENT_RESERVE_BYTES)
+            plan=value['parent_plan'][index];data=output/'parents'/'TRAIN'/plan['parent_id']
+            statuspath=jobs/('parent_%03d.status.json'%index)
+            status=registration.read(statuspath) if statuspath.exists() else {};elapsed=None;code=status.get('exit_code')
+            if status.get('status') in ('starting','running') and any(old.pid_alive(status.get(k)) for k in ('pid','child_pid')):
+                raise RuntimeError('Original parent worker alive')
+            if status.get('start_utc') and status.get('end_utc'):
+                elapsed=(datetime.datetime.fromisoformat(status['end_utc'])-datetime.datetime.fromisoformat(status['start_utc'])).total_seconds()
+            cfgpath=output/'parent_configs'/('%03d.json'%index)
+            if cfgpath.exists():
+                if registration.read(cfgpath)!=plan:raise ValueError('Parent config changed')
+            else:old.atomic_write(cfgpath,plan)
+            if plan['collection_allowed'] and not data.exists() and not statuspath.exists():
+                data.parent.mkdir(parents=True,exist_ok=True);clock=time.perf_counter()
+                command=[sys.executable,str(ROOT/'scripts/record_job.py'),'--output',str(jobs),'--run-id','parent_%03d'%index,
+                    '--resume-strategy','none','--',str(sim_python),str(Path(__file__)),'worker',
+                    '--corpus',str(output),'--parent-index',str(index),'--output',str(data)]
+                code=subprocess.run(command,check=False).returncode;elapsed=time.perf_counter()-clock
+                status=registration.read(statuspath) if statuspath.exists() else {}
+            elif not plan['collection_allowed']:elapsed=0.;code=0
+            closed=old.mechanical_closure(data,plan,status,elapsed,code)
+            old.atomic_write(output/'closures'/('%03d.json'%index),closed)
+            old.atomic_write(state/'progress.json',dict(stage=stage,closed_indices=[r['index'] for r in checked_closures(output,value)],
+                requested_stage_parents=len(STAGES[stage]),requested_stage_slots=27*len(STAGES[stage]),mechanical_only=True))
+            print(json.dumps(dict(index=index,parent_id=plan['parent_id'],role='TRAIN',closure='written')),flush=True)
+            bounded.budget_status(output,run_root,0)
+            if code not in (None,0):raise RuntimeError('Runtime failure closed; no automatic continuation')
+        old.atomic_write(state/'complete.json',dict(stage=stage,indices=list(STAGES[stage]),requested_slots=27*len(STAGES[stage]),
+                                                   gate=live_layout_gate(output)))
+
+
+def certify_pairs(output,destination):
+    value,_=verify_corpus(output);rows=checked_closures(output,value)
+    if len(rows)!=12:raise ValueError('All12 closure denominators required for pair report')
+    receipts={}
+    for i in (4,5,6,7):
+        plan=value['parent_plan'][i];data=output/'parents'/'TRAIN'/plan['parent_id']
+        path=data/'type_witness_receipt.json'
+        if not path.exists():
+            receipts[i]=dict(index=i,parent_id=plan['parent_id'],initialization_passed=False,
+                actual_low_gap_certificates=[],accepted_route_witnesses=[],missing_closed_parent_evidence=True)
+            continue
+        index=registration.read(data/'artifact_hashes.json')
+        if registration.sha(path)!=index[path.name]:raise ValueError('Witness receipt changed')
+        receipt=registration.read(path)
+        if receipt['index']!=i or receipt['parent_id']!=plan['parent_id']:raise ValueError('Wrong pair identity')
+        for w in receipt['accepted_route_witnesses']:
+            p=data/w['file']
+            if data.resolve() not in p.resolve().parents or registration.sha(p)!=w['sha256']:raise ValueError('Witness bytes changed')
+        receipts[i]=receipt
+    result=dict(protocol=PROTOCOL,pairs=[registration.pair_evidence(receipts[a],receipts[b]) for a,b in ((4,5),(6,7))],
+                requested_parents=12,requested_slots=324,all_solution_count=None,absence_is_not_infeasibility=True)
+    with destination.open('x',encoding='utf-8') as stream:json.dump(result,stream,indent=2)
+    return result
+
+
+def main(argv=None):
+    parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
+    p=sub.add_parser('prepare');p.add_argument('--output',type=Path,required=True)
+    p=sub.add_parser('stage');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--run-root',type=Path,required=True)
+    p.add_argument('--sim-python',type=Path,required=True);p.add_argument('--stage',choices=tuple(STAGES),required=True);p.add_argument('--resume',action='store_true')
+    p=sub.add_parser('worker');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--parent-index',type=int,required=True);p.add_argument('--output',type=Path,required=True)
+    p=sub.add_parser('certify');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
+    args=parser.parse_args(argv)
+    if args.action=='prepare':prepare(args.output);return 0
+    if args.action=='certify':certify_pairs(args.corpus,args.output);return 0
+    bounded.runtime_guard()
+    if any(os.environ.get(k)!='1' for k in ('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS')):raise ValueError('One-thread environment required')
+    if args.action=='worker':
+        result=worker(args.corpus,args.parent_index,args.output);return int(bool(result['fatal_error'] or result['shutdown_error']))
+    try:run_stage(args.corpus,args.run_root,args.sim_python,args.stage,args.resume)
+    except bounded.InternalBudgetPause as error:print(str(error),file=sys.stderr);return 3
+    return 0
+
+
+if __name__=='__main__':raise SystemExit(main())

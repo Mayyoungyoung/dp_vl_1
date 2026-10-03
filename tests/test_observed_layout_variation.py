@@ -1,0 +1,247 @@
+"""Pure registration and mocked workflow tests; no simulator is imported."""
+import copy
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+from scripts import observed_layout_variation as reg
+from scripts import collect_observed_layout_variation as collect
+
+
+@pytest.fixture(scope='module')
+def registration():
+    excluded,history=reg.historical_metadata()
+    return reg.build_registration(reg.read(reg.CONFIG),excluded,history)
+
+
+def test_one_shot_registration_budget_and_roles(registration):
+    excluded,history=reg.historical_metadata()
+    assert registration==reg.build_registration(reg.read(reg.CONFIG),excluded,history)
+    plans=registration['parent_plan']
+    assert len(plans)==12 and registration['requested_routes']==324
+    assert [p['seed'] for p in plans]==list(range(401000,401012))
+    assert {p['role'] for p in plans}=={'TRAIN'}
+    assert [p['obstacle_count'] for p in plans]==[1,1,2,2,4,4,4,4,6,6,6,6]
+    assert all(len(p['guide_plans'])==3 and all(len(r)==9 for r in p['guide_plans']) for p in plans)
+    assert all(p['geometry_precheck']['passed'] for p in plans)
+    assert not registration['simulation_started'] and not registration['server_id_availability_verified']
+    assert registration['all_solution_count'] is None
+
+
+def test_pair_changes_only_second_gap_geometry_and_keeps_colors(registration):
+    for a,b in ((4,5),(6,7)):
+        x,y=registration['parent_plan'][a],registration['parent_plan'][b]
+        assert x['family_id']==y['family_id'] and x['target_colors']==y['target_colors']
+        xc,yc=copy.deepcopy(x['config']),copy.deepcopy(y['config'])
+        for c in (xc,yc):c.pop('seed');c['post_y'][1]=None
+        assert xc==yc
+        assert y['predeclared_closed_guide_slots']==6
+        assert y['collection_allowed']  # Closed intentions do not replace the whole parent.
+
+
+@pytest.mark.parametrize('index',[0,2,4,8])
+def test_complete_geometry_shape_and_order_independent_hash(registration,index):
+    p=registration['parent_plan'][index];c,h=reg.geometry(p['config']);g=p['config']['goal_xyz']
+    assert c.shape==h.shape==(p['obstacle_count'],3)
+    assert reg.physical_hash(c,h,g)==reg.physical_hash(c[::-1],h[::-1],g)
+    if len(c)==4:
+        assert reg.physical_hash(c,h,g)==reg.prior.batch.scene_geometry_hash(c,h,g)
+        assert reg.physical_hash(c,h,g,.001)==reg.prior.batch.scene_geometry_hash(c,h,g,.001)
+    assert collect.validate_initial_geometry(p,c,h,g)==p['registered_geometry_1mm_sha256']
+    with pytest.raises(ValueError):collect.validate_initial_geometry(p,c+.002,h,g)
+
+
+def test_actual_closed_gap_certificate_not_sample_absence(registration):
+    plans=registration['parent_plan']
+    for a,b in ((4,5),(6,7)):
+        ca=[r for r in reg.gap_certificates(plans[a]['config']) if r['row']==1][0]
+        cb=[r for r in reg.gap_certificates(plans[b]['config']) if r['row']==1][0]
+        assert ca['signed_width_m']==pytest.approx(.075)
+        assert cb['signed_width_m']==pytest.approx(-.020) and cb['closed_for_this_low_relation']
+        opened=dict(index=a,initialization_passed=True,actual_low_gap_certificates=[ca],accepted_route_witnesses=[])
+        closed=dict(index=b,initialization_passed=True,actual_low_gap_certificates=[cb],accepted_route_witnesses=[])
+        assert not reg.pair_evidence(opened,closed)['established']
+        opened['accepted_route_witnesses']=[dict(actual_route_type=['gap0','gap1'])]
+        assert reg.pair_evidence(opened,closed)['established']
+        closed['initialization_passed']=False
+        assert not reg.pair_evidence(opened,closed)['established']
+
+
+def test_duplicate_group_all_closed_without_new_draw(registration):
+    plans=copy.deepcopy(registration['parent_plan']);plans[1]['registered_geometry_1mm_sha256']=plans[0]['registered_geometry_1mm_sha256']
+    gate=reg.prior.apply_duplicate_gate(plans,registration['excluded_hashes'])
+    assert set(gate['blocked_parent_ids'])=={plans[0]['parent_id'],plans[1]['parent_id']}
+    assert plans[0]['predeclared_unattempted_routes']==plans[1]['predeclared_unattempted_routes']==27
+    excluded=copy.deepcopy(registration['excluded_hashes']);excluded[0]['geometry_1mm_sha256']=registration['parent_plan'][0]['registered_geometry_1mm_sha256']
+    rerun=reg.build_registration(registration['specification'],excluded,registration['history_source_sha256'])
+    assert len(rerun['parent_plan'])==12 and rerun['requested_routes']==324
+    assert not rerun['parent_plan'][0]['collection_allowed']
+    assert [p['config'] for p in rerun['parent_plan']]==[p['config'] for p in registration['parent_plan']]
+
+
+def test_ideal_slots_do_not_claim_actual_reachability(registration):
+    total=0
+    for plan in registration['parent_plan']:
+        for target,row in enumerate(plan['guide_plans']):
+            assert row==reg.guide_plan(plan['config'],target)
+            for slot in row:
+                assert len(slot['waypoints_supervision_only'])<=9
+                total+=slot['planning_call_limit'] if slot['collection_allowed'] else 0
+                if slot['collection_allowed']:
+                    path=np.asarray([plan['config']['entry_xyz']]+slot['waypoints_supervision_only'])
+                    assert reg.crossing_signature(path,plan['config'])==tuple(slot['intent_supervision_only'])
+                else:assert slot['precheck_reason']=='registered_low_gap_closed'
+    assert total<=2916
+
+
+def test_signature_unknown_and_low_over_distinct(registration):
+    p=registration['parent_plan'][0];c=p['config']
+    known=[reg.crossing_signature(np.asarray([c['entry_xyz']]+s['waypoints_supervision_only']),c) for s in p['guide_plans'][0]]
+    assert set(known)=={('gap0',),('gap1',),('over',)}
+    xyz=np.asarray([c['entry_xyz'],[c['row_x'][0],0,.86],c['goal_xyz'][0]])
+    assert reg.crossing_signature(xyz,c) is None
+    assert reg.crossing_signature(xyz[::-1],c) is None
+
+
+def test_geometry_precheck_failure_keeps_requested_parent(registration):
+    c=copy.deepcopy(registration['parent_plan'][4]['config']);c['post_y'][0]=[0,0]
+    assert not reg.geometry_precheck(c)['passed']
+    c=copy.deepcopy(registration['parent_plan'][0]['config']);c['goal_xyz'][0]=reg.geometry(c)[0][0].tolist()
+    assert not reg.geometry_precheck(c)['passed']
+
+
+def test_fixed_policy_rejects_setup_and_layout_changes():
+    for key,value in [('setup_path_budget',1),('initialization_ik_budget',1),('role','DEV_MODEL'),('slots_per_target',10)]:
+        spec=reg.read(reg.CONFIG);spec[key]=value
+        with pytest.raises(ValueError):reg.validate_spec(spec)
+    spec=reg.read(reg.CONFIG);spec['layout_table'][0]['row_x'][0]+=.001
+    with pytest.raises(ValueError):reg.validate_spec(spec)
+
+
+def test_presence_scan_never_opens_payload(tmp_path,monkeypatch):
+    roots=[tmp_path/'data',tmp_path/'runs']
+    for r in roots:r.mkdir()
+    (roots[0]/'reserved_payload.bin').write_bytes(b'not to be opened')
+    def denied(*a,**k):raise AssertionError('payload read')
+    monkeypatch.setattr(Path,'read_bytes',denied);monkeypatch.setattr(Path,'read_text',denied)
+    assert collect.names_only_presence(roots,['layout_variation_401000'])['available']
+    (roots[1]/'run_401000').mkdir()
+    proof=collect.names_only_presence(roots,['layout_variation_401000'])
+    assert not proof['available'] and proof['payload_files_opened']==0
+
+
+def test_init_and_restore_ik_forbidden_and_wrapper_restored():
+    class Arm:
+        def get_path(self):return 'path'
+        def solve_ik(self):return 'ik'
+    sim=SimpleNamespace(simGetConfigForTipPose=lambda:'config');phase={'name':'initialization'};counts={}
+    original=Arm.get_path
+    with collect.physical.phase_guard(Arm,sim,phase,counts):
+        for name in ('initialization','restore'):
+            phase['name']=name
+            with pytest.raises(RuntimeError):Arm().get_path()
+            with pytest.raises(RuntimeError):sim.simGetConfigForTipPose()
+        phase['name']='route';assert Arm().get_path()=='path'
+    assert Arm.get_path is original
+    assert counts['initialization:get_path']==counts['restore:get_path']==1
+
+
+def test_intercepted_forbidden_entry_is_runtime_failure_not_success():
+    assert collect.call_budget_error({'route_attempts':27,'get_path_calls':243},{'route:get_path':243}) is None
+    assert collect.call_budget_error({}, {'restore:solve_ik':1}) is not None
+    assert collect.call_budget_error({'get_path_calls':244}, {}) is not None
+    assert collect.call_budget_error({'route_attempts':28}, {}) is not None
+
+
+def mock_routes(tmp_path,monkeypatch,plan,fail_restore=False):
+    parent=plan['parent_id'];(tmp_path/parent).mkdir()
+    initial=SimpleNamespace(front_rgb=np.zeros((4,4,3),np.uint8),front_depth=np.ones((4,4)),front_mask=np.zeros((4,4)),
+        gripper_pose=np.array([0,0,.865,0,0,0,1.]),gripper_open=1.,
+        misc={'front_camera_intrinsics':np.eye(3),'front_camera_extrinsics':np.eye(4)})
+    task=SimpleNamespace(_obsconfig=SimpleNamespace(front_camera=SimpleNamespace(rgb=True,depth=True,mask=True,depth_in_meters=True)),
+                         get_observation=lambda:initial)
+    targets=[SimpleNamespace(get_position=lambda g=g:g) for g in plan['config']['goal_xyz']]
+    calls=[]
+    def restore(*args):
+        calls.append('restore')
+        if fail_restore:raise RuntimeError('simulated strict restore failure')
+        return {'passed':True},{},initial
+    def execute(task,points,quat,grip,external,trace,record,c):
+        assert len(points)<=9;calls.append('execute')
+        record['planning_segments']=[dict(get_path_calls=1,planning_seconds=0.,simulation_seconds=0.) for p in points]
+    monkeypatch.setattr(collect.physical,'restore_check',restore)
+    monkeypatch.setattr(collect.pilot,'state_sample',lambda _: (initial.gripper_pose.copy(),1.,np.zeros(7),np.zeros(2)))
+    monkeypatch.setattr(collect.pilot,'execute',execute)
+    # Both unknown is a checked positive in this isolated workflow fixture.
+    monkeypatch.setattr(collect,'route_acceptance',lambda *args: ({'actual_route_type':None},np.tile(initial.gripper_pose[:3],(24,1)),True))
+    counts=dict(route_attempts=0,accepted_routes=0,strict_route_restores=0)
+    result=collect.collect_routes(task,[],targets,{'initial':initial},plan,tmp_path,{'name':'audit'},counts,[],[])
+    return result,counts,calls
+
+
+def test_closed_guides_keep27_denominator_and_unknown_positive(tmp_path,monkeypatch,registration):
+    p=registration['parent_plan'][5];result,counts,calls=mock_routes(tmp_path,monkeypatch,p)
+    assert counts['route_attempts']==counts['accepted_routes']==21
+    assert calls.count('restore')==calls.count('execute')==21
+    attempts=[json.loads(s) for s in (tmp_path/'attempts.jsonl').read_text().splitlines()]
+    assert len(attempts)==27 and sum(not r['attempted'] for r in attempts)==6
+    assert all(s['unknown_accepted']==s['accepted'] for s in result[1])
+    assert collect.old.slot_counts(tmp_path/'slot_ledger.jsonl',p['parent_id'])==(21,21,False)
+    for row in map(json.loads,(tmp_path/'observations.jsonl').read_text().splitlines()):
+        assert set(row)=={'id','parent_id','split','image','instruction'}
+        assert row['split']=='TRAIN'
+    with np.load(tmp_path/p['parent_id']/'observation.npz') as z:
+        assert set(z.files)=={'depth','gripper_pose','gripper_open','camera_intrinsics','camera_extrinsics'}
+
+
+def test_first_restore_failure_closes_remaining_without_replay(tmp_path,monkeypatch,registration):
+    p=registration['parent_plan'][0];result,counts,calls=mock_routes(tmp_path,monkeypatch,p,True)
+    assert result[2] and counts['route_attempts']==1 and counts['accepted_routes']==0
+    assert calls==['restore']
+    attempts=[json.loads(s) for s in (tmp_path/'attempts.jsonl').read_text().splitlines()]
+    assert len(attempts)==27 and sum(not r['attempted'] for r in attempts)==26
+    assert collect.old.slot_counts(tmp_path/'slot_ledger.jsonl',p['parent_id'])==(1,1,False)
+
+
+def test_partial_ledger_conservative_bounds(registration,tmp_path):
+    p=registration['parent_plan'][0];ledger=tmp_path/'slot_ledger.jsonl'
+    collect.durable_slot(ledger,'started',p['parent_id'],p['parent_id']+'_target0',0)
+    with ledger.open('a') as stream:stream.write('{"event":')
+    closed=collect.old.mechanical_closure(tmp_path,p,{},None,None)
+    assert (closed['attempted_lower'],closed['attempted_upper'])==(1,2)
+    assert (closed['unattempted_lower'],closed['unattempted_upper'])==(25,26)
+    assert not closed['model_eligible']
+
+
+def test_second_stage_requires_first4_and_existing_stage_refuses(tmp_path,monkeypatch,registration):
+    monkeypatch.setattr(collect,'verify_corpus',lambda _: (registration,{}))
+    monkeypatch.setattr(collect,'checked_closures',lambda *args: [])
+    with pytest.raises(ValueError,match='first four'):
+        collect.run_stage(tmp_path/'data',tmp_path/'runs',Path('unused'),'pilot12')
+    (tmp_path/'runs/pilot4').mkdir(parents=True)
+    with pytest.raises(ValueError,match='explicit resume'):
+        collect.run_stage(tmp_path/'data',tmp_path/'runs',Path('unused'),'pilot4')
+
+
+def test_existing_partial_parent_never_launches(registration,tmp_path,monkeypatch):
+    output=tmp_path/'data';run=tmp_path/'runs';output.mkdir();run.mkdir();p=registration['parent_plan'][0]
+    data=output/'parents'/'TRAIN'/p['parent_id'];data.mkdir(parents=True)
+    collect.durable_slot(data/'slot_ledger.jsonl','started',p['parent_id'],p['parent_id']+'_target0',0)
+    monkeypatch.setattr(collect,'verify_corpus',lambda _: (registration,{}))
+    monkeypatch.setattr(collect.bounded,'budget_status',lambda *args: {})
+    monkeypatch.setattr(collect.subprocess,'run',lambda *args,**kwargs:pytest.fail('must not replay an interrupted parent'))
+    with pytest.raises(RuntimeError,match='Unknown interrupted cost'):
+        collect.run_stage(output,run,Path('unused'),'pilot4')
+    closed=reg.read(output/'closures/000.json')
+    assert closed['attempted_lower']==1 and closed['status']=='interrupted_without_replay'
+
+
+def test_fixed_source_identity_includes_actual_physical_helpers():
+    sources=collect.source_hashes()
+    for filename in ('scripts/observed_layout_variation.py','scripts/collect_observed_layout_variation.py',
+                     'scripts/collect_two_row_canonical_repair.py','scripts/collect_obstacle_reach.py',
+                     'scripts/diagnose_two_row_endpoint_ik.py','scripts/record_job.py'):
+        assert sources[filename]==reg.sha(reg.ROOT/filename)
