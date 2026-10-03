@@ -127,3 +127,40 @@ def test_probabilistic_generator_preserves_baseline_paths():
     torch.testing.assert_close(a,x,rtol=0,atol=0);torch.testing.assert_close(b,y,rtol=0,atol=0)
     torch.testing.assert_close(d['pi'],torch.full((2,8),1/8))
     with pytest.raises(ValueError):model(**args,k=4)
+
+
+def test_deployment_output_k_does_not_change_internal_mass_or_paths():
+    from routeset.observed_probability import ProbabilisticGeometryRouteHead,ScoredRoutePlanner
+    generator=ProbabilisticGeometryRouteHead(feature_dim=16,max_candidates=8)
+    norm=dict(nodes_mean=np.zeros(80,dtype='float32'),nodes_std=np.ones(80,dtype='float32'),
+              context_mean=np.zeros(131,dtype='float32'),context_std=np.ones(131,dtype='float32'))
+    planner=ScoredRoutePlanner(generator,RouteValidityHead(),norm,temperature=1.5).eval()
+    args=dict(features=torch.randn(1,16),current=torch.randn(1,8),world_xyz=torch.randn(1,12,3),
+              rgb=torch.rand(1,12,3),uv=torch.rand(1,12,2),depth=torch.ones(1,12),valid_mask=torch.ones(1,12,dtype=torch.bool))
+    with torch.no_grad():
+        a=planner(**args,return_k=1);b=planner(**args,return_k=4)
+    assert a['selected_indices'].shape==(1,1) and b['selected_indices'].shape==(1,4)
+    for key in ('paths','pi','q'):torch.testing.assert_close(a[key],b[key],rtol=0,atol=0)
+    assert a['internal_candidates']==8
+    assert ((a['q']>0)&(a['q']<1)).all()
+
+
+def test_q_first_diverse_selection_does_not_use_oracle_labels():
+    from routeset.observed_probability import select_route_indices
+    paths=torch.zeros(1,4,24,3);paths[:,2,:,1]=.1;paths[:,3,:,1]=.2
+    scores=torch.tensor([[.9,.8,.7,.1]])
+    assert select_route_indices(paths,scores,2).tolist()==[[0,2]]
+    assert select_route_indices(paths,scores,4).tolist()==[[0,2,1,3]]
+
+
+def test_composite_evaluation_uses_matching_verifier_and_restores(monkeypatch):
+    from scripts import train_observed_two_row as ordinary
+    from scripts.export_two_row_composite_observations import verify_export
+    from scripts.train_observed_probability_set import evaluate_composite
+    original=ordinary.verify_export
+    def fake(*args,**kwargs):
+        assert ordinary.verify_export is verify_export
+        return {'ok':True}
+    monkeypatch.setattr(ordinary,'evaluate',fake)
+    assert evaluate_composite()=={'ok':True}
+    assert ordinary.verify_export is original

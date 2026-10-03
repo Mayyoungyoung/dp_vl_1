@@ -9,6 +9,14 @@ import numpy as np
 from scripts.run_observed_probability import ROOT,RUN,OLD,PARENT,POLICY,sha,read,write,torch_setup
 
 
+def evaluate_composite(*args,**kwargs):
+    from scripts import train_observed_two_row as ordinary
+    from scripts.export_two_row_composite_observations import verify_export
+    from routeset.observed_qwen_continuation import composite_evaluator
+    with composite_evaluator(ordinary,verify_export):
+        return ordinary.evaluate(*args,**kwargs)
+
+
 def train(arm,seed):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,reference_cluster_weights,balanced_assignment_loss
@@ -17,11 +25,12 @@ def train(arm,seed):
     from routeset.train_v2 import positive_assignment_loss,atomic_checkpoint,rng_state
     from scripts.train_observed_geometry import load_geometry,batch_inputs
     from scripts.evaluate_observed_two_row_online import head_options
-    from scripts.train_observed_two_row import evaluate
+    from scripts.export_two_row_composite_observations import verify_export
     cfg=read(POLICY)['stage2']
-    output=RUN/('M8_%s_seed%d'%(arm,seed));output.mkdir(parents=True,exist_ok=False)
+    output=RUN/('M8_%s_seed%d_v2'%(arm,seed));output.mkdir(parents=True,exist_ok=False)
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     pcfg=read(PARENT/'config.json')
+    verify_export(OLD)
     if sha(PARENT/'last.pt')!=read(POLICY)['parent_checkpoint_sha256']:raise ValueError('Parent changed')
     data=load_observed_dataset(pcfg['observations'],pcfg['supervision'],pcfg['cache_dir'],24,'both')
     geometry=load_geometry(data,pcfg['observations'],pcfg['supervision'],2)
@@ -69,10 +78,14 @@ def train(arm,seed):
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite generator loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);optimizer.step()
         if step%100==0:print(json.dumps(dict(step=step,loss=float(loss),route_loss=float(route_loss),pi_loss=float(pi_loss))),flush=True)
+        if step%100==0:
+            atomic_checkpoint(output/'recovery.pt',dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),
+                step=step,config=cfg,arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
+                parent_sha256=sha(PARENT/'last.pt'),dataset_fingerprint=geometry['fingerprint'],elapsed_seconds=time.perf_counter()-started))
         if step%500==0:
             # Evaluate fixed development requests, preserving the training RNG.
             saved_rng=torch.get_rng_state();saved_cuda=torch.cuda.get_rng_state_all()
-            metrics=evaluate(model,data,geometry,dev_ids,'cuda',output/'dev'/('step%05d'%step),
+            metrics=evaluate_composite(model,data,geometry,dev_ids,'cuda',output/'dev'/('step%05d'%step),
                 selection_metric='tip_unique_valid',evaluation_sources=(pcfg['observations'],pcfg['supervision']))
             torch.set_rng_state(saved_rng);torch.cuda.set_rng_state_all(saved_cuda)
             score=metrics['selection_score'];history.append(dict(step=step,metrics=metrics))
