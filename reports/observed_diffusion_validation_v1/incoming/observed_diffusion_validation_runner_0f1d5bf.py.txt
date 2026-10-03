@@ -1,0 +1,106 @@
+"""Immutable server validation recipe. CPU0, CUDA hidden; no data/model run."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT = '0f1d5bfbd4ff788a6ea311339adfe77449db9634'
+TEST_FILES = ['tests/test_observed_route_diffusion.py', 'tests/test_observed_diffusion_stream.py', 'tests/test_observed_diffusion_driver.py']
+EXPECTED_GROUPS = {
+ 'tests.test_observed_route_diffusion.PolicyTests': 1,
+ 'tests.test_observed_route_diffusion.DiffusionTests': 10,
+ 'tests.test_observed_diffusion_stream.FixtureTests': 1,
+ 'tests.test_observed_diffusion_stream.StreamTests': 7,
+ 'tests.test_observed_diffusion_driver': 16,
+}
+REAL_DRIVER_TESTS = {
+ 'test_real_torch_four_vs_two_pause_resume_full_state_and_stream',
+ 'test_real_torch_resume_rejects_arm_schedule_data_and_issued_work',
+ 'test_real_torch_pool40_and_geometry_once_sealed_before_labels',
+ 'test_real_torch_pool_failure_preserves_nan_slots_and_actual_calls',
+ 'test_real_torch_teacher_diagnostic_has_independent_exact_budget',
+}
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
+    return h.hexdigest()
+
+
+def write(path, value):
+    Path(path).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8')
+
+
+def validate_junit(path):
+    root=ET.parse(path).getroot()
+    suites=[root] if root.tag=='testsuite' else list(root.iter('testsuite'))
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Every actual test must pass, with zero errors/failures/skips')
+    cases=list(root.iter('testcase'));groups={};seen=set();driver=set()
+    for case in cases:
+        name,group=case.get('name'),case.get('classname')
+        if not name or not group or (group,name) in seen:
+            raise ValueError('Missing or duplicate testcase identity')
+        seen.add((group,name));groups[group]=groups.get(group,0)+1
+        if any(case.find(tag) is not None for tag in ('failure','error','skipped')):
+            raise ValueError('A testcase did not really pass')
+        if group=='tests.test_observed_diffusion_driver' and name.startswith('test_real_torch_'):
+            driver.add(name)
+    if len(cases)!=35 or groups!=EXPECTED_GROUPS or driver!=REAL_DRIVER_TESTS:
+        raise ValueError('Need exact core17+driver5 real Torch and13 pure tests, no substitution')
+    return dict(tests=35,passed=35,skipped=0,failures=0,errors=0,
+        real_torch_core=17,real_torch_driver=5,pure=13,groups=groups,
+        actual_testcases=[dict(classname=g,name=n) for g,n in sorted(seen)])
+
+
+def main():
+    import torch
+    source=Path(sys.argv[1]).resolve();out=Path(sys.argv[2]).resolve()
+    if (source.name!=COMMIT or Path.cwd()!=source or os.environ.get('CODE_COMMIT')!=COMMIT or
+            sorted(os.sched_getaffinity(0))!=[0] or os.environ.get('CUDA_VISIBLE_DEVICES')!='' or
+            torch.cuda.is_available() or torch.__version__.split('+')[0]!='2.4.1'):
+        raise ValueError('Immutable source, actual Torch2.4.1, CPU0-only and CUDA-hidden required')
+    torch.set_num_threads(1)
+    from scripts.train_observed_two_row_diffusion import SOURCE_FILES
+    source_hashes={name:sha(source/name) for name in sorted(set(SOURCE_FILES)|set(TEST_FILES))}
+    wrapper=Path(os.environ['DIFFUSION_VALIDATION_WRAPPER']).resolve()
+    if wrapper.parent!=source.parents[1]/'incoming' or wrapper.name!='observed_diffusion_validation_'+COMMIT[:7]+'.sh':
+        raise ValueError('Reviewed immutable incoming wrapper required')
+    runtime=dict(python=sys.version,executable=sys.executable,torch=torch.__version__,
+        cpu_affinity=sorted(os.sched_getaffinity(0)),torch_threads=torch.get_num_threads(),
+        cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'],cuda_available=torch.cuda.is_available())
+    command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+             '--junitxml='+str(out/'pytest.xml')]+TEST_FILES
+    started=time.perf_counter()
+    identity=dict(protocol='observed_diffusion_cpu_validation_v1',code_commit=COMMIT,
+        source_sha256=source_hashes,runtime=runtime,command=command,
+        runner=dict(path=str(Path(__file__).resolve()),sha256=sha(__file__)),
+        wrapper=dict(path=str(wrapper),sha256=sha(wrapper)),
+        model_training_run=False,dataset_arrays_opened=False,requested_tests=35,
+        expected_torch_tests=22,expected_pure_tests=13)
+    write(out/'validation_identity.json',identity)
+    process=subprocess.run(command,cwd=source)
+    result=dict(protocol=identity['protocol'],code_commit=COMMIT,
+        pytest_exit_code=process.returncode,elapsed_seconds=time.perf_counter()-started,
+        identity_sha256=sha(out/'validation_identity.json'),status='failed')
+    try:
+        if process.returncode!=0:raise ValueError('Actual pytest process failed')
+        result['junit']=validate_junit(out/'pytest.xml')
+        if any(sha(source/name)!=value for name,value in source_hashes.items()):
+            raise ValueError('Immutable validation source changed during tests')
+        result.update(status='passed',pytest_xml_sha256=sha(out/'pytest.xml'),source_unchanged=True)
+    except BaseException as exc:
+        result['exception']=repr(exc)
+        write(out/'validation_receipt.json',result)
+        raise
+    write(out/'validation_receipt.json',result)
+    print(json.dumps(result),flush=True)
+
+
+if __name__=='__main__':main()

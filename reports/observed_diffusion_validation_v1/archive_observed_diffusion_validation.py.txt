@@ -1,0 +1,116 @@
+"""Read-only archive of the completed observed-diffusion CPU validation."""
+import ast
+import collections
+import datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tarfile
+import xml.etree.ElementTree as ET
+
+ROOT=Path(__file__).resolve().parents[1]
+COMMIT='0f1d5bfbd4ff788a6ea311339adfe77449db9634'
+OUT=ROOT/'reports/observed_diffusion_validation_v1'
+REMOTE=r'''
+from pathlib import Path
+import json,hashlib,tarfile,io,sys
+root=Path('/home/wzy/dpvlm/route_set_v1');commit='0f1d5bfbd4ff788a6ea311339adfe77449db9634'
+source=root/'research_v2/releases'/commit;run=root/'runs/observed_diffusion_validation_v1'/commit
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+status=json.loads((run/'tests.status.json').read_text());receipt=json.loads((run/'validation_receipt.json').read_text())
+identity=json.loads((run/'validation_identity.json').read_text())
+assert status['status']=='completed' and status['exit_code']==0 and status['code_commit']==commit
+assert receipt['status']=='passed' and receipt['pytest_exit_code']==0 and receipt['junit']['tests']==35 and receipt['junit']['skipped']==0
+assert identity['runtime']['cpu_affinity']==[0] and not identity['runtime']['cuda_available']
+assert receipt['identity_sha256']==sha(run/'validation_identity.json') and receipt['pytest_xml_sha256']==sha(run/'pytest.xml')
+names=set(identity['source_sha256'])|{'scripts/record_job.py','reports/TWO_ROW_OBSERVED_DIFFUSION_DESIGN.md','reports/TWO_ROW_OBSERVED_DIFFUSION_TRAINING_PROTOCOL.md'}
+for name,value in identity['source_sha256'].items():assert sha(source/name)==value,name
+files=[('validation/'+p.name,p) for p in sorted(run.iterdir()) if p.is_file()]
+files += [('source/'+name+('.txt' if name.endswith('.py') else ''),source/name) for name in sorted(names)]
+for key in ('runner','wrapper'):
+ p=Path(identity[key]['path']);assert sha(p)==identity[key]['sha256']
+ files.append(('incoming/'+p.name+('.txt' if p.suffix=='.py' else ''),p))
+archive=root/'research_v2/incoming/observed_diffusion_code_0f1d5bf.tar'
+freeze=dict(source_commit=commit,source_path=str(source),code_archive=dict(remote_path=str(archive),sha256=sha(archive),bytes=archive.stat().st_size),
+ validation_status_sha256=sha(run/'tests.status.json'),no_training_output_read=True,model_forward_calls=0,weights_downloaded=0)
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as tar:
+ for local,p in files:
+  assert p.suffix not in ('.pt','.npz','.bin','.safetensors') and p.stat().st_size<10*1024*1024
+  index.append(dict(local_path=local,remote_path=str(p),sha256=sha(p),bytes=p.stat().st_size))
+  tar.add(p,arcname=local,recursive=False)
+ for name,value in [('FREEZE_METADATA.json',freeze),('REMOTE_ARTIFACT_INDEX.json',dict(source_commit=commit,files=index))]:
+  raw=(json.dumps(value,indent=2)+'\n').encode();info=tarfile.TarInfo(name);info.size=len(raw);tar.addfile(info,io.BytesIO(raw))
+'''
+
+
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def main():
+    OUT.mkdir(parents=True,exist_ok=False)
+    download=ROOT/'.bootstrap/observed_diffusion_validation_download_0f1d5bf.tar'
+    with download.open('xb') as f:
+        result=subprocess.run(['ssh','wzy3090','taskset','-c','0','python3','-'],input=REMOTE.encode(),stdout=f,stderr=subprocess.PIPE)
+    if result.returncode:raise RuntimeError(result.stderr.decode())
+    with tarfile.open(download) as tar:
+        for item in tar.getmembers():
+            if not item.isfile() or Path(item.name).is_absolute() or '..' in Path(item.name).parts:
+                raise ValueError('Unexpected archive member')
+            path=OUT/item.name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(tar.extractfile(item).read())
+    original=json.loads((OUT/'REMOTE_ARTIFACT_INDEX.json').read_text())
+    freeze=json.loads((OUT/'FREEZE_METADATA.json').read_text())
+    for row in original['files']:
+        assert sha(OUT/row['local_path'])==row['sha256']
+    archive=ROOT/'.bootstrap/observed_diffusion_code_0f1d5bf.tar'
+    assert sha(archive)==freeze['code_archive']['sha256']
+    with tarfile.open(archive) as tar:
+        checks=[]
+        for row in original['files']:
+            if not row['local_path'].startswith('source/'):continue
+            name=row['local_path'][len('source/'):]
+            if name.endswith('.py.txt'):name=name[:-4]
+            assert hashlib.sha256(tar.extractfile(name).read()).hexdigest()==row['sha256'],name
+            checks.append(name)
+    identity=json.loads((OUT/'validation/validation_identity.json').read_text())
+    for key in ('runner','wrapper'):
+        name=Path(identity[key]['path']).name
+        assert sha(ROOT/'.bootstrap'/name)==identity[key]['sha256']
+    status=json.loads((OUT/'validation/tests.status.json').read_text())
+    receipt=json.loads((OUT/'validation/validation_receipt.json').read_text())
+    tree=ET.parse(OUT/'validation/pytest.xml');cases=list(tree.iter('testcase'))
+    assert len(cases)==35 and not any(c.find(t) is not None for c in cases for t in ('failure','error','skipped'))
+    outer=(datetime.datetime.fromisoformat(status['end_utc'])-datetime.datetime.fromisoformat(status['start_utc'])).total_seconds()
+    qa=dict(actual_passed=35,skipped=0,errors=0,failed=0,real_torch_core=17,real_torch_driver=5,pure=13,
+        groups=dict(collections.Counter(c.get('classname') for c in cases)),source_commit=COMMIT,
+        runtime=identity['runtime'],validation_body_seconds=receipt['elapsed_seconds'],outer_job_seconds=outer,
+        gpu_hours=0,archive_new_forward_calls=0,training_outputs_read=False,model_quality_results=False)
+    (OUT/'VALIDATION_QA.json').write_text(json.dumps(qa,indent=2)+'\n',encoding='utf-8')
+    sync=dict(server_original_files=len(original['files']),source_files_compared_to_deploy_archive=checks,
+        all_remote_bytes_verified=True,local_remote_archive_equal=True,local_remote_wrapper_runner_equal=True,
+        download=dict(bytes=download.stat().st_size,sha256=sha(download)),weights_downloaded=0,new_forward_calls=0)
+    (OUT/'SYNC_RECEIPT.json').write_text(json.dumps(sync,indent=2)+'\n',encoding='utf-8')
+    report=f'''# 观测扩散真实工程验证
+
+源码 `{COMMIT}` 的服务器 `.venv` 验证实际 **35 passed、0 failed、0 skipped**。其中core/stream实际Torch17项、driver实际Torch5项、pure协议13项；原本本机跳过的22项此次全部执行。完整用例、原stdout和PID/命令保留于 `validation/`。
+
+实际CPU0单核、Torch {identity['runtime']['torch']}，`CUDA_VISIBLE_DEVICES=''`、CUDA不可用；测试GPU小时0。外层record_job PID{status['pid']}/child{status['child_pid']}，`{status['start_utc']}` → `{status['end_utc']}`，exit0。验证body {receipt['elapsed_seconds']:.9f}秒；外层 {outer:.6f}秒，嵌套费用不能相加。
+
+真实测试包含：原普通共有初始化与独立/集合初值一致、候选隔离/置换、所有active参数梯度、100步cosine与40次DDIM、unknown/R不足或超K采样、实际四步与两步暂停恢复两步的model/Adam/RNG/stream/journal逐值等价；失败调用不重放；一次geometry+40denoiser；预测封存先于验收；独立6TRAIN×5时刻诊断预算。测试使用合成fixture，不是正式TRAIN/DEV质量，也不能证明训练收益或已充分收敛。
+
+部署code archive SHA `{freeze['code_archive']['sha256']}`，{freeze['code_archive']['bytes']:,}字节。runner SHA `{identity['runner']['sha256']}`，wrapper SHA `{identity['wrapper']['sha256']}`。服务器与本地冻结字节一致，{len(checks)}份源码逐项与实际部署archive核对；共归档{len(original['files'])}份远端小原件。源码副本保留原字节，`.py`另加`.txt`防止被pytest误收集，原服务器路径与SHA在 `REMOTE_ARTIFACT_INDEX.json`。
+
+这里只归档已经完成的CPU工程验证，无权重下载，无新增模型forward、规划、仿真或正式数据读取。扩散正式GPU训练与各repeat/固定last285/去噪技术诊断仍待root逐阶段调度，未因测试通过自动启动。原模型、数据、历史结果不改。
+'''
+    (OUT/'VALIDATION_RESULTS.md').write_text(report,encoding='utf-8')
+    (OUT/'archive_observed_diffusion_validation.py.txt').write_bytes(Path(__file__).read_bytes())
+    files=[dict(path=p.relative_to(OUT).as_posix(),bytes=p.stat().st_size,sha256=sha(p))
+        for p in sorted(OUT.rglob('*')) if p.is_file() and p.name!='LOCAL_ARTIFACT_INDEX.json']
+    (OUT/'LOCAL_ARTIFACT_INDEX.json').write_text(json.dumps(dict(files=files,local_file_count=len(files),
+        server_original_files=len(original['files']),source_commit=COMMIT,all_original_sha256_verified=True),indent=2)+'\n',encoding='utf-8')
+    print(json.dumps(dict(local_files=len(files),server_original_files=len(original['files']),
+        index_sha256=sha(OUT/'LOCAL_ARTIFACT_INDEX.json'),body_seconds=receipt['elapsed_seconds'],outer_seconds=outer)))
+
+
+if __name__=='__main__':main()
