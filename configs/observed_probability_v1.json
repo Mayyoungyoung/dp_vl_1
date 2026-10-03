@@ -1,0 +1,27 @@
+{
+  "protocol": "observed_probability_v1",
+  "authorization": "Current user choices 1A 2A 3A 4A 5A 6A 7B",
+  "gpu_wall_budget_seconds": 21600,
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "memory_fraction": 0.35,
+  "cpu_threads": 4,
+  "parent_checkpoint_sha256": "ce0b186b1f73beab2bd09b0582622e1d1b012fc88b892ab909479dd7deb250b3",
+  "extension_ranges_half_open": {
+    "SCORE_TRAIN": [32, 96],
+    "DEV_SCORE": [96, 128],
+    "CALIBRATION": [128, 160],
+    "FUTURE_GENERATOR_TRAIN": [160, 256]
+  },
+  "historical_extension_generator_train": [0, 32],
+  "sealed_extension_dev": [256, 288],
+  "parent_rule": "All targets, views and trajectories inherit the parent role. Role reservation is permanent for this experiment family. Old TRAIN is not independent calibration.",
+  "initial_generator": "fixed last12000 ordinary M4 trained on95 parents, no continued15000 checkpoint",
+  "scorer": {"steps": 1200, "batch_size": 32, "lr": 0.0003, "weight_decay": 0.0001, "width": 64, "eval_every": 100, "selection": "minimum DEV_SCORE binary cross entropy; earliest tie", "loss": "unweighted BCE on actual unfiltered generated candidates", "seeds": [0, 1, 2]},
+  "calibration": "positive scalar temperature minimizing candidate BCE; only after generator/scorer configuration and checkpoint fixed; report selected-candidate calibration separately",
+  "replication_gate": "seed0 DEV_SCORE selected validity strictly exceeds both fixed-first and expected-uniform random; Brier below SCORE_TRAIN prevalence predictor; no threshold tuning",
+  "mode_distribution": "balanced geometric reference clusters, including unknown positives; cluster rule frozen using TRAIN only; not natural occurrence probability",
+  "stage2": {"M": 8, "H": 24, "K": [1, 2, 4], "steps": 3000, "batch_size": 32, "lr": 0.0003, "paired_arms": ["ordinary", "balanced_probability"], "reference_cluster_distance_m": 0.04, "pi_loss_weight": 0.01, "q_gradient_to_generator": false},
+  "validity": "existing tip checker: target3cm, start5mm, unchanged reach events, finite continuous piecewise linear tip path with2cm physical-box margin; not full-arm execution success",
+  "oracle_boundary": "Geometry labels may produce q targets and evaluation only; neither obstacle truth, target truth, reference paths nor guide/mode IDs enter inference",
+  "new_dev_or_locked_access": false
+}
