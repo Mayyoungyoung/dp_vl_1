@@ -1,0 +1,8960 @@
+{
+  "identity": {
+    "protocol": "observed_two_row_diffusion_driver_v1",
+    "config": {
+      "protocol": "observed_two_row_diffusion_v1",
+      "status": "Implementation preparation; no server training or evaluation yet.",
+      "arms": [
+        "independent",
+        "set"
+      ],
+      "seed": 0,
+      "feature_dim": 4096,
+      "horizon": 24,
+      "candidates": 4,
+      "width": 128,
+      "depth": 2,
+      "point_width": 64,
+      "pixel_stride": 2,
+      "pooling": "both",
+      "anchor_mode": "straight_through_peak",
+      "endpoint_mode": "surface_anchor",
+      "endpoint_residual_bound": 0.05,
+      "event_scale": 0.2,
+      "parameterization": "x0",
+      "diffusion_steps": 100,
+      "sampling_steps": 40,
+      "ddim_eta": 0.0,
+      "clip_x0": null,
+      "steps": 12000,
+      "batch_size": 32,
+      "lr": 0.0003,
+      "weight_decay": 0.0001,
+      "gradient_clip": 1.0,
+      "grounding_weight": 0.02,
+      "grounding_sigma": 0.025,
+      "grounding_target": "endpoint",
+      "eval_every": 250,
+      "checkpoint_every": 25,
+      "eval_batch_size": 1,
+      "eval_noise_seeds": [
+        300000,
+        300001,
+        300002
+      ],
+      "checkpoint_selection": "Same original ordinary predeclared score and strict greater-than tie rule; fixed repeat0 only.",
+      "training_input_draws": 384000,
+      "training_path_states": 1536000,
+      "dev_selections": 48,
+      "train_inputs": 285,
+      "train_references": 1663,
+      "train_parents": 95,
+      "requested_train_parents": 96,
+      "dev_inputs": 36,
+      "dev_parents": 12,
+      "dev_references": 205,
+      "extension_dev_raw_allowed": false,
+      "export_manifest_sha256": "04ba27290e382787d5f1764fc2645d4219b09457ea972d15f7d1f3baeac74fdc",
+      "quality_sha256": "ef60c759a9544fe7b3539bc47cc28dcb0ea85fc75398c56c793b7f6c7f2864d0",
+      "cache_receipt_sha256": "9f2ccf2179192da7d0a0478bc643d695b9c13495866cb714229d5f97f8615cff",
+      "ordinary_initial_model_sha256": "7f81eba70dfcef2a3df19ebd5661ace3881abd552a1f2d4614cf490bf153bc13",
+      "ordinary_initial_torch_cpu_rng_sha256": "c35b449a11db8b8af5620fb2377adf1709091f5d451783a0894523b68370a154",
+      "ordinary_initial_sampler_state_sha256": "48a64e771100689dadc6faec20d1a9d312e0e35cbd828ef0c10e20de352a56b6",
+      "stream_protocol": "observed_all_positive_diffusion_stream_v1",
+      "seed_offsets": {
+        "observation": 100000,
+        "positive": 200000,
+        "time": 300000,
+        "epsilon": 400000
+      },
+      "reference_policy": "All recorded positives including unknown: R>=4 without replacement; R<4 include all then replacement fill; independently random permutation. Empty TRAIN sets reject startup.",
+      "comparison_limit": "Equal gradient path slots are not equal full-positive supervision access, FLOPs, training time, or online latency. No average-path causality or novelty claim.",
+      "fixed_last_train_stage": "Independent root-triggered stage,285 requests/1140 candidates/11400 denoiser calls; never automatic training extension.",
+      "denoising_diagnostic": {
+        "stage": "denoising-diagnostic",
+        "automatic": false,
+        "checkpoint": "last12000",
+        "train_inputs": 6,
+        "input_order": "first six actual TRAIN indices in canonical dataset order",
+        "timesteps": [
+          0,
+          25,
+          50,
+          75,
+          99
+        ],
+        "geometry_calls": 6,
+        "denoiser_batches": 30,
+        "denoised_path_states": 120,
+        "optimizer_steps": 0,
+        "dev_inputs": 0,
+        "scope": "Teacher positive noising diagnostic, not normal generation; no extra training or model selection."
+      },
+      "final_repeats": "Repeat0 reuses saved selected pool; repeats1/2 independently evaluated. Same best/last checkpoint reuses pool. Never merge K4 pools.",
+      "arm": "set",
+      "dataset_fingerprint": "970f9b533e0ea0beb6c6f1fe9d702586d7fd26d7dd675a552b3786925fc2f677",
+      "geometry_fingerprint": "df4356838911271ba42f8662a11127e59ea06ec1235583604f7c06487ba59931",
+      "ordinary_receipt_sha256": "5463d7fcfc77b57f86fba6893463697a4c155d7df3770c1b5bec2c39dfb919df",
+      "ordinary_actual_index_chain_sha256": "6d5dbac9cf3b435bcab1cb240d4c9c7e1162eb303d9d01db01b66c3097b23134",
+      "source_sha256": {
+        "scripts/train_observed_two_row_diffusion.py": "fda876c5b2f2960f9434530f6cb6b4739085cf8c68487eaa872ad797cab9deaa",
+        "routeset/observed_route_diffusion.py": "19fb4104d86094bbbd7742210369ab983b88c21108a282766307f3b5d93e7d9c",
+        "routeset/observed_diffusion_stream.py": "2a3efa744d02b5ac71a4e8b2dee58578ee969fa9f5285cd1198204696232838d",
+        "routeset/observed_qwen_continuation.py": "5cca056aff24217d0a659d41ec0f7fbcebcc1d234871d42a2acd376c04c0ce61",
+        "routeset/observed_training_audit.py": "5e3f88670c3cadfeede1cddc4cb4b34b21a574c11aea706913f15fabf9480026",
+        "routeset/qwen_prefix_replay.py": "661a430d8e41de6be55845a52096f588621ff7e3202996e06f094e9b7a5fcf37",
+        "routeset/train_v2.py": "011253aaeadb02d686c3e0386e382c2d6d0932bb317a10ba98b9895b4b0e370b",
+        "routeset/models.py": "78e94885397d2440e5fa0761e8bf0cc596bbda3ee04c309024aff7bb0e37819b",
+        "routeset/common.py": "09fee8eba52b7713a33a5c6594be0f37f79c59734c13f12a2c03349e1d5bbae8",
+        "routeset/observed_geometry.py": "5bd25f43e780d0ec5ed1c9f336bbbe0b01361175f876eacd01fdeada1a9f8f9d",
+        "routeset/observed_route_head.py": "b67c38be821ad335d4080a6b9e55bc1f423451396bcd682459676da5de5d808b",
+        "scripts/train_observed_two_row.py": "b94f81b1fbb7b93dbcfda57944d50c38717ea8e23099c20b57daafa6ecb06057",
+        "scripts/train_observed_geometry.py": "53d41e14fe34825171223df3465ac096dbecef6a24dcdbbc541971d056b3cf62",
+        "scripts/train_observed_routes.py": "093f5aa6d79adb09c09c70f13a058f10b72e5dd0682e28f6cd82a401f8876c75",
+        "scripts/evaluate_observed_two_row.py": "0053844beebc484f99c83b533ce200fbf89b4c9be605961904f9a0c55ec2eed6",
+        "scripts/evaluate_observed_obstacles.py": "71b4b26182470be75bc6ecb4b52bb3a8fc55b5655ff593c3827a7538c8bc10b9",
+        "scripts/run_observed_two_row_composite.py": "b401e85207e00b58196d61302fc563946ae34879b0dfdc918606a82702027dc2",
+        "scripts/export_two_row_composite_observations.py": "a641245529113e47e80355991de8c1fbe737aacde1b47d24a0e1bc64e029d9f8",
+        "configs/observed_two_row_diffusion_v1.json": "d5e588cfb0443283e3990cd4901ca251166e5a1344f28da3dba43d8c1ff0cdcc"
+      },
+      "runtime": {
+        "torch": "2.4.1+cu121",
+        "cpu_threads": 1,
+        "cpu_affinity": [
+          1
+        ],
+        "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+        "gpu_memory_fraction": 0.35
+      },
+      "code_commit": "6e0203ba1335f9fa9975c523c657959f8bc9ab60"
+    },
+    "step": 12000,
+    "kind": "dev_repeat",
+    "repeat": 1,
+    "ids": [
+      "two_row_reach_283264_target0",
+      "two_row_reach_283264_target1",
+      "two_row_reach_283264_target2",
+      "two_row_reach_283265_target0",
+      "two_row_reach_283265_target1",
+      "two_row_reach_283265_target2",
+      "two_row_reach_283266_target0",
+      "two_row_reach_283266_target1",
+      "two_row_reach_283266_target2",
+      "two_row_reach_283267_target0",
+      "two_row_reach_283267_target1",
+      "two_row_reach_283267_target2",
+      "two_row_reach_283268_target0",
+      "two_row_reach_283268_target1",
+      "two_row_reach_283268_target2",
+      "two_row_reach_283269_target0",
+      "two_row_reach_283269_target1",
+      "two_row_reach_283269_target2",
+      "two_row_reach_283270_target0",
+      "two_row_reach_283270_target1",
+      "two_row_reach_283270_target2",
+      "two_row_reach_283271_target0",
+      "two_row_reach_283271_target1",
+      "two_row_reach_283271_target2",
+      "two_row_reach_283272_target0",
+      "two_row_reach_283272_target1",
+      "two_row_reach_283272_target2",
+      "two_row_reach_283273_target0",
+      "two_row_reach_283273_target1",
+      "two_row_reach_283273_target2",
+      "two_row_reach_283274_target0",
+      "two_row_reach_283274_target1",
+      "two_row_reach_283274_target2",
+      "two_row_reach_283275_target0",
+      "two_row_reach_283275_target1",
+      "two_row_reach_283275_target2"
+    ],
+    "requests": 36,
+    "candidates": 4,
+    "final_path_states": 144,
+    "denoiser_calls": 1440,
+    "intermediate_path_states_including_final": 5760,
+    "model_sha256": "a3974402dc13d8a998377a968bac24a6e951eead707889287b043a519abeb3cc",
+    "schedule": {
+      "protocol": "observed_route_x0_diffusion_v1",
+      "parameterization": "x0",
+      "training_steps": 100,
+      "ddim_steps": 40,
+      "eta": 0,
+      "generic_x0_clip": null,
+      "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+      "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+      "sampling_indices": [
+        99,
+        96,
+        94,
+        91,
+        89,
+        86,
+        84,
+        81,
+        79,
+        76,
+        74,
+        71,
+        69,
+        66,
+        63,
+        61,
+        58,
+        56,
+        53,
+        51,
+        48,
+        46,
+        43,
+        41,
+        38,
+        36,
+        33,
+        30,
+        28,
+        25,
+        23,
+        20,
+        18,
+        15,
+        13,
+        10,
+        8,
+        5,
+        3,
+        0
+      ],
+      "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+    },
+    "noise": {
+      "ids": [
+        "two_row_reach_283264_target0",
+        "two_row_reach_283264_target1",
+        "two_row_reach_283264_target2",
+        "two_row_reach_283265_target0",
+        "two_row_reach_283265_target1",
+        "two_row_reach_283265_target2",
+        "two_row_reach_283266_target0",
+        "two_row_reach_283266_target1",
+        "two_row_reach_283266_target2",
+        "two_row_reach_283267_target0",
+        "two_row_reach_283267_target1",
+        "two_row_reach_283267_target2",
+        "two_row_reach_283268_target0",
+        "two_row_reach_283268_target1",
+        "two_row_reach_283268_target2",
+        "two_row_reach_283269_target0",
+        "two_row_reach_283269_target1",
+        "two_row_reach_283269_target2",
+        "two_row_reach_283270_target0",
+        "two_row_reach_283270_target1",
+        "two_row_reach_283270_target2",
+        "two_row_reach_283271_target0",
+        "two_row_reach_283271_target1",
+        "two_row_reach_283271_target2",
+        "two_row_reach_283272_target0",
+        "two_row_reach_283272_target1",
+        "two_row_reach_283272_target2",
+        "two_row_reach_283273_target0",
+        "two_row_reach_283273_target1",
+        "two_row_reach_283273_target2",
+        "two_row_reach_283274_target0",
+        "two_row_reach_283274_target1",
+        "two_row_reach_283274_target2",
+        "two_row_reach_283275_target0",
+        "two_row_reach_283275_target1",
+        "two_row_reach_283275_target2"
+      ],
+      "seed": 300001,
+      "sha256": "4dda22d4c79949b611772ac1678caf9f91284117bb3ca42d804a212cd4b7a9d9"
+    }
+  },
+  "requests": [
+    {
+      "id": "two_row_reach_283264_target0",
+      "noise_sha256": "af37a6cc7652f49ab3ede6d7560355ca0e6bbe42ac322d2f6457e3380b2b9cff",
+      "geometry_and_input_seconds": 0.005147445946931839,
+      "denoising_seconds": 0.13886220299173146,
+      "cached_sampler_seconds": 0.1440096489386633,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "438eb63847c1e7ca403628ad3812e862ca611c264a87a4f4530c22bce02241dc",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283264_target1",
+      "noise_sha256": "99675321dc2bac653f4703a2674c6b54548587c3c7da5ff183753efd394740e2",
+      "geometry_and_input_seconds": 0.0027966139605268836,
+      "denoising_seconds": 0.13330564205534756,
+      "cached_sampler_seconds": 0.13610225601587445,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "cc245fc200b1ddd6e6d1505eb8799a7907a62f8bde20c9de0a97ad29d90ad00c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283264_target2",
+      "noise_sha256": "dfdf433fa3ffde4172a237ba07c854e81ef8fde0858903eef1000084622b8450",
+      "geometry_and_input_seconds": 0.003443881985731423,
+      "denoising_seconds": 0.13212747208308429,
+      "cached_sampler_seconds": 0.1355713540688157,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "a53d8e60eb44cede9701b22db3fb77175032190a36b3912add9af87fdbbcf3fa",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283265_target0",
+      "noise_sha256": "80aba2cc2a1e77a36c3123dfc970cafd098a54852f3127e403c542fa2b1d27e0",
+      "geometry_and_input_seconds": 0.0036196180153638124,
+      "denoising_seconds": 0.13865971798077226,
+      "cached_sampler_seconds": 0.14227933599613607,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "5f6c56d440a0ee435fe7ecc70996d2c14bf07566813e9ece406c3cf731286318",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283265_target1",
+      "noise_sha256": "c4aab5c44ed67c69c0f73a96f0b881729a65400604b50c22d7b94cccf2f95222",
+      "geometry_and_input_seconds": 0.0035088598961010575,
+      "denoising_seconds": 0.13170312508009374,
+      "cached_sampler_seconds": 0.1352119849761948,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "ce6e87350b665d57887d4365d9339559833d43e906e9f7915fc265cd9994092c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283265_target2",
+      "noise_sha256": "305a7f4a9d2eb5df05b47e4dcd841cf6b066e3f07c0f6bbae1e5222eef400607",
+      "geometry_and_input_seconds": 0.0033258210169151425,
+      "denoising_seconds": 0.1970319530228153,
+      "cached_sampler_seconds": 0.20035777403973043,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "1ebbd3329cd0ea504a9c03d8f0df9ed084f65967efcf571dadd3bb7025e85bb7",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283266_target0",
+      "noise_sha256": "63074bea5ac7182a0a50794569b49458e0c81cf8d852b8d36f1a4c00fe9e33b5",
+      "geometry_and_input_seconds": 0.0043195890029892325,
+      "denoising_seconds": 0.15196502802427858,
+      "cached_sampler_seconds": 0.1562846170272678,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "e4f449fcc1a7a8217da2965dace7baa180dff94c02dbda91257318e6a9e7dea3",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283266_target1",
+      "noise_sha256": "93715c82c58cff9c2ef00b13c8d49fdf2f028c990d8f10e5428ed4d194fa955d",
+      "geometry_and_input_seconds": 0.004227316938340664,
+      "denoising_seconds": 0.14119062304962426,
+      "cached_sampler_seconds": 0.14541793998796493,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "3322c8f66fc40fee1af7cbda229d911143c9b8fa174a52614628fef57d3572b2",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283266_target2",
+      "noise_sha256": "765346e8f27f83af541a2af36c3c09ac80f2d7bdc636219f09a1859031c649c5",
+      "geometry_and_input_seconds": 0.003941884031519294,
+      "denoising_seconds": 0.1414042259566486,
+      "cached_sampler_seconds": 0.14534610998816788,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "19986b6102e4477ab623a715c204be65d357b6be1f0d225047a7f4b33c2fde74",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283267_target0",
+      "noise_sha256": "8f0c7b4b24c815105538819174ca9ae83e977707aef3ebe93cf96ed8619b9dba",
+      "geometry_and_input_seconds": 0.004386624088510871,
+      "denoising_seconds": 0.1365634249523282,
+      "cached_sampler_seconds": 0.14095004904083908,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "0a8ee97513d3895f8d582149e4e4e0ddfa3fb5f649d9eea5232ab01e658b8220",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283267_target1",
+      "noise_sha256": "469f7053d8ab2ce5a229296086bd896879bb55b408fbbad1c88864d5b69d468e",
+      "geometry_and_input_seconds": 0.003556004026904702,
+      "denoising_seconds": 0.14162552100606263,
+      "cached_sampler_seconds": 0.14518152503296733,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "e7e84970c7185a6e5695978b944a8d40fb26fd65ac88b2c97f4e238c99d3e7ae",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283267_target2",
+      "noise_sha256": "3fdb65f829b845232485d4aaca585f4a1f6afd5591ca8ad282ccfcb7178abd3a",
+      "geometry_and_input_seconds": 0.0033352370373904705,
+      "denoising_seconds": 0.139023000956513,
+      "cached_sampler_seconds": 0.14235823799390346,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "b1e7dd787b08aa595452a37312f523b1b3359fa841f6c44879b60f37d73ae98d",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283268_target0",
+      "noise_sha256": "66ac20cc6d318ec6fab3af3e853c68775de9aa21c5c0e0ad9228c0b027ecc15f",
+      "geometry_and_input_seconds": 0.0035697000566869974,
+      "denoising_seconds": 0.14626488101202995,
+      "cached_sampler_seconds": 0.14983458106871694,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "bbc3958a078986924779abd34b19ff490d5470d990b525103f142fb22474cfb9",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283268_target1",
+      "noise_sha256": "21fd5085b7f695426751b494a05033c20dbd71a845d8f340381a0f2d066e1e67",
+      "geometry_and_input_seconds": 0.003918133908882737,
+      "denoising_seconds": 0.1537174420664087,
+      "cached_sampler_seconds": 0.15763557597529143,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "1de7dafcd7969548210553b4de9314357bfd07712947568a7ba5384077685b20",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283268_target2",
+      "noise_sha256": "17e613f04889edcc6a0532df4e6cb3e1bc9ccf1cee4a8c7225a9b34aa7f20fa2",
+      "geometry_and_input_seconds": 0.003458895953372121,
+      "denoising_seconds": 0.1448957989923656,
+      "cached_sampler_seconds": 0.14835469494573772,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "0e1e1c082ae03c96d27e8f05e01675210ee914baad995e954c5f7f4b98e90656",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283269_target0",
+      "noise_sha256": "f4759273765ae4e9794e158f4afcbe5844593943256e43bfd270ff04c5c568d8",
+      "geometry_and_input_seconds": 0.003610268933698535,
+      "denoising_seconds": 0.1429934670450166,
+      "cached_sampler_seconds": 0.14660373597871512,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "8a02d8dae7984583dfba83a96ed6a11ef0062c7f786ae42ea446692e48b201df",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283269_target1",
+      "noise_sha256": "4487d8cfab8825ce8a37b52327c6646bdc55817762b655b96f5cce8692bd4ed5",
+      "geometry_and_input_seconds": 0.0037267040461301804,
+      "denoising_seconds": 0.14247325796168298,
+      "cached_sampler_seconds": 0.14619996200781316,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "02ca7f343db223cf7bc6631c0e3cbfa26c7796afa1321101df46a77ac9406b3d",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283269_target2",
+      "noise_sha256": "b0b1258b727549bdb0293c472b7df5cde5dc73cf6821ca7491259949c1cf45b0",
+      "geometry_and_input_seconds": 0.004178839968517423,
+      "denoising_seconds": 0.1472824370721355,
+      "cached_sampler_seconds": 0.15146127704065293,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "7945f82a0a4623d6eb7247f6f934463770716fa2a97046ecd1793448b12b164a",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283270_target0",
+      "noise_sha256": "7f00930015d105447e67cda8dd0e46a37f47739333160ccbfb4c180d0d01cbb3",
+      "geometry_and_input_seconds": 0.0043459259904921055,
+      "denoising_seconds": 0.14278743707109243,
+      "cached_sampler_seconds": 0.14713336306158453,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "9f45ca15a54f3805349a97b728d5368341d4956541d333522676b82119ac5b03",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283270_target1",
+      "noise_sha256": "0eeaa60d11aa7a5e2782054dae8fb128ec00008c5a200fb68696adf5d34454f0",
+      "geometry_and_input_seconds": 0.0034633709583431482,
+      "denoising_seconds": 0.16872743796557188,
+      "cached_sampler_seconds": 0.17219080892391503,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "488faed07bb8ac003aa1889097d5142584f0e8301e591120d2e715c77b50c462",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283270_target2",
+      "noise_sha256": "7110c063b7fed7f18ae2ca9c0500b488ec8523c6a1a83ff46885b47dce826ebb",
+      "geometry_and_input_seconds": 0.004982659011147916,
+      "denoising_seconds": 0.14328332000877708,
+      "cached_sampler_seconds": 0.148265979019925,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "40d1045bd2b3ed7166fa05ddd223b37fadb0871e690041992985da1d8670795c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283271_target0",
+      "noise_sha256": "e53de792253d2180b1e234759efb0525d5e06012ff291bd20c6b147b235bc390",
+      "geometry_and_input_seconds": 0.003915184992365539,
+      "denoising_seconds": 0.14904600707814097,
+      "cached_sampler_seconds": 0.1529611920705065,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "c4b0daee621e4b587aa0afaf85910cb934588eef023e546c855a4e63e0131588",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283271_target1",
+      "noise_sha256": "aea2fb1df6a958418d79491d17b52b8bfa3f2a50faeff220df2dbcbedc5ad48d",
+      "geometry_and_input_seconds": 0.003131035016849637,
+      "denoising_seconds": 0.13966250594239682,
+      "cached_sampler_seconds": 0.14279354095924646,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "b912ebc2a01184693a502566685f57446bb703ed6ae3f9deb2e54db57fa68c4c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283271_target2",
+      "noise_sha256": "66969d58b66be71f1bdd2f86be62cfa2b09770048b282736e5c123f2be8e13a7",
+      "geometry_and_input_seconds": 0.003568221931345761,
+      "denoising_seconds": 0.1447755410335958,
+      "cached_sampler_seconds": 0.14834376296494156,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "fc89742972099ce2f3955bc2686d69ebd894ff5906a5c18308f0338b701fa29c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283272_target0",
+      "noise_sha256": "8b8d668430c594edaa6256540609a602c8cdb26ff774f35bde0ca2e2a86cfd4d",
+      "geometry_and_input_seconds": 0.003100867965258658,
+      "denoising_seconds": 0.14330956700723618,
+      "cached_sampler_seconds": 0.14641043497249484,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "7639fd4f55b879835e11e9349d2dce3b5d19708fd6304e57cfbca36fadd77dbf",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283272_target1",
+      "noise_sha256": "8aebd654e3704013de28070d11a2ba85c72fe311e3834d0c48f7cb31b514a8a3",
+      "geometry_and_input_seconds": 0.004485587007366121,
+      "denoising_seconds": 0.1498742710100487,
+      "cached_sampler_seconds": 0.1543598580174148,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "3ba90f88f889fc57389487f0d5173ee0afbae4e24ea4a316aeaee6809474399c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283272_target2",
+      "noise_sha256": "92acc2afea2414017669b3f0f6ad077ac2477ec291ac3797001a551cba6ccd2f",
+      "geometry_and_input_seconds": 0.0038795999716967344,
+      "denoising_seconds": 0.16299512004479766,
+      "cached_sampler_seconds": 0.1668747200164944,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "e6b984df22c783e47dcec33dc22b94932ad955eba9244f0678855fa01a6cd7f7",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283273_target0",
+      "noise_sha256": "f889ffc199b70bd696154233110274f421cc01bccdd65f102cd29111b32dad17",
+      "geometry_and_input_seconds": 0.0035657240077853203,
+      "denoising_seconds": 0.1418187329545617,
+      "cached_sampler_seconds": 0.14538445696234703,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "34cc953d255b51e825b02c790fc278233c5d75ef892eec628e5a43b48585dd91",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283273_target1",
+      "noise_sha256": "fb2a65eb176fe38b7a2de0d46a9f824379dd02e37796cf6296e3355e2091fce5",
+      "geometry_and_input_seconds": 0.003948326106183231,
+      "denoising_seconds": 0.14709366497118026,
+      "cached_sampler_seconds": 0.1510419910773635,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "19ce465e7a5f063d1ef0eb5b70f44afe861346d0015d63c06621a85df511a301",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283273_target2",
+      "noise_sha256": "7a8a9b68a52d3f59ab4164c221116f2607b5e41e44ba4943c0d83065c1f000d8",
+      "geometry_and_input_seconds": 0.0028209249721840024,
+      "denoising_seconds": 0.14238311909139156,
+      "cached_sampler_seconds": 0.14520404406357557,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "6b7ace94b1b4eff1075bf1b7daa7b67e4b8c5a6fbc5355958d3a94daee6e461e",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283274_target0",
+      "noise_sha256": "33b4e7e087cbbf5a56a341aca96de381e80882394fbd2261885bc03997b30d23",
+      "geometry_and_input_seconds": 0.0036054920637980103,
+      "denoising_seconds": 0.14953771594446152,
+      "cached_sampler_seconds": 0.15314320800825953,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "a9db137813b934b93f8706bc647d0e2e00096a0455fc47286f13835f5bdfb513",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283274_target1",
+      "noise_sha256": "b7d6d33fcbfe139f02524f65dbf451f4975cf3c9d348272631a69dc3bae19870",
+      "geometry_and_input_seconds": 0.0036570309894159436,
+      "denoising_seconds": 0.14175468299072236,
+      "cached_sampler_seconds": 0.1454117139801383,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "36d4aee1bad1c24ba6fe2542937c4f7d2c24467e761232224e656f130eec9bb3",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283274_target2",
+      "noise_sha256": "8fa1ce427c11dff4e170e5b04df842f8a1fd4f647f8bbda6ab60e083d23025cb",
+      "geometry_and_input_seconds": 0.004196238936856389,
+      "denoising_seconds": 0.14923887606710196,
+      "cached_sampler_seconds": 0.15343511500395834,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "491b5e17eb71ca907398f19c1e2412d90707f589e9b40f3e840ac23f14609ce6",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283275_target0",
+      "noise_sha256": "bac8aaea02adcea1c701d403508355266951673472e331ed890aa9d147e05ab5",
+      "geometry_and_input_seconds": 0.003929201979190111,
+      "denoising_seconds": 0.1430467830505222,
+      "cached_sampler_seconds": 0.14697598502971232,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "63481a8e1e684035e5b9f458164ecb2de7cef90807cbf430f1eadec093f4ae86",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283275_target1",
+      "noise_sha256": "cb7e14724a7d15f542e0dc6d276fc66d6ec57ffe35b16d9971cf45f37e6ef203",
+      "geometry_and_input_seconds": 0.003522439976222813,
+      "denoising_seconds": 0.14013440802227706,
+      "cached_sampler_seconds": 0.14365684799849987,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "8c3f7b60c000a35bfdddfdbd5221dc634f13f27395c591a62453bf7c86b6a7d1",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "two_row_reach_283275_target2",
+      "noise_sha256": "c51508b00e3e40804e49253378f7ae67b63d85525e3e329a29aa9ae80a3f015a",
+      "geometry_and_input_seconds": 0.0037991979625076056,
+      "denoising_seconds": 0.1423743600025773,
+      "cached_sampler_seconds": 0.1461735579650849,
+      "actual_calls": [
+        [
+          0,
+          99
+        ],
+        [
+          1,
+          96
+        ],
+        [
+          2,
+          94
+        ],
+        [
+          3,
+          91
+        ],
+        [
+          4,
+          89
+        ],
+        [
+          5,
+          86
+        ],
+        [
+          6,
+          84
+        ],
+        [
+          7,
+          81
+        ],
+        [
+          8,
+          79
+        ],
+        [
+          9,
+          76
+        ],
+        [
+          10,
+          74
+        ],
+        [
+          11,
+          71
+        ],
+        [
+          12,
+          69
+        ],
+        [
+          13,
+          66
+        ],
+        [
+          14,
+          63
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          58
+        ],
+        [
+          17,
+          56
+        ],
+        [
+          18,
+          53
+        ],
+        [
+          19,
+          51
+        ],
+        [
+          20,
+          48
+        ],
+        [
+          21,
+          46
+        ],
+        [
+          22,
+          43
+        ],
+        [
+          23,
+          41
+        ],
+        [
+          24,
+          38
+        ],
+        [
+          25,
+          36
+        ],
+        [
+          26,
+          33
+        ],
+        [
+          27,
+          30
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          25
+        ],
+        [
+          30,
+          23
+        ],
+        [
+          31,
+          20
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          15
+        ],
+        [
+          34,
+          13
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          36,
+          8
+        ],
+        [
+          37,
+          5
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          39,
+          0
+        ]
+      ],
+      "sampler_receipt": {
+        "protocol": "observed_route_x0_diffusion_v1",
+        "batch_size": 1,
+        "candidates_per_input": 4,
+        "requested_candidates": 4,
+        "denoiser_calls": 40,
+        "denoised_path_states": 160,
+        "observation_encodes_inside_sampler": 0,
+        "initial_noise_sha256": "00679c3573517d26655294b9eb1e031b17f3d3759c64f6e40813a623c302792c",
+        "schedule": {
+          "protocol": "observed_route_x0_diffusion_v1",
+          "parameterization": "x0",
+          "training_steps": 100,
+          "ddim_steps": 40,
+          "eta": 0,
+          "generic_x0_clip": null,
+          "betas_sha256": "06081d9bef9c8f841e5b55968e8b2dbaa2fa092463ef9d0a3191120f5cf43183",
+          "alpha_bars_sha256": "8d343925c6bdae4cb53d97467d8bda3475e396d5d8cded1b3c35f3f8d0dcb874",
+          "sampling_indices": [
+            99,
+            96,
+            94,
+            91,
+            89,
+            86,
+            84,
+            81,
+            79,
+            76,
+            74,
+            71,
+            69,
+            66,
+            63,
+            61,
+            58,
+            56,
+            53,
+            51,
+            48,
+            46,
+            43,
+            41,
+            38,
+            36,
+            33,
+            30,
+            28,
+            25,
+            23,
+            20,
+            18,
+            15,
+            13,
+            10,
+            8,
+            5,
+            3,
+            0
+          ],
+          "sampling_indices_sha256": "77f9c7c3ff1bac6dcb72f4e4c85ad228cc3da054677118cea8f5e94fd64c8eb9"
+        },
+        "repair_calls": 0,
+        "hidden_candidates": 0
+      },
+      "finite_candidates": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "predictions_sha256": "60cc119bdec7f2b5b08478d661021cccc66009d8b016b3377511404dd747ce69",
+  "noise": {
+    "ids": [
+      "two_row_reach_283264_target0",
+      "two_row_reach_283264_target1",
+      "two_row_reach_283264_target2",
+      "two_row_reach_283265_target0",
+      "two_row_reach_283265_target1",
+      "two_row_reach_283265_target2",
+      "two_row_reach_283266_target0",
+      "two_row_reach_283266_target1",
+      "two_row_reach_283266_target2",
+      "two_row_reach_283267_target0",
+      "two_row_reach_283267_target1",
+      "two_row_reach_283267_target2",
+      "two_row_reach_283268_target0",
+      "two_row_reach_283268_target1",
+      "two_row_reach_283268_target2",
+      "two_row_reach_283269_target0",
+      "two_row_reach_283269_target1",
+      "two_row_reach_283269_target2",
+      "two_row_reach_283270_target0",
+      "two_row_reach_283270_target1",
+      "two_row_reach_283270_target2",
+      "two_row_reach_283271_target0",
+      "two_row_reach_283271_target1",
+      "two_row_reach_283271_target2",
+      "two_row_reach_283272_target0",
+      "two_row_reach_283272_target1",
+      "two_row_reach_283272_target2",
+      "two_row_reach_283273_target0",
+      "two_row_reach_283273_target1",
+      "two_row_reach_283273_target2",
+      "two_row_reach_283274_target0",
+      "two_row_reach_283274_target1",
+      "two_row_reach_283274_target2",
+      "two_row_reach_283275_target0",
+      "two_row_reach_283275_target1",
+      "two_row_reach_283275_target2"
+    ],
+    "seed": 300001,
+    "sha256": "4dda22d4c79949b611772ac1678caf9f91284117bb3ca42d804a212cd4b7a9d9"
+  },
+  "all_predictions_sealed_before_labels": true
+}

@@ -1,0 +1,231 @@
+"""Exactly one frozen CPU stage. Never chain tests, registration and simulation."""
+import argparse
+from contextlib import contextmanager
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT='eba09945ecade4bdb9a5b4ab123a92da898283ed'
+MANIFEST_SHA='6b779adf227e2822ecf224debb65161c035a2d010ef4c98051d70fc94ee86baf'
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+INCOMING=P/'research_v2/incoming'
+SOURCE_MANIFEST=INCOMING/'layout_variation_sources_eba0994.json'
+RUN=P/'runs/observed_layout_variation_train12_v1'
+CORPUS=P/'data/observed_layout_variation_train12_v1'
+THREADS=('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS','LP_NUM_THREADS')
+RESERVE=512*1024**2
+LIMIT=8*1024**3
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(2**20),b''):h.update(block)
+    return h.hexdigest()
+
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+def write(path,value):
+    path=Path(path);temp=path.with_name(path.name+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+
+def verify_source():
+    if sha(SOURCE_MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen source manifest changed')
+    manifest=read(SOURCE_MANIFEST)
+    if manifest['code_commit']!=COMMIT or manifest['expected_tests']!=114:raise ValueError('Wrong source/test manifest')
+    for name,item in manifest['files'].items():
+        file=SOURCE/name
+        if file.is_symlink() or not file.is_file() or file.stat().st_size!=item['bytes'] or sha(file)!=item['sha256']:
+            raise ValueError('Actual archive bytes differ: '+name)
+    return manifest
+
+
+def validate_junit(path,manifest):
+    tree=ET.parse(path).getroot();suites=list(tree.iter('testsuite'));actual=[]
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('skipped','failures','errors')):
+        raise ValueError('Every actual test must pass with zero skips')
+    for case in tree.iter('testcase'):
+        if any(case.find(k) is not None for k in ('skipped','failure','error')):raise ValueError('Nonpassing testcase')
+        actual.append([case.get('classname'),case.get('name')])
+    if (len(actual)!=114 or len({tuple(v) for v in actual})!=114 or
+            sum(int(s.get('tests','0')) for s in suites)!=114 or
+            sorted(actual)!=sorted(manifest['expected_pytest_cases'])):
+        raise ValueError('Require exact21 new and93 old test identities, without substitutes')
+    return dict(tests=114,passed=114,skipped=0,errors=0,failures=0,actual_testcases=actual)
+
+
+def prior_stage(stage,manifest):
+    state=read(RUN/(stage+'.status.json'));identity_path=RUN/(stage+'_identity.json')
+    receipt_path=RUN/(stage+'_receipt.json');identity=read(identity_path);receipt=read(receipt_path)
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or state.get('code_commit')!=COMMIT
+            or receipt.get('status')!='completed' or receipt.get('child_exit_code')!=0
+            or receipt.get('identity_sha256')!=sha(identity_path)
+            or identity.get('code_commit')!=COMMIT or identity.get('stage')!=stage
+            or identity.get('runner_sha256')!=sha(__file__) or identity.get('source_manifest_sha256')!=MANIFEST_SHA):
+        raise ValueError('Exact recorded earlier stage must be complete: '+stage)
+    for name,digest in receipt['sealed_artifacts'].items():
+        file=RUN/name
+        file.resolve().relative_to(RUN.resolve())
+        if sha(file)!=digest:raise ValueError('Previous receipt artifact changed')
+    if stage=='tests':validate_junit(RUN/'validation/pytest.xml',manifest)
+    if stage=='prepare':
+        for name,digest in receipt['corpus_artifacts'].items():
+            file=CORPUS/name;file.resolve().relative_to(CORPUS.resolve())
+            if sha(file)!=digest:raise ValueError('Prepared corpus identity changed')
+    return dict(status_sha256=sha(RUN/(stage+'.status.json')),identity_sha256=sha(identity_path),receipt_sha256=sha(receipt_path))
+
+
+def no_active_duplicate():
+    hits=[]
+    for folder in Path('/proc').iterdir():
+        if not folder.name.isdigit() or int(folder.name)==os.getpid():continue
+        try:tokens=(folder/'cmdline').read_bytes().replace(b'\0',b' ').decode(errors='replace')
+        except (OSError,ProcessLookupError):continue
+        if 'collect_observed_layout_variation' in tokens and str(CORPUS) in tokens:hits.append(int(folder.name))
+    if hits:raise RuntimeError('Existing variable-layout process PIDs: '+str(hits))
+    return dict(matching_active_pids=hits,other_process_payload_logged=False)
+
+
+def resources():
+    from scripts.collect_two_row_extension import directory_bytes
+    usage=dict(corpus_bytes=directory_bytes(CORPUS),run_bytes=directory_bytes(RUN))
+    free=shutil.disk_usage(P).free
+    mem={line.split(':')[0]:int(line.split()[1])*1024 for line in Path('/proc/meminfo').read_text().splitlines() if ':' in line}
+    available=mem.get('MemAvailable',0)
+    if sum(usage.values())+RESERVE>LIMIT or free<RESERVE or available<RESERVE:
+        raise RuntimeError('New-corpus8GiB /512MiB disk and available-RAM reserve gate failed')
+    return dict(**usage,internal_logical_budget_bytes=LIMIT,reserve_bytes=RESERVE,filesystem_free_bytes=free,
+                host_memory_available_bytes=available,measurement='metadata only; no raw outcomes or images',
+                memory_scope='available-RAM preflight, not an RLIMIT_AS or total-host allocation claim')
+
+
+@contextmanager
+def own_xvfb(out):
+    """Start and clean up only this directly-owned display server."""
+    xvfb=P/'.observation-deps/xorg/usr/bin/Xvfb';sim=P/'.observation-deps/CoppeliaSim'
+    if not xvfb.is_file() or not sim.is_dir() or not (P/'.venv-sim/bin/python').is_file():raise ValueError('Existing private simulator environment absent')
+    xdg=out/'xdg';xdg.mkdir();xdg.chmod(0o700)
+    env=os.environ.copy();env.update(COPPELIASIM_ROOT=str(sim),LD_LIBRARY_PATH=str(sim)+':'+env.get('LD_LIBRARY_PATH',''),
+        QT_QPA_PLATFORM_PLUGIN_PATH=str(sim),LIBGL_ALWAYS_SOFTWARE='1',MESA_LOADER_DRIVER_OVERRIDE='llvmpipe',
+        LP_NUM_THREADS='1',XDG_RUNTIME_DIR=str(xdg))
+    proc=None;info=dict(xvfb_binary=str(xvfb),xvfb_sha256=sha(xvfb),cleanup_scope='only own Popen child')
+    with (out/'displaynum').open('w') as display,(out/'xvfb.log').open('wb') as log:
+        try:
+            proc=subprocess.Popen([str(xvfb),'-displayfd',str(display.fileno()),'-screen','0','640x480x24','-nolisten','tcp'],
+                pass_fds=(display.fileno(),),stdout=log,stderr=subprocess.STDOUT,env=env)
+            info['pid']=proc.pid;info['parent_pid']=os.getpid();write(out/'xvfb_receipt.json',info)
+            for _ in range(40):
+                if proc.poll() is not None:raise RuntimeError('Own Xvfb exited during startup')
+                if (out/'displaynum').stat().st_size:break
+                time.sleep(.25)
+            number=(out/'displaynum').read_text().strip()
+            if not number.isdigit():raise RuntimeError('Own displayfd did not return a display')
+            env['DISPLAY']=':'+number;info['display']=env['DISPLAY'];write(out/'xvfb_receipt.json',info)
+            yield env
+        finally:
+            if proc is not None:
+                if proc.poll() is None:
+                    proc.terminate()
+                    try:proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:proc.kill();proc.wait(timeout=5)
+                info['exit_code']=proc.returncode;info['cleanup_complete']=True
+                write(out/'xvfb_receipt.json',info)
+
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--stage',choices=('tests','prepare','pilot4'),required=True)
+    args=parser.parse_args();stage=args.stage;start=time.perf_counter()
+    wrapper=Path(os.environ.get('FROZEN_LAYOUT_WRAPPER',''))
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,8) or Path(sys.prefix).resolve()!=(P/'.venv').resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or sorted(os.sched_getaffinity(0))!=[1] or os.environ.get('CUDA_VISIBLE_DEVICES')!=''
+            or any(os.environ.get(k)!='1' for k in THREADS)
+            or wrapper.resolve()!=INCOMING/('layout_variation_'+stage+'_eba0994.sh')):
+        raise ValueError('Fixed release/.venv Py3.8/CPU1/hiddenGPU/thread/wrapper identity mismatch')
+    manifest=verify_source();duplicate=no_active_duplicate()
+    lock=RUN/'recipe.lock';fd=os.open(str(lock),os.O_CREAT|os.O_EXCL|os.O_WRONLY)
+    with os.fdopen(fd,'w') as stream:json.dump(dict(pid=os.getpid(),stage=stage),stream)
+    out=RUN/({'tests':'validation','prepare':'preparation','pilot4':'pilot4_recipe'}[stage])
+    identity_path=RUN/(stage+'_identity.json');receipt_path=RUN/(stage+'_receipt.json')
+    result=dict(status='failed',stage=stage,code_commit=COMMIT,child_exit_code=None,sealed_artifacts={})
+    try:
+        if out.exists() or identity_path.exists() or receipt_path.exists():raise FileExistsError('Fresh recipe only; preserve previous attempt')
+        out.mkdir();identity=dict(stage=stage,code_commit=COMMIT,source_manifest_sha256=MANIFEST_SHA,
+            archive_sha256=manifest['archive_sha256'],source_files=len(manifest['files']),runner_sha256=sha(__file__),
+            wrapper_sha256=sha(wrapper),wrapper=str(wrapper),actual_no_duplicate=duplicate,resources=resources(),
+            runtime=dict(executable=sys.executable,prefix=sys.prefix,python=sys.version,cpu_affinity=[1],cuda_visible_devices='',
+                         threads={k:os.environ[k] for k in THREADS}),fresh_only=True,automatic_next_stage=False,
+            started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        if stage!='tests':identity['passed_tests']=prior_stage('tests',manifest)
+        if stage=='tests':
+            if CORPUS.exists():raise FileExistsError('Initial validation must precede corpus creation')
+            fixtures=Path('/tmp/dpvlm_layout_variation_eba0994_pytest')
+            if fixtures.exists():raise FileExistsError('Fresh exact-source fixture root required; no overwrite')
+            # Synthetic parent names must never contaminate prepare's data/runs inventory.
+            command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider','--basetemp='+str(fixtures),
+                     '--junitxml='+str(out/'pytest.xml')]+manifest['test_files']
+            identity.update(model_calls=0,simulator_calls=0,expected_tests=114,expected_skips=0,
+                pytest_fixture_root=str(fixtures),fixture_scope='synthetic only, outside both watched data/runs roots')
+        elif stage=='prepare':
+            if CORPUS.exists():raise FileExistsError('Do not overwrite a prepared corpus')
+            command=[sys.executable,'-m','scripts.collect_observed_layout_variation','prepare','--output',str(CORPUS)]
+            identity.update(model_calls=0,simulator_calls=0,mechanical_registration_only=True)
+        else:
+            identity['passed_prepare']=prior_stage('prepare',manifest)
+            from scripts.collect_observed_layout_variation import verify_corpus,checked_closures
+            value,_=verify_corpus(CORPUS)
+            if checked_closures(CORPUS,value) or (RUN/'pilot4').exists() or (RUN/'parents').exists():
+                raise FileExistsError('Only fresh first4; no previous parent invocation may be replayed')
+            identity.update(requested_indices=[0,1,2,3],requested_parents=4,requested_route_slots=108,
+                maximum_explicit_get_path_calls=972,initialization_ik_calls_allowed=0,
+                no_pilot12=True,no_fallback=True,coordinator_python=str(P/'.venv/bin/python'),worker_python=str(P/'.venv-sim/bin/python'))
+            command=[sys.executable,'-m','scripts.collect_observed_layout_variation','stage','--corpus',str(CORPUS),
+                '--run-root',str(RUN),'--sim-python',str(P/'.venv-sim/bin/python'),'--stage','pilot4']
+        identity['command']=command;write(identity_path,identity);result['identity_sha256']=sha(identity_path)
+        if stage=='pilot4':
+            with own_xvfb(out) as env:child=subprocess.run(command,cwd=SOURCE,env=env)
+        else:child=subprocess.run(command,cwd=SOURCE)
+        result['child_exit_code']=child.returncode
+        if child.returncode!=0:raise RuntimeError('Stage exited unsuccessfully; no retry or next stage')
+        if stage=='tests':
+            result['junit']=validate_junit(out/'pytest.xml',manifest)
+            result['sealed_artifacts']={'validation/pytest.xml':sha(out/'pytest.xml')}
+        elif stage=='prepare':
+            from scripts.collect_observed_layout_variation import verify_corpus
+            value,prepared=verify_corpus(CORPUS)
+            result['registration_summary']=dict(requested_parents=value['requested_parents'],requested_routes=value['requested_routes'],
+                roles=value['role_counts'],blocked_parent_ids=value['duplicate_gate']['blocked_parent_ids'],
+                preclosed_guide_slots={p['parent_id']:p['predeclared_closed_guide_slots'] for p in value['parent_plan']},
+                presence=prepared['presence'],server_payload_files_opened=0,simulator_calls=0)
+            result['corpus_artifacts']={name:sha(CORPUS/name) for name in ('registration.json','corpus_manifest.json')}
+        else:
+            from scripts.collect_observed_layout_variation import verify_corpus,checked_closures,live_layout_gate
+            value,_=verify_corpus(CORPUS);rows=checked_closures(CORPUS,value)
+            if sorted(r['index'] for r in rows)!=[0,1,2,3]:raise ValueError('Expected exactly first4 closures')
+            result['mechanical_summary']=dict(closed_indices=[r['index'] for r in rows],requested_routes=108,
+                attempted_lower=sum(r['attempted_lower'] for r in rows),attempted_upper=sum(r['attempted_upper'] for r in rows),
+                unattempted_lower=sum(r['unattempted_lower'] for r in rows),unattempted_upper=sum(r['unattempted_upper'] for r in rows),
+                gate=live_layout_gate(CORPUS),route_quality_not_inferred=True)
+            result['sealed_artifacts']={name:sha(RUN/name) for name in ('pilot4/complete.json','pilot4_recipe/xvfb_receipt.json')}
+            result['corpus_artifacts']={str(Path('closures')/('%03d.json'%i)):sha(CORPUS/'closures'/('%03d.json'%i)) for i in range(4)}
+        verify_source();result.update(status='completed',source_unchanged=True,resources_after=resources())
+    except BaseException as error:
+        result['exception']=repr(error);raise
+    finally:
+        result['elapsed_seconds']=time.perf_counter()-start;result['finished_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+        # A pre-existing sealed receipt must never be replaced even on a bad re-entry.
+        if not receipt_path.exists():write(receipt_path,result)
+        if lock.exists() and read(lock).get('pid')==os.getpid():lock.unlink()
+    print(json.dumps(result),flush=True)
+
+
+if __name__=='__main__':main()

@@ -1,0 +1,148 @@
+"""One frozen stage only: CPU tests, saved-pool analysis, or authorized TRAIN6 probe."""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT = 'b127ce8514a63917cc3f1b7278db8f65289ba985'
+P = Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE = P/'research_v2/releases'/COMMIT
+GPU_UUID = 'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+SOURCE_MANIFEST_SHA = '00eda8858af348992cd81cd37fd7c0aa4843240c125bda7741af0ffb450ec830'
+EXPECTED_CASES = [('tests.test_observed_diffusion_analysis', 'test_saved_first_tie_not_later_reselection'), ('tests.test_observed_diffusion_analysis', 'test_48_choice_schedule_is_fixed'), ('tests.test_observed_diffusion_analysis', 'test_repeats_are_metric_average_never_candidate_union'), ('tests.test_observed_diffusion_analysis', 'test_unknown_and_failed_slots_are_not_dropped'), ('tests.test_observed_diffusion_analysis', 'test_all_stages_gate_reads_only_status_before_reject'), ('tests.test_observed_diffusion_analysis', 'test_exact_journal_rejects_reordering_with_same_counts'), ('tests.test_observed_diffusion_analysis', 'test_valid_sealed_pool_retains_nan_failure'), ('tests.test_observed_diffusion_analysis', 'test_noise_relabel_even_if_rehashed_is_rejected'), ('tests.test_observed_diffusion_analysis', 'test_missing_40th_call_not_hidden_by_receipt'), ('tests.test_observed_diffusion_analysis', 'test_label_decision_cannot_upgrade_nan_candidate'), ('tests.test_observed_diffusion_analysis', 'test_unsealed_or_extra_artifact_rejected'), ('tests.test_observed_diffusion_analysis', 'test_pool_receipt_boundary_cannot_hide_extra_issued_call'), ('tests.test_observed_diffusion_analysis', 'test_no_model_or_torch_loaded_by_import'), ('tests.test_hamster3d_train6_probe', 'test_fixed_contract_and_conserved_budget'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[split-DEV_MODEL]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[maximum_generate_calls-7]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[retry-True]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[dtype-float16]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[candidates_per_input-4]'), ('tests.test_hamster3d_train6_probe', 'test_policy_cannot_expand[gpu_memory_fraction-0.36]'), ('tests.test_hamster3d_train6_probe', 'test_exact_six_lines_never_parse_following_dev_line'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[role]'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[extra_goal]'), ('tests.test_hamster3d_train6_probe', 'test_answer_token_or_role_identity_change_rejected[id]'), ('tests.test_hamster3d_train6_probe', 'test_signed_intrinsics_matches_official_inverse_projection_no_flip'), ('tests.test_hamster3d_train6_probe', 'test_projection_does_not_clamp_or_replace_predicted_depth'), ('tests.test_hamster3d_train6_probe', 'test_empty_official_parse_is_empty_candidate_not_retry'), ('tests.test_hamster3d_train6_probe', 'test_raw_path_escape_rejected'), ('tests.test_hamster3d_train6_probe', 'test_streamed_tokens_preserve_partial_without_forward'), ('tests.test_hamster3d_train6_probe', 'test_streamer_rejects_prompt_or_batch_change'), ('tests.test_hamster3d_train6_probe', 'test_offline_network_scope_restores_socket'), ('tests.test_hamster3d_train6_probe', 'test_resident_set_keeps_encode_and_direct_device_readers_off_meta')]
+TEST_FILES = ['tests/test_observed_diffusion_analysis.py', 'tests/test_hamster3d_train6_probe.py']
+VALIDATION = P/'runs/diffusion_analysis_hamster_validation_v1'/COMMIT
+OUTPUTS = dict(tests=VALIDATION, analysis=P/'runs/observed_two_row_diffusion_analysis_v1',
+               probe=P/'runs/hamster3d_train6_probe_v1')
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+def write(path,value):
+    path=Path(path);temp=path.with_suffix(path.suffix+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+def validate_junit(path):
+    xml=ET.parse(path).getroot();suites=list(xml.iter('testsuite'))
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Require zero actual errors/failures/skips')
+    cases=[]
+    for case in xml.iter('testcase'):
+        if any(case.find(k) is not None for k in ('error','failure','skipped')):
+            raise ValueError('Every exact testcase must pass')
+        cases.append((case.get('classname'),case.get('name')))
+    if len(cases)!=32 or len(set(cases))!=32 or sorted(cases)!=sorted(EXPECTED_CASES):
+        raise ValueError('Require exact 13 diffusion-analysis and 19 probe tests; no substitution')
+    return dict(tests=32,passed=32,skipped=0,errors=0,failures=0,pure_tests=32,
+                diffusion_analysis=13,hamster_probe=19,actual_testcases=cases)
+
+def verify_source():
+    manifest_path=P/'research_v2/incoming'/('research_validation_sources_'+COMMIT[:7]+'.json')
+    if sha(manifest_path)!=SOURCE_MANIFEST_SHA:raise ValueError('Frozen code archive manifest changed')
+    value=read(manifest_path)
+    if value['code_commit']!=COMMIT:raise ValueError('Source manifest commit differs')
+    for name,item in value['files'].items():
+        file=SOURCE/name
+        if file.is_symlink() or not file.is_file() or file.stat().st_size!=item['bytes'] or sha(file)!=item['sha256']:
+            raise ValueError('Immutable source bytes changed: '+name)
+    return dict(path=str(manifest_path),sha256=SOURCE_MANIFEST_SHA,files=len(value['files']),
+                archive_sha256=value['archive_sha256'])
+
+def validate_prior_tests():
+    state=read(VALIDATION/'tests.status.json');receipt=read(VALIDATION/'validation_receipt.json')
+    identity=read(VALIDATION/'validation_identity.json')
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or state.get('code_commit')!=COMMIT
+            or receipt.get('status')!='passed' or receipt.get('code_commit')!=COMMIT
+            or receipt.get('identity_sha256')!=sha(VALIDATION/'validation_identity.json')
+            or receipt.get('pytest_xml_sha256')!=sha(VALIDATION/'pytest.xml')
+            or identity.get('source_manifest',{}).get('sha256')!=SOURCE_MANIFEST_SHA
+            or identity.get('runner',{}).get('sha256')!=sha(__file__)):
+        raise ValueError('This exact source/runner must first pass actual recorded 32 tests')
+    validate_junit(VALIDATION/'pytest.xml')
+    return {name:sha(VALIDATION/name) for name in ('tests.status.json','validation_receipt.json',
+                                                'validation_identity.json','pytest.xml')}
+
+def prepared_assets_gate():
+    root=P/'runs/hamster3d_preparation_v1';identity=read(root/'preparation_identity.json')
+    result={}
+    for stage in ('assets','environment'):
+        marker=root/(stage+'.completed.json');value=read(marker);folder=Path(value['session'])
+        folder.resolve().relative_to(root.resolve())
+        state=read(folder/'status.json')
+        if (value['identity']!=identity or sha(folder/'receipt.json')!=value['receipt_sha256']
+                or state.get('status')!='completed' or state.get('exit_code')!=0):
+            raise ValueError('Required actual HAMSTER preparation stage is not complete: '+stage)
+        result[stage]=dict(marker_sha256=sha(marker),receipt_sha256=sha(folder/'receipt.json'),
+                           status_sha256=sha(folder/'status.json'))
+    return result
+
+def main():
+    p=argparse.ArgumentParser();p.add_argument('--stage',choices=tuple(OUTPUTS),required=True);args=p.parse_args()
+    stage=args.stage;out=OUTPUTS[stage];started=time.perf_counter()
+    env=P/('.venv-hamster3d' if stage=='probe' else '.venv-qwen')
+    expected_cuda=GPU_UUID if stage=='probe' else ''
+    wrapper=Path(os.environ['FROZEN_RESEARCH_WRAPPER'])
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,11) or Path(sys.prefix).resolve()!=env.resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or sorted(os.sched_getaffinity(0))!=[0] or os.environ.get('CUDA_VISIBLE_DEVICES')!=expected_cuda
+            or wrapper.resolve().parent!=P/'research_v2/incoming'
+            or wrapper.name!=f'research_{stage}_{COMMIT[:7]}.sh'):
+        raise ValueError('Fixed source/private Python3.11/CPU0/CUDA/wrapper identity mismatch')
+    source=verify_source()
+    identity=dict(protocol='diffusion_analysis_hamster_frozen_recipe_v1',stage=stage,code_commit=COMMIT,
+        source_manifest=source,runner=dict(path=str(Path(__file__).resolve()),sha256=sha(__file__)),
+        wrapper=dict(path=str(wrapper),sha256=sha(wrapper)),
+        runtime=dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,
+                     cpu_affinity=sorted(os.sched_getaffinity(0)),cuda_visible_devices=expected_cuda,
+                     omp_threads=os.environ.get('OMP_NUM_THREADS')),
+        start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),fresh_only=True,
+        automatic_following_stage=False)
+    if stage!='tests':identity['actual_validation']=validate_prior_tests()
+    if stage=='tests':
+        command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+                 '--junitxml='+str(out/'pytest.xml')]+TEST_FILES
+        identity.update(requested_tests=32,model_calls=0,real_dataset_arrays_opened=False)
+        identity_path=out/'validation_identity.json';receipt_path=out/'validation_receipt.json'
+    elif stage=='analysis':
+        if (out/'analysis').exists():raise FileExistsError('Fresh saved-pool analysis only')
+        command=[sys.executable,'-m','scripts.analyze_observed_two_row_diffusion',
+            '--runs',str(P/'runs/observed_two_row_diffusion_v1_fixed_receipt'),
+            '--ordinary-run',str(P/'runs/observed_two_row_composite108_v1'),
+            '--training-source',str(P/'research_v2/releases/6e0203ba1335f9fa9975c523c657959f8bc9ab60'),
+            '--output',str(out/'analysis')]
+        identity.update(new_model_calls=0,new_searches=0,requires_all_ten_stages_completed=True)
+        identity_path=out/'analysis_recipe_identity.json';receipt_path=out/'analysis_recipe_receipt.json'
+    else:
+        if (out/'probe').exists():raise FileExistsError('Fresh bounded HAMSTER probe only')
+        identity['preparation_gate']=prepared_assets_gate()
+        command=[sys.executable,'-m','scripts.probe_hamster3d_train6',
+                 '--config',str(SOURCE/'configs/hamster3d_train6_probe_v1.json'),'--output',str(out/'probe')]
+        identity.update(maximum_generate_calls=6,candidates_per_request=1,maximum_tokens_total=6144,
+            maximum_gpu_fraction=.35,maximum_gpu_GiB=8.4,maximum_request_seconds=300,
+            maximum_load_seconds=600,maximum_body_seconds=2400,model_calls_actual='read child issued ledger')
+        identity_path=out/'probe_recipe_identity.json';receipt_path=out/'probe_recipe_receipt.json'
+    identity['command']=command;write(identity_path,identity)
+    child=subprocess.run(command,cwd=SOURCE)
+    result=dict(stage=stage,code_commit=COMMIT,status='failed',child_exit_code=child.returncode,
+                elapsed_seconds=time.perf_counter()-started,identity_sha256=sha(identity_path))
+    try:
+        if child.returncode!=0:raise RuntimeError('Frozen child stage failed; preserve, no retry or next stage')
+        if stage=='tests':
+            result['junit']=validate_junit(out/'pytest.xml');result['pytest_xml_sha256']=sha(out/'pytest.xml')
+        result['source_postcheck']=verify_source();result['source_unchanged']=True
+        result['status']='passed' if stage=='tests' else 'completed'
+    except BaseException as error:
+        result['exception']=repr(error);write(receipt_path,result);raise
+    write(receipt_path,result);print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()

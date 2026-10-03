@@ -1,0 +1,147 @@
+"""One immutable CPU stage only; scientific inputs remain inside the frozen driver."""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT = 'a633e39204623cf1760f369e70d1c3816074b4d1'
+P = Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE = P/'research_v2/releases'/COMMIT
+MANIFEST_SHA = 'c3b5f098eca1f9b79d351b001825de473fb1cf32166a606bef56d7c1da1d32a3'
+CONFIG_SHA = '8720ed3e7b0abea850d836c79f043be84b96cf944289813ba69e9b87426b031d'
+CASES = [('tests.test_two_row_segment_observability', 'test_fixed_population_and_budget'), ('tests.test_two_row_segment_observability', 'test_no_replacement_parent[parents]'), ('tests.test_two_row_segment_observability', 'test_no_replacement_parent[fit_parents]'), ('tests.test_two_row_segment_observability', 'test_no_replacement_parent[holdout_parents]'), ('tests.test_two_row_segment_observability', 'test_opaque_unselected_json'), ('tests.test_two_row_segment_observability', 'test_cache_metadata_selection_without_role_payload'), ('tests.test_two_row_segment_observability', 'test_path_escape_and_wrong_role_rejected'), ('tests.test_two_row_segment_observability', 'test_symlink_escape_rejected'), ('tests.test_two_row_segment_observability', 'test_sealed_train_pool_keeps_failures_but_rejects_dev'), ('tests.test_two_row_segment_observability', 'test_signed_camera_ray_unknown_is_not_free'), ('tests.test_two_row_segment_observability', 'test_local_representation_depends_on_alignment_and_no_labels'), ('tests.test_two_row_segment_observability', 'test_shuffle_is_label_free_derangement_inside_condition'), ('tests.test_two_row_segment_observability', 'test_same_dim_and_context_preserved_all_three_arms'), ('tests.test_two_row_segment_observability', 'test_weights_do_not_let_many_refs_or_segments_dominate'), ('tests.test_two_row_segment_observability', 'test_closed_form_fit_scaling_uses_only_fit_and_is_reproducible'), ('tests.test_two_row_segment_observability', 'test_auc_ties_single_class_and_fixed_threshold'), ('tests.test_two_row_segment_observability', 'test_wrong_targets_and_unknowns_are_not_dropped'), ('tests.test_two_row_segment_observability', 'test_screen_requires_both_controls_and_support'), ('tests.test_two_row_segment_observability', 'test_import_does_not_load_torch_transformers_or_simulator'), ('tests.test_two_row_segment_observability', 'test_runtime_rejects_visible_gpu_before_output')]
+CONFIG = 'configs/two_row_segment_observability_v1.json'
+VALIDATION = P/'runs/two_row_segment_observability_validation_v1'/COMMIT
+OUTPUTS = {'tests': VALIDATION, 'diagnostic': P/'runs/two_row_segment_observability_v1'}
+THREADS = ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS')
+
+def sha(path):
+    h = hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(2**20), b''): h.update(block)
+    return h.hexdigest()
+
+def read(path): return json.loads(Path(path).read_text(encoding='utf8'))
+
+def write(path, value):
+    path = Path(path); temp = path.with_suffix(path.suffix+'.writing')
+    temp.write_text(json.dumps(value, indent=2, allow_nan=False)+'\n', encoding='utf8')
+    temp.replace(path)
+
+def validate_junit(path):
+    root = ET.parse(path).getroot(); suites = list(root.iter('testsuite'))
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Require zero actual failures/errors/skips, including Linux symlink test')
+    actual = []
+    for case in root.iter('testcase'):
+        if any(case.find(k) is not None for k in ('error','failure','skipped')):
+            raise ValueError('Every actual testcase must pass')
+        actual.append((case.get('classname'), case.get('name')))
+    if len(actual) != 20 or len(set(actual)) != 20 or sorted(actual) != sorted(CASES):
+        raise ValueError('Require exactly the frozen twenty distinct testcase identities')
+    return dict(tests=20, passed=20, skipped=0, failures=0, errors=0, actual_testcases=actual)
+
+def verify_source():
+    path = P/'research_v2/incoming'/('segment_sources_'+COMMIT[:7]+'.json')
+    if sha(path) != MANIFEST_SHA: raise ValueError('Frozen source manifest changed')
+    manifest = read(path)
+    if manifest['code_commit'] != COMMIT: raise ValueError('Source manifest commit differs')
+    for name, expected in manifest['files'].items():
+        candidate = SOURCE/name
+        if (candidate.is_symlink() or not candidate.is_file() or candidate.stat().st_size != expected['bytes']
+                or sha(candidate) != expected['sha256']):
+            raise ValueError('Immutable archive source bytes differ: '+name)
+    if sha(SOURCE/CONFIG) != CONFIG_SHA: raise ValueError('Registered diagnostic config changed')
+    return dict(path=str(path), sha256=MANIFEST_SHA, files=len(manifest['files']),
+                archive_sha256=manifest['archive_sha256'], config_sha256=CONFIG_SHA,
+                all_archive_dependencies_verified=True)
+
+def prior_tests():
+    status = read(VALIDATION/'tests.status.json')
+    receipt = read(VALIDATION/'validation_receipt.json')
+    identity = read(VALIDATION/'validation_identity.json')
+    test_wrapper = P/'research_v2/incoming'/('segment_tests_'+COMMIT[:7]+'.sh')
+    if (status.get('status') != 'completed' or status.get('exit_code') != 0 or status.get('code_commit') != COMMIT
+            or receipt.get('status') != 'passed' or receipt.get('code_commit') != COMMIT
+            or receipt.get('identity_sha256') != sha(VALIDATION/'validation_identity.json')
+            or receipt.get('pytest_xml_sha256') != sha(VALIDATION/'pytest.xml')
+            or identity.get('stage') != 'tests' or identity.get('code_commit') != COMMIT
+            or identity.get('source_manifest',{}).get('sha256') != MANIFEST_SHA
+            or identity.get('runner',{}).get('sha256') != sha(__file__)
+            or identity.get('wrapper',{}).get('path') != str(test_wrapper)
+            or identity.get('wrapper',{}).get('sha256') != sha(test_wrapper)):
+        raise ValueError('Actual twenty tests on this exact source/runner must pass before diagnostic')
+    validate_junit(VALIDATION/'pytest.xml')
+    return {name:sha(VALIDATION/name) for name in ('tests.status.json','validation_receipt.json',
+                                                 'validation_identity.json','pytest.xml')}
+
+def main():
+    parser = argparse.ArgumentParser(); parser.add_argument('--stage',choices=tuple(OUTPUTS),required=True)
+    stage = parser.parse_args().stage; out = OUTPUTS[stage]; started = time.perf_counter()
+    wrapper = Path(os.environ['FROZEN_SEGMENT_WRAPPER'])
+    if (sys.platform != 'linux' or sys.version_info[:2] != (3,11)
+            or Path(sys.prefix).resolve() != (P/'.venv-qwen').resolve()
+            or Path.cwd().resolve() != SOURCE or os.environ.get('CODE_COMMIT') != COMMIT
+            or sorted(os.sched_getaffinity(0)) != [1] or os.environ.get('CUDA_VISIBLE_DEVICES') != ''
+            or any(os.environ.get(name) != '1' for name in THREADS)
+            or wrapper.resolve().parent != P/'research_v2/incoming'
+            or wrapper.name != 'segment_%s_%s.sh' % (stage, COMMIT[:7])):
+        raise ValueError('Require immutable source, private Python3.11, CPU1, hidden CUDA, one numeric thread')
+    source = verify_source()
+    identity = dict(protocol='two_row_segment_frozen_recipe_v1', stage=stage, code_commit=COMMIT,
+        source_manifest=source, config_sha256=CONFIG_SHA,
+        runner=dict(path=str(Path(__file__).resolve()),sha256=sha(__file__)),
+        wrapper=dict(path=str(wrapper),sha256=sha(wrapper)),
+        runtime=dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,
+                     cpu_affinity=sorted(os.sched_getaffinity(0)),cuda_visible_devices='',
+                     threads={name:os.environ[name] for name in THREADS}),
+        start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        fresh_only=True,automatic_following_stage=False,gpu_hours=0.)
+    if stage == 'tests':
+        command = [sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+                   '--junitxml='+str(out/'pytest.xml'),'tests/test_two_row_segment_observability.py']
+        identity.update(requested_tests=20,model_calls=0,real_dataset_arrays_opened=False)
+        identity_path=out/'validation_identity.json'; receipt_path=out/'validation_receipt.json'
+    else:
+        identity['actual_validation'] = prior_tests()
+        if (out/'analysis').exists(): raise FileExistsError('Diagnostic output must be fresh; no replay')
+        command = [sys.executable,'-m','scripts.audit_two_row_segment_observability',
+                   '--config',str(SOURCE/CONFIG),'--output',str(out/'analysis')]
+        identity.update(maximum_geometry_forwards=48,new_qwen_forwards=0,new_route_head_forwards=0,
+                        new_candidates=0,cpu_linear_fits=3,requested_existing_paths=477,
+                        requested_segments=10971,source_role='TRAIN',probe_fit_parents=12,probe_holdout_parents=4)
+        identity_path=out/'diagnostic_recipe_identity.json'; receipt_path=out/'diagnostic_recipe_receipt.json'
+    if identity_path.exists() or receipt_path.exists(): raise FileExistsError('Preserve prior stage receipts')
+    identity['command'] = command; write(identity_path,identity)
+    child = subprocess.run(command,cwd=SOURCE)
+    result = dict(stage=stage,code_commit=COMMIT,status='failed',child_exit_code=child.returncode,
+                  elapsed_seconds=time.perf_counter()-started,identity_sha256=sha(identity_path))
+    try:
+        if child.returncode != 0: raise RuntimeError('Child failed; preserve output, no retry or next stage')
+        if stage == 'tests':
+            result['junit'] = validate_junit(out/'pytest.xml')
+            result['pytest_xml_sha256'] = sha(out/'pytest.xml')
+        else:
+            actual = read(out/'analysis/status.json'); report = read(out/'analysis/report.json')
+            if (actual.get('status') != 'completed' or report.get('geometry_forwards') != 48
+                    or report.get('cpu_linear_fits') != 3 or report.get('requested_routes') != 477
+                    or report.get('requested_segments') != 10971
+                    or any(report.get(k) != 0 for k in ('new_qwen_forwards','new_generator_forwards','new_candidates'))):
+                raise ValueError('Completed scientific receipt/budget mismatch')
+            result['diagnostic_artifacts'] = {name:sha(out/'analysis'/name)
+                for name in ('status.json','report.json','artifact_index.json')}
+            result['screen'] = report['screen']
+            result['scientific_result_not_required_to_be_positive'] = True
+        result['source_postcheck'] = verify_source(); result['source_unchanged'] = True
+        result['status'] = 'passed' if stage == 'tests' else 'completed'
+    except BaseException as error:
+        result['exception'] = repr(error); write(receipt_path,result); raise
+    write(receipt_path,result); print(json.dumps(result),flush=True)
+
+if __name__ == '__main__': main()

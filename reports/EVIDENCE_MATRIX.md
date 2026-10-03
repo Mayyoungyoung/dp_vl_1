@@ -1,5 +1,13 @@
 # 主张—证据对应表
 
+## 2026-10-03 05:12 UTC：实测配对与当前决定
+
+观测扩散真实12k两臂、teacher、全285 TRAIN保存池及3次独立采样全部完成。best Tip独立32.87%/集合29.17%，known Unique0.8426/0.9259；普通同曝光43.75%/0.9444仍强。TRAIN拟合34.39%/40.79%也弱，继续查基线去噪尺度，不把集合交互写成方法贡献。MAIN289保留原277行，全部12父图root实际查看；[原指标/预算/失败与权重hash](observed_two_row_diffusion_v1/DIFFUSION_RESULTS.md)。每臂1训练seed，3采样repeat不冒充3种子。
+
+固定TRAIN空间probe实际完成但仅2碰撞段，`stop_underpowered`，封存不补数。[诊断](two_row_segment_observability_v1/SEGMENT_RESULTS.md)。HAMSTER真实官方加载并发出第一请求，300秒内87token未成完整JSON、其余5未发，0质量指标；[完整失败](hamster3d_train6_probe_v1/PROBE_FAILURE_RESULTS.md)。后续只先做同值传输工程核验，不能当新方法。
+
+可变1/2/4/6障碍布局12 TRAIN父已完成114项真实测试与独立登记，首4正在实际采集，余8未启动；[登记证据](observed_layout_variation_preparation_v1/PREPARATION_RESULTS.md)。原TRAIN128质量已完成，256追加收集进行中；数据扩展不自动改本轮训练人口或启用新DEV。核心创新/公平强基线优势/独立设置与多种子、SelectedValid及校准仍未闭合。下一步真正K条件普通基线和基于实际失败的低噪声拟合修复，与采集/系统对照并行，不以新查询或普通匹配命名新核心。
+
 ## 2026-10-03 03:32 UTC 实测更新
 
 Qwen冻结/LoRA普通集合回归配对已完整完成：best TipValid62→58/144（原规则选点），last53→62/144，TRAIN983→1036/1140；同draw/曝光，真实adapter更新。保留两臂，未证实稳定best优势；主要剩余失败是语义正确但路径碰撞。完整结果见[CONTINUATION_RESULTS](observed_two_row_lora_continuation_v1/CONTINUATION_RESULTS.md)，MAIN277保留旧273行。两臂与诊断/共享prefix外层成本1.229347GPUh，新增训练不是新机制。

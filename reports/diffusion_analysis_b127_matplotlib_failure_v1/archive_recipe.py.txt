@@ -1,0 +1,54 @@
+"""Archive the completed matplotlib-import failure, metadata only."""
+import hashlib,json,subprocess,tarfile
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'reports/diffusion_analysis_b127_matplotlib_failure_v1'
+REMOTE=r'''
+import hashlib,io,json,sys,tarfile
+from pathlib import Path
+p=Path('/home/wzy/dpvlm/route_set_v1');run=p/'runs/observed_two_row_diffusion_analysis_v1'
+sha=lambda q:hashlib.sha256(q.read_bytes()).hexdigest()
+s=json.loads((run/'analysis.status.json').read_text())
+assert s['exit_code']==1 and s['status']=='failed' and s['code_commit']=='b127ce8514a63917cc3f1b7278db8f65289ba985'
+assert "No module named 'matplotlib'" in (run/'analysis.log').read_text()
+files=[('original/'+q.name,q) for q in sorted(run.iterdir()) if q.is_file()]
+for n in ('research_stage_runner_b127ce8.py','research_analysis_b127ce8.sh'):
+ q=p/'research_v2/incoming'/n;files.append(('incoming/'+n+('.txt' if n.endswith('.py') else ''),q))
+contents=[str(q.relative_to(run/'analysis')) for q in (run/'analysis').rglob('*')]
+assert not contents,'Do not mislabel partial analysis artifacts as absent'
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as tar:
+ for n,q in files:
+  assert q.stat().st_size<10*2**20
+  index.append(dict(path=n,remote_path=str(q),bytes=q.stat().st_size,sha256=sha(q)));tar.add(q,arcname=n,recursive=False)
+ for n,obj in [('REMOTE_ARTIFACT_INDEX.json',dict(files=index)),('EMPTY_OUTPUT_RECEIPT.json',dict(path=str(run/'analysis'),exists=True,contents=contents))]:
+  raw=(json.dumps(obj,indent=2)+'\n').encode();info=tarfile.TarInfo(n);info.size=len(raw);tar.addfile(info,io.BytesIO(raw))
+'''
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def main():
+ compile(REMOTE,'remote_readonly_failure','exec');assert not OUT.exists()
+ archive=ROOT/'.bootstrap/diffusion_analysis_b127_failure_originals.tar'
+ with archive.open('xb') as f:r=subprocess.run(['ssh','wzy3090','taskset','-c','0','python3','-'],input=REMOTE.encode(),stdout=f,stderr=subprocess.PIPE)
+ if r.returncode:raise RuntimeError(r.stderr.decode())
+ OUT.mkdir(parents=True)
+ with tarfile.open(archive) as tar:
+  for m in tar.getmembers():
+   assert m.isfile() and not Path(m.name).is_absolute() and '..' not in Path(m.name).parts
+   p=OUT/m.name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(tar.extractfile(m).read())
+ for x in json.loads((OUT/'REMOTE_ARTIFACT_INDEX.json').read_text())['files']:assert sha(OUT/x['path'])==x['sha256']
+ import datetime
+ s=json.loads((OUT/'original/analysis.status.json').read_text());receipt=json.loads((OUT/'original/analysis_recipe_receipt.json').read_text())
+ seconds=(datetime.datetime.fromisoformat(s['end_utc'])-datetime.datetime.fromisoformat(s['start_utc'])).total_seconds()
+ (OUT/'FAILURE_RESULTS.md').write_text(f'''# b127 保存池分析环境失败
+
+实际源码b127ce8514a63917cc3f1b7278db8f65289ba985的保存池分析因私有`.venv-qwen`未安装matplotlib，在`plots()`阶段抛出`ModuleNotFoundError`，退出1。源码、十个完成阶段及原池校验已在此前执行；这是运行环境失败，没有新的生成、训练、选模或质量结果。
+
+record_job PID{s['pid']}/child{s['child_pid']}，{s['start_utc']}→{s['end_utc']}，外层{seconds:.6f}秒。recipe主体{receipt['elapsed_seconds']:.9f}秒与外层嵌套；CPU0、CUDA隐藏、GPU小时0。原日志/状态/recipe/registry及空analysis目录存在性已只读归档；原服务器目录保留不覆盖。
+
+后续只允许在根线程单独调度时，用已存在且matplotlib可导入的`.venv` Python3.8执行同一b127科学源码，输出fresh `runs/observed_two_row_diffusion_analysis_v2/analysis`。不安装依赖，不修改指标，不删失败、不重选checkpoint。新runner是独立工程recipe，并非原32测试已覆盖的新源码。
+''',encoding='utf8')
+ (OUT/'archive_recipe.py.txt').write_bytes(Path(__file__).read_bytes())
+ files=[dict(path=p.relative_to(OUT).as_posix(),bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(OUT.rglob('*')) if p.is_file()]
+ (OUT/'LOCAL_ARTIFACT_INDEX.json').write_text(json.dumps(dict(files=files,local_file_count=len(files),all_original_sha256_verified=True),indent=2)+'\n',encoding='utf8')
+ print(json.dumps(dict(files=len(files),index_sha256=sha(OUT/'LOCAL_ARTIFACT_INDEX.json'),outer_seconds=seconds)))
+if __name__=='__main__':main()

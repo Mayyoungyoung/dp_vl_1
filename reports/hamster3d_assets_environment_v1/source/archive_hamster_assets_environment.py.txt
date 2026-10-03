@@ -1,0 +1,33 @@
+import hashlib,json,subprocess,tarfile
+from pathlib import Path
+r=Path('F:/dpvlm');out=r/'reports/hamster3d_assets_environment_v1';archive=r/'.bootstrap/hamster_assets_environment_completed.tar.gz'
+assert not out.exists() and not archive.exists()
+remote=r'''
+from pathlib import Path
+import hashlib,io,json,tarfile,sys
+r=Path('/home/wzy/dpvlm/route_set_v1/runs/hamster3d_preparation_v1');files=[]
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+identity=json.loads((r/'preparation_identity.json').read_text());files.append(r/'preparation_identity.json')
+for stage in ('assets','environment'):
+ marker=r/(stage+'.completed.json');m=json.loads(marker.read_text());p=Path(m['session']);p.resolve().relative_to(r.resolve())
+ s=json.loads((p/'status.json').read_text());assert s['status']=='completed' and s['exit_code']==0 and m['identity']==identity and sha(p/'receipt.json')==m['receipt_sha256']
+ files.append(marker);files.extend(x for x in p.rglob('*') if x.is_file())
+ for suffix in ('.status.json','.log','.wrapper.json'):files.append(p.with_name(p.name+suffix))
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as t:
+ for p in files:
+  assert p.stat().st_size<10*2**20 and p.suffix not in ('.pt','.safetensors','.whl')
+  name=p.relative_to(r).as_posix();index.append(dict(path=name,remote_path=str(p),sha256=sha(p),bytes=p.stat().st_size));t.add(p,arcname=name,recursive=False)
+ data=(json.dumps(dict(files=index,new_model_calls=0,weights_copied=0),indent=2)+'\n').encode();x=tarfile.TarInfo('REMOTE_ARTIFACT_INDEX.json');x.size=len(data);t.addfile(x,io.BytesIO(data))
+'''
+with archive.open('wb') as f:
+ p=subprocess.run(['ssh','wzy3090','taskset','-c','1','/home/wzy/dpvlm/route_set_v1/.venv/bin/python','-'],input=remote.encode(),stdout=f,stderr=subprocess.PIPE)
+assert p.returncode==0,p.stderr.decode()
+with tarfile.open(archive) as t:
+ index=json.load(t.extractfile('REMOTE_ARTIFACT_INDEX.json'));lookup={x['path']:x for x in index['files']}
+ for m in t.getmembers():
+  assert m.isfile() and not Path(m.name).is_absolute() and '..' not in Path(m.name).parts
+  data=t.extractfile(m).read()
+  if m.name!='REMOTE_ARTIFACT_INDEX.json':assert hashlib.sha256(data).hexdigest()==lookup[m.name]['sha256']
+  q=out/m.name;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(data)
+print(json.dumps(dict(files=len(index['files']),bytes=sum(x['bytes'] for x in index['files']),archive_sha256=hashlib.sha256(archive.read_bytes()).hexdigest())))

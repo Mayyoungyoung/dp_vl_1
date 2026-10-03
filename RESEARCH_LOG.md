@@ -505,3 +505,17 @@ HAMSTER上传18/18实际完成并最终服务器SHA一致，18次SCP、0GPU/模�
 TRAIN256原5c8/SSH26105继续CPU2/3，04:14日志已闭合到index159；旧128不重采，DEV32仍封存、训练人口仍285。新的两条工作已决定并开始编码：固定首16实际TRAIN父仅用ordinary last保存候选与正参考，48次CPU geometry-only重放、0Qwen/路线head，按父12/4划分的同容量global/local/shuffled探针，验证局部对应是否可识别碰撞；另独立最多12个可变1/2/4/6柱布局技术协议，首4通过后再决定余8，严格canonical/恢复与全分母不放松。两者当前均未服务器运行，不是新方法正结果。依据见 reports/POST_DIFFUSION_CANDIDATES_DRAFT.md 与 reports/OBSERVED_LAYOUT_VARIATION_DRAFT.md。
 
 下一实际动作：保留分析失败并用现有正确环境完成原池配对、归档/推送；检查HAMSTER环境完成收据后独立六TRAIN技术探针；审查并冻结空间诊断和变布局小批。无新DEV/锁定集读取，无新核心成立或论文A–H达成声明。
+
+## 扩散配对入表、空间筛选封存、可变布局实际采集 — 2026-10-03 05:12 UTC
+
+观测独立/集合扩散两臂及全部10阶段完成，b127只读原池分析v2也完成。三次采样best Tip32.870%/29.167%，known Unique0.8426/0.9259；last29.861%/34.491%、known0.6574/0.6111。普通同曝光best43.75%/0.9444仍强；扩散TRAIN仅34.39%/40.79%，优先属于自由生成拟合不足，不能归结为泛化或证明扩散机制无效。一个训练seed、三个采样repeat分开，各K4不并池。两臂全部成功作业外层0.617431797 GPUh（嵌套主体不相加），原0f失败另0.003076219h。MAIN已277→289，旧277 JSON对象/CSV原列单元格root独立逐项不变。全部12父完整预测图与收敛图已实际查看，全部失败/大绕行保留；[完整报告](reports/observed_two_row_diffusion_v1/DIFFUSION_RESULTS.md)。无SelectedValid或全机械臂执行指标。
+
+原b127分析缺matplotlib的失败完整保留；科学源不变，用已有.venv fresh目录完成，0新forward/检查器/保留集。固定TRAIN空间诊断a633真实20测试/0skip，48CPU几何编码、3闭式probe，0新生成：预定4留出父只有2个碰撞段、来自1父，未达20段/2父支持门，stop_underpowered。大的单父AUROC差不作机制证据；不改v1父/负例/阈值补过线。[诊断报告](reports/two_row_segment_observability_v1/SEGMENT_RESULTS.md)。
+
+HAMSTER官方68资产复用核验与私有环境均实际完成，CPU/GPU成本分别记录。b127首TRAIN0真实官方bf16模型调用在300秒deadline超时：445prompt、88forward、87partial token、1请求发出/余5未尝试，未闭合JSON，不补写成候选或质量结果。峰值allocated4.662GB/reserved4.809GB/RSS19.805GB，非OOM；KV实际1token decode正常。主体409.418706秒，外层411.174125秒/0.114215035GPUh，二者嵌套。[失败和输入QA](reports/hamster3d_train6_probe_v1/PROBE_FAILURE_RESULTS.md)。新exact8工程对照源cbcd8129c967db6f0995a824754752cc7a6f0f5b已推送核远端、429文件部署SHA通过，原bf16算子保持，4层驻GPU/32层pinned逐层传输。实际旧/新logits+token逐值相同、资源与decode比≤.75均满足才考虑单独完整请求；当前尚未新forward。私有环境缺pytest已在启动前发现，先固定补充纯测试依赖与原包不变收据，再独立真实39测试。
+
+可变布局源eba09945ecade4bdb9a5b4ab123a92da898283ed：真实114测试/0skip已通过，独立prepare登记12 TRAIN父/324槽、0ID冲突、0仿真/标签payload读取。首4父/108槽于05:05:03.305940UTC独立开始，CPU1、PID784210/784215、SSH17113，原fresh wrapper不能重发。实际采集在本快照仍运行；余8父未启动，不把静态布局检查或登记成功当数据完成。[测试/登记原件](reports/observed_layout_variation_preparation_v1/PREPARATION_RESULTS.md)。
+
+原TRAIN256收集仍为5c8/SSH26105/CPU2、3，05:06附近shard0已闭合到194；全256未完成，不能启动全质量结论或新DEV32。训练人口仍95父/285条件，扩量数据不自动混入现有比较。最近JOBS元数据快照05:02:07.671261UTC751条、registry新增40。发现快照前缀遗漏two_row_诊断家族，已作最小修正，下一冻结快照补入；实际诊断原状态/日志此前已单独归档。
+
+下一实际执行：继续首4可变布局采集并核真数据；完成HAMSTER真实39测试与两个exact8技术调用；审查扩散低噪声重建不足是否有标准基线修复；固定TRAIN指派冲突只读审计和真正K1/2/4/8条件普通基线准备并行。已知受控K2/K4触及该开发集声明类型上限，不能制造无空间的改进；前缀排序、学习查询或普通匹配不当创新。核心方法贡献、多种子观测优势与独立设置仍未成立，论文A–H未达成。没有停止研究，也不承诺会话结束后持续思考改代码；当前仅上述两个既定collector在后台运行。

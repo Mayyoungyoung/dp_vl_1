@@ -1,5 +1,9 @@
 # 数据卡：受控几何与观测任务分层
 
+## 2026-10-03 05:12 UTC：TRAIN128核验与新布局采集
+
+原TRAIN128/3456槽已有完整质量与新增全图核验：2248接受、1208失败、938有效unknown、1已知类型重复均保留；[TRAIN128结果](observed_two_row_extension128_quality_v1/TRAIN128_RESULTS.md)。TRAIN256只追加采集进行中，新DEV32仍封存。新可变布局源eba0994的1/2/4/6障碍、变目标、开闭通道配对已独立登记12 TRAIN父/324槽；真实114测试/0skip后首4开始采集，尚无采集质量结论，不计入任何训练人口或主要结果。[来源与登记](observed_layout_variation_preparation_v1/PREPARATION_RESULTS.md)。
+
 ## 2026-10-03：extension TRAIN64 完整质量核验
 
 前64父/192条件/1728请求槽全部保留：1131接受、597失败、465有效unknown、0已知重复，50条件已知R>K4；严格恢复1728/1728。新增32父576接受/288失败、20种颜色；长弧最长6.569m，未过滤。新96路线图及32front全目视，旧32图逐字节一致。仍为窄几何范围的RLBench-derived reach，不是OOD或新任务，不是全部解集或连续全臂安全证书。[完整数据报告与成本](observed_two_row_extension64_quality_v1/TRAIN64_RESULTS.md)。

@@ -1,0 +1,431 @@
+"""TRAIN-only geometry observability probe; no Qwen or route-head forward.
+
+The only neural replay is the frozen geometry encoder for 48 registered inputs.
+Three closed-form CPU ridge fits are diagnostic training, not route training.
+"""
+import argparse
+from collections import Counter
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import time
+
+import numpy as np
+
+PROTOCOL = 'two_row_first16_segment_observability_v1'
+PARENTS = tuple('two_row_reach_%d' % i for i in range(283200, 283216))
+IDS = tuple(p+'_target%d' % t for p in PARENTS for t in range(3))
+FIT_PARENTS, HOLDOUT_PARENTS = PARENTS[:12], PARENTS[12:]
+ARMS = ('global', 'aligned', 'shuffled')
+CONTEXT_DIM, SEGMENT_DIM, LOCAL_DIM = 128, 20, 40
+SERVER_ROOT = '/home/wzy/dpvlm/route_set_v1'
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1 << 20), b''): h.update(chunk)
+    return h.hexdigest()
+
+
+def write_json(path, obj):
+    Path(path).write_text(json.dumps(obj, indent=2, allow_nan=False)+'\n', encoding='utf-8')
+
+
+def selected_rows(path, identity=True):
+    """Unselected JSONL payloads stay opaque, including all DEV labels."""
+    result = {}
+    with Path(path).open(encoding='utf-8') as stream:
+        for line in stream:
+            match = re.match(r'^\{"id": "([^"]+)"[,}]', line)
+            if not match: raise ValueError('Canonical id-first JSONL required')
+            key = match.group(1)
+            if key not in IDS: continue
+            row = json.loads(line)
+            if key in result: raise ValueError('Duplicate selected identity')
+            if identity and (row.get('split') != 'TRAIN' or row.get('parent_id') != key.rsplit('_target', 1)[0]):
+                raise ValueError('Selected identity/role mismatch')
+            result[key] = row
+    if set(result) != set(IDS): raise ValueError('All fixed48 TRAIN inputs required; no replacement')
+    return result
+
+
+def child(root, name):
+    root = Path(root).resolve()
+    path = (root/name).resolve()
+    try: path.relative_to(root)
+    except ValueError: raise ValueError('Artifact escapes its allowed root')
+    return path
+
+
+def train_path(corpus, parent, name):
+    if parent not in PARENTS: raise ValueError('Unregistered TRAIN parent')
+    base = Path(corpus).resolve()/'parents'/'TRAIN'/parent
+    if base.resolve() != base: raise ValueError('TRAIN parent is redirected')
+    return child(base, name)
+
+
+def validate_config(cfg):
+    if (cfg['protocol'] != PROTOCOL or tuple(cfg['parents']) != PARENTS
+            or tuple(cfg['fit_parents']) != FIT_PARENTS or tuple(cfg['holdout_parents']) != HOLDOUT_PARENTS
+            or cfg['arms'] != list(ARMS) or cfg['ridge_lambda'] != .01
+            or cfg['prediction_threshold'] != .5 or cfg['pixel_stride'] != 2
+            or cfg['geometry_forward_budget'] != 48 or cfg['positive_references'] != 285
+            or cfg['pool_stage'] != 'composite108_fixed_last12000'):
+        raise ValueError('Fixed population, split, arms and fitting policy required')
+    if cfg['screen'] != dict(minimum_eligible_parents=2, minimum_collision_segments=20,
+            minimum_clear_segments=20, minimum_auc_gain=.05, minimum_brier_reduction=.01):
+        raise ValueError('Preregistered screen changed')
+    fixed = dict(data=SERVER_ROOT+'/data/observation_two_row_composite108_v1',
+        run=SERVER_ROOT+'/runs/observed_two_row_composite108_v1/peak_seed0',
+        pool=SERVER_ROOT+'/runs/observed_two_row_composite108_v1/fixed_last_train/predictions.npz',
+        diagnostic_receipt=SERVER_ROOT+'/runs/observed_two_row_composite108_v1/fixed_last_train/diagnostic_receipt.json')
+    if any(cfg[k] != v for k,v in fixed.items()): raise ValueError('Frozen corpus/run/pool paths required')
+    if cfg['frozen_artifacts_sha256'].get(fixed['run']+'/last.pt') != 'ce0b186b1f73beab2bd09b0582622e1d1b012fc88b892ab909479dd7deb250b3':
+        raise ValueError('Original ordinary fixed-last checkpoint required')
+
+
+def load_pool(path):
+    with np.load(path, allow_pickle=False) as data:
+        names, parents = data['scene_ids'].astype(str), data['parent_ids'].astype(str)
+        if (len(names) != 285 or len(set(names)) != 285 or parents.shape != (285,)
+                or data['paths'].shape != (285, 4, 24, 3) or data['gripper_open'].shape != (285, 4, 24)):
+            raise ValueError('Frozen full285 TRAIN saved pool required')
+        expected = {'two_row_reach_%d_target%d' % (p, t) for p in list(range(283200, 283264))+list(range(400000, 400032))
+                    if p != 283220 for t in range(3)}
+        if set(names) != expected or any(p != n.rsplit('_target', 1)[0] for n, p in zip(names, parents)):
+            raise ValueError('Pool contains unexpected identity or role')
+        # Loading the sealed TRAIN-only container is allowed; only selected rows are used.
+        return {n: (data['paths'][i].copy(), data['gripper_open'][i].copy()) for i, n in enumerate(names) if n in IDS}
+
+
+def segment_coordinates(segments, current):
+    a, b = segments[:, 0]-current[:3], segments[:, 1]-current[:3]
+    delta = b-a
+    # Endpoints6, squared endpoints6, delta3, midpoint3, length1, zero-length1.
+    length = np.linalg.norm(delta, axis=1)
+    return np.c_[a, b, a*a, b*b, delta, (a+b)/2, length, length == 0]
+
+
+def ray_descriptor(points, depth, intrinsics, camera_to_world):
+    """Signed optical-depth evidence; outside/invalid rays remain unknown."""
+    camera = (points-camera_to_world[:3, 3]) @ camera_to_world[:3, :3]
+    uvw = camera @ intrinsics.T
+    safe_z = np.where(np.abs(uvw[:, 2]) > 1e-12, uvw[:, 2], 1.)
+    uv = np.rint(uvw[:, :2]/safe_z[:, None]).astype(np.int64)
+    known = ((camera[:, 2] > 0) & (uv[:, 0] >= 0) & (uv[:, 0] < depth.shape[1])
+             & (uv[:, 1] >= 0) & (uv[:, 1] < depth.shape[0]))
+    sampled = np.zeros(len(points))
+    sampled[known] = depth[uv[known, 1], uv[known, 0]]
+    known &= np.isfinite(sampled) & (sampled > 0) & (sampled <= 10.)
+    gap = np.where(known, sampled-camera[:, 2], 0.)
+    return np.c_[np.clip(gap, -.25, .25), known & (gap > .02), known]
+
+
+def local_features(segments, observed_xyz, depth, intrinsics, camera_to_world):
+    """Five ordered sample points/segment, observation-only 8 fields each.
+
+    Nearest visible point distance/delta, nearby count among nearest32, and ray
+    depth gap/free/known. This is not a continuous safety certificate.
+    """
+    from scipy.spatial import cKDTree
+    if not np.isfinite(segments).all() or not np.isfinite(observed_xyz).all() or not len(observed_xyz):
+        raise ValueError('Finite segments and observed points required')
+    fractions = np.linspace(0., 1., 5)
+    points = (segments[:, :1] + fractions[None, :, None]*(segments[:, 1:]-segments[:, :1])).reshape(-1, 3)
+    distance, index = cKDTree(observed_xyz).query(points, k=min(32, len(observed_xyz)))
+    if distance.ndim == 1: distance, index = distance[:, None], index[:, None]
+    nearest = observed_xyz[index[:, 0]]-points
+    fields = np.c_[np.minimum(distance[:, 0], .25), np.clip(nearest, -.25, .25),
+                   (distance < .05).sum(1)/32., ray_descriptor(points, depth, intrinsics, camera_to_world)]
+    return fields.reshape(len(segments), LOCAL_DIM)
+
+
+def shuffle_local(local, condition_ids):
+    """Label-free deterministic circular derangement within each condition."""
+    result = np.empty_like(local)
+    provenance = np.empty(len(local), dtype=np.int64)
+    for identifier in sorted(set(condition_ids)):
+        indices = np.flatnonzero(np.asarray(condition_ids) == identifier)
+        if len(indices) < 2: raise ValueError('At least two segments needed for negative control')
+        shift = 1 + int(hashlib.sha256(identifier.encode()).hexdigest()[:8], 16) % (len(indices)-1)
+        source = np.roll(indices, shift)
+        result[indices], provenance[indices] = local[source], source
+    return result, provenance
+
+
+def design_matrix(context, coordinates, local, arm, shuffled=None):
+    if arm not in ARMS: raise ValueError('Unknown arm')
+    if context.shape != (len(local), CONTEXT_DIM) or coordinates.shape != (len(local), SEGMENT_DIM) or local.shape[1] != LOCAL_DIM:
+        raise ValueError('Exact equal-width feature contract required')
+    extra = np.zeros_like(local) if arm == 'global' else (local if arm == 'aligned' else shuffled)
+    if extra is None or extra.shape != local.shape: raise ValueError('Aligned negative-control dimensions required')
+    return np.c_[context, coordinates, extra]
+
+
+def fitting_weights(records):
+    """Equal parent, condition, source, route and segment weights; no labels."""
+    counts = Counter((r['parent_id'], r['id'], r['source'], r['route']) for r in records)
+    routes = Counter((p, i, s) for p, i, s, _ in counts)
+    sources = Counter((p, i) for p, i, s in routes)
+    conditions = Counter(p for p, i in sources)
+    return np.array([1./(len(conditions)*conditions[r['parent_id']]*sources[r['parent_id'], r['id']]
+        *routes[r['parent_id'], r['id'], r['source']]*counts[r['parent_id'], r['id'], r['source'], r['route']]) for r in records])
+
+
+def fit_ridge(x, y, weights, ridge=.01):
+    """One deterministic CPU closed-form supervised fit, fit-only scaling."""
+    if not (np.isfinite(x).all() and np.isfinite(y).all() and np.isfinite(weights).all()) or set(y) != {0., 1.}:
+        raise ValueError('Finite fitting data with both labels required')
+    weights = weights/weights.sum()
+    mean = weights @ x
+    scale = np.sqrt(weights @ ((x-mean)**2))
+    scale = np.where(scale > 1e-8, scale, 1.)
+    z = np.c_[(x-mean)/scale, np.ones(len(x))]
+    penalty = np.eye(z.shape[1])*ridge; penalty[-1, -1] = 0.
+    coef = np.linalg.solve(z.T @ (weights[:, None]*z)+penalty, z.T @ (weights*y))
+    return dict(mean=mean, scale=scale, coef=coef)
+
+
+def predict(fit, x):
+    return np.clip(np.c_[(x-fit['mean'])/fit['scale'], np.ones(len(x))] @ fit['coef'], 0., 1.)
+
+
+def auc(y, score):
+    if len(set(y)) < 2: return None
+    from scipy.stats import rankdata
+    n1, n0 = int(y.sum()), int((1-y).sum())
+    return float((rankdata(score, method='average')[y == 1].sum()-n1*(n1+1)/2)/(n1*n0))
+
+
+def measures(y, score):
+    if not len(y): return dict(count=0, collisions=0, clear=0, auc=None, brier=None, balanced_accuracy=None)
+    recalls = [float(np.mean((score[y == v] >= .5) == v)) for v in (0, 1) if np.any(y == v)]
+    return dict(count=len(y), collisions=int(y.sum()), clear=int((1-y).sum()), auc=auc(y, score),
+                brier=float(np.mean((score-y)**2)), balanced_accuracy=float(np.mean(recalls)) if len(recalls) == 2 else None)
+
+
+def evaluate(records, y, score):
+    groups = {}
+    selectors = dict(all=lambda r: True, generated=lambda r: r['source'] == 'generated_last',
+        generated_correct_target=lambda r: r['source'] == 'generated_last' and r['semantic_correct'],
+        reference=lambda r: r['source'] == 'positive_H24', unknown_type=lambda r: r['unknown_type'],
+        wrong_target=lambda r: not r['semantic_correct'], invalid_route=lambda r: not r['tip_valid'])
+    for split, parents in (('fit', FIT_PARENTS), ('holdout', HOLDOUT_PARENTS)):
+        groups[split] = {}
+        for name, selector in selectors.items():
+            mask = np.array([r['parent_id'] in parents and selector(r) for r in records])
+            per_parent = {p: measures(y[m], score[m]) for p in parents
+                if (m := mask & np.array([r['parent_id'] == p for r in records])).any()}
+            eligible = [v for v in per_parent.values() if v['auc'] is not None]
+            groups[split][name] = dict(**measures(y[mask], score[mask]), per_parent=per_parent,
+                eligible_parents=len(eligible), parent_macro_auc=float(np.mean([v['auc'] for v in eligible])) if eligible else None,
+                parent_macro_brier=float(np.mean([v['brier'] for v in per_parent.values()])) if per_parent else None)
+    return groups
+
+
+def screen(results, limits):
+    # The all-generated primary set retains wrong targets; correct-target is secondary.
+    arms = {a: results[a]['holdout']['generated'] for a in ARMS}
+    first = arms['aligned']
+    power = first['eligible_parents'] >= limits['minimum_eligible_parents'] and first['collisions'] >= limits['minimum_collision_segments'] and first['clear'] >= limits['minimum_clear_segments']
+    gains = {}
+    for control in ('global', 'shuffled'):
+        other = arms[control]
+        gains[control] = dict(auc_gain=None if first['parent_macro_auc'] is None or other['parent_macro_auc'] is None else first['parent_macro_auc']-other['parent_macro_auc'],
+            brier_reduction=None if first['parent_macro_brier'] is None or other['parent_macro_brier'] is None else other['parent_macro_brier']-first['parent_macro_brier'])
+    passed = power and all(v['auc_gain'] is not None and v['auc_gain'] >= limits['minimum_auc_gain']
+        and v['brier_reduction'] >= limits['minimum_brier_reduction'] for v in gains.values())
+    return dict(adequate_support=power, gains=gains, passed=bool(passed),
+        decision='representation_precondition_supported_only' if passed else ('stop_underpowered' if not power else 'stop_no_alignment_advantage'))
+
+
+def run(config_path, output):
+    """Fresh-only evidence run. No hidden retries, generator, GPU, or DEV raw."""
+    config_path, output = Path(config_path), Path(output)
+    cfg = json.loads(config_path.read_text()); validate_config(cfg)
+    if output.exists(): raise FileExistsError('Fresh diagnostic output required')
+    if os.environ.get('CUDA_VISIBLE_DEVICES') not in ('', '-1'): raise ValueError('Explicitly hide GPU')
+    if hasattr(os, 'sched_getaffinity') and len(os.sched_getaffinity(0)) != 1: raise ValueError('CPU1 affinity required')
+    output.mkdir(parents=True)
+    started = time.perf_counter(); hashes = {}; ledger = []; status = dict(status='running', geometry_forwards=0, linear_fits=0, linear_fits_issued=0)
+    write_json(output/'status.json', status)
+    def checked(path, expected):
+        path = Path(path); value = digest(path)
+        if value != expected: raise ValueError('Frozen SHA mismatch: '+str(path))
+        hashes[str(path)] = value
+        return path
+    try:
+        from scripts import collect_two_row_formal as formal
+        from scripts.evaluate_observed_two_row import scene_metrics
+        from scripts.collect_obstacle_reach import tip_polyline_clear
+        from routeset.observed_route_head import resample_event_segments
+        from routeset.observed_geometry import ObservedGeometryEncoder, backproject_rgbd
+        from PIL import Image
+        import torch
+        torch.set_num_threads(1)
+        for name, value in cfg['frozen_artifacts_sha256'].items(): checked(name, value)
+        data, run_dir = Path(cfg['data']), Path(cfg['run'])
+        manifest = json.loads((data/'export_manifest.json').read_text())
+        trained = json.loads((run_dir/'config.json').read_text())
+        receipt = json.loads((run_dir/'composite_training_receipt.json').read_text())
+        diag = json.loads(Path(cfg['diagnostic_receipt']).read_text())
+        if (manifest['protocol'] != 'observed_two_row_composite108_export_v1' or manifest['actual_inputs_by_role'] != dict(TRAIN=285, DEV_MODEL=36)
+                or receipt['checkpoint_sha256']['last.pt'] != digest(run_dir/'last.pt')
+                or diag['checkpoint_sha256'] != digest(run_dir/'last.pt') or diag['fixed_last_step'] != 12000
+                or diag['artifact_sha256']['predictions.npz'] != digest(cfg['pool'])
+                or diag['source_export_manifest_sha256'] != digest(data/'export_manifest.json')):
+            raise ValueError('Composite fixed-last lineage mismatch')
+        repo = Path(__file__).resolve().parents[1]
+        for relative in ('routeset/observed_geometry.py', 'routeset/observed_route_head.py', 'scripts/evaluate_observed_two_row.py', 'scripts/evaluate_observed_obstacles.py'):
+            checked(repo/relative, receipt['source_sha256'][relative])
+        corpus = Path(manifest['sources']['old']['source_dataset'])
+        registration, _ = formal.verify_corpus(corpus)
+        plans = {p['parent_id']: p for p in registration['parent_plan']}
+        for index, parent in enumerate(PARENTS):
+            closure = corpus/'closures'/('%03d.json' % index)
+            checked(closure, manifest['sources']['old']['mechanical_closure_files_sha256'][str(closure)])
+            row = json.loads(closure.read_text()); formal.validate_closure(corpus, row, plans)
+            if row['parent_id'] != parent: raise ValueError('Closed TRAIN prefix differs')
+        gate = formal.live_layout_gate(corpus)
+        if set(PARENTS) & set(gate['blocked_parent_ids']): raise ValueError('Selected mechanical gate blocked')
+        for name in ('observations.jsonl', 'supervision.jsonl'):
+            checked(data/name, manifest['output_files_sha256'][name])
+        observations, labels = selected_rows(data/'observations.jsonl'), selected_rows(data/'supervision.jsonl')
+        cache = data/'qwen_cache'
+        cache_config = json.loads((cache/'cache_config.json').read_text())
+        if (cache_config != trained['cache_config'] or cache_config['manifest_sha256'] != digest(data/'observations.jsonl')
+                or cache_config['model_trainable_parameter_count'] != 0):
+            raise ValueError('Sealed frozen Qwen cache identity changed')
+        samples = selected_rows(cache/'samples.jsonl', identity=False)
+        pools = load_pool(cfg['pool'])
+        checkpoint = torch.load(run_dir/'last.pt', map_location='cpu', weights_only=False)
+        if checkpoint['step'] != 12000: raise ValueError('Fixed last12000 checkpoint required')
+        encoder = ObservedGeometryEncoder(trained['feature_dim'], trained['width'], trained['point_width'], trained['anchor_mode']).eval()
+        encoder.load_state_dict({k[len('geometry.'):]: v for k, v in checkpoint['model'].items() if k.startswith('geometry.')}, strict=True)
+        del checkpoint
+        for parameter in encoder.parameters(): parameter.requires_grad_(False)
+        context_rows, coordinate_rows, local_rows, label_rows, records, route_records = [], [], [], [], [], []
+        def raw(name, parent):
+            path = train_path(corpus, parent, name)
+            return checked(path, manifest['source_files_sha256'][str(path)])
+        references = 0
+        for identifier in IDS:
+            parent = identifier.rsplit('_target', 1)[0]; obs, label = observations[identifier], labels[identifier]
+            if set(obs) != {'id','parent_id','split','image','instruction'}: raise ValueError('Observation whitelist changed')
+            image_path = raw(obs['image'], parent)
+            rgb = np.asarray(Image.open(image_path).convert('RGB'))
+            with np.load(raw(label['observation'], parent), allow_pickle=False) as archive:
+                state = {k: archive[k].copy() for k in ('gripper_pose','gripper_open','depth','camera_intrinsics','camera_extrinsics')}
+            current = np.r_[state['gripper_pose'].reshape(7), state['gripper_open'].reshape(1)].astype(np.float32)
+            cloud = backproject_rgbd(rgb, state['depth'], state['camera_intrinsics'], state['camera_extrinsics'], 2)
+            sample = samples[identifier]; feature_path = checked(child(cache, sample['file']), sample['sha256'])
+            with np.load(feature_path, allow_pickle=False) as archive:
+                for key in ('id','parent_id','split'):
+                    if str(archive[key].item()) != obs[key]: raise ValueError('Qwen NPZ identity mismatch')
+                if str(archive['image_sha256'].item()) != digest(image_path): raise ValueError('Qwen image source mismatch')
+                feature = np.r_[archive['mean_hidden'].reshape(-1), archive['last_hidden'].reshape(-1)].astype(np.float32)
+            status['geometry_forwards'] += 1
+            ledger.append(dict(id=identifier, call='geometry_only', state='issued'))
+            write_json(output/'geometry_ledger.json', ledger)
+            if status['geometry_forwards'] > 48: raise ValueError('Geometry budget exceeded')
+            with torch.no_grad():
+                details = encoder(torch.from_numpy(feature[None]), torch.from_numpy(current[None]),
+                    **{k: torch.from_numpy(cloud[k][None]) for k in ('world_xyz','rgb','uv','depth','valid_mask')})
+            context = details['context'][0].numpy().copy()
+            ledger[-1]['state'] = 'complete'; write_json(output/'geometry_ledger.json', ledger)
+            # Labels are opened only after this observation-only encoder call.
+            route_config = json.loads(raw(label['route_config'], parent).read_text())
+            if digest(label['route_config']) != label['route_config_sha256']: raise ValueError('Route config SHA mismatch')
+            with np.load(raw(label['verification_only'], parent), allow_pickle=False) as archive:
+                geom = {k: archive[k].copy() for k in ('obstacle_centers','obstacle_halfsizes')}
+            routes = [('generated_last', k, xyz, event) for k, (xyz,event) in enumerate(zip(*pools[identifier]))]
+            if len(label['routes']) != len(label['route_types']): raise ValueError('Positive type alignment changed')
+            for number, filename in enumerate(label['routes']):
+                with np.load(raw(filename, parent), allow_pickle=False) as archive:
+                    xyz, event = resample_event_segments(archive['gripper_pose'], archive['gripper_open'], 24)
+                routes.append(('positive_H24', number, xyz, event)); references += 1
+            local_current = {'gripper_pose': current[:7], 'gripper_open': current[7]}
+            for source, number, xyz, event in routes:
+                _, outcomes = scene_metrics(xyz[None], event[None], local_current, geom, label['semantic_targets'], label['route_types'], route_config)
+                outcome = outcomes[0]
+                route_records.append(dict(id=identifier, parent_id=parent, source=source, route=number, outcome=outcome))
+                segments = np.stack([xyz[:-1], xyz[1:]], 1)
+                finite = np.isfinite(segments).all((1,2))
+                if not finite.all():
+                    # Keep malformed slots in denominator; no fictitious collision label or features.
+                    for j in np.flatnonzero(~finite): records.append(dict(id=identifier,parent_id=parent,source=source,route=number,segment=int(j),feature_available=False))
+                chosen = segments[finite]
+                local = local_features(chosen, cloud['world_xyz'][cloud['valid_mask']], state['depth'], state['camera_intrinsics'], state['camera_extrinsics'])
+                coordinates = segment_coordinates(chosen, current)
+                for idx, j in enumerate(np.flatnonzero(finite)):
+                    collision = not tip_polyline_clear(segments[j], geom['obstacle_centers'], geom['obstacle_halfsizes'], .02)
+                    records.append(dict(id=identifier,parent_id=parent,source=source,route=number,segment=int(j),feature_available=True,
+                        semantic_correct=outcome['semantic_goal_correct'],unknown_type=outcome['declared_passage_type'] is None,
+                        tip_valid=outcome['TipValid'],collision=collision))
+                    context_rows.append(context); coordinate_rows.append(coordinates[idx]); local_rows.append(local[idx]); label_rows.append(float(collision))
+                if finite.all() and bool(np.any(label_rows[-23:])) == bool(outcome['tip_segments_clear']):
+                    raise ValueError('Segment labels disagree with unchanged whole-path checker')
+        if references != 285: raise ValueError('All285 original positive references required')
+        if status['geometry_forwards'] != 48: raise ValueError('Exactly48 geometry-only calls required')
+        feature_records = [r for r in records if r['feature_available']]
+        contexts, coordinates, local, y = map(np.asarray, (context_rows,coordinate_rows,local_rows,label_rows))
+        shuffled, permutation = shuffle_local(local, [r['id'] for r in feature_records])
+        fit_indices = np.array([r['parent_id'] in FIT_PARENTS for r in feature_records])
+        weights = fitting_weights([r for r in feature_records if r['parent_id'] in FIT_PARENTS])
+        # Seal all features/labels/provenance before any probe is fitted.
+        np.savez_compressed(output/'features.npz', context=contexts, coordinates=coordinates, local=local,
+            label=y, shuffle_source=permutation, fit_mask=fit_indices)
+        write_json(output/'segments.json', records); write_json(output/'routes.json', route_records)
+        results, predictions = {}, {}
+        for arm in ARMS:
+            x = design_matrix(contexts, coordinates, local, arm, shuffled)
+            status['linear_fits_issued'] += 1
+            write_json(output/'status.json',status)
+            fitted = fit_ridge(x[fit_indices], y[fit_indices], weights, cfg['ridge_lambda'])
+            status['linear_fits'] += 1
+            np.savez_compressed(output/('probe_'+arm+'.npz'), **fitted)
+            score = predict(fitted,x); predictions[arm] = score
+            results[arm] = evaluate(feature_records,y,score)
+        np.savez_compressed(output/'scores.npz', **predictions)
+        final_gate = formal.live_layout_gate(corpus)
+        if set(PARENTS) & set(final_gate['blocked_parent_ids']): raise ValueError('Final mechanical gate blocked')
+        if any(digest(p) != value for p,value in hashes.items()): raise ValueError('Input changed during diagnostic')
+        report = dict(protocol=PROTOCOL, results=results, screen=screen(results,cfg['screen']),
+            parents=list(PARENTS),fit_parents=list(FIT_PARENTS),holdout_parents=list(HOLDOUT_PARENTS),
+            source_files_sha256=hashes,config_sha256=digest(config_path),script_sha256=digest(__file__),
+            dependency_sha256={name:digest(repo/name) for name in (
+                'scripts/collect_two_row_formal.py','scripts/collect_obstacle_reach.py',
+                'scripts/collect_observed_two_row_pilot.py','scripts/evaluate_observed_two_row.py',
+                'scripts/evaluate_observed_obstacles.py','routeset/observed_route_head.py','routeset/observed_geometry.py')},
+            requested_routes=477, generated_routes=192, positive_routes=references, requested_segments=477*23,
+            feature_segments=len(y),unavailable_segments=len(records)-len(y),geometry_forwards=status['geometry_forwards'],
+            cpu_linear_fits=status['linear_fits'],cpu_linear_fits_issued=status['linear_fits_issued'],parameters_per_probe=CONTEXT_DIM+SEGMENT_DIM+LOCAL_DIM+1,
+            new_qwen_forwards=0,new_generator_forwards=0,new_candidates=0,gpu_hours=0.,
+            initial_gate=gate,final_gate=final_gate,elapsed_seconds=time.perf_counter()-started,
+            limits=['Probe holdout parents were generator TRAIN, not unseen-scene generalization.',
+                    'Global arm has zero-padded local fields; aligned vs shuffled is the capacity-matched control.',
+                    'Five sampled ray/point features are a discrete visibility proxy, not continuous clearance.',
+                    'CPU float32 geometry replay uses the original weights and code; GPU bitwise context identity is not claimed.',
+                    'Only saved generated slots and positive references; no new paths or efficacy result.'])
+        write_json(output/'report.json',report)
+        status.update(status='completed',screen=report['screen'])
+        return report
+    except Exception as exc:
+        status.update(status='failed',error_type=type(exc).__name__,error=str(exc))
+        raise
+    finally:
+        status.update(elapsed_seconds=time.perf_counter()-started,source_files_sha256=hashes,
+            config_sha256=digest(config_path),script_sha256=digest(__file__),new_qwen_forwards=0,new_generator_forwards=0,
+            new_candidates=0,gpu_hours=0.,pid=os.getpid())
+        write_json(output/'status.json',status)
+        write_json(output/'artifact_index.json',{p.name:dict(sha256=digest(p),bytes=p.stat().st_size)
+            for p in sorted(output.iterdir()) if p.is_file() and p.name != 'artifact_index.json'})
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config',required=True); parser.add_argument('--output',required=True)
+    args = parser.parse_args(); run(args.config,args.output)

@@ -1,0 +1,92 @@
+"""Analysis-only environment repair; exact b127 science, no model/quality changes."""
+import hashlib
+import importlib.metadata
+import json
+import os
+from pathlib import Path
+import runpy
+import subprocess
+import sys
+import time
+
+COMMIT='b127ce8514a63917cc3f1b7278db8f65289ba985'
+OLD_RUNNER_SHA='5c2c70afd03c0831fd7965ef77d6534bb92e5b94689a322e098fad3c78538fb6'
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+OUT=P/'runs/observed_two_row_diffusion_analysis_v2'
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf8'))
+def write(path,obj):
+    path=Path(path);temp=path.with_suffix(path.suffix+'.writing')
+    temp.write_text(json.dumps(obj,indent=2,allow_nan=False)+'\n',encoding='utf8');temp.replace(path)
+
+def command():
+    return [sys.executable,'-m','scripts.analyze_observed_two_row_diffusion',
+        '--runs',str(P/'runs/observed_two_row_diffusion_v1_fixed_receipt'),
+        '--ordinary-run',str(P/'runs/observed_two_row_composite108_v1'),
+        '--training-source',str(P/'research_v2/releases/6e0203ba1335f9fa9975c523c657959f8bc9ab60'),
+        '--output',str(OUT/'analysis')]
+
+def validate_environment(prefix,version,affinity,cuda,commit,cwd,wrapper):
+    if (Path(prefix).resolve()!=(P/'.venv').resolve() or tuple(version)!=(3,8)
+            or list(affinity)!=[0] or cuda!='' or commit!=COMMIT
+            or Path(cwd).resolve()!=SOURCE
+            or Path(wrapper).resolve()!=P/'research_v2/incoming/diffusion_analysis_v2_b127ce8.sh'):
+        raise ValueError('Only fixed b127, existing private Python3.8, CPU0 and CUDA-hidden recipe allowed')
+
+def validate_failure(state,log):
+    if (state.get('code_commit')!=COMMIT or state.get('status')!='failed' or state.get('exit_code')!=1
+            or "No module named 'matplotlib'" not in log):
+        raise ValueError('Expected preserved original matplotlib import failure')
+
+def main():
+    if len(sys.argv)!=1:raise ValueError('No budget, source, output or stage overrides accepted')
+    if sys.platform!='linux':raise ValueError('Server Linux only')
+    wrapper=Path(os.environ['DIFFUSION_ANALYSIS_V2_WRAPPER'])
+    validate_environment(sys.prefix,sys.version_info[:2],sorted(os.sched_getaffinity(0)),
+        os.environ.get('CUDA_VISIBLE_DEVICES'),os.environ.get('CODE_COMMIT'),Path.cwd(),wrapper)
+    if importlib.metadata.version('matplotlib')!='3.7.5':raise ValueError('Existing reviewed matplotlib3.7.5 required')
+    if (OUT/'analysis').exists():raise FileExistsError('Fresh analysis_v2 output required')
+    start=time.perf_counter()
+    old=P/'research_v2/incoming/research_stage_runner_b127ce8.py'
+    if sha(old)!=OLD_RUNNER_SHA:raise ValueError('Original actually tested recipe changed')
+    # Loading with a non-main name only defines the original pure guards. It
+    # neither invokes its main nor changes its __file__/tests identity.
+    guards=runpy.run_path(str(old),run_name='frozen_b127_validation_guards')
+    source=guards['verify_source']()
+    tested=guards['validate_prior_tests']()
+    failed=P/'runs/observed_two_row_diffusion_analysis_v1'
+    validate_failure(read(failed/'analysis.status.json'),(failed/'analysis.log').read_text(encoding='utf8'))
+    fail_files={n:sha(failed/n) for n in ('analysis.status.json','analysis.log','analysis_recipe_identity.json','analysis_recipe_receipt.json')}
+    identity=dict(protocol='diffusion_b127_analysis_environment_repair_v2',code_commit=COMMIT,
+        source_manifest=source,original_actual_32_tests=tested,
+        original_tested_runner=dict(path=str(old),sha256=OLD_RUNNER_SHA),
+        new_runner=dict(path=str(Path(__file__).resolve()),sha256=sha(__file__)),
+        wrapper=dict(path=str(wrapper),sha256=sha(wrapper)),
+        new_runner_not_claimed_covered_by_original_32_tests=True,
+        original_failure_preserved=fail_files,new_model_calls=0,new_searches=0,
+        environment=dict(python=sys.version,prefix=sys.prefix,executable=sys.executable,
+            matplotlib=importlib.metadata.version('matplotlib'),cpu_affinity=sorted(os.sched_getaffinity(0)),
+            cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'],omp_threads=os.environ.get('OMP_NUM_THREADS')),
+        command=command(),requires_all_ten_completed_stages=True,automatic_next_stage=False)
+    write(OUT/'analysis_recipe_identity.json',identity)
+    process=subprocess.run(command(),cwd=SOURCE)
+    result=dict(protocol=identity['protocol'],code_commit=COMMIT,child_exit_code=process.returncode,
+        status='failed',elapsed_seconds=time.perf_counter()-start,
+        identity_sha256=sha(OUT/'analysis_recipe_identity.json'))
+    try:
+        if process.returncode:raise RuntimeError('Same scientific analysis failed; preserve, no retry')
+        result['source_postcheck']=guards['verify_source']()
+        if any(sha(failed/n)!=value for n,value in fail_files.items()):raise ValueError('Old failure evidence changed')
+        result.update(status='completed',source_unchanged=True,original_failure_unchanged=True)
+    except BaseException as error:
+        result['exception']=repr(error);write(OUT/'analysis_recipe_receipt.json',result);raise
+    write(OUT/'analysis_recipe_receipt.json',result);print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()

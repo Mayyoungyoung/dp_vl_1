@@ -1,0 +1,70 @@
+"""Root invokes once after actual paired saved-pool analysis completes."""
+import hashlib, json, subprocess, tarfile
+from pathlib import Path
+R=Path('F:/dpvlm');OUT=R/'reports/observed_two_row_diffusion_v1';BIN=R/'runs/synced_observed_two_row_diffusion_v1'
+REMOTE=r'''
+from pathlib import Path
+import hashlib,io,json,tarfile,sys
+r=Path('/home/wzy/dpvlm/route_set_v1');training='6e0203ba1335f9fa9975c523c657959f8bc9ab60';analysis_source='b127ce8514a63917cc3f1b7278db8f65289ba985'
+base=r/'runs/observed_two_row_diffusion_v1_fixed_receipt';analysis=r/'runs/observed_two_row_diffusion_analysis_v2'
+def sha(p):
+ h=hashlib.sha256()
+ with p.open('rb') as f:
+  for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+ return h.hexdigest()
+for a in ('independent','set'):
+ for suffix in ('','_denoising-diagnostic','_fixed-last-train','_repeat1','_repeat2'):
+  p=base/(a+suffix);state=json.loads((p/'status.json').read_text())
+  assert state['status']=='completed' and not (p/'active.lock').exists(),str(p)
+status=json.loads((analysis/'analysis.status.json').read_text());assert status['status']=='completed' and status['exit_code']==0
+result=json.loads((analysis/'analysis/analysis.json').read_text());assert result['verification']['all_ten_stages_completed'] and result['new_forward_calls']==0
+files=[(p.relative_to(base).as_posix(),p) for p in sorted(base.rglob('*')) if p.is_file()]
+files += [('analysis_run/'+p.relative_to(analysis).as_posix(),p) for p in sorted(analysis.rglob('*')) if p.is_file()]
+names=set()
+for a in ('independent','set'):
+ cfg=json.loads((base/a/'config.json').read_text());assert cfg['code_commit']==training
+ for name,h in cfg['source_sha256'].items():
+  p=r/'research_v2/releases'/training/name;assert sha(p)==h;names.add(name)
+names.update(('tests/test_observed_diffusion_stream.py','tests/test_observed_route_diffusion.py','tests/test_observed_diffusion_driver.py','reports/TWO_ROW_OBSERVED_DIFFUSION_TRAINING_PROTOCOL.md','scripts/record_job.py'))
+for name in sorted(names):
+ p=r/'research_v2/releases'/training/name
+ assert p.is_file(),str(p)
+ files.append(('source/'+name+('.txt' if name.endswith('.py') else ''),p))
+for name in ('scripts/analyze_observed_two_row_diffusion.py','tests/test_observed_diffusion_analysis.py','reports/TWO_ROW_OBSERVED_DIFFUSION_ANALYSIS_PROTOCOL.md'):
+ files.append(('analysis_source/'+name+('.txt' if name.endswith('.py') else ''),r/'research_v2/releases'/analysis_source/name))
+files.append(('wrapper/observed_diffusion_train_6e0203b_v2.sh',r/'research_v2/incoming/observed_diffusion_train_6e0203b_v2.sh'))
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+ for name,p in files:
+  remote_only=p.suffix in ('.pt','.bin','.safetensors') or p.name in ('requests.jsonl','training_history.jsonl')
+  assert remote_only or p.stat().st_size<10*2**20,str(p)
+  disposition='remote_only' if remote_only else 'ignored_local_npz' if p.suffix=='.npz' else 'report_original'
+  index.append(dict(local_path=name,remote_path=str(p),sha256=sha(p),bytes=p.stat().st_size,disposition=disposition))
+  if not remote_only:tar.add(p,arcname=name,recursive=False)
+ value=dict(protocol='completed_observed_diffusion_pair_archive_v1',training_source=training,analysis_source=analysis_source,files=index,new_forward_calls=0,weights_downloaded=0,raw_dataset_files_opened=0)
+ data=(json.dumps(value,indent=2)+'\n').encode();item=tarfile.TarInfo('REMOTE_ARTIFACT_INDEX.json');item.size=len(data);tar.addfile(item,io.BytesIO(data))
+'''
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ assert not OUT.exists() and not BIN.exists(),'Never overwrite completed archive'
+ archive=R/'.bootstrap/observed_diffusion_pair_completed_v2.tar.gz'
+ assert not archive.exists(),'Preserve prior download attempt'
+ with archive.open('wb') as f:
+  run=subprocess.run(['ssh','wzy3090','taskset','-c','1','/home/wzy/dpvlm/route_set_v1/.venv/bin/python','-'],input=REMOTE.encode(),stdout=f,stderr=subprocess.PIPE)
+ if run.returncode:raise RuntimeError(run.stderr.decode())
+ with tarfile.open(archive) as tar:
+  index=json.load(tar.extractfile('REMOTE_ARTIFACT_INDEX.json'));lookup={x['local_path']:x for x in index['files']}
+  for m in tar.getmembers():
+   assert m.isfile() and not Path(m.name).is_absolute() and '..' not in Path(m.name).parts
+   data=tar.extractfile(m).read()
+   if m.name=='REMOTE_ARTIFACT_INDEX.json':continue
+   row=lookup[m.name];assert hashlib.sha256(data).hexdigest()==row['sha256']
+   p=(BIN if row['disposition']=='ignored_local_npz' else OUT)/m.name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
+ OUT.mkdir(parents=True,exist_ok=True)
+ (OUT/'REMOTE_ARTIFACT_INDEX.json').write_text(json.dumps(index,indent=2)+'\n',encoding='utf-8')
+ for arm in ('independent','set'):
+  p=R/'.bootstrap'/('diffusion_'+arm+'_pause2_inner_status.json');v=json.loads(p.read_text());assert v['status']=='paused'
+  q=OUT/'administrative'/p.name;q.parent.mkdir(exist_ok=True);q.write_bytes(p.read_bytes())
+ (OUT/'ARCHIVE_RECEIPT.json').write_text(json.dumps(dict(archive_sha256=sha(archive),archive_bytes=archive.stat().st_size,remote_files=len(index['files']),files_by_disposition={d:sum(x['disposition']==d for x in index['files']) for d in ('remote_only','ignored_local_npz','report_original')},new_forward_calls=0,weights_copied=0),indent=2)+'\n',encoding='utf-8')
+ print((OUT/'ARCHIVE_RECEIPT.json').read_text())
+if __name__=='__main__':main()
