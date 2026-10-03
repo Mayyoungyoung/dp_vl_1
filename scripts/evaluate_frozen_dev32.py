@@ -70,8 +70,10 @@ def infer():
     from scripts.train_observed_geometry import read_geometry
     from scripts.evaluate_observed_two_row import scene_metrics
     import os
+    import random
     assert os.environ['CUDA_VISIBLE_DEVICES']=='1'
     torch.set_num_threads(2);torch.cuda.set_per_process_memory_fraction(.35)
+    torch.manual_seed(0);np.random.seed(0);random.seed(0)
     manifest=read(DATA/'manifest.json')
     for f,h in manifest['source_files_sha256'].items():assert sha(f)==h
     for f,h in manifest['output_files_sha256'].items():assert sha(DATA/f)==h
@@ -86,6 +88,7 @@ def infer():
         assert sha(model['path'])==model['sha256']
         planner=load_scored_planner(model['path'],'cuda');planner.requires_grad_(False)
         folder=OUT/arm;folder.mkdir(parents=True,exist_ok=False)
+        torch.save(dict(seed=0,cpu=torch.get_rng_state(),cuda=torch.cuda.get_rng_state_all(),numpy=np.random.get_state(),python=random.getstate()),folder/'rng_before.pt')
         values={k:[] for k in ('paths','events','q','pi','ids','parents','labels')};summaries=[];inputs_sha={}
         # First generate and seal every actual path without invoking checker.
         for row in rows:
@@ -115,6 +118,7 @@ def infer():
         write(folder/'per_scene.json',summaries)
         write(folder/'receipt.json',dict(model=model,inputs_sha256=inputs_sha,manifest_sha256=sha(DATA/'manifest.json'),
             pool_sha256=sha(folder/'pool.npz'),requests=len(rows),complete_path_states=len(rows)*8,training_steps=0,new_qwen_requests=0,
+            generator_seed=0,scorer_seed=0,inference_seed=0,rng_before_sha256=sha(folder/'rng_before.pt'),M=8,H=24,
             peak_allocated_bytes=torch.cuda.max_memory_allocated(),configuration_tuning=False))
         del planner;torch.cuda.empty_cache()
 
