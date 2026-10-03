@@ -14,7 +14,7 @@ def main():
     root = Path(a.root)
     jobs = []
     for folder in sorted((root/'runs').iterdir()):
-        if not folder.is_dir() or not folder.name.startswith(('v2_', 'observ', 'obstacle_', 'constraint_', 'multigate_', 'vlm_', 'multitask_', 'hamster3d_', 'two_row_')):
+        if not folder.is_dir() or not folder.name.startswith(('v2_', 'observ', 'obstacle_', 'constraint_', 'multigate_', 'vlm_', 'multitask_', 'hamster3d_', 'two_row_', 'budget_')):
             continue
         paths = set(folder.rglob('*.status.json')) | set(folder.glob('*status.json'))
         for path in sorted(paths):
