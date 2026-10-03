@@ -1,0 +1,57 @@
+"""Finalize already completed K1 saved-path check; no checker/model calls."""
+import hashlib,json,shutil
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];R=ROOT/'reports/hamster3d_saved_train0_check_v1';B=ROOT/'runs/synced_hamster3d_saved_train0_check_v1'
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p):return json.loads(Path(p).read_text(encoding='utf-8'))
+def write(p,v):Path(p).write_text(json.dumps(v,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+s=read(R/'status.json');m=read(R/'metrics.json');c=read(R/'candidates.json')[0];pts=read(R/'points.json')
+manifest=read(ROOT/'reports/observed_layout_variation_pilot12_v1/recipe/layout_variation_sources_eba0994.json')
+for name,h in s['source_sha256'].items():assert manifest['files'][name]['sha256']==h and sha(R/'source'/(name+'.txt'))==h
+write(R/'SOURCE_MANIFEST_VERIFICATION.json',dict(source_commit=manifest['code_commit'],manifest_sha256=sha(ROOT/'reports/observed_layout_variation_pilot12_v1/recipe/layout_variation_sources_eba0994.json'),all_four_original_checker_dependency_bytes_exact=True,source_sha256=s['source_sha256']))
+write(R/'metadata_probe_failure.json',dict(stage='preliminary_shell_quoting_probe',exit_code=1,error='IndentationError: unexpected indent (remote -c command quoting)',decoded_labels=0,model_calls=0,checker_calls=0,disposition='Subsequent explicit Python stdin metadata fetch succeeded; no model/test/search retried.'))
+shutil.copyfile(ROOT/'.bootstrap/hamster_saved_train0_check.log',R/'analysis.log')
+text=f'''# HAMSTER saved TRAIN0 four-point check
+
+The sole original K1 candidate **fails the existing reach-route check**. This is a posthoc technical check of already saved output; no additional model, planner, simulator, prompt, candidate, path repair, or checkpoint selection was run. Original generation artifacts remain unchanged and their quality fields remain null; all metrics below live only in this independent family.
+
+The official strict fenced JSON contains four finite world points and actions Close / None / None / Open. The preregistered carry-forward mapping is [0,0,0,1]. The original four-point polyline has exactly three adjacent segments. Nothing was prepended, removed, interpolated to H24, or repaired; the fourth point remains the endpoint.
+
+| Original check | Actual result |
+|---|---:|
+| Candidates submitted | 1 |
+| Finite coordinates / event values | pass / pass |
+| Start error (threshold5mm) | {c['start_error_m']*100:.6f}cm, fail |
+| Endpoint to instructed black target (threshold3cm plus identity) | {c['endpoint_error_m']*100:.6f}cm, fail |
+| Nearest target at endpoint | target2, not target0 |
+| Reach event sequence (constant initial open) | fail |
+| Original 3-segment 2cm tip clearance | segments0/1 fail; segment2 pass |
+| TipValid@1 / AnyTipValid@1 | 0 / 0 |
+| Classified type | unknown |
+| Known-positive type coverage (five known reference types) | 0 |
+| Full-arm / IK / execution success | not measured |
+| SelectedValid / learning scorer | not available |
+
+The four points are respectively {pts[0]['distance_to_instruction_target_m']*100:.3f}, {pts[1]['distance_to_instruction_target_m']*100:.3f}, {pts[2]['distance_to_instruction_target_m']*100:.3f}, and {pts[3]['distance_to_instruction_target_m']*100:.3f}cm from the instructed target. The first point's image proximity therefore does not establish reaching the 3cm target, and neither first point nor nearest point was substituted for the actual endpoint. The raw path length is {c['length_m']:.6f}m. The three per-segment flags are descriptive decompositions of this same candidate, not three extra proposals.
+
+This exposes a mismatch between the pretrained model's sparse manipulation-waypoint output and this derived reach-route task. The official full-manipulation template generated a Close→Open sequence; the saved world positions additionally fail target and segment geometry checks. These facts cannot establish a complete robotic failure rate from one TRAIN example, nor provide a system-level benchmark comparison. An executor could add connections in another declared protocol, but no such connection earns validity credit here.
+
+## Provenance and cost
+
+Prediction NPZ remains SHA `71a58d2602f8fc5b589f8d389d921c169f68037a3e85a8564c481f3c9bb81213`. The original generation cost remains 151 forward calls /151 generated tokens /one candidate; this check does not add generation exposure. Model input and prediction hashes were already sealed in the original archive. Mapping/no-repair rules were fixed in SAVED_PREDICTION_CHECK_PROPOSAL before root authorization. A first-line metadata preview preceded this folder's machine mapping receipt; this ordering is recorded explicitly, and no prediction/mapping changed after that preview.
+
+Only `two_row_reach_283200_target0` supervision was decoded. Its parent verification geometry and route configuration are used strictly for this evaluation. The supervision file's full bytes were hashed for integrity, but the other two rows were not decoded and no other TRAIN/DEV/reserved sample was opened. The label index binds each original source path and SHA. Four frozen checker dependency byte hashes match the original eba0994 source manifest; original2cm/3cm/5mm/event/type rules remain unchanged.
+
+The local wrapper plus one short CPU3 read-only label transfer took {s['elapsed_seconds']:.6f}s; the primary `scene_metrics` call took {s['checker_seconds']:.6f}s, nested within that wall time. The per-segment descriptive checks and final reporting are separate local CPU overhead; no GPU was used. The initial shell-quoting metadata probe failed before labels/model/checker calls and is preserved in metadata_probe_failure.json; the subsequent Python-stdin transfer succeeded. There was no model or candidate retry.
+
+Reproduce the result using analysis_source.py.txt against its fixed existing inputs and a fresh output location. It is intentionally fresh-only; no repeat was run in this investigation. No further generation or adapter is proposed as a way to retroactively rescue this candidate.
+'''
+(R/'TECHNICAL_CHECK_RESULTS.md').write_text(text,encoding='utf-8')
+(R/'finalize_source.py.txt').write_bytes(Path(__file__).read_bytes())
+idx=dict(report_files={},ignored_binary_files={},external_prediction=dict(path='runs/synced_hamster3d_pinned_full1_v1/probe/two_row_reach_283200_target0/predicted_coordinates.npz',sha256='71a58d2602f8fc5b589f8d389d921c169f68037a3e85a8564c481f3c9bb81213'))
+for p in sorted(R.rglob('*')):
+    if p.is_file() and p.name!='LOCAL_ARTIFACT_INDEX.json':idx['report_files'][p.relative_to(R).as_posix()]=dict(sha256=sha(p),bytes=p.stat().st_size)
+for p in sorted(B.rglob('*')):
+    if p.is_file():idx['ignored_binary_files'][p.relative_to(B).as_posix()]=dict(sha256=sha(p),bytes=p.stat().st_size)
+write(R/'LOCAL_ARTIFACT_INDEX.json',idx)
+print(json.dumps(dict(report_files=len(idx['report_files']),ignored_files=len(idx['ignored_binary_files']),index_sha256=sha(R/'LOCAL_ARTIFACT_INDEX.json'),result_report_sha256=sha(R/'TECHNICAL_CHECK_RESULTS.md')),indent=2))

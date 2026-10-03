@@ -1,5 +1,13 @@
 # 主张—证据对应表
 
+## 2026-10-03：有序损失实际资源门、外部系统接口限制
+
+e69有序损失服务器真实20tests/0skip；B32/K4/R9/H24/N12544全部15次synthetic forward/backward有限，A/B/C中位.014036/.140202/.196731秒，C峰值allocated432907776B，GPU外层5.368177秒。当前资源可做固定三臂3000步验证，训练器准备中；这些是合成数值/成本结果，没有方法质量优势。[原件](observed_ordered_relation_microbenchmark_v1/MICROBENCHMARK_RESULTS.md)。
+
+HAMSTER已封存TRAIN0原4点按原reach检查TipValid@1=0：起点42.427cm、语义终点34.314cm且最近为另一目标，夹爪事件失败，原3段中2段不满足2cm净空。无加起点、截首点、H24、修复或重新生成，原K1/151forward不变。这反映当前稀疏manipulation-waypoint接口与派生reach任务不匹配，单TRAIN例子不能代表系统级机器人成功率或公平方法对照。[单独验收](hamster3d_saved_train0_check_v1/TECHNICAL_CHECK_RESULTS.md)。
+
+Min-SNR普通臂实际完成500步及全部TRAIN诊断，外层postvalidation因recipe误写18000而非16000 inputs失败；内层12500完成且预算正确。修复只做新只读封存与接续weighted，不重训该臂、不覆写failed。MAIN293保持，核心方法成立仍待真实配对证据。
+
 ## 2026-10-03：可变布局TRAIN12真实小批结果
 
 原eba采集324请求槽：108接受、162路线失败、54未尝试；后者是两个closed布局的浮点半毫米hash边界初始化失败，不能视为无解。270次实际restore均exact、108正例raw/H24验收和H24/H64重采样重现，15unknown保留。六柱四父108attempt/26接受，无条件已知类型>4；27/36请求目标条件有正例。原首4的238文件与12图字节不变，2registry仅append，全部失败和4.297m长弧保留。两开闭对尚无closed witness，未certify。root实际看ALL12_RGB、401008/401010/401005的target0完整页，agent完成其余新图；投影不代替原3D检查。新增8父outer1220.834587秒，两stage累计1893.042100秒，各nested worker口径不相加。此为TRAIN采集验证，非独立测试或方法优势。[完整结果](observed_layout_variation_pilot12_v1/PILOT12_RESULTS.md)。

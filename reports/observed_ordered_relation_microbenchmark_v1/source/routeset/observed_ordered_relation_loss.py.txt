@@ -1,0 +1,359 @@
+"""Debiased ordered correspondence losses, not a generator or collision checker.
+
+B uses standard squared-Euclidean soft-DTW self correction. C adds a fixed
+observation-derived, mutually supported descriptor cost and the same correction.
+Neither has a claimed general nonnegativity theorem here. Historical models,
+saturation policy, events, and grounding objectives are not modified.
+"""
+from functools import lru_cache
+import hashlib
+import json
+from pathlib import Path
+
+PROTOCOL='observed_ordered_relation_loss_v1'
+POLICY_FILE=Path(__file__).resolve().parents[1]/'configs/observed_ordered_relation_v1.json'
+OBSERVATION_KEYS={'world_xyz','valid_mask'}
+
+
+def validate_policy(p):
+    expected=dict(protocol=PROTOCOL,horizon=24,candidates=4,xyz_scale_m=.1,gamma=.1,
+        xyz_weight=.75,event_scale=.2,event_weight=.25,relation_weight=1.,
+        descriptor_sigma_m=.05,descriptor_offset_m=.05,support_radius_m=.15,
+        descriptor_query_chunk=64,extra_generation_calls=0,generation_model_changed=False)
+    if any(p.get(k)!=v for k,v in expected.items()):raise ValueError('Fixed single ordered-relation setting required')
+    if p['descriptor_offsets']!=[[0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]:
+        raise ValueError('Fixed seven offsets required')
+    return p
+
+
+def load_policy(path=POLICY_FILE):
+    return validate_policy(json.loads(Path(path).read_text(encoding='utf-8')))
+
+
+@lru_cache(None)
+def _diagonals(n,m):
+    return tuple((max(0,d-m+1),min(n-1,d)) for d in range(n+m-1))
+
+
+def soft_dtw(cost,gamma=.1):
+    """Batched exact up/left/diagonal soft-DTW; 2H-1 wavefronts, no path mixing."""
+    import torch
+    if cost.ndim<2 or min(cost.shape[-2:])<1 or gamma<=0 or not bool(torch.isfinite(cost).all()):
+        raise ValueError('Finite nonempty cost matrices and positive gamma required')
+    n,m=cost.shape[-2:];prev=prev2=None;previous_lo=previous2_lo=0
+    for d,(lo,hi) in enumerate(_diagonals(n,m)):
+        i=torch.arange(lo,hi+1,device=cost.device);j=d-i
+        cell=cost[...,i,j]
+        if d==0:current=cell
+        else:
+            def fetch(values,offset,indices):
+                if values is None:return torch.full_like(cell,float('inf'))
+                local=indices-offset;valid=(local>=0)&(local<values.shape[-1])
+                return values[...,local.clamp(0,values.shape[-1]-1)].masked_fill(~valid,float('inf'))
+            parents=torch.stack((fetch(prev,previous_lo,i-1),fetch(prev,previous_lo,i),
+                                 fetch(prev2,previous2_lo,i-1)),dim=-1)
+            current=cell-gamma*torch.logsumexp(-parents/gamma,dim=-1)
+        prev2,previous2_lo,prev,previous_lo=prev,previous_lo,current,lo
+    return prev[...,0]
+
+
+def squared_cost(x,y):
+    """Coordinate mean, not sum: used identically for XY, XX and YY."""
+    if x.shape[:-2]!=y.shape[:-2] or x.shape[-1]!=y.shape[-1]:raise ValueError('Equal batch/coordinate dimensions required')
+    return (x[..., :,None,:]-y[...,None,:,:]).square().mean(-1)
+
+
+def soft_dtw_divergence(x,y,gamma=.1):
+    """Do not detach either side of XX. No clamp or extra temporal penalty."""
+    return (soft_dtw(squared_cost(x,y),gamma)-.5*soft_dtw(squared_cost(x,x),gamma)
+            -.5*soft_dtw(squared_cost(y,y),gamma))
+
+
+def _observation(observation,batch,device,dtype):
+    import torch
+    if not isinstance(observation,dict) or set(observation)!=OBSERVATION_KEYS:
+        raise ValueError('Descriptor observation accepts world_xyz/valid_mask only; no supervision/geometry labels')
+    points,valid=observation['world_xyz'],observation['valid_mask']
+    if (points.ndim!=3 or points.shape[0]!=batch or points.shape[-1]!=3 or
+            valid.shape!=points.shape[:2] or valid.dtype!=torch.bool or
+            points.device!=device or valid.device!=device or points.dtype!=dtype or
+            not bool(torch.isfinite(points[valid]).all())):
+        raise ValueError('Finite valid observation points with matching batch/device/dtype required')
+    # Invalid padded values and any accidental observation gradient are excluded.
+    return torch.where(valid[...,None],points.detach(),torch.zeros_like(points)),valid.detach()
+
+
+def observed_descriptors(paths,observation,policy=None):
+    """Fixed seven-direction nearest-surface response, loss side only.
+
+    Support means a visible measured surface exists within .15m of the query,
+    NOT that the query itself is ray-visible/free. Nearest point and hard support
+    make this piecewise differentiable; gradients are exact away from switches.
+    """
+    import torch
+    p=load_policy() if policy is None else validate_policy(policy)
+    if paths.ndim!=4 or paths.shape[-1]!=3 or paths.shape[-2]<2 or not bool(torch.isfinite(paths).all()):
+        raise ValueError('Finite [B,Q,H,3] paths required')
+    b,q,h,_=paths.shape;points,valid=_observation(observation,b,paths.device,paths.dtype)
+    centers=torch.cat(((paths[:,:,:-1]+paths[:,:,1:])*.5,paths[:,:,-1:]),dim=2)
+    offsets=paths.new_tensor(p['descriptor_offsets'])*p['descriptor_offset_m']
+    queries=(centers[...,None,:]+offsets).reshape(b,-1,3)
+    point_norm=points.square().sum(-1)[:,None,:];responses=[];distances=[]
+    for start in range(0,queries.shape[1],p['descriptor_query_chunk']):
+        query=queries[:,start:start+p['descriptor_query_chunk']]
+        if points.shape[1]:
+            # All observed points participate in the exact nearest-neighbour
+            # selection. The discrete index itself has zero derivative away
+            # from ties; only the selected squared distance needs an autograd
+            # graph. Do NOT retain B*queries*N distance matrices for backward.
+            with torch.no_grad():
+                distance=(query.square().sum(-1,keepdim=True)+point_norm-2*torch.bmm(query,points.transpose(1,2))).clamp_min(0)
+                indices=distance.masked_fill(~valid[:,None,:],float('inf')).argmin(-1)
+                nearest=points.gather(1,indices[...,None].expand(-1,-1,3))
+                has_points=valid.any(-1)[:,None]
+            minimum=(query-nearest).square().sum(-1).masked_fill(~has_points,float('inf'))
+        else:minimum=torch.full(query.shape[:2],float('inf'),device=query.device,dtype=query.dtype)
+        distances.append(minimum.detach());responses.append(torch.exp(-minimum/(2*p['descriptor_sigma_m']**2)))
+    values=torch.cat(responses,1).reshape(b,q,h,7)
+    minimum=torch.cat(distances,1).reshape(b,q,h,7)[...,0]
+    known=minimum<=p['support_radius_m']**2
+    return dict(values=values,known=known)
+
+
+def _tensor_hash(t):
+    value=t.detach().cpu().contiguous().numpy();h=hashlib.sha256()
+    h.update(str(value.dtype).encode());h.update(str(value.shape).encode());h.update(value.tobytes());return h.hexdigest()
+
+
+def _cache_identity(references,reference_mask,observation,p):
+    return dict(protocol=PROTOCOL,policy=p,reference_xyz=_tensor_hash(references),
+        reference_mask=_tensor_hash(reference_mask),world_xyz=_tensor_hash(observation['world_xyz']),
+        valid_mask=_tensor_hash(observation['valid_mask']))
+
+
+def prepare_reference_descriptors(references,reference_mask,observation,policy=None):
+    """No model parameters. Caller may cache only this result with its exact identity."""
+    import torch
+    p=load_policy() if policy is None else validate_policy(policy)
+    clean=torch.where(reference_mask[...,None,None],references.detach(),torch.zeros_like(references))
+    with torch.no_grad():description=observed_descriptors(clean,observation,p)
+    description['known'] &= reference_mask[...,None]
+    return dict(identity=_cache_identity(references,reference_mask,observation,p),
+        description=description,description_sha256={k:_tensor_hash(v) for k,v in description.items()})
+
+
+def _validate_reference_cache(cache,references,reference_mask,observation,p):
+    if (set(cache)!={'identity','description','description_sha256'} or
+            cache['identity']!=_cache_identity(references,reference_mask,observation,p) or
+            set(cache['description'])!={'values','known'}):
+        raise ValueError('Reference descriptor cache identity differs')
+    for name,value in cache['description'].items():
+        if value.requires_grad or _tensor_hash(value)!=cache['description_sha256'].get(name):
+            raise ValueError('Reference descriptor cache has gradients or changed bytes')
+    values,known=cache['description']['values'],cache['description']['known']
+    import torch
+    if (values.shape!=references.shape[:-1]+(7,) or known.shape!=references.shape[:-1] or
+            values.dtype!=references.dtype or known.dtype!=torch.bool or
+            values.device!=references.device or known.device!=references.device):
+        raise ValueError('Reference descriptor cache shape/dtype/device differs')
+    return cache['description']
+
+
+def batch_reference_descriptors(caches,references,reference_mask,observation,policy=None):
+    """Join precomputed single-input CPU caches; no descriptor recomputation.
+
+    Dataset-wide reference padding must be identical at preparation and use.
+    The caller selects caches by its already-drawn input IDs. Every row's full
+    reference/observation identity is checked here, so wrong-ID cache reuse fails.
+    """
+    import torch
+    p=load_policy() if policy is None else validate_policy(policy)
+    if len(caches)!=len(references):raise ValueError('One cache per input required')
+    parts=[]
+    for i,cache in enumerate(caches):
+        moved=dict(cache,description={k:v.to(device=references.device) for k,v in cache['description'].items()})
+        parts.append(_validate_reference_cache(moved,references[i:i+1],reference_mask[i:i+1],
+            {k:v[i:i+1] for k,v in observation.items()},p))
+    description={k:torch.cat([v[k] for v in parts],0) for k in ('values','known')}
+    return dict(identity=_cache_identity(references,reference_mask,observation,p),description=description,
+        description_sha256={k:_tensor_hash(v) for k,v in description.items()})
+
+
+def _ground_cost(x,y,dx=None,dy=None,relation_weight=1.):
+    cost=squared_cost(x,y)
+    if dx is not None:
+        mutual=dx['known'][..., :,None]&dy['known'][...,None,:]
+        relation=squared_cost(dx['values'],dy['values'])
+        cost=cost+relation_weight*mutual.to(cost.dtype)*relation
+    return cost
+
+
+def ordered_relation_costs(pred_xyz,pred_open,ref_xyz,ref_open,reference_mask,arm,
+                           observation=None,reference_descriptor=None,policy=None):
+    """Return [B,K,R] costs and metadata. No matching, model call or validity label.
+
+    XYZ scale, self terms and event weighting are identical for both arms.
+    Original A must continue calling its historical loss unchanged. Reference
+    tensors are supervision only and detached; prediction XX retains both sides.
+    """
+    import torch
+    p=load_policy() if policy is None else validate_policy(policy)
+    if arm not in ('xyz_divergence','observed_divergence'):raise ValueError('Only predeclared B/C arms')
+    if (pred_xyz.ndim!=4 or ref_xyz.ndim!=4 or pred_xyz.shape[0]!=ref_xyz.shape[0] or
+            pred_xyz.shape[-2:]!=(24,3) or ref_xyz.shape[-2:]!=(24,3) or pred_xyz.shape[1]!=4 or
+            pred_open.shape!=pred_xyz.shape[:-1] or ref_open.shape!=ref_xyz.shape[:-1] or
+            reference_mask.shape!=ref_xyz.shape[:2] or reference_mask.dtype!=torch.bool or
+            not bool(reference_mask.any(1).all())):
+        raise ValueError('Same B, K4/H24 XYZ/events and at least one known positive per input required')
+    if (any(t.device!=pred_xyz.device or t.dtype!=pred_xyz.dtype for t in (pred_open,ref_xyz,ref_open)) or
+            reference_mask.device!=pred_xyz.device or not bool(torch.isfinite(pred_xyz).all()) or
+            not bool(torch.isfinite(pred_open).all()) or not bool(torch.isfinite(ref_xyz[reference_mask]).all()) or
+            not bool(torch.isfinite(ref_open[reference_mask]).all())):
+        raise ValueError('Finite active paths/events with common floating dtype/device required')
+    b,k,h,_=pred_xyz.shape;r=ref_xyz.shape[1]
+    clean=torch.where(reference_mask[...,None,None],ref_xyz.detach(),torch.zeros_like(ref_xyz))
+    opened=torch.where(reference_mask[...,None],ref_open.detach(),torch.zeros_like(ref_open))
+    x=pred_xyz/p['xyz_scale_m'];y=clean/p['xyz_scale_m']
+    dx=dy=None
+    if arm=='observed_divergence':
+        dx=observed_descriptors(pred_xyz,observation,p)
+        cached=(prepare_reference_descriptors(ref_xyz,reference_mask,observation,p)
+                if reference_descriptor is None else reference_descriptor)
+        dy=_validate_reference_cache(cached,ref_xyz,reference_mask,observation,p)
+    elif observation is not None or reference_descriptor is not None:
+        raise ValueError('B does not consume descriptors; do not hide an extra geometry objective')
+    def expand_desc(d,kind):
+        if d is None:return None
+        if kind=='x':return {key:value[:,:,None].expand((b,k,r)+value.shape[2:]) for key,value in d.items()}
+        return {key:value[:,None].expand((b,k,r)+value.shape[2:]) for key,value in d.items()}
+    xy=_ground_cost(x[:,:,None].expand(b,k,r,h,3),y[:,None].expand(b,k,r,h,3),
+        expand_desc(dx,'x'),expand_desc(dy,'y'),p['relation_weight'])
+    # XX computed once per candidate, YY once per intact reference. Never use
+    # a cross-reference minimum or detach the prediction self term.
+    xx=_ground_cost(x,x,dx,dx,p['relation_weight'])
+    yy=_ground_cost(y,y,dy,dy,p['relation_weight'])
+    shape=(soft_dtw(xy,p['gamma'])-.5*soft_dtw(xx,p['gamma'])[:,:,None]
+           -.5*soft_dtw(yy,p['gamma'])[:,None,:])
+    # The original loop excludes the fixed initial state, using 23*4 values.
+    # Full H24 alignment is retained, but a diagonal alignment with zero start
+    # error has exactly the original XYZ/event reduction (not 24/23 rescaled).
+    positional=p['xyz_weight']*p['xyz_scale_m']**2/(h-1)*shape
+    event=p['event_weight']*((pred_open[:,:,None,1:]-opened[:,None,:,1:])*p['event_scale']).square().mean(-1)
+    cost=(positional+event).masked_fill(~reference_mask[:,None,:],float('inf'))
+    statistics=dict(protocol=PROTOCOL,arm=arm,extra_generation_calls=0,
+        candidate_reference_pairs=int(reference_mask.sum())*k,reference_types_used=False,
+        normalization='0.75*s^2/(H-1) divergence + .25 fixed-index (.2*event[1:])^2 mean',
+        valid_pair_negative_count=int((cost<0).sum().detach()),
+        prediction_support_fraction=None if dx is None else float(dx['known'].float().mean().detach()),
+        reference_support_fraction=None if dy is None else float(dy['known'][reference_mask].float().mean()))
+    return cost,statistics
+
+
+def saturation_loss_from_costs(costs,reference_mask):
+    """Same positive-only rectangular assignment as train_v2, applied to B/C.
+
+    No reference concatenation, mode count target, unmatched negative, or random
+    duplication. Negative self-corrected costs are deliberately not clamped.
+    """
+    import numpy as np
+    import torch
+    from scipy.optimize import linear_sum_assignment
+    if costs.ndim!=3 or reference_mask.shape!=(costs.shape[0],costs.shape[2]):
+        raise ValueError('B*K*R costs and B*R reference mask required')
+    detached=costs.detach().cpu().numpy();selected=[];k=costs.shape[1]
+    masks=np.asarray(reference_mask.detach().cpu(),dtype=bool)
+    for row in range(len(costs)):
+        ids=np.flatnonzero(masks[row])
+        if not len(ids) or not np.isfinite(detached[row][:,ids]).all():
+            raise ValueError('Finite costs for at least one known positive required')
+        small=detached[row][:,ids]
+        if len(ids)<k:
+            nearest=small.argmin(1);base=small.min(1)
+            target_rows,candidate_cols=linear_sum_assignment((small-base[:,None]).T)
+            nearest[candidate_cols]=target_rows
+            selected.append(costs[row,np.arange(k),ids[nearest]].mean())
+        else:
+            rows,cols=linear_sum_assignment(small)
+            selected.append(costs[row,rows,ids[cols]].mean())
+    return torch.stack(selected).mean()
+
+
+def synthetic_microbenchmark(device='cpu',progress_callback=None):
+    """Full prescribed shape, entirely synthetic; caller controls GPU quota.
+
+    This returns measurements, NOT authorization or an automatic training gate.
+    No dataset/checkpoint/model is loaded. The original cost/assignment A is
+    timed via its unchanged function, including exactly the historical slice.
+    """
+    import time
+    import numpy as np
+    import torch
+    from .train_v2 import positive_assignment_loss
+    body_started=time.perf_counter()
+    def progress(event):
+        if progress_callback is not None:progress_callback(event)
+    p=load_policy();settings=p['microbenchmark'];device=torch.device(device)
+    b,k,r,h,n=(settings[key] for key in ('batch_size','candidates','references_max','horizon','observed_points'))
+    generator=torch.Generator(device='cpu').manual_seed(1729)
+    def normal(shape):return torch.randn(shape,generator=generator,dtype=torch.float32).to(device)
+    references=normal((b,r,h,3))*.05
+    predictions=references[:,:k].clone()+normal((b,k,h,3))*.01
+    # The historical start is known/fixed; it is excluded from event MSE.
+    references[:,:,0]=0;predictions[:,:,0]=0
+    reference_open=torch.ones((b,r,h),device=device);opened=torch.ones((b,k,h),device=device)
+    mask=torch.ones((b,r),device=device,dtype=torch.bool)
+    observation={'world_xyz':normal((b,n,3))*.15,'valid_mask':torch.ones((b,n),device=device,dtype=torch.bool)}
+    def sync():
+        if device.type=='cuda':torch.cuda.synchronize(device)
+    def memory():
+        return None if device.type!='cuda' else dict(allocated=int(torch.cuda.max_memory_allocated(device)),
+            reserved=int(torch.cuda.max_memory_reserved(device)))
+    if device.type=='cuda':torch.cuda.reset_peak_memory_stats(device)
+    sync();start=time.perf_counter()
+    progress(dict(event='issued',operation='reference_descriptor_preparation',call_id='reference_cache'))
+    cache=prepare_reference_descriptors(references,mask,observation,p)
+    sync();prepared=dict(seconds=time.perf_counter()-start,peak_memory_bytes=memory())
+    progress(dict(event='completed',operation='reference_descriptor_preparation',call_id='reference_cache',**prepared))
+    measurements={}
+    for arm in settings['arms']:
+        if device.type=='cuda':torch.cuda.reset_peak_memory_stats(device)
+        elapsed=[];values=[];gradient_max=[];calls=[]
+        total=settings['warmup_per_arm']+settings['measured_repeats_per_arm']
+        for repeat in range(total):
+            sync();start=time.perf_counter()
+            call_id=arm+'/'+str(repeat);phase='warmup' if repeat<settings['warmup_per_arm'] else 'measured'
+            progress(dict(event='issued',operation='loss_forward_backward',call_id=call_id,arm=arm,phase=phase,repeat=repeat))
+            xyz=predictions.detach().clone().requires_grad_();events=opened.detach().clone().requires_grad_()
+            if arm=='original_saturation':
+                prediction=torch.cat([xyz[:,:,1:],events[:,:,1:,None]*p['event_scale']],-1)
+                target=torch.cat([references[:,:,1:],reference_open[:,:,1:,None]*p['event_scale']],-1)
+                value=positive_assignment_loss(prediction,target,mask.cpu().numpy(),'saturation',np.random.default_rng(0))
+                metadata=dict(valid_pair_negative_count=0)
+            else:
+                kwargs=dict(observation=observation,reference_descriptor=cache) if arm=='observed_divergence' else {}
+                costs,metadata=ordered_relation_costs(xyz,events,references,reference_open,mask,arm,policy=p,**kwargs)
+                value=saturation_loss_from_costs(costs,mask)
+            value.backward();sync();duration=time.perf_counter()-start
+            finite=(bool(torch.isfinite(xyz.grad).all()) and bool(torch.isfinite(events.grad).all()) and bool(torch.isfinite(value)))
+            observed=dict(event='observed',operation='loss_forward_backward',call_id=call_id,arm=arm,phase=phase,
+                repeat=repeat,seconds=duration,finite_loss_and_gradients=finite,
+                loss=float(value.detach()) if bool(torch.isfinite(value)) else None,
+                valid_pair_negative_count=metadata['valid_pair_negative_count'])
+            progress(observed)
+            if not finite:
+                raise RuntimeError('Synthetic loss/gradient is nonfinite; training remains unapproved')
+            call=dict(observed,event='completed',xyz_gradient_maxabs=float(xyz.grad.abs().max()))
+            progress(call);calls.append(call)
+            if repeat>=settings['warmup_per_arm']:
+                elapsed.append(duration);values.append(float(value.detach()));gradient_max.append(float(xyz.grad.abs().max()))
+        measurements[arm]=dict(seconds=elapsed,median_seconds=float(np.median(elapsed)),
+            losses=values,xyz_gradient_maxabs=gradient_max,peak_memory_bytes=memory(),
+            all_calls=calls,warmup_seconds=[c['seconds'] for c in calls if c['phase']=='warmup'],
+            all_forward_backward_seconds=sum(c['seconds'] for c in calls),
+            loss_forward_backward_calls=total,model_forwards=0,optimizer_updates=0,
+            projected_3000_loss_only_seconds=float(np.median(elapsed)*3000),
+            projection_excludes_model_grounding_optimizer_DEV_startup=True)
+    return dict(protocol=PROTOCOL,settings=settings,device=str(device),torch_version=str(torch.__version__),
+        reference_descriptor_preparation=prepared,arms=measurements,model_forwards=0,optimizer_updates=0,
+        body_seconds=time.perf_counter()-body_started,issued_loss_calls=15,completed_loss_calls=15,
+        warning='Synthetic loss-only resource measurements; not full training time or a method result')

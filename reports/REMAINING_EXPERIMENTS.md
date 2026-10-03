@@ -1,5 +1,13 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-03：有序损失实际资源门、外部系统接口限制
+
+e69有序损失服务器真实20tests/0skip；B32/K4/R9/H24/N12544全部15次synthetic forward/backward有限，A/B/C中位.014036/.140202/.196731秒，C峰值allocated432907776B，GPU外层5.368177秒。当前资源可做固定三臂3000步验证，训练器准备中；这些是合成数值/成本结果，没有方法质量优势。[原件](observed_ordered_relation_microbenchmark_v1/MICROBENCHMARK_RESULTS.md)。
+
+HAMSTER已封存TRAIN0原4点按原reach检查TipValid@1=0：起点42.427cm、语义终点34.314cm且最近为另一目标，夹爪事件失败，原3段中2段不满足2cm净空。无加起点、截首点、H24、修复或重新生成，原K1/151forward不变。这反映当前稀疏manipulation-waypoint接口与派生reach任务不匹配，单TRAIN例子不能代表系统级机器人成功率或公平方法对照。[单独验收](hamster3d_saved_train0_check_v1/TECHNICAL_CHECK_RESULTS.md)。
+
+Min-SNR普通臂实际完成500步及全部TRAIN诊断，外层postvalidation因recipe误写18000而非16000 inputs失败；内层12500完成且预算正确。修复只做新只读封存与接续weighted，不重训该臂、不覆写failed。MAIN293保持，核心方法成立仍待真实配对证据。
+
 ## 2026-10-03 06:15 UTC：强基线真实预算与方法边界
 
 真正K条件普通回归3000步已完成，K1/2/4/8有效率99.22/100/100/99.71%，已知Unique0.9922/1.9375/3.3984/4.9766。K8已637/639容量，384重复主要是R<K合法变体，无大幅去重空间。MAIN293保留旧289对象和CSV原单元格；共享单seed训练成本只计一次，模型曝光属性非加性，非旧single-K同曝光声称。[完整结果](budget_conditioned_regression_v1/BUDGET_RESULTS.md)。新布局pilot12、HAMSTER唯一完整请求在运行，技术/采集进展不算方法优势；Min-SNR尚待实际阶段。有序观测对应仍是单一待验证候选，核心新颖性、独立观测多种子优势与评分校准未成立。

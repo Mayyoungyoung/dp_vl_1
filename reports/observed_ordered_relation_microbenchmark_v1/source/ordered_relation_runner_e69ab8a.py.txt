@@ -1,0 +1,216 @@
+"""Two fresh, explicit stages. Frozen by local builder; never self-deploys."""
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT='e69ab8a134fee4eb8510c1dd52fb90e68a9e8a1c'
+MANIFEST_SHA='11f40fa7b05996fbc50b42d0fc63e4c71c1fdfe466161f75b630bfc6334939ce'
+SHORT='e69ab8a'
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+INCOMING=P/'research_v2/incoming'
+MANIFEST=INCOMING/('ordered_relation_sources_'+SHORT+'.json')
+RUN=P/'runs/observed_ordered_relation_microbenchmark_v1'
+JOBS=RUN/'job_records'
+UUID='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+THREADS=('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS','LP_NUM_THREADS')
+ARMS=('original_saturation','xyz_divergence','observed_divergence')
+EXPECTED_IDS=['reference_cache']+[arm+'/'+str(i) for arm in ARMS for i in range(5)]
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(2**20),b''):h.update(block)
+    return h.hexdigest()
+
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def write(path,value):
+    path=Path(path);temp=path.with_name(path.name+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+
+def verify_source():
+    if len(COMMIT)!=40 or sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Source has not been frozen, or manifest changed')
+    m=read(MANIFEST)
+    if m['code_commit']!=COMMIT or m['expected_tests']!=20:raise ValueError('Wrong source/test identity')
+    for name,item in m['files'].items():
+        path=SOURCE/name;path.resolve().relative_to(SOURCE.resolve())
+        if path.is_symlink() or not path.is_file() or path.stat().st_size!=item['bytes'] or sha(path)!=item['sha256']:
+            raise ValueError('Frozen actual archive bytes changed: '+name)
+    return m
+
+
+def validate_junit(path,manifest):
+    tree=ET.parse(path);suites=list(tree.iter('testsuite'));cases=list(tree.iter('testcase'))
+    identities=[[c.get('classname'),c.get('name')] for c in cases]
+    if (len(cases)!=20 or len(set(map(tuple,identities)))!=20 or
+            sum(int(s.get('tests','0')) for s in suites)!=20 or
+            any(int(s.get(k,'0')) for s in suites for k in ('skipped','failures','errors')) or
+            any(c.find(k) is not None for c in cases for k in ('skipped','failure','error')) or
+            sorted(identities)!=sorted(manifest['expected_pytest_cases'])):
+        raise ValueError('All exact20 identities, including17 actual Torch cases, must pass without skips')
+    return dict(passed=20,skipped=0,failed=0,errors=0,testcases=identities)
+
+
+def verify_tests(manifest):
+    identity_path=RUN/'tests_identity.json';identity=read(identity_path)
+    result=read(RUN/'tests_receipt.json');status=read(JOBS/'tests.status.json')
+    if (status.get('status')!='completed' or status.get('exit_code')!=0 or status.get('code_commit')!=COMMIT or
+            result.get('status')!='completed' or result.get('child_exit_code')!=0 or
+            result.get('identity_sha256')!=sha(identity_path) or identity.get('source_commit')!=COMMIT or
+            identity.get('source_manifest_sha256')!=MANIFEST_SHA or identity.get('runner_sha256')!=sha(__file__) or
+            set(result['artifacts'])!={'validation/pytest.xml','tests_runtime.json'}):
+        raise ValueError('Exact prior actual CPU tests must complete; no automatic test/bench chain')
+    for name,digest in result['artifacts'].items():
+        if sha(RUN/name)!=digest:raise ValueError('Sealed CPU test artifact changed')
+    runtime=read(RUN/'tests_runtime.json')
+    if runtime['torch_version'].split('+')[0]!='2.4.1' or runtime['cuda_visible_devices']!='':
+        raise ValueError('Tests did not use actual prescribed Torch with GPU hidden')
+    validate_junit(RUN/'validation/pytest.xml',manifest)
+    return dict(status_sha256=sha(JOBS/'tests.status.json'),receipt_sha256=sha(RUN/'tests_receipt.json'))
+
+
+class Journal:
+    """One issued record per operation, written and fsynced before that work."""
+    def __init__(self,path):
+        self.path=Path(path);self.file=self.path.open('x',encoding='utf-8')
+        self.issued=[];self.completed=[];self.active=None;self.observed=set()
+    def emit(self,event):
+        kind=event['event'];key=event['call_id']
+        if kind=='issued':
+            if self.active is not None or len(self.issued)>=len(EXPECTED_IDS) or key!=EXPECTED_IDS[len(self.issued)]:
+                raise ValueError('Duplicate/out-of-order/excess synthetic call refused before work')
+        elif kind in ('observed','completed'):
+            if key!=self.active:raise ValueError('Synthetic completion without exact issued operation')
+            if kind=='observed' and key in self.observed:raise ValueError('Duplicate observed synthetic operation')
+            if kind=='completed' and key!='reference_cache' and key not in self.observed:
+                raise ValueError('Loss completed without finite-result observation')
+        else:raise ValueError('Unknown progress event')
+        self.file.write(json.dumps(dict(event,monotonic_seconds=time.perf_counter()),allow_nan=False)+'\n')
+        self.file.flush();os.fsync(self.file.fileno())
+        if kind=='issued':self.issued.append(key);self.active=key
+        elif kind=='observed':self.observed.add(key)
+        else:self.completed.append(key);self.active=None
+    def audit(self):
+        return dict(issued_ids=self.issued,completed_ids=self.completed,
+            issued_loss_calls=sum(x!='reference_cache' for x in self.issued),
+            completed_loss_calls=sum(x!='reference_cache' for x in self.completed),
+            issued_reference_cache_calls=int('reference_cache' in self.issued),
+            completed_reference_cache_calls=int('reference_cache' in self.completed),
+            issued_without_certified_completion=[x for x in self.issued if x not in self.completed],
+            conservative_budget_policy='Every issued call counts, even if incomplete or nonfinite; no replay',
+            model_forwards=0,optimizer_updates=0,real_dataset_reads=0,checkpoint_reads=0)
+    def close(self):self.file.close()
+
+
+def validate_benchmark(q,journal):
+    expected=dict(batch_size=32,candidates=4,references_max=9,horizon=24,observed_points=12544,
+        dtype='float32',warmup_per_arm=2,measured_repeats_per_arm=3,synthetic_only=True)
+    if any(q['settings'].get(k)!=v for k,v in expected.items()):raise ValueError('Full actual-size synthetic setting changed')
+    if (set(q['arms'])!=set(ARMS) or q['model_forwards']!=0 or q['optimizer_updates']!=0 or
+            q['issued_loss_calls']!=15 or q['completed_loss_calls']!=15 or
+            journal.issued!=EXPECTED_IDS or journal.completed!=EXPECTED_IDS):
+        raise ValueError('Incomplete/excess synthetic budget; no training follows')
+    for arm,record in q['arms'].items():
+        calls=record['all_calls']
+        if (len(calls)!=5 or [c['call_id'] for c in calls]!=[arm+'/'+str(i) for i in range(5)] or
+                [c['phase'] for c in calls]!=['warmup']*2+['measured']*3 or
+                len(record['seconds'])!=3 or len(record['warmup_seconds'])!=2 or record['loss_forward_backward_calls']!=5):
+            raise ValueError('Missing warmup/measured calls')
+        for c in calls:
+            if (not c['finite_loss_and_gradients'] or not math.isfinite(c['loss']) or
+                    not math.isfinite(c['xyz_gradient_maxabs']) or not math.isfinite(c['seconds']) or c['seconds']<=0 or
+                    c['valid_pair_negative_count']<0):raise ValueError('Nonfinite/invalid synthetic result')
+        if record['seconds']!=[c['seconds'] for c in calls[2:]]:raise ValueError('Measured seconds inconsistent')
+        if record['warmup_seconds']!=[c['seconds'] for c in calls[:2]]:raise ValueError('Warmup seconds inconsistent')
+        if record['projected_3000_loss_only_seconds']!=record['median_seconds']*3000:
+            raise ValueError('Incorrect loss-only projection')
+    return dict(synthetic_loss_calls=15,reference_cache_calls=1,real_dataset_reads=0,checkpoint_reads=0,
+        model_forwards=0,optimizer_updates=0,negative_costs_are_reported_not_rejected_or_clamped=True,
+        training_auto_launch=False)
+
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in ('tests','bench'):raise ValueError('Exactly one explicit tests|bench stage required')
+    stage=sys.argv[1];started=time.perf_counter()
+    if (Path.cwd()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT or sorted(os.sched_getaffinity(0))!=[2] or
+            Path(sys.prefix)!=P/'.venv' or sys.version_info[:2]!=(3,8) or
+            any(os.environ.get(k)!='1' for k in THREADS) or
+            os.environ.get('CUDA_VISIBLE_DEVICES')!=('' if stage=='tests' else '1')):
+        raise ValueError('Fixed release, actual .venv3.8, CPU2/thread1 and exact CUDA visibility required')
+    manifest=verify_source();RUN.mkdir(parents=True,exist_ok=True)
+    identity_path=RUN/(stage+'_identity.json');receipt_path=RUN/(stage+'_receipt.json')
+    if identity_path.exists() or receipt_path.exists():raise FileExistsError('Fresh-only stage; preserve failed attempts')
+    wrapper=Path(os.environ['ORDERED_RELATION_WRAPPER']).resolve()
+    if wrapper!=INCOMING/('ordered_relation_'+SHORT+'.sh'):raise ValueError('Unexpected frozen wrapper path')
+    prior=None if stage=='tests' else verify_tests(manifest)
+    lock=RUN/'active.lock';fd=os.open(str(lock),os.O_CREAT|os.O_EXCL|os.O_WRONLY)
+    os.write(fd,str(os.getpid()).encode());os.close(fd)
+    identity=dict(source_commit=COMMIT,stage=stage,source_manifest_sha256=MANIFEST_SHA,
+        runner_sha256=sha(__file__),wrapper_sha256=sha(wrapper),wrapper_path=str(wrapper),prior_tests=prior,
+        cpu_affinity=[2],threads=1,gpu_uuid=UUID if stage=='bench' else None,
+        memory_fraction=.35 if stage=='bench' else None,automatic_stage_chaining=False,
+        recovery='No replay/resume. Failures preserve issued calls and artifacts; a new reviewed recipe is required.')
+    result=dict(status='failed',stage=stage,source_commit=COMMIT,artifacts={},
+        cost_scope='record_job outer includes runner/body/cache/all warmups/callback fsync. Nested fields must not be added. Test CPU time separate; no historical model/train cost.',
+        real_dataset_reads=0,checkpoint_reads=0,model_forwards=0,optimizer_updates=0)
+    journal=None
+    try:
+        write(identity_path,identity);result['identity_sha256']=sha(identity_path)
+        import torch
+        if str(torch.__version__).split('+')[0]!='2.4.1':raise ValueError('Actual Torch2.4.1 required, no installation/fallback')
+        torch.set_num_threads(1);torch.set_num_interop_threads(1)
+        runtime=dict(torch_version=str(torch.__version__),python=sys.version,python_executable=sys.executable,
+            cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES'),cpu_affinity=sorted(os.sched_getaffinity(0)),
+            threads=torch.get_num_threads(),interop_threads=torch.get_num_interop_threads())
+        if stage=='tests':
+            if os.environ.get('RESEARCH_GPU_UUID'):raise ValueError('CPU tests may not reserve GPU')
+            write(RUN/'tests_runtime.json',runtime)
+            target=RUN/'validation';target.mkdir(exist_ok=False)
+            command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+                '--junitxml='+str(target/'pytest.xml'),'tests/test_observed_ordered_relation_loss.py']
+            result['command']=command;begin=time.perf_counter();child=subprocess.run(command,cwd=SOURCE)
+            result.update(child_exit_code=child.returncode,child_seconds=time.perf_counter()-begin)
+            if child.returncode!=0:raise RuntimeError('Actual tests failed; benchmark is not authorized by this receipt')
+            result.update(validate_junit(target/'pytest.xml',manifest));names=['validation/pytest.xml','tests_runtime.json']
+        else:
+            actual=subprocess.check_output(['nvidia-smi','--id=1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
+            if actual!=UUID or os.environ.get('RESEARCH_GPU_UUID')!=UUID:raise ValueError('Physical GPU1 UUID mismatch')
+            if not torch.cuda.is_available() or torch.cuda.device_count()!=1:raise ValueError('Exactly one authorized visible GPU required')
+            torch.cuda.set_per_process_memory_fraction(.35,0)
+            torch.backends.cuda.matmul.allow_tf32=False
+            prop=torch.cuda.get_device_properties(0)
+            runtime.update(gpu_uuid=UUID,memory_fraction=.35,total_gpu_bytes=prop.total_memory,
+                memory_cap_bytes=int(prop.total_memory*.35),cuda_version=torch.version.cuda,tf32=False)
+            write(RUN/'bench_runtime.json',runtime)
+            journal=Journal(RUN/'bench_calls.jsonl')
+            from routeset.observed_ordered_relation_loss import synthetic_microbenchmark
+            summary=synthetic_microbenchmark('cuda:0',progress_callback=journal.emit)
+            write(RUN/'benchmark.json',summary);result.update(validate_benchmark(summary,journal))
+            result['body_seconds']=summary['body_seconds']
+            names=['bench_runtime.json','bench_calls.jsonl','benchmark.json']
+        verify_source();result.update(status='completed',artifacts={name:sha(RUN/name) for name in names})
+    except BaseException as error:
+        result['exception']=repr(error);raise
+    finally:
+        if journal is not None:
+            journal.close();write(RUN/'bench_budget.json',journal.audit())
+            result['artifacts']['bench_budget.json']=sha(RUN/'bench_budget.json')
+            result['artifacts']['bench_calls.jsonl']=sha(RUN/'bench_calls.jsonl')
+        result['runner_seconds']=time.perf_counter()-started
+        result['gpu_hours_reserved']=result['runner_seconds']/3600 if stage=='bench' else 0
+        write(receipt_path,result);lock.unlink()
+    print(json.dumps(result),flush=True)
+
+
+if __name__=='__main__':main()
