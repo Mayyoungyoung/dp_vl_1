@@ -1,6 +1,14 @@
 # 有序观测关系：同父三臂3000步续训执行协议
 
-2026-10-03。状态：独立训练器已实现，尚未服务器运行、尚无三臂结果。根任务已根据真实数学/资源门授权实现；各实际阶段仍由根任务独立冻结和启动。它检验一个辅助损失候选，不将Soft-DTW、普通局部几何或集合指派包装为已经成立的新方法。旧segment v1不变。
+2026-10-03。状态：真实工程门已过，首A在模型初始化前失败，最小修复待新冻结；尚无三臂科学结果。各实际阶段由根任务独立冻结和启动。它检验一个辅助损失候选，不将Soft-DTW、普通局部几何或集合指派包装为已经成立的新方法。旧segment v1不变。
+
+### ece首启动失败与最小scope修复（07:27 UTC）
+
+ece真实45项测试0skip通过、CPU父inspection通过（60 Adam entries、LambdaLR12000、完整五RNG域）；首A在模型初始化/journal/forward之前exit1。新driver错误把原父config的`dataset_fingerprint`与裸loader指纹比较，而原`train_observed_geometry.py:325`把该字段存为包含RGB-D源和stride的**geometry fingerprint**。这是真实工程错误，非科学负结果。
+
+独立CPU2/CUDA隐藏核验exit0：2406个原始输入/正参考/缓存/几何源的SHA联合表与原父完全相同；321输入、285TRAIN/1663正参考保持；裸loader=`970f9b533e0ea0beb6c6f1fe9d702586d7fd26d7dd675a552b3786925fc2f677`，geometry=`df4356838911271ba42f8662a11127e59ea06ec1235583604f7c06487ba59931`精确等于原config。原14计算源码SHA相同；0checkpoint读取、0模型初始化/forward/checker、新DEV/locked读取0。CPU诊断内11.046259秒、外12.013672秒嵌套，单独记诊断成本。
+
+修复只将父身份门改为**geometry fingerprint相等且原source联合表相等**，不删除门禁、不改数据/指标/目标。新增scope混淆回归测试。重启使用独立输出v2；原v1失败完整保留。A累计4500秒预算继承原外层20.755683秒（07:26:53.031938→07:27:13.787621），内层18.677414秒已包含而不相加；B/C继承0。运行时验证原失败source/exit/时间且确实无journal/last.pt，不能把有训练调用的失败当本零调用lineage。每次恢复或fixed-last只将该历史外层成本加入累计一次。
 
 ## 已通过的数学和资源门
 

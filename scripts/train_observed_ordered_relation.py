@@ -7,6 +7,7 @@ stages. Interrupted issued work is never replayed behind a checkpoint.
 import argparse
 import copy
 from contextlib import contextmanager
+from datetime import datetime
 import hashlib
 import json
 import math
@@ -48,10 +49,40 @@ def policy():
         grounding_sigma=.025,eval_every=250,checkpoint_every=25,train_inputs=285,train_references=1663,
         dev_inputs=36,additional_input_draws=96000,additional_path_states=384000,
         dev_selection_opportunities=12,fixed_last_train_calls=285,wall_cap_seconds_per_arm=4500.,
+        inherited_failed_run='observed_ordered_relation_continuation_v1',
+        inherited_failed_source='ece16ba41daab9cfcb9422f0014e640a1c934c7b',inherited_arm_A_seconds=20.755683,
         reset_optimizer=False,new_dev_or_reserved_allowed=False,automatic_stage_chaining=False)
     if any(p.get(k)!=v for k,v in fixed.items()) or p['arms']!=['original_saturation','xyz_divergence','observed_divergence']:
         raise ValueError('Only the one fixed ordered-relation continuation is supported')
     return p
+
+
+def validate_parent_dataset(data,geometry,parent_config,parent_sources):
+    # Historical base stores the observed-geometry wrapper in this misleadingly
+    # named config field, not load_observed_dataset's narrower fingerprint.
+    if (geometry['fingerprint']!=parent_config['dataset_fingerprint'] or
+            dict(data['source_hashes'],**geometry['metadata']['source_hashes'])!=parent_sources):
+        raise ValueError('Historical geometry-wrapped dataset or original input source bytes changed')
+    return dict(raw_loader_fingerprint=data['fingerprint'],geometry_fingerprint=geometry['fingerprint'],
+        parent_config_dataset_fingerprint=parent_config['dataset_fingerprint'],original_source_count=len(parent_sources))
+
+
+def inherited_failed_cost(parent_run,arm,p):
+    if arm!='original_saturation':return 0.,None
+    folder=Path(parent_run).parents[1]/p['inherited_failed_run']
+    status_path=folder/'job_records/train_a.status.json';inner_path=folder/'original_saturation/status.json'
+    status=read(status_path);inner=read(inner_path)
+    if (status.get('status')!='failed' or status.get('exit_code')!=1 or
+            status.get('code_commit')!=p['inherited_failed_source'] or inner.get('status')!='failed' or
+            inner.get('issued_calls') or (folder/'original_saturation/requests.jsonl').exists() or
+            (folder/'original_saturation/last.pt').exists()):
+        raise ValueError('The preserved pre-model failure lineage differs')
+    elapsed=(datetime.fromisoformat(status['end_utc'])-datetime.fromisoformat(status['start_utc'])).total_seconds()
+    if elapsed!=p['inherited_arm_A_seconds']:raise ValueError('Preserved outer failure cost differs')
+    return elapsed,dict(source_commit=p['inherited_failed_source'],outer_seconds=elapsed,
+        status_sha256=digest(status_path),inner_status_sha256=digest(inner_path),
+        inner_seconds_nested_not_added=inner['process_seconds'],model_calls=0,
+        accounting='Original failed outer wall charged once per cumulative arm; inner is nested, not added.')
 
 
 def check_parent(state,cfg,summary):
@@ -501,13 +532,15 @@ def run(args):
     if not args.resume and out.exists():raise FileExistsError('Fresh independent output required')
     out.mkdir(parents=True,exist_ok=True)
     if (out/'summary.json').exists():raise ValueError('Completed stage is sealed; do not issue more work')
-    prior=read_attempt_cost(out)
+    inherited,inherited_receipt=inherited_failed_cost(args.parent_run,args.arm,p)
+    prior=read_attempt_cost(out)+inherited
     if args.stage=='fixed-last-train':prior+=read_attempt_cost(Path(args.train_run))
     clock=Clock(prior,p['wall_cap_seconds_per_arm'],PROCESS_STARTED);clock.check()
     with exclusive_lock(out/'active.lock'):
         attempts=out/'attempts';attempts.mkdir(exist_ok=True);attempt=attempts/('%04d.json'%len(list(attempts.glob('*.json'))))
         status=dict(protocol=PROTOCOL,stage=args.stage,arm=args.arm,status='running',pid=os.getpid(),
-            prior_known_process_seconds=prior,resume_command=[sys.executable,'-m','scripts.train_observed_ordered_relation',
+            prior_known_process_seconds=prior,inherited_pre_model_failure=inherited_receipt,
+            resume_command=[sys.executable,'-m','scripts.train_observed_ordered_relation',
                 '--stage',args.stage,'--arm',args.arm,'--parent-run',args.parent_run,'--parent-inspection',args.parent_inspection,
                 '--math-gate',args.math_gate,'--data',args.data,'--quality-audit',args.quality_audit,'--output',args.output,'--resume']+
                 ([] if not args.train_run else ['--train-run',args.train_run]))
@@ -520,9 +553,9 @@ def run(args):
             # Reuse the existing strict composite guards/loader, not a collector root.
             args.ordinary_run=args.parent_run
             data,geometry,train_ids,dev_ids,ordinary_receipt=shared.read_inputs(args,p)
-            if data['fingerprint']!=parent_cfg['dataset_fingerprint']:raise ValueError('Historical all-positive dataset changed')
+            dataset_identity=validate_parent_dataset(data,geometry,parent_cfg,read(Path(args.parent_run)/'source_hashes.json'))
             config=dict(p,arm=args.arm,dataset_fingerprint=data['fingerprint'],geometry_fingerprint=geometry['fingerprint'],
-                parent_components=components,runtime=actual_runtime,math_gate=gate,
+                parent_components=components,runtime=actual_runtime,math_gate=gate,dataset_identity=dataset_identity,
                 source_sha256={name:digest(PROJECT/name) for name in SOURCES},code_commit=PROJECT.name)
             clock.check();model=new_model(parent_cfg,'cuda');trainer=OrderedTrainer(model,config,parent,train_ids)
             if not all(v.requires_grad for v in model.parameters()):raise ValueError('Original full geometry/head must remain trainable')

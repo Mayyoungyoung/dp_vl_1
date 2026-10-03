@@ -26,6 +26,33 @@ def sampler_parent():
         batches=1,observation_draws=2,index_chain_sha256='0'*64))
 
 
+def test_parent_dataset_field_means_geometry_wrapper_not_raw_loader_scope():
+    data=dict(fingerprint='raw-loader',source_hashes={'labels':'a','cache':'b'})
+    geometry=dict(fingerprint='wrapped-with-RGBD',metadata=dict(source_hashes={'rgbd':'c'}))
+    parent=dict(dataset_fingerprint='wrapped-with-RGBD');sources={'labels':'a','cache':'b','rgbd':'c'}
+    actual=run.validate_parent_dataset(data,geometry,parent,sources)
+    assert actual['raw_loader_fingerprint']!=actual['parent_config_dataset_fingerprint']
+    assert actual['geometry_fingerprint']==actual['parent_config_dataset_fingerprint']
+    with pytest.raises(ValueError):run.validate_parent_dataset(data,geometry,dict(dataset_fingerprint='raw-loader'),sources)
+    with pytest.raises(ValueError):run.validate_parent_dataset(data,geometry,parent,dict(sources,cache='changed'))
+    changed=copy.deepcopy(geometry);changed['fingerprint']='different-grid'
+    with pytest.raises(ValueError):run.validate_parent_dataset(data,changed,parent,sources)
+
+
+def test_original_failed_outer_cost_charged_only_A_and_nested_inner_not_added(tmp_path):
+    p=run.policy();parent=tmp_path/'runs/original/peak_seed0';folder=tmp_path/'runs'/p['inherited_failed_run']
+    run.write_json(folder/'job_records/train_a.status.json',dict(status='failed',exit_code=1,
+        code_commit=p['inherited_failed_source'],start_utc='2026-10-03T07:26:53.031938+00:00',
+        end_utc='2026-10-03T07:27:13.787621+00:00'))
+    run.write_json(folder/'original_saturation/status.json',dict(status='failed',process_seconds=18.67741397197824))
+    cost,receipt=run.inherited_failed_cost(parent,'original_saturation',p)
+    assert cost==20.755683 and receipt['inner_seconds_nested_not_added']==18.67741397197824
+    assert run.inherited_failed_cost(parent,'xyz_divergence',p)==(0.,None)
+    assert run.inherited_failed_cost(parent,'observed_divergence',p)==(0.,None)
+    (folder/'original_saturation/requests.jsonl').write_text('issued')
+    with pytest.raises(ValueError):run.inherited_failed_cost(parent,'original_saturation',p)
+
+
 def test_plan_clones_actual_sampler_without_consuming_parent_or_global_rng():
     parent=sampler_parent();before=run.nested_digest(parent);global_before=run.nested_digest(np.random.get_state())
     draws,plan=run.draw_plan(parent,[1,3,8],4,2)
