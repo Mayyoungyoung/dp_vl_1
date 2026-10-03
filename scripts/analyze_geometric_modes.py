@@ -53,7 +53,7 @@ def evaluate_pool(paths, valid, ids, parents, candidates, refs, q=None, pi=None)
         legacy = {tuple(c['declared_passage_type']) for i,c in enumerate(candidates[n]) if valid[n,i] and c['declared_passage_type'] is not None}
         row = dict(id=str(identifier),parent=str(parents[n]),valid=valid[n].astype(int).tolist(),words=words,
             reference_words=sorted(refwords),reference_valid=ref['reference_valid'],
-            unique_classified=len(legacy),unknown_valid=sum(valid[n,i] and c['declared_passage_type'] is None for i,c in enumerate(candidates[n])),
+            unique_classified=len(legacy),unknown_valid=int(sum(valid[n,i] and c['declared_passage_type'] is None for i,c in enumerate(candidates[n]))),
             unknown_only_modes=len(unknown-known),unknown_new_vs_references=len(unknown-refwords),
             K={k:dict(summarize_modes(valid[n],words,refwords,indices[n]),selected=indices[n].tolist()) for k,indices in selections.items()},
             candidates=candidates[n],q=None if q is None else q[n].tolist())
