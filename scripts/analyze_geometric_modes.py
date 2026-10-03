@@ -91,6 +91,13 @@ def aggregate(rows):
             for key in ('ValidCount','GeometricModeCount','TwoDistinctValid','ReferenceModesHit','ReferenceModeCoverage')}
         summary['K'][k]['CoverageEligible'] = sum(r['K'][k]['ReferenceModeCoverage'] is not None for r in rows)
         summary['K'][k]['MultimodePoolLost'] = sum(r['K']['8']['TwoDistinctValid'] and not r['K'][k]['TwoDistinctValid'] for r in rows)
+    if 'pi_valid_mode_mass_TV' in rows[0]:
+        summary['pi_auxiliary'] = dict(mean_invalid_mass=float(np.mean([r['pi_invalid_mass'] for r in rows])),
+            mean_valid_portal_mass_TV_to_balanced_reference_target=float(np.mean([r['pi_valid_mode_mass_TV'] for r in rows if r['pi_valid_mode_mass_TV'] is not None])),
+            scope='Training 4cm complete-link reference cluster mass aggregated by portal. Invalid prediction mass remains in an unresolved bucket; not calibration or natural frequency.')
+    summary['failure_reasons_overlapping'] = {key:sum(not c[key] for r in rows for c in r['candidates'] if not c['TipValid'])
+        for key in ('semantic_goal_correct','starts_at_current_state','tip_segments_clear','event_state_sequence_correct')}
+    summary['valid_routes_with_uncancelled_backtracking'] = sum(':-1:' in w for r in rows for w in r['words'] if w is not None)
     return summary
 
 def bootstrap(a,b):
@@ -116,7 +123,7 @@ def plots(output, datasets, refs):
     # All conditions, both arms, including all failures; no favorable subset.
     names=list(datasets)
     for start in range(0,len(datasets[names[0]][1]),6):
-        fig=plt.figure(figsize=(16,18))
+        fig=plt.figure(figsize=(16,25))
         for col,name in enumerate(names):
             paths,rows=datasets[name]
             for local,row in enumerate(rows[start:start+6]):
@@ -140,7 +147,8 @@ def plots(output, datasets, refs):
                 ax.set_title('%s %s\nvalid=%d modes=%d unknown=%d'%(name,row['id'].replace('two_row_reach_',''),row['K']['8']['ValidCount'],row['K']['8']['GeometricModeCount'],row['unknown_valid']),fontsize=9)
                 ax.set_xlabel('x');ax.set_ylabel('y');ax.set_zlabel('z');ax.view_init(25,-65)
         fig.suptitle('All M8 candidates: blue=known valid, orange=unknown valid, red dashed=invalid; gray=references/boxes')
-        fig.tight_layout();fig.savefig(output/('ALL_ROUTES_%02d.png'%start),dpi=130);plt.close(fig)
+        fig.subplots_adjust(top=.95,bottom=.03,hspace=.32,wspace=.08)
+        fig.savefig(output/('ALL_ROUTES_%02d.png'%start),dpi=130);plt.close(fig)
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p.add_argument('--new-dev',type=Path);a=p.parse_args()
@@ -150,10 +158,13 @@ def main():
         family=RUN/('M8_%s_seed0_expanded_scores'%arm)
         poolpath=family/'pools/DEV_MODEL/pool.npz' if a.new_dev is None else a.new_dev/arm/'pool.npz'
         with np.load(checked(poolpath)) as z:pool={k:z[k] for k in z.files}
+        receipt=read(checked(poolpath.parent/'receipt.json'));assert sha(poolpath)==receipt['pool_sha256']
         ids=pool['ids'].astype(str)
         if refs is None:refs=load_references(OLD if a.new_dev is None else ROOT/'data/geometric_modes_v1/DEV_MODEL',ids)
         scenes=read(checked(poolpath.parent/'per_scene.json'))
+        assert [r['id'] for r in scenes]==list(ids)
         candidates=[r['candidates'] for r in scenes]
+        assert np.array_equal(pool['labels'],[[c['TipValid'] for c in row] for row in candidates])
         if a.new_dev is None:
             with np.load(checked(family/'calibration_seed0/predictions.npz')) as z:logits=z['dev_logits']
             temperature=read(checked(family/'calibration_seed0/summary.json'))['temperature']
@@ -161,6 +172,7 @@ def main():
         else:q=pool['q']
         summary,rows=evaluate_pool(pool['paths'],pool['labels'].astype(bool),ids,pool['parents'],candidates,refs,q,pool['pi'])
         results[arm]=summary;write(a.output/(arm+'_rows.json'),rows)
+        np.savez_compressed(a.output/(arm+'_pool.npz'),**{k:pool[k] for k in ('paths','events','ids','parents','labels','pi')},q=q)
         datasets[arm]=(pool['paths'],rows)
     results['paired_parent_bootstrap']=bootstrap(datasets['ordinary'][1],datasets['balanced_probability'][1])
     if a.new_dev is None:
@@ -174,6 +186,19 @@ def main():
                 valid=np.array([[c['TipValid'] for c in row] for row in candidates])
                 summary,rows=evaluate_pool(pool['paths'],valid,pool['scene_ids'],pool['parent_ids'],candidates,refs)
                 name='%s_seed%d'%(arm,seed);results[name]=summary;write(a.output/(name+'_rows.json'),rows)
+    # Plot/review payload contains only the explicitly evaluated DEV cohort.
+    write(a.output/'REFERENCE_GEOMETRY.json',{identifier:dict(config=r['config'],paths=r['paths'].tolist(),words=r['words'],
+        truth={k:v.tolist() for k,v in r['truth'].items()}) for identifier,r in refs.items()})
+    # Segment subdivision must leave every full-route portal word unchanged.
+    audited=0
+    for paths,rows in datasets.values():
+        for route_set,row in zip(paths,rows):
+            for path,valid,word in zip(route_set,row['valid'],row['words']):
+                if not valid:continue
+                refined=np.empty((len(path)*2-1,3));refined[::2]=path;refined[1::2]=(path[:-1]+path[1:])/2
+                assert encode_word(portal_word(refined,refs[row['id']]['config']))==word
+                audited+=1
+    results['subdivision_invariance_valid_routes_checked']=audited
     write(a.output/'RESULTS.json',results);write(a.output/'SOURCE_INDEX.json',SOURCES)
     plots(a.output,datasets,refs)
     print(__import__('json').dumps(results),flush=True)
