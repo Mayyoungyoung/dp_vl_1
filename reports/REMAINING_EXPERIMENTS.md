@@ -1,5 +1,9 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-03：composite108普通数据控制已完成
+
+固定总12000×32/K4，实际TRAIN输入189→285、参考1108→1663；原DEV best Tip59→63/144，但last62→56/144。公共TRAIN last76.06→85.05%，新增TRAIN90.10%。全部原件/逐场景/失败/成本见 [完整报告](OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md)。仅单种子、重复使用DEV的小幅best收益；不是同逐输入曝光、方法贡献或机器人执行证据。下一步骤先核真实Qwen末两层LoRA的冻结前缀回放与梯度，再预登记同common-head续训对照。此处尚无LoRA正式训练结果。MAIN273。
+
 ## 当前执行 — 2026-10-03 00:13 UTC
 
 本段覆盖下方旧状态。source1fccf48的88项服务器测试通过，两臂各36次真实Qwen/K4已完成exit0，72份特征字节及288候选检查决定均与原best一致。完整请求中位constant/no-direct为74.5681/74.5213ms，P95为86.1414/91.2371ms；未显示可靠加速。原质量59/144对52/144保留。MAIN271，原269字段未改，新两行只记在线成本；见 reports/observed_two_row_12000_online_v1/ONLINE_RESULTS.md。

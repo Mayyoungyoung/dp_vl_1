@@ -1,5 +1,9 @@
 # 多路线研究 V2：实施进展与实测证据
 
+## 2026-10-03：composite108普通数据控制已完成
+
+固定总12000×32/K4，实际TRAIN输入189→285、参考1108→1663；原DEV best Tip59→63/144，但last62→56/144。公共TRAIN last76.06→85.05%，新增TRAIN90.10%。全部原件/逐场景/失败/成本见 [完整报告](OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md)。仅单种子、重复使用DEV的小幅best收益；不是同逐输入曝光、方法贡献或机器人执行证据。下一步骤先核真实Qwen末两层LoRA的冻结前缀回放与梯度，再预登记同common-head续训对照。此处尚无LoRA正式训练结果。MAIN273。
+
 ## 最新实际快照 — 2026-10-02 22:41 UTC
 
 本段覆盖下方较早的running/待运行记录。root实核MAIN267（原263所有字段严格不变）、JOBS484@22:40:58.411450UTC无新job运行、registry501；429部署已登记。cosine与native100k均已实际完成，不能按旧记录重复启动。

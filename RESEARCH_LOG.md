@@ -395,3 +395,15 @@ root独立启动同总12000步普通模型训练：source71cf0c11d5b642672594bc2
 另按已读质量独立启动train64 resume，仍为原5c8f8e4 collector，session20261003T001613Z_train64_651720，SSH57754，CPU2/3，00:16:13UTC开始；仅追加注册indices32..63，不重采已闭合前32。该阶段全64闭合前不读取新增raw结果，不自动启动train128。新DEV继续封存。服务器实际job路径/PID/命令以JOBS与registry为准，禁止根据旧running段重复启动。
 
 MAIN271保持。JOBS快照 2026-10-03T00:25:15.049030+00:00 共549条，registry同步最新转移。尚无核心方法优势；当前活跃会话继续实际训练后的分析和研究决定，没有会话结束后自动思考服务。
+
+## 实际完成与接续 — 2026-10-03 00:50 UTC
+
+本段覆盖下方旧running状态。composite108普通12000已于00:27:47UTC exit0，固定last285 TRAIN诊断于00:28:48UTC exit0。source71cf0c1，70服务器测试通过。全部46服务器原件、18离线分析产物、12父全图和权重hash已核验；见 reports/OBSERVED_TWO_ROW_COMPOSITE108_BASELINE_RESULTS.md 及 reports/observed_two_row_composite108_v1/INDEX.md。此轮不重启。
+
+原36 DEV best Tip59→63/144、已分类类型总和30→34、Any30/36不变；last62→56/144、Any28→27/36。公共189 TRAIN last575→643/756（76.06→85.05%），新增96为346/384（90.10%）。扩大数据改善训练拟合，但DEV收益不稳定；数据人口/颜色频率/逐输入曝光变化不是方法贡献。保留48次历史、全部失败和unknown。新训练base580.198116s/.1611661434GPUh，完整job593.489648s；诊断CPU19.117344s，嵌套成本不相加，没有新模型真实在线时延。MAIN273，旧271字段保留。
+
+下一实际研究决定为同一composite last头的冻结Qwen/末两层LoRA普通基线配对。先实现TRAIN6技术门禁：官方完整forward与layer26冻结前缀缓存后的原尾层回放，两逻辑微步、两独立optimizer共4次更新；上限10full+10replay+4head/16候选状态，无DEV。此时实现已完成、独立审查中，尚未运行真实probe，更未启动正式LoRA续训。不会使用更新后过时的最终4096维条件缓存；只核验serial原长度，未证明batched padding。技术通过后另行冻结续训协议，不自动启动。
+
+extension train64仍由原5c8f8e4 collector/session20261003T001613Z_train64_651720在CPU2/3执行，SSH57754；只追加注册32..63，前32不重采。全64闭合前只读机械进度，不读新增raw；之后独立TRAIN64分析，不能自动启train128或解封新DEV。所有reserved原始数据保持封存。恢复先核PID/status实际命令，禁止重复启动已发父。
+
+JOBS实际快照 2026-10-03T00:47:54.427626+00:00，566条；registry已同步。当前没有GPU训练任务。核心方法优势及论文A–H尚未成立，当前活跃会话继续实施，不存在会话结束后自动分析改码服务。
