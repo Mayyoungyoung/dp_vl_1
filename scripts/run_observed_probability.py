@@ -380,7 +380,8 @@ def main():
     global RUN,GENERATOR
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['export','export-role','pool','train-q','calibrate'])
     p.add_argument('--role');p.add_argument('--seed',type=int,default=0)
-    p.add_argument('--generator-family',choices=['M8_ordinary_seed0_v2','M8_balanced_probability_seed0_v2'])
+    p.add_argument('--generator-family',choices=['M8_ordinary_seed0_v2','M8_balanced_probability_seed0_v2',
+        'M8_ordinary_seed0_expanded','M8_balanced_probability_seed0_expanded'])
     a=p.parse_args()
     if a.generator_family:
         GENERATOR=RUN/a.generator_family

@@ -164,3 +164,15 @@ def test_composite_evaluation_uses_matching_verifier_and_restores(monkeypatch):
     monkeypatch.setattr(ordinary,'evaluate',fake)
     assert evaluate_composite()=={'ok':True}
     assert ordinary.verify_export is original
+
+
+@pytest.mark.parametrize('role',['SCORE_TRAIN','DEV_SCORE','CALIBRATION','TEST_LOCKED','DEV_MODEL'])
+def test_generator_expansion_rejects_every_held_role(role):
+    from scripts.train_observed_probability_set import append_generator_data
+    with pytest.raises(ValueError):append_generator_data({}, {}, {'splits':np.array([role])}, {})
+
+
+def test_generator_expansion_rejects_repeated_parent():
+    from scripts.train_observed_probability_set import append_generator_data
+    with pytest.raises(ValueError):append_generator_data({'parent_ids':['a']},{},
+        {'splits':np.array(['FUTURE_GENERATOR_TRAIN']),'parent_ids':['a']},{})

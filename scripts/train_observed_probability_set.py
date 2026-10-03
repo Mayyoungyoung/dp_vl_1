@@ -6,7 +6,7 @@ import random
 import time
 
 import numpy as np
-from scripts.run_observed_probability import ROOT,RUN,OLD,PARENT,POLICY,sha,read,write,torch_setup
+from scripts.run_observed_probability import ROOT,RUN,OLD,PARENT,POLICY,sha,read,write,torch_setup,verify_role
 
 
 def evaluate_composite(*args,**kwargs):
@@ -17,7 +17,32 @@ def evaluate_composite(*args,**kwargs):
         return ordinary.evaluate(*args,**kwargs)
 
 
-def train(arm,seed):
+def append_generator_data(data,geometry,extra,extra_geometry):
+    if set(extra['splits'])!={'FUTURE_GENERATOR_TRAIN'}:
+        raise ValueError('Generator expansion accepts only its prospectively reserved TRAIN role')
+    if set(data['parent_ids']) & set(extra['parent_ids']):raise ValueError('Generator parent overlap')
+    result=dict(data)
+    for key in ('features','current','splits','scene_ids','parent_ids','image_hashes'):
+        result[key]=np.concatenate([data[key],extra[key]])
+    r=max(data['paths'].shape[1],extra['paths'].shape[1])
+    for key in ('paths','events','path_mask'):
+        arrays=[]
+        for d in (data,extra):
+            a=d[key];pad=[(0,0)]*a.ndim;pad[1]=(0,r-a.shape[1]);arrays.append(np.pad(a,pad))
+        result[key]=np.concatenate(arrays)
+    for key in ('semantic_targets','instructions','tasks','unreferenced','skipped'):
+        result[key]=data[key]+extra[key]
+    result['source_hashes']=dict(data['source_hashes'],**extra['source_hashes'])
+    result['fingerprint']=hashlib.sha256(json.dumps(result['source_hashes'],sort_keys=True).encode()).hexdigest()
+    combined=dict(geometry)
+    n=len(geometry['points']['depth'])
+    combined['points']={k:np.concatenate([geometry['points'][k],extra_geometry['points'][k]]) for k in geometry['points']}
+    combined['index']=np.concatenate([geometry['index'],extra_geometry['index']+n])
+    combined['fingerprint']=hashlib.sha256((geometry['fingerprint']+extra_geometry['fingerprint']).encode()).hexdigest()
+    return result,combined
+
+
+def train(arm,seed,expanded_data=False):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,reference_cluster_weights,balanced_assignment_loss
     from routeset.observed_route_head import load_observed_dataset
@@ -27,7 +52,7 @@ def train(arm,seed):
     from scripts.evaluate_observed_two_row_online import head_options
     from scripts.export_two_row_composite_observations import verify_export
     cfg=read(POLICY)['stage2']
-    output=RUN/('M8_%s_seed%d_v2'%(arm,seed));output.mkdir(parents=True,exist_ok=False)
+    output=RUN/('M8_%s_seed%d_%s'%(arm,seed,'expanded' if expanded_data else 'v2'));output.mkdir(parents=True,exist_ok=False)
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     pcfg=read(PARENT/'config.json')
     verify_export(OLD)
@@ -35,8 +60,13 @@ def train(arm,seed):
     data=load_observed_dataset(pcfg['observations'],pcfg['supervision'],pcfg['cache_dir'],24,'both')
     geometry=load_geometry(data,pcfg['observations'],pcfg['supervision'],2)
     if geometry['fingerprint']!=pcfg['dataset_fingerprint']:raise ValueError('Original dataset changed')
-    train_ids=np.flatnonzero((data['splits']=='TRAIN') & data['path_mask'].any(1));dev_ids=np.flatnonzero(data['splits']=='DEV_MODEL')
-    if len(train_ids)!=285 or len(dev_ids)!=36:raise ValueError('Fixed original95/old12 populations required')
+    if expanded_data:
+        path=verify_role('FUTURE_GENERATOR_TRAIN')
+        extra=load_observed_dataset(path/'observations.jsonl',path/'supervision.jsonl',path/'qwen_cache',24,'both')
+        extra_geometry=load_geometry(extra,path/'observations.jsonl',path/'supervision.jsonl',2)
+        data,geometry=append_generator_data(data,geometry,extra,extra_geometry)
+    train_ids=np.flatnonzero(np.isin(data['splits'],['TRAIN','FUTURE_GENERATOR_TRAIN']) & data['path_mask'].any(1));dev_ids=np.flatnonzero(data['splits']=='DEV_MODEL')
+    if len(train_ids)!=(573 if expanded_data else 285) or len(dev_ids)!=36:raise ValueError('Fixed registered train/dev populations required')
     opts=head_options(pcfg);opts['max_candidates']=8
     model=ProbabilisticGeometryRouteHead(**opts).cuda()
     parent=torch.load(PARENT/'last.pt',map_location='cpu',weights_only=False)['model']
@@ -99,9 +129,11 @@ def train(arm,seed):
         training_path_states=cfg['steps']*cfg['batch_size']*8,dev_requests=len(history)*36,dev_path_states=len(history)*36*8,
         last_checkpoint_sha256=sha(output/'last.pt'),best_checkpoint_sha256=sha(output/'best.pt'),
         elapsed_seconds=time.perf_counter()-started,peak_allocated_bytes=torch.cuda.max_memory_allocated(),
-        scientific_scope='M8 paired original95 data; pi+balanced-assignment bundle, not isolated pi causality; old DEV reused'))
+        train_parents=len(set(data['parent_ids'][train_ids])),train_inputs=len(train_ids),expanded_data=expanded_data,
+        scientific_scope='M8 paired same-data arms; pi+balanced-assignment bundle, not isolated pi causality; old DEV reused'))
 
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--arm',choices=['ordinary','balanced_probability'],required=True)
-    p.add_argument('--seed',type=int,default=0);a=p.parse_args();train(a.arm,a.seed)
+    p.add_argument('--seed',type=int,default=0);p.add_argument('--expanded-data',action='store_true')
+    a=p.parse_args();train(a.arm,a.seed,a.expanded_data)

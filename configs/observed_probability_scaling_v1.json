@@ -1,0 +1,17 @@
+{
+  "protocol": "observed_probability_scaling_v1",
+  "source_roles": ["historical TRAIN95", "FUTURE_GENERATOR_TRAIN extension160..255"],
+  "expected_train_parents": 191,
+  "expected_train_inputs": 573,
+  "evaluation": "unchanged old12-parent DEV_MODEL only",
+  "excluded_extension_ranges": [[32,160],[256,288]],
+  "arms": ["ordinary", "balanced_probability"],
+  "internal_M": 8,
+  "steps": 3000,
+  "batch_size": 32,
+  "seed0_replication_gate": "balanced fixed-last UniqueClassifiedTipValidAtK strictly improves over ordinary with no decrease in TipValidAtK or semantic_goal_accuracy",
+  "training": "Each arm starts from same original95 last12000 with identical expanded-query initialization and fresh AdamW. Fixed3000 updates. Data scaling does not have equal per-parent exposure to95-parent experiment.",
+  "reference_policy": "All accepted positives, including unknown and long paths; no validation-dependent filtering",
+  "calibration_policy": "Calibration source remains held out from all generator training. Existing M4 temperature cannot be reused for a new generator's probabilities.",
+  "budget": "Shared original6h cumulative job budget; not a new allowance"
+}
