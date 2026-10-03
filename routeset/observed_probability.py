@@ -7,6 +7,40 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from .observed_geometry import ObservedGeometryRouteHead
+
+
+class ProbabilisticGeometryRouteHead(ObservedGeometryRouteHead):
+    """Same observed backbone and whole-route queries, with separate mode mass.
+
+    Returning fewer routes is a downstream selection, not another forward with
+    fewer interacting queries. q is separately trained on this model's pools.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.mode_mass = nn.Linear(self.head.queries.shape[-1], 1)
+        nn.init.zeros_(self.mode_mass.weight)
+        nn.init.zeros_(self.mode_mass.bias)
+
+    def forward(self, features, current, world_xyz, rgb, uv, depth, valid_mask, k=None):
+        k = self.head.max_candidates if k is None else k
+        if k != self.head.max_candidates or self.refiner is not None or self.endpoint_mode != 'surface_anchor':
+            raise ValueError('Fixed internal M and unchanged surface-anchor generator required')
+        geometry = self.geometry(features,current,world_xyz,rgb,uv,depth,valid_mask)
+        context = self.head.feature_encoder(features)+self.head.state_encoder(current)+geometry['context']
+        tokens = context[:,None]+self.head.queries[None]
+        for block in self.head.blocks:
+            tokens = block(tokens,context)
+        prediction = self.head.output(tokens).reshape(len(features),k,self.head.horizon-1,4)
+        fractions = torch.linspace(0,1,self.head.horizon,device=features.device,dtype=features.dtype)[1:]
+        line = current[:,None,None,:3]+fractions[None,None,:,None]*(geometry['anchor_xyz']-current[:,:3])[:,None,None]
+        intermediate = line[:,:,:-1]+prediction[:,:,:-1,:3]
+        endpoint = geometry['anchor_xyz'][:,None,None]+self.endpoint_residual_bound*prediction[:,:,-1:,:3].tanh()
+        xyz = torch.cat([current[:,None,None,:3].expand(-1,k,1,-1),intermediate,endpoint],2)
+        opened = torch.cat([current[:,None,None,7].expand(-1,k,1).clamp(0,1),prediction[...,3].sigmoid()],2)
+        geometry['pi_logits'] = self.mode_mass(tokens).squeeze(-1)
+        geometry['pi'] = geometry['pi_logits'].softmax(-1)
+        return xyz,opened,geometry
 
 
 def route_observation_features(paths, events, current, world_xyz, rgb, valid_mask,
@@ -56,6 +90,51 @@ class RouteValidityHead(nn.Module):
     def forward(self, nodes, context):
         encoded = self.nodes(nodes)
         return self.score(torch.cat([encoded.mean(-2), encoded.amax(-2), context], -1)).squeeze(-1)
+
+
+def select_route_indices(paths, q, k, diversity_distance=.04):
+    """q-first selection; prefer distinct routes among q>=.5, then fill by q.
+
+    The fixed .5 threshold is a presentation rule, not a validity certificate.
+    All internal candidates and their original pi/q remain reportable.
+    """
+    if not 1 <= k <= paths.shape[1]:
+        raise ValueError('Requested K must not exceed generated M')
+    selected=[]
+    for b in range(len(paths)):
+        order=torch.argsort(q[b],descending=True,stable=True).tolist()
+        chosen=[order[0]]
+        for i in order[1:]:
+            if len(chosen)==k:break
+            if q[b,i]>=.5 and all(torch.linalg.vector_norm(paths[b,i]-paths[b,j],dim=-1).mean()>=diversity_distance for j in chosen):
+                chosen.append(i)
+        for i in order:
+            if len(chosen)==k:break
+            if i not in chosen:chosen.append(i)
+        selected.append(chosen)
+    return torch.tensor(selected,device=paths.device)
+
+
+class ScoredRoutePlanner(nn.Module):
+    """Deployment interface: observed inputs -> M routes/pi/q and selected K."""
+    def __init__(self,generator,scorer,normalization,temperature=1.):
+        super().__init__()
+        if temperature<=0:raise ValueError('Positive calibration temperature required')
+        self.generator=generator;self.scorer=scorer;self.temperature=float(temperature)
+        for key,value in normalization.items():self.register_buffer(key,torch.as_tensor(value))
+
+    def forward(self,features,current,world_xyz,rgb,uv,depth,valid_mask,return_k=1):
+        inputs=dict(features=features,current=current,world_xyz=world_xyz,rgb=rgb,uv=uv,depth=depth,valid_mask=valid_mask)
+        paths,events,details=self.generator(**inputs)
+        geometry=self.generator.geometry(**inputs,return_point_features=True)
+        context=self.generator.head.feature_encoder(features)+self.generator.head.state_encoder(current)+geometry['context']
+        nodes,ctx=route_observation_features(paths,events,current,world_xyz,rgb,valid_mask,geometry['point_features'],context,geometry['anchor_xyz'])
+        logits=self.scorer((nodes-self.nodes_mean)/self.nodes_std,(ctx-self.context_mean)/self.context_std)
+        q=(logits/self.temperature).sigmoid()
+        pi=details.get('pi')
+        indices=select_route_indices(paths,q,return_k)
+        return dict(paths=paths,events=events,pi=pi,q=q,selected_indices=indices,
+                    internal_candidates=paths.shape[1],returned_candidates=return_k)
 
 
 def reference_cluster_weights(paths, mask, threshold=.04):

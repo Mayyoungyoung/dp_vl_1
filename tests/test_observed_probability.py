@@ -111,3 +111,19 @@ def test_q_checkpoint_optimizer_rng_resume_equivalence(tmp_path):
     opt=torch.optim.AdamW(restored.parameters(),lr=.001);opt.load_state_dict(saved['optimizer']);torch.set_rng_state(saved['rng'])
     step(restored,opt)
     for a,b in zip(model.parameters(),restored.parameters()):torch.testing.assert_close(a,b,rtol=0,atol=0)
+
+
+def test_probabilistic_generator_preserves_baseline_paths():
+    from routeset.observed_geometry import ObservedGeometryRouteHead
+    from routeset.observed_probability import ProbabilisticGeometryRouteHead
+    torch.manual_seed(12)
+    baseline=ObservedGeometryRouteHead(feature_dim=16,max_candidates=8)
+    model=ProbabilisticGeometryRouteHead(feature_dim=16,max_candidates=8)
+    missing,unexpected=model.load_state_dict(baseline.state_dict(),strict=False)
+    assert set(missing)=={'mode_mass.weight','mode_mass.bias'} and not unexpected
+    args=dict(features=torch.randn(2,16),current=torch.randn(2,8),world_xyz=torch.randn(2,10,3),
+              rgb=torch.rand(2,10,3),uv=torch.rand(2,10,2),depth=torch.ones(2,10),valid_mask=torch.ones(2,10,dtype=torch.bool))
+    a,b,_=baseline(**args);x,y,d=model(**args)
+    torch.testing.assert_close(a,x,rtol=0,atol=0);torch.testing.assert_close(b,y,rtol=0,atol=0)
+    torch.testing.assert_close(d['pi'],torch.full((2,8),1/8))
+    with pytest.raises(ValueError):model(**args,k=4)

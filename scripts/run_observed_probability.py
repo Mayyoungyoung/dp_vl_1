@@ -21,6 +21,7 @@ RUN = ROOT/'runs/observed_probability_v1'
 PARENT = ROOT/'runs/observed_two_row_composite108_v1/peak_seed0'
 OLD = ROOT/'data/observation_two_row_composite108_v1'
 EXT = ROOT/'data/observed_two_row_extension288_v1'
+GENERATOR = None
 
 
 def sha(path):
@@ -190,6 +191,15 @@ def model_load():
     torch = torch_setup()
     from routeset.observed_geometry import ObservedGeometryRouteHead
     from scripts.evaluate_observed_two_row_online import head_options
+    if GENERATOR is not None:
+        from routeset.observed_probability import ProbabilisticGeometryRouteHead
+        checkpoint=torch.load(GENERATOR/'last.pt',map_location='cpu',weights_only=False)
+        summary=read(GENERATOR/'summary.json')
+        if sha(GENERATOR/'last.pt')!=summary['last_checkpoint_sha256']:raise ValueError('M8 generator changed')
+        opts=head_options(read(PARENT/'config.json'));opts['max_candidates']=8
+        model=ProbabilisticGeometryRouteHead(**opts).cuda().eval()
+        model.load_state_dict(checkpoint['model']);model.requires_grad_(False)
+        return model
     if sha(PARENT/'last.pt') != read(POLICY)['parent_checkpoint_sha256']:
         raise ValueError('Parent changed')
     checkpoint = torch.load(PARENT/'last.pt', map_location='cpu', weights_only=False)
@@ -228,7 +238,7 @@ def pool(role):
     output = RUN/'pools'/role
     output.mkdir(parents=True, exist_ok=False)
     rows, labels, cache = observation_rows(role)
-    values = {key:[] for key in ('nodes','context','paths','events','labels','parents','ids')}
+    values = {key:[] for key in ('nodes','context','paths','events','labels','parents','ids','pi')}
     hashes = {}
     summaries = []
     started = time.perf_counter()
@@ -260,14 +270,15 @@ def pool(role):
         metrics, candidates = scene_metrics(xyz,event,dict(gripper_pose=current[:7],gripper_open=current[7]),
             truth,label['semantic_targets'],label['route_types'],read(label['route_config']))
         y = np.array([c['TipValid'] for c in candidates],dtype='float32')
-        for k,v in dict(nodes=node,context=ctx,paths=xyz,events=event,labels=y,parents=row['parent_id'],ids=row['id']).items():
+        pi=details['pi'][0].cpu().numpy() if 'pi' in details else np.full(len(xyz),1/len(xyz))
+        for k,v in dict(nodes=node,context=ctx,paths=xyz,events=event,labels=y,parents=row['parent_id'],ids=row['id'],pi=pi).items():
             values[k].append(v)
         summaries.append(dict(id=row['id'],metrics=metrics,candidates=candidates,prediction_sha256=sha(predfile)))
         for f in (file,row['image'],label['observation'],label['verification_only'],label['route_config']):
             hashes[str(f)] = sha(f)
     np.savez_compressed(output/'pool.npz',**{k:np.array(v) for k,v in values.items()})
-    write(output/'receipt.json', dict(role=role,requests=len(rows),complete_path_states=len(rows)*4,
-        parent_checkpoint_sha256=sha(PARENT/'last.pt'),source_files_sha256=hashes,pool_sha256=sha(output/'pool.npz'),
+    write(output/'receipt.json', dict(role=role,requests=len(rows),complete_path_states=len(rows)*model.head.max_candidates,
+        parent_checkpoint_sha256=sha((GENERATOR or PARENT)/'last.pt'),source_files_sha256=hashes,pool_sha256=sha(output/'pool.npz'),
         elapsed_seconds=time.perf_counter()-started,peak_allocated_bytes=torch.cuda.max_memory_allocated(),
         repeated_geometry_passes=len(rows),new_qwen_requests=0,no_prediction_repair=True))
     write(output/'per_scene.json',summaries)
@@ -334,7 +345,7 @@ def train_q(seed):
     np.savez_compressed(output/'dev_score_predictions.npz',logits=logits,labels=dv['labels'],parents=dv['parents'],ids=dv['ids'])
     write(output/'summary.json',dict(seed=seed,metrics=metrics,constant_train_prevalence_brier=null_brier,
         replication_gate_passed=gate,best_checkpoint_sha256=sha(output/'best.pt'),last_checkpoint_sha256=sha(output/'last.pt'),
-        elapsed_seconds=time.perf_counter()-started,updates=cfg['steps'],candidate_score_training_exposures=cfg['steps']*cfg['batch_size']*4,
+        elapsed_seconds=time.perf_counter()-started,updates=cfg['steps'],candidate_score_training_exposures=cfg['steps']*cfg['batch_size']*tr['labels'].shape[1],
         history=history,peak_allocated_bytes=torch.cuda.max_memory_allocated(),generated_new_paths=0))
 
 
@@ -366,8 +377,14 @@ def calibrate(seed):
 
 
 def main():
+    global RUN,GENERATOR
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['export','export-role','pool','train-q','calibrate'])
-    p.add_argument('--role');p.add_argument('--seed',type=int,default=0);a=p.parse_args()
+    p.add_argument('--role');p.add_argument('--seed',type=int,default=0)
+    p.add_argument('--generator-family',choices=['M8_ordinary_seed0','M8_balanced_probability_seed0'])
+    a=p.parse_args()
+    if a.generator_family:
+        GENERATOR=RUN/a.generator_family
+        RUN=RUN/(a.generator_family+'_scores')
     if a.stage=='export':reserve_and_export()
     elif a.stage=='export-role':export_role(a.role)
     elif a.stage=='pool':pool(a.role)
