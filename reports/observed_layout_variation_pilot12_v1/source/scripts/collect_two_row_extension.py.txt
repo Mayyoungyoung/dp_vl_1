@@ -1,0 +1,295 @@
+"""Independent narrow-ID288 corpus; reuse the verified physical worker unchanged.
+
+Registration/prepare and each fixed collection stage are separate actions.
+No already-issued parent/slot is replayed, and new DEV raw stays sealed.
+"""
+import argparse
+import copy
+import datetime
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+import numpy as np
+from scripts import collect_two_row_formal as old
+from scripts import register_two_row_extension as registration
+
+physical=old.physical
+batch=old.batch
+HERE=Path(__file__).resolve().parent
+PROTOCOL='observed_two_row_extension288_corpus_v1'
+PARENT_PROTOCOL='observed_two_row_extension288_parent_v1'
+STAGES={'train32':32,'train64':64,'train128':128,'train256':256,'dev32':288}
+PREVIOUS={'train32':0,'train64':32,'train128':64,'train256':128,'dev32':256}
+BUDGET_BYTES=8*1024**3
+NEXT_PARENT_RESERVE_BYTES=256*1024**2
+SEALED_DEV_POLICY='Collect last; raw/labels/outcomes remain sealed until a separately frozen prospective evaluation protocol. Not a tuning pool or OOD.'
+
+
+class InternalBudgetPause(RuntimeError):
+    """A corpus pause, not permission to drop data or replace a parent."""
+
+
+def load_registration(path,expected_sha=None):
+    if expected_sha and batch.digest(path)!=expected_sha:raise ValueError('registration SHA changed')
+    value=json.loads(path.read_text())
+    if value['protocol']!=registration.PROTOCOL or value['requested_parents']!=288 or value['requested_routes']!=7776:
+        raise ValueError('wrong extension288 registration')
+    plans=value['parent_plan']
+    if len(plans)!=288:raise ValueError('incomplete parent registration')
+    for i,p in enumerate(plans):
+        role='TRAIN' if i<256 else 'DEV_MODEL'
+        if p['index']!=i or p['seed']!=400000+i or p['parent_id']!='two_row_reach_%d'%(400000+i):
+            raise ValueError('parent identity mismatch')
+        if p['role']!=role or p['split']!=role or p['config']['split']!=role:
+            raise ValueError('parent role changed')
+        if p['config']['requested_setup_actions']!=0 or p['config']['preparation_xyz'] or p['config']['requested_route_proposals']!=27:
+            raise ValueError('parent setup or route budget changed')
+    ids=[p['parent_id'] for p in plans]
+    if (value['execution_indices']!=list(range(288)) or value['execution_order']!=ids
+            or value['shards']!=[ids[::2],ids[1::2]] or value['role_counts']!={'TRAIN':256,'DEV_MODEL':32}):
+        raise ValueError('registered order, roles or shards changed')
+    return value
+
+
+def source_hashes(path):
+    # Include every old dependency actually imported, plus both new wrappers.
+    hashes=old.source_hashes(path)
+    paths=[Path(__file__),Path(registration.__file__),HERE/'launch_two_row_extension288_v1.sh',
+           HERE/'run_two_row_extension_shard.sh',HERE.parent/'configs/observed_two_row_extension288_v1.json',
+           HERE.parent/'configs/observed_two_row_extension288_exclusions_v1.json']
+    hashes.update({p.name:batch.digest(p) for p in paths})
+    return hashes
+
+
+def prepare(path,output):
+    value=load_registration(path)
+    base=json.loads((HERE.parent/'configs/observed_two_row_pilot_v4.json').read_text())
+    regenerated=registration.build_registration(value['specification'],base,value['excluded_hashes'])
+    for key in ('parent_plan','execution_indices','execution_order','shards','canonical_init','duplicate_gate'):
+        if value[key]!=regenerated[key]:raise ValueError('registration differs from its one-shot sampler: '+key)
+    manifest=dict(protocol=PROTOCOL,registration_sha256=batch.digest(path),source_sha256=source_hashes(path),
+        registration_file='registration.json',requested_parents=288,requested_routes=7776,
+        stages=STAGES,internal_budget_bytes=BUDGET_BYTES,prospective_dev_policy=SEALED_DEV_POLICY,
+        old_dev12_policy='Reused development evidence; not part of the new32 prospective DEV cohort.',
+        training_authorized=False,raw_dev_analysis_authorized=False,
+        narrow_id_only=True,mechanical_only_coordinator=True)
+    output.mkdir(parents=True,exist_ok=False)
+    (output/'registration.json').write_bytes(path.read_bytes())
+    old.atomic_write(output/'corpus_manifest.json',manifest)
+    return manifest
+
+
+def verify_corpus(output):
+    manifest=json.loads((output/'corpus_manifest.json').read_text());path=output/'registration.json'
+    if (manifest['protocol']!=PROTOCOL or manifest['requested_parents']!=288 or manifest['requested_routes']!=7776
+            or manifest['stages']!=STAGES or manifest['internal_budget_bytes']!=BUDGET_BYTES
+            or manifest['prospective_dev_policy']!=SEALED_DEV_POLICY
+            or manifest['training_authorized'] or manifest['raw_dev_analysis_authorized']):
+        raise ValueError('corpus protocol, budget or prospective DEV seal changed')
+    value=load_registration(path,manifest['registration_sha256'])
+    if source_hashes(path)!=manifest['source_sha256']:raise ValueError('resume source differs from frozen extension collector')
+    return value,manifest
+
+
+def parent_config(value,plan,manifest):
+    return dict(copy.deepcopy(value['canonical_init']),protocol=PARENT_PROTOCOL,role=plan['role'],
+        requested_layout_audits=1,route_parent_seed=plan['seed'],requested_route_proposals=27,
+        registered_parent=copy.deepcopy(plan),corpus_registration_sha256=manifest['registration_sha256'],requested_setup_actions=0)
+
+
+def worker(output,index,data):
+    if isinstance(index,bool) or not isinstance(index,int) or not 0<=index<288:
+        raise ValueError('parent index outside registration')
+    value,manifest=verify_corpus(output);plan=copy.deepcopy(value['parent_plan'][index])
+    if not plan['collection_allowed']:raise ValueError('registered parent closed to collection')
+    expected=output/'parents'/plan['role']/plan['parent_id']
+    if data.resolve()!=expected.resolve():raise ValueError('worker output differs from registered parent root')
+    if index>=256:require_stage_prerequisites(output,value,'dev32')
+    init=copy.deepcopy(value['canonical_init']);config=parent_config(value,plan,manifest)
+    cfgpath=output/'parent_configs'/('%03d.json'%index)
+    if not cfgpath.exists() or json.loads(cfgpath.read_text())!=config:
+        raise ValueError('coordinator must freeze the exact parent configuration')
+    def sources(cfg):
+        from rlbench import const
+        if batch.digest(const.__file__)!=value['specification']['color_source_sha256']:
+            raise ValueError('official color source changed')
+        anchor=physical.checked_json(Path(init['source_v4'])/init['anchor_file'],init['anchor_sha256'])
+        q=np.asarray(anchor['state']['_robot']['arm_joints']);g=np.asarray(anchor['state']['_robot']['gripper_joints'])
+        if not np.array_equal(q,init['canonical_arm_joints']) or not np.array_equal(g,init['canonical_gripper_joints']):
+            raise ValueError('canonical source joints changed')
+        plan['saved_world']=dict(state={name:dict(pose=list(xyz)+[0.,0.,0.,1.],color=color['rgb'])
+            for name,xyz,color in zip(('target','distractor0','distractor1'),plan['config']['goal_xyz'],plan['target_colors'])})
+        return [plan],q,g
+    return physical.run_collection(config,cfgpath,data,sources)
+
+
+def checked_closures(output,value):
+    plans={p['parent_id']:p for p in value['parent_plan']};rows=[];seen=set()
+    for path in sorted((output/'closures').glob('*.json')):
+        row=json.loads(path.read_text());old.validate_closure(output,row,plans)
+        if row['parent_id'] in seen or path.name!='%03d.json'%row['index']:
+            raise ValueError('duplicate or wrongly named closure')
+        seen.add(row['parent_id']);rows.append(row)
+    return rows
+
+
+def live_layout_gate(output):
+    """Registration and mechanical hashes only, including sealed new DEV."""
+    value,_=verify_corpus(output);plans={p['parent_id']:p for p in value['parent_plan']}
+    rows=checked_closures(output,value)
+    blocked=set(value['duplicate_gate']['blocked_parent_ids']);groups={}
+    historical={r['geometry_1mm_sha256'] for r in value['excluded_hashes']}
+    for row in rows:
+        h=row.get('actual_geometry_1mm_sha256')
+        if h:
+            groups.setdefault(h,[]).append(row['parent_id'])
+            if h in historical or h!=plans[row['parent_id']]['registered_geometry_1mm_sha256']:
+                blocked.add(row['parent_id'])
+    duplicates=[]
+    for h,ids in groups.items():
+        if len(ids)>1:
+            duplicates.append(dict(sha256=h,parent_ids=ids,roles=sorted({plans[p]['role'] for p in ids})))
+            blocked.update(ids)
+    return dict(blocked_parent_ids=sorted(blocked),duplicate_groups=duplicates,closed_parents=len(rows),
+        unavailable_initial_parent_ids=[r['parent_id'] for r in rows if not r['initial_observation_saved']],
+        mechanical_only=True,raw_dev_or_old_reserved_opened=False,prospective_dev_policy=SEALED_DEV_POLICY)
+
+
+def stage_indices(stage):
+    if stage not in STAGES:raise ValueError('unknown fixed collection stage')
+    return list(range(256 if stage=='dev32' else 0,STAGES[stage]))
+
+
+def require_stage_prerequisites(output,value,stage):
+    if stage not in STAGES:raise ValueError('unknown fixed collection stage')
+    rows=checked_closures(output,value);closed={r['index'] for r in rows}
+    missing=sorted(set(range(PREVIOUS[stage]))-closed)
+    if missing:raise ValueError('entire prior registered prefix must close before this separate stage: '+str(missing))
+    return rows
+
+
+def directory_bytes(path):
+    """Metadata sizes only; never open a parent image, route, label or outcome."""
+    total=0
+    if not path.exists():return 0
+    for root,dirs,files in os.walk(str(path),followlinks=False):
+        if any((Path(root)/name).is_symlink() for name in dirs):
+            raise ValueError('symlink not allowed in the new corpus budget roots')
+        for name in files:
+            p=Path(root)/name
+            if p.is_symlink():raise ValueError('symlink not allowed in the new corpus budget roots')
+            try:total+=p.stat().st_size
+            except FileNotFoundError:
+                # The peer can atomically replace a metadata temp/lock file.
+                continue
+    return total
+
+
+def budget_status(corpus,run_root,reserve):
+    c=corpus.resolve();r=run_root.resolve()
+    if c==r or c in r.parents or r in c.parents:raise ValueError('separate data and run budget roots required')
+    usage=dict(corpus_bytes=directory_bytes(corpus),run_bytes=directory_bytes(run_root))
+    used=sum(usage.values())
+    row=dict(**usage,total_bytes=used,budget_bytes=BUDGET_BYTES,next_parent_reserve_bytes=reserve,
+             allowed=used+reserve<=BUDGET_BYTES,measurement='logical file bytes; no payload reads')
+    old.atomic_write(corpus/'budget_latest.json',row)
+    if not row['allowed']:
+        raise InternalBudgetPause('8GiB internal budget pause; preserve all data, do not replace parents')
+    return row
+
+
+def run_shard(output,run_root,shard,sim_python,stage,resume=False,max_new_parents=None):
+    value,manifest=verify_corpus(output)
+    if shard not in (0,1):raise ValueError('exactly two registered shards')
+    require_stage_prerequisites(output,value,stage)
+    state_dir=output/'shards'/str(shard)
+    if state_dir.exists() and not resume:raise ValueError('existing shard requires --resume')
+    run_root.mkdir(parents=True,exist_ok=True)
+    parent_runs=run_root/'parents'/('shard%d'%shard);parent_runs.mkdir(parents=True,exist_ok=True)
+    plans={p['parent_id']:p for p in value['parent_plan']};selected=set(stage_indices(stage));new_count=0
+    with old.shard_lock(state_dir/'coordinator.lock'):
+        for parent_id in value['shards'][shard]:
+            plan=plans[parent_id];index=plan['index']
+            if index not in selected:continue
+            data=output/'parents'/plan['role']/parent_id
+            closure_path=output/'closures'/('%03d.json'%index)
+            status_path=parent_runs/('parent_%03d.status.json'%index)
+            if closure_path.exists():
+                row=json.loads(closure_path.read_text());old.validate_closure(output,row,plans)
+                continue
+            if max_new_parents is not None and new_count>=max_new_parents:break
+            status=json.loads(status_path.read_text()) if status_path.exists() else {}
+            if status.get('status') in ('starting','running') and any(old.pid_alive(status.get(k)) for k in ('pid','child_pid')):
+                raise RuntimeError('parent worker still alive; resume refused')
+            elapsed=None;code=status.get('exit_code')
+            if status.get('start_utc') and status.get('end_utc'):
+                elapsed=(datetime.datetime.fromisoformat(status['end_utc'])-datetime.datetime.fromisoformat(status['start_utc'])).total_seconds()
+            cfg=parent_config(value,plan,manifest);cfgpath=output/'parent_configs'/('%03d.json'%index)
+            if cfgpath.exists():
+                if json.loads(cfgpath.read_text())!=cfg:raise ValueError('frozen parent config changed')
+            else:old.atomic_write(cfgpath,cfg)
+            if plan['collection_allowed'] and not data.exists() and not status_path.exists():
+                # Reserve headroom for both concurrently running single parents.
+                budget_status(output,run_root,2*NEXT_PARENT_RESERVE_BYTES)
+                data.parent.mkdir(parents=True,exist_ok=True);clock=time.perf_counter()
+                command=[sys.executable,str(HERE/'record_job.py'),'--output',str(parent_runs),'--run-id','parent_%03d'%index,
+                    '--resume-strategy','none','--',str(sim_python),str(Path(__file__)),'worker',
+                    '--corpus',str(output),'--parent-index',str(index),'--output',str(data)]
+                code=subprocess.run(command,check=False).returncode;elapsed=time.perf_counter()-clock
+                status=json.loads(status_path.read_text()) if status_path.exists() else {}
+            # Existing data/status is closed as interrupted; never invoke a second worker.
+            closed=old.mechanical_closure(data,plan,status,elapsed,code)
+            old.atomic_write(closure_path,closed);new_count+=1
+            rows=checked_closures(output,value)
+            mine=[r for r in rows if r['index']%2==shard]
+            stage_closed=sum(r['index'] in selected for r in mine)
+            expected=sum(i%2==shard for i in selected)
+            old.atomic_write(state_dir/'progress.json',dict(shard=shard,stage=stage,
+                stage_closed_parents=stage_closed,stage_requested_parents=expected,closed_parents=len(mine),
+                total_registered_shard_parents=144,requested_routes=27*expected,
+                closed_by_role={role:sum(r['role']==role for r in mine) for role in ('TRAIN','DEV_MODEL')},
+                finalized_worker_seconds=sum(r['worker_elapsed_seconds'] or 0 for r in mine),
+                unknown_cost_parents=sum(r['worker_elapsed_unknown'] for r in mine),
+                status='stage_complete' if stage_closed==expected else 'running',only_mechanical_fields=True))
+            print(json.dumps(dict(parent_id=parent_id,role=plan['role'],closure='written',shard=shard,stage=stage)),flush=True)
+            budget_status(output,run_root,0)
+            if code not in (None,0):raise RuntimeError('worker runtime failed; closure preserved and shard stopped')
+    return new_count
+
+
+def runtime_guard():
+    if os.environ.get('CUDA_VISIBLE_DEVICES')!='':raise ValueError('simulation requires hidden GPU')
+    if hasattr(os,'sched_getaffinity') and len(os.sched_getaffinity(0))!=1:
+        raise ValueError('exactly one CPU affinity required for each simulation worker')
+
+
+def main(argv=None):
+    parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
+    p=sub.add_parser('prepare');p.add_argument('--registration',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
+    p=sub.add_parser('check-stage');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--stage',choices=tuple(STAGES),required=True)
+    p=sub.add_parser('worker');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--parent-index',type=int,required=True);p.add_argument('--output',type=Path,required=True)
+    p=sub.add_parser('shard');p.add_argument('--corpus',type=Path,required=True);p.add_argument('--run-root',type=Path,required=True)
+    p.add_argument('--shard',type=int,choices=(0,1),required=True);p.add_argument('--stage',choices=tuple(STAGES),required=True)
+    p.add_argument('--sim-python',type=Path,required=True);p.add_argument('--resume',action='store_true');p.add_argument('--max-new-parents',type=int)
+    args=parser.parse_args(argv)
+    if args.action=='prepare':prepare(args.registration,args.output);return 0
+    if args.action=='check-stage':
+        value,_=verify_corpus(args.corpus);rows=require_stage_prerequisites(args.corpus,value,args.stage)
+        print(json.dumps(dict(stage=args.stage,prior_required=PREVIOUS[args.stage],closed_parents=len(rows),mechanical_only=True)))
+        return 0
+    runtime_guard()
+    if args.action=='worker':
+        if not 0<=args.parent_index<288:raise ValueError('parent index outside registration')
+        summary=worker(args.corpus,args.parent_index,args.output)
+        return int(bool(summary.get('fatal_error') or summary.get('shutdown_error')))
+    try:run_shard(args.corpus,args.run_root,args.shard,args.sim_python,args.stage,args.resume,args.max_new_parents)
+    except InternalBudgetPause as error:
+        print(str(error),file=sys.stderr);return 3
+    return 0
+
+
+if __name__=='__main__':raise SystemExit(main())

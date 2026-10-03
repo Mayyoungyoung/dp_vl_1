@@ -1,0 +1,109 @@
+"""Zero-generation local archival checks and written QA, after all sheets were viewed."""
+import collections, datetime, hashlib, json, shutil
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+R=ROOT/'reports/observed_layout_variation_pilot12_v1'
+B=ROOT/'runs/synced_observed_layout_variation_pilot12_v1'
+OLD=ROOT/'reports/observed_layout_variation_pilot4_v1'
+def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p): return json.loads(Path(p).read_text(encoding='utf-8'))
+def write(p,x): Path(p).write_text(json.dumps(x,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+def local(rel): return R/rel if (R/rel).is_file() else B/rel
+
+a=read(R/'quality_analysis_v2/analysis.json'); olda=read(OLD/'quality_analysis/analysis.json')
+remote=read(R/'REMOTE_ARTIFACT_INDEX.json'); oldremote=read(OLD/'REMOTE_ARTIFACT_INDEX.json')
+for row in remote['files']:
+    p=local(row['path']); assert p.stat().st_size==row['bytes'] and sha(p)==row['sha256'],row['path']
+newmap={x['path']:x for x in remote['files']}; eq=[]; append=[]; referenced=[]
+for row in oldremote['files']:
+    key=row['path']
+    if key not in newmap:
+        assert key=='recipe/layout_variation_pilot4_eba0994.sh'
+        assert sha(OLD/key)==row['sha256']; referenced.append(dict(path=(OLD/key).relative_to(ROOT).as_posix(),sha256=row['sha256']))
+    elif row['sha256']==newmap[key]['sha256']: eq.append(key)
+    else:
+        assert key in ('run/registry.jsonl','run/parents/registry.jsonl')
+        assert local(key).read_bytes().startswith((OLD/key).read_bytes())
+        append.append(dict(path=key,old_sha256=row['sha256'],new_sha256=newmap[key]['sha256'],old_bytes=row['bytes'],new_bytes=newmap[key]['bytes'],old_bytes_exact_prefix=True))
+figs=[]
+for i in range(4):
+    for t in range(3):
+        name=f'layout_variation_{401000+i}_target{t}.png'
+        assert sha(OLD/'quality_analysis/figures'/name)==sha(R/'quality_analysis_v2/figures'/name)
+        figs.append(dict(file=name,sha256=sha(R/'quality_analysis_v2/figures'/name)))
+write(R/'OLD_PILOT4_REGRESSION.json',dict(original_files=len(oldremote['files']),unchanged_files=len(eq),unchanged_paths=eq,append_only_registries=append,old_wrapper_referenced=referenced,old12_target_plots_byte_exact=figs,all_old4_corpus_bytes_exact=True))
+
+cost=dict(scope='Collection stage totals are disjoint; internal worker/attempt/restore/planning/simulation costs are nested. No model/simulator/search calls by this analysis.',
+    pilot4_outer_seconds=olda['collection_outer_seconds'],pilot12_new8_outer_seconds=a['collection_outer_seconds'],cumulative12_outer_seconds=olda['collection_outer_seconds']+a['collection_outer_seconds'],
+    pilot4_inner_worker_seconds=olda['collection_body_sum_seconds'],new8_inner_worker_seconds=a['collection_body_sum_seconds']-olda['collection_body_sum_seconds'],cumulative12_inner_worker_seconds=a['collection_body_sum_seconds'],
+    cumulative12_coordinator_worker_seconds=1882.710264058,cumulative12_attempt_seconds=a['collection_attempt_sum_seconds'],cumulative12_restore_seconds=a['restore_sum_seconds'],cumulative12_planning_seconds=a['planning_sum_seconds'],cumulative12_simulation_seconds=a['simulation_sum_seconds'],
+    completed_local_quality_analysis_seconds=a['analysis_elapsed_seconds'],failed_local_analysis_wall_seconds=None,GPU_hours=0,
+    correction_to_analysis_json_scope='analysis.json collection_outer_seconds is the new8 pilot12 stage only; body/attempt/restore/planning/simulation are cumulative12. Its generic cost_scope must not be read as nesting cumulative worker time inside the new8 outer stage.',
+    no_costs_summed_across_nested_levels=True)
+write(R/'COST_ACCOUNTING.json',cost)
+
+qa=dict(scope='Actual visual inspection; numerical validity remains the original frozen acceptance checks.',
+    viewed_new_stage=['quality_analysis_v2/figures/ALL12_RGB.png']+[f'quality_analysis_v2/figures/layout_variation_{401000+i}_target{t}.png' for i in range(4,12) for t in range(3)],
+    previous_stage_all12_target_sheets='reports/observed_layout_variation_pilot4_v1/VISUAL_QA.md',previous_target_sheets_byte_exact=True,
+    observations={
+      'all_rgb':'Ten actual model observations and two explicitly failed-initialization RGBs are visible; no blank image. One/two/four/six posts and height differences are visible.',
+      '401004':'Broad accepted over arcs and unknown loops are retained, including a 3.59m route; target2 postcheck failures remain red.',
+      '401005_401007':'Six sheets explicitly show nine requested, zero attempted each; no fake path/observation was substituted.',
+      '401006':'Only slot8 over/over is accepted per target; full-body collision partials and planning failures remain visible.',
+      '401008':'Six-post layout has varied paths; unknown accepted target0 slot7 is a 4.30m loop with large height, and target1 has a 3.21m loop. No long path was discarded.',
+      '401009_401010':'High-post layouts are dominated by partial planning failures; only slot8 target0/1 is accepted, target2 has zero references.',
+      '401011':'Target0 slot8 is postcheck-rejected; targets1/2 slot8 over/over are accepted. All other partial paths and target2 slot4 full-body collision remain visible.'},
+    inference_limits=['XY/XZ projections do not certify full-body or 3D safety.','Unknown is not invalid or duplicate.','Failure to collect is not proof of no feasible route.'],
+    model_calls=0,simulator_calls=0,new_searches=0)
+write(R/'VISUAL_QA.json',qa)
+
+table='\n'.join(f"| {p['index']} | {p['obstacle_count']} | {p['accepted']} | {p['failed']} | {p['unattempted']} | {p['known_positive']} / {p['unknown_positive']} |" for p in a['parents'])
+text=f'''# Variable-layout TRAIN12 pilot: actual quality
+
+The frozen `eba09945ecade4bdb9a5b4ab123a92da898283ed` collection has **324 requested slots: 108 accepted, 162 attempted failures, and 54 unattempted**. Ten parents have usable initial observations; parents 401005 and 401007 failed initialization. Closure alone was not counted as a successful acquisition. All 36 requested target conditions remain in the denominator, including six with no initial input.
+
+The additional eight parents contributed 43 accepted / 119 failed / 54 unattempted. The original four retain 65 accepted / 43 failed, with all original corpus bytes unchanged. Two run registries only appended new entries; the original pilot4 wrapper remains indexed in its existing family. All twelve regenerated old target sheets are byte-identical.
+
+| Index | Actual post count | Accepted | Route failure | Unattempted | Known / unknown positive |
+|---|---:|---:|---:|---:|---:|
+{table}
+
+## Checks and remaining limits
+
+All **270 attempted restores** match the saved world/RGB/observation/camera checks exactly, and all attempted gripper traces remain open. Every accepted raw/H24 check was reproduced with the original frozen helper; all saved accepted H24/H64 arrays are bit-identical to their original resampling. Endpoint failure above 3cm is zero among complete postchecks. The 162 failures are 127 planning-no-path, 21 recorded arm-environment collisions, and 14 complete-route rejections. The latter have overlapping causes: seven raw tip collisions, nine H24 tip collisions, five raw/H24 type instabilities. These are not additive categories.
+
+There are **93 known and 15 unknown positive references**, with 34 repeated known types (all in the original four parents), zero exact pose-hash duplicates, and positive references for **27/36 requested conditions** (27/30 conditions with actual input). No condition has more than four known types. The four six-post parents provide 26 accepted / 82 failed / 108 attempted slots; this establishes actual six-post collection, not a greater-than-K mechanism result or exhaustive solution count.
+
+Accepted raw lengths range from {a['accepted_length_m']['min']:.3f} to {a['accepted_length_m']['max']:.3f}m; median {a['accepted_length_m']['median']:.3f}m, mean {a['accepted_length_m']['mean']:.3f}m, p95 {a['accepted_length_m']['p95']:.3f}m. Ten exceed 2m and three exceed 3m. Maximum recorded accepted height is {a['accepted_maximum_height_m']['max']:.3f}m. All large loops and unknown positives remain present; route type labels are not guide labels or total-solution labels. Full-body checking is the original discrete simulation-step check, not new execution or a continuous certificate. Native scene export exists but roundtrip_verified is false.
+
+## Why 54 slots were unattempted
+
+Both closed members (indices5,7) stopped at `Actual geometry 1mm registration mismatch`, before a usable initial model observation or any route attempt. Saved failed-world reconstruction shows nominal y=±0.0275m versus float readback ±0.027499999850988388m. The difference is 1.49e-10m, but the original `rint(value/.001)` maps these to ±28 versus ±27. Maximum raw geometry discrepancy is 2.623e-8m, within the existing 1e-6m physical readback tolerance. This is a demonstrated quantized-hash boundary issue, not proof of a blocked physical solution. See INITIALIZATION_HASH_DIAGNOSTIC.json; the source and original failures are unchanged.
+
+The two proposed open/closed pairs therefore **do not have an actual closed-member witness/certificate**. No certify stage ran. A future explicit version could repair numeric identity handling and retry only these failed parents under new lineage, but this report does not retroactively accept their initialization or rerun any scene.
+
+## Evidence and visual QA
+
+All 575 original files (82,157,764B) were downloaded and SHA-verified. Binary originals are retained in ignored `runs/synced_observed_layout_variation_pilot12_v1`; exact server recovery paths are in REMOTE_ARTIFACT_INDEX.json. Actual analysis.json SHA: `{sha(R/'quality_analysis_v2/analysis.json')}`; analysis-source SHA: `{a['analysis_source_sha256']}` (different objects). The first local formatting attempt failed on a missing planning_seconds field for zero-attempt parents; its source/log/receipt remain in quality_analysis. The subsequent formatter uses zero for that absent zero-attempt cost and leaves frozen acceptance functions untouched.
+
+The ALL12_RGB sheet plus all 24 new-stage target sheets were actually viewed. Prior full QA of the old twelve sheets is reused only after exact byte comparison. See VISUAL_QA.json and the 36 complete nine-slot sheets under quality_analysis_v2/figures; all six missing-input target sheets explicitly preserve their unattempted slots. Root separately viewed all four old RGBs and each old target0 sheet. Visual projections support QA only and do not replace numerical checks.
+
+## Cost and decision
+
+The added-eight-parent stage took {cost['pilot12_new8_outer_seconds']:.6f}s outer wall time; both stages together took {cost['cumulative12_outer_seconds']:.6f}s. Cumulative inner workers took {cost['cumulative12_inner_worker_seconds']:.6f}s, with coordinator-measured worker time {cost['cumulative12_coordinator_worker_seconds']:.6f}s. These are alternative nested scopes, not additive cost. Explicit get_path calls: {a['explicit_get_path_calls']}; simulation steps: {a['simulated_steps']}. The successful local zero-generation quality analysis took {a['analysis_elapsed_seconds']:.6f}s. GPU hours for this audit: zero. COST_ACCOUNTING.json explicitly corrects the generic analysis.json scope wording (new8 outer versus cumulative12 inner).
+
+Among attempted scenes there is no new restoration, resampling, or acceptance inconsistency. Nevertheless, known diversity has not exceeded K4, high-post collection is sparse, long arcs remain, and the open/closed premise is unestablished. Preserve these results; repair the proven hash representation issue only in a separately versioned future run if authorized. No model, simulator, planner search, additional acquisition, or certification was run by this quality audit.
+'''
+(R/'PILOT12_RESULTS.md').write_text(text,encoding='utf-8')
+for src in ('.bootstrap/archive_layout_variation_pilot12.py','.bootstrap/analyze_layout_variation_pilot12.py','.bootstrap/finalize_layout_variation_pilot12.py'):
+    dest=R/'local_analysis'/(Path(src).name+'.txt');dest.parent.mkdir(exist_ok=True);shutil.copyfile(ROOT/src,dest)
+shutil.copyfile(ROOT/'.bootstrap/layout_variation_pilot12_quality_analysis_v2.log',R/'local_analysis/quality_analysis_v2.log')
+index=dict(scope='POSIX paths; all original SHA verified; binary originals ignored but recoverable from REMOTE_ARTIFACT_INDEX.',original_files=len(remote['files']),original_bytes=sum(x['bytes'] for x in remote['files']),report_files={},ignored_binary_files={})
+for p in sorted(R.rglob('*')):
+    if p.is_file() and p.name!='LOCAL_ARTIFACT_INDEX.json': index['report_files'][p.relative_to(R).as_posix()]=dict(sha256=sha(p),bytes=p.stat().st_size)
+for p in sorted(B.rglob('*')):
+    if p.is_file():index['ignored_binary_files'][p.relative_to(B).as_posix()]=dict(sha256=sha(p),bytes=p.stat().st_size)
+write(R/'LOCAL_ARTIFACT_INDEX.json',index)
+print(json.dumps(dict(report_files=len(index['report_files']),binaries=len(index['ignored_binary_files']),index_sha256=sha(R/'LOCAL_ARTIFACT_INDEX.json'),report_sha256=sha(R/'PILOT12_RESULTS.md'),old_files_unchanged=len(eq),appended=len(append)),indent=2))
+

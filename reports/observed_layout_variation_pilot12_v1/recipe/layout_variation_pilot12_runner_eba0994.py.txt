@@ -1,0 +1,187 @@
+"""Frozen recipe only: continue original eba stage indices 4..11, once."""
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+HELPER_SHA = '6fbaeca615247e6bd76ca5d7fff10bace0265daf2c0d580d98305bce8f72e586'
+RECIPE_SHA = '421c74ba021883bee16bcfb4fbf331715410a513bbd6ddb5d7ac9424057247cf'
+RECIPE_NAME = 'layout_variation_pilot12_recipe_eba0994.json'
+WRAPPER_NAME = 'layout_variation_pilot12_eba0994.sh'
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def load_helper():
+    path = Path(__file__).with_name('layout_variation_runner_eba0994.py')
+    if path.is_symlink() or digest(path) != HELPER_SHA:
+        raise ValueError('Original frozen helper differs')
+    spec = importlib.util.spec_from_file_location('layout_original_eba0994', path)
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    return helper
+
+
+def checked_files(helper, root, entries):
+    for name, expected in entries.items():
+        path = root / name
+        path.resolve().relative_to(root.resolve())
+        if path.is_symlink() or not path.is_file() or helper.sha(path) != expected:
+            raise ValueError('Frozen proof differs: ' + name)
+
+
+def load_recipe(helper):
+    path = helper.INCOMING / RECIPE_NAME
+    if path.is_symlink() or helper.sha(path) != RECIPE_SHA:
+        raise ValueError('Continuation recipe differs')
+    recipe = helper.read(path)
+    if (recipe['code_commit'] != helper.COMMIT or recipe['original_helper_sha256'] != HELPER_SHA
+            or recipe['source_manifest_sha256'] != helper.MANIFEST_SHA
+            or recipe['requested_indices'] != list(range(4, 12))
+            or recipe['requested_new_route_slots'] != 216 or recipe['automatic_certify']
+            or recipe['automatic_next_stage'] or recipe['retry']):
+        raise ValueError('Continuation identity/budget differs')
+    return recipe
+
+
+def prior_proofs(helper, recipe, manifest):
+    if len(manifest['files']) != 419:
+        raise ValueError('Expected exact419 scientific source files')
+    checked_files(helper, helper.RUN, recipe['prior_run_files_sha256'])
+    checked_files(helper, helper.CORPUS, recipe['prior_corpus_files_sha256'])
+    checked_files(helper, helper.INCOMING, recipe['quality_proofs'])
+    return {stage: helper.prior_stage(stage, manifest) for stage in ('tests', 'prepare', 'pilot4')}
+
+
+def closure_guard(rows, recipe, completed=False):
+    indices = sorted(row['index'] for row in rows)
+    if indices != list(range(12 if completed else 4)):
+        raise ValueError('Wrong closure set; previous invocation cannot be replayed')
+    if any(row['worker_elapsed_unknown'] for row in rows):
+        raise ValueError('Unknown interrupted elapsed; stop for manual review')
+    first = sorted((row for row in rows if row['index'] < 4), key=lambda row: row['index'])
+    spent = sum(row['worker_elapsed_seconds'] for row in rows)
+    if sum(row['worker_elapsed_seconds'] for row in first) != recipe['original_worker_elapsed_seconds']:
+        raise ValueError('Original cumulative cost differs')
+    if not completed and spent >= recipe['cumulative_worker_soft_cap_seconds']:
+        raise ValueError('Original cumulative parent-boundary cap exhausted')
+    return dict(closed_indices=indices,worker_elapsed_seconds_cumulative=spent,
+                parent_boundary_soft_cap_seconds=2700,
+                next_parent_remaining_soft_seconds=max(0.,2700-spent),
+                cost_scope='sum original coordinator-measured worker invocations; outer job time is separate and nested')
+
+
+def fresh_guard(helper, value):
+    forbidden = [helper.RUN / name for name in ('pilot12', 'pilot12_recipe', 'pilot12_identity.json',
+                                                'pilot12_receipt.json', 'coordinator.lock')]
+    for index in range(4, 12):
+        plan = value['parent_plan'][index]
+        if plan['index'] != index or plan['role'] != 'TRAIN':
+            raise ValueError('Registered remaining TRAIN identity differs')
+        forbidden += [helper.CORPUS/'parents'/'TRAIN'/plan['parent_id'],
+                      helper.CORPUS/'parent_configs'/('%03d.json'%index)]
+        forbidden += list((helper.RUN/'parents').glob('parent_%03d.*'%index))
+    if any(path.exists() or path.is_symlink() for path in forbidden):
+        raise FileExistsError('Fresh remaining8 only; no previous issuance may be replayed')
+
+
+def command(helper):
+    return [sys.executable,'-m','scripts.collect_observed_layout_variation','stage',
+            '--corpus',str(helper.CORPUS),'--run-root',str(helper.RUN),
+            '--sim-python',str(helper.P/'.venv-sim/bin/python'),'--stage','pilot12']
+
+
+def execute(helper, recipe, manifest, wrapper, scientific):
+    """One invocation only; nonzero child is preserved without retry/certify."""
+    started = time.perf_counter()
+    lock = helper.RUN/'recipe.lock'
+    fd = os.open(str(lock),os.O_CREAT|os.O_EXCL|os.O_WRONLY)
+    with os.fdopen(fd,'w') as stream:
+        json.dump(dict(pid=os.getpid(),stage='pilot12'),stream)
+    receipt = helper.RUN/'pilot12_receipt.json'
+    result = dict(status='failed',stage='pilot12',code_commit=helper.COMMIT,child_exit_code=None,
+                  sealed_artifacts={},automatic_certify=False,automatic_next_stage=False)
+    try:
+        prior = prior_proofs(helper,recipe,manifest)
+        value, _ = scientific.verify_corpus(helper.CORPUS)
+        rows = scientific.checked_closures(helper.CORPUS,value)
+        before = closure_guard(rows,recipe)
+        fresh_guard(helper,value)
+        duplicate = helper.no_active_duplicate()
+        resources = helper.resources()
+        out = helper.RUN/'pilot12_recipe'; out.mkdir()
+        identity = dict(stage='pilot12',code_commit=helper.COMMIT,source_manifest_sha256=helper.MANIFEST_SHA,
+                        source_files=419,archive_sha256=manifest['archive_sha256'],
+                        runner_sha256=helper.sha(__file__),original_helper_sha256=HELPER_SHA,
+                        recipe_sha256=RECIPE_SHA,wrapper_sha256=helper.sha(wrapper),wrapper=str(wrapper),
+                        prior_stages=prior,quality_proofs=recipe['quality_proofs'],resources=resources,
+                        actual_no_duplicate=duplicate,cost_before=before,
+                        requested_indices=list(range(4,12)),requested_parents=8,requested_route_slots=216,
+                        maximum_explicit_get_path_calls=1944,initialization_ik_calls_allowed=0,
+                        cumulative_requested_route_slots=324,cumulative_worker_soft_cap_seconds=2700,
+                        automatic_certify=False,automatic_next_stage=False,retry=False,resampling=False,
+                        runtime=dict(executable=sys.executable,prefix=sys.prefix,python=sys.version,cpu_affinity=[1],
+                                     cuda_visible_devices='',threads={key:os.environ[key] for key in helper.THREADS}),
+                        command=command(helper),started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        identity_path=helper.RUN/'pilot12_identity.json';helper.write(identity_path,identity)
+        result['identity_sha256']=helper.sha(identity_path)
+        with helper.own_xvfb(out) as env:
+            child=subprocess.run(identity['command'],cwd=helper.SOURCE,env=env)
+        result['child_exit_code']=child.returncode
+        # Retain closed partial progress even on budget pause/runtime failure; never resume automatically.
+        checked_files(helper,helper.CORPUS,recipe['prior_corpus_files_sha256'])
+        rows=scientific.checked_closures(helper.CORPUS,value)
+        result['mechanical_summary']=dict(closed_indices=sorted(r['index'] for r in rows),
+            requested_routes_cumulative=324,attempted_lower=sum(r['attempted_lower'] for r in rows),
+            attempted_upper=sum(r['attempted_upper'] for r in rows),
+            unclosed_registered_parent_indices=sorted(set(range(12))-{r['index'] for r in rows}),
+            route_quality_not_inferred=True)
+        result['corpus_artifacts']={'closures/%03d.json'%r['index']:helper.sha(helper.CORPUS/'closures'/('%03d.json'%r['index'])) for r in rows}
+        result['sealed_artifacts']={'pilot12_recipe/xvfb_receipt.json':helper.sha(out/'xvfb_receipt.json')}
+        helper.verify_source();result['source_unchanged']=True
+        result['resources_after']=helper.resources()
+        if child.returncode == 0:
+            result['cost_after']=closure_guard(rows,recipe,completed=True)
+            completed=helper.RUN/'pilot12/complete.json'
+            final=helper.read(completed)
+            if final['stage']!='pilot12' or final['indices']!=list(range(4,12)) or final['requested_slots']!=216:
+                raise ValueError('Scientific completion identity differs')
+            result['sealed_artifacts']['pilot12/complete.json']=helper.sha(completed)
+            result['status']='completed'
+        else:
+            result['status']='budget_paused' if child.returncode==3 else 'failed'
+        return child.returncode
+    except BaseException as error:
+        result['exception']=repr(error)
+        raise
+    finally:
+        result['elapsed_seconds']=time.perf_counter()-started
+        result['finished_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+        result['cost_scope']='report inner recipe and outer record_job separately; outer includes inner, never sum the levels'
+        if not receipt.exists():helper.write(receipt,result)
+        if lock.exists() and helper.read(lock).get('pid')==os.getpid():lock.unlink()
+
+
+def main():
+    if len(sys.argv)!=1:raise ValueError('No parameters; exactly one preregistered continuation')
+    helper=load_helper();wrapper=Path(os.environ.get('FROZEN_LAYOUT_WRAPPER',''))
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,8)
+            or Path(sys.prefix).resolve()!=(helper.P/'.venv').resolve()
+            or Path.cwd().resolve()!=helper.SOURCE or os.environ.get('CODE_COMMIT')!=helper.COMMIT
+            or sorted(os.sched_getaffinity(0))!=[1] or os.environ.get('CUDA_VISIBLE_DEVICES')!=''
+            or any(os.environ.get(key)!='1' for key in helper.THREADS)
+            or wrapper.resolve()!=helper.INCOMING/WRAPPER_NAME):
+        raise ValueError('Fixed source/runtime/CPU1/hiddenGPU/wrapper identity mismatch')
+    recipe=load_recipe(helper);manifest=helper.verify_source()
+    from scripts import collect_observed_layout_variation as scientific
+    return execute(helper,recipe,manifest,wrapper,scientific)
+
+
+if __name__=='__main__':raise SystemExit(main())

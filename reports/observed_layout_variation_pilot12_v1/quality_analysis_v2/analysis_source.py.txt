@@ -1,0 +1,233 @@
+"""Zero-search local quality audit, only the completed fixed TRAIN12 archive."""
+import collections,datetime,hashlib,json,os,sys,tarfile,time
+from pathlib import Path
+os.environ.update(OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1')
+import numpy as np
+ROOT=Path('F:/dpvlm');REPORT=ROOT/'reports/observed_layout_variation_pilot12_v1';BINARY=ROOT/'runs/synced_observed_layout_variation_pilot12_v1'
+REV='eba09945ecade4bdb9a5b4ab123a92da898283ed';FROZEN=ROOT/'.bootstrap/pilot4_frozen_eba0994'
+OUTPUT=REPORT/'quality_analysis_v2'
+sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+read=lambda p:json.loads(Path(p).read_text(encoding='utf8'))
+def write(path,value):Path(path).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf8')
+def lines(path):return [json.loads(x) for x in Path(path).read_text(encoding='utf8').splitlines() if x]
+def local(name):
+    options=[p for p in (REPORT/name,BINARY/name) if p.is_file()]
+    if len(options)!=1:raise ValueError('Exactly one unchanged original required: '+name)
+    return options[0]
+def normalize(value):return json.loads(json.dumps(value))
+def describe(values):
+    x=np.asarray(values,dtype=float)
+    return dict(n=len(x),min=float(x.min()),median=float(np.median(x)),mean=float(x.mean()),p95=float(np.quantile(x,.95)),max=float(x.max())) if len(x) else dict(n=0)
+
+def frozen_import():
+    manifest=read(REPORT/'recipe/layout_variation_sources_eba0994.json')
+    if manifest['code_commit']!=REV:raise ValueError('Wrong frozen source')
+    archive=ROOT/'.bootstrap/layout_variation_eba0994.tar.gz'
+    if sha(archive)!=manifest['archive_sha256']:raise ValueError('Wrong Git archive')
+    if not FROZEN.exists():
+        FROZEN.mkdir()
+        with tarfile.open(archive) as tar:
+            for m in tar.getmembers():
+                if m.isdir():continue
+                if not m.isfile() or Path(m.name).is_absolute() or '..' in Path(m.name).parts:raise ValueError('Unsafe archive entry')
+                raw=tar.extractfile(m).read();expected=manifest['files'][m.name]
+                if hashlib.sha256(raw).hexdigest()!=expected['sha256'] or len(raw)!=expected['bytes']:raise ValueError('Archive source mismatch')
+                dest=FROZEN/m.name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(raw)
+    for name,item in manifest['files'].items():
+        if sha(FROZEN/name)!=item['sha256']:raise ValueError('Frozen local source changed: '+name)
+    sys.path.insert(0,str(FROZEN));sys.dont_write_bytecode=True
+    from scripts import collect_observed_layout_variation as collector
+    return collector,manifest
+
+def plot_target(parent,target,rows,config,geometry,rgb,path):
+    import matplotlib;matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+    fig,axes=plt.subplots(3,6,figsize=(19,10),squeeze=False)
+    allpts=np.concatenate([r['_xyz'] for r in rows if len(r['_xyz'])]);goal=geometry['target_centers'][target]
+    limits=[(min(-.1,float(allpts[:,0].min())-.04),max(.6,float(allpts[:,0].max())+.04)),
+            (min(-.3,float(allpts[:,1].min())-.04),max(.3,float(allpts[:,1].max())+.04)),
+            (.70,max(1.05,float(allpts[:,2].max())+.04))]
+    for idx,row in enumerate(rows):
+        for view,(dims,label) in enumerate((((0,1),'XY'),((0,2),'XZ'))):
+            ax=axes[idx//3,(idx%3)*2+view];a,b=dims;color='#087f5b' if row['accepted'] else '#b42318'
+            for c,h in zip(geometry['obstacle_centers'],geometry['obstacle_halfsizes']):
+                ax.add_patch(Rectangle((c[a]-h[a],c[b]-h[b]),2*h[a],2*h[b],fc='#888888',alpha=.5))
+                ax.add_patch(Rectangle((c[a]-h[a]-.02,c[b]-h[b]-.02),2*h[a]+.04,2*h[b]+.04,fc='none',ec='#555555',ls=':',lw=.7))
+            xyz=row['_xyz'];h24=row['_h24']
+            ax.plot(xyz[:,a],xyz[:,b],color=color,lw=.8,alpha=.8)
+            ax.plot(h24[:,a],h24[:,b],color='#2b4eff',ls='--',lw=.65,alpha=.7)
+            ax.scatter([xyz[0,a]],[xyz[0,b]],c='black',s=8);ax.scatter([goal[a]],[goal[b]],c='#d6a700',marker='*',s=35)
+            ax.set_xlim(limits[a]);ax.set_ylim(limits[b]);ax.grid(alpha=.18)
+            if view==0:
+                kind='unknown' if row['raw_type'] is None else '/'.join(row['raw_type'])
+                ax.set_title(f"slot{idx} {'ACCEPT' if row['accepted'] else row['failure_category']}\n{kind}; {row['raw_length_m']:.2f}m",fontsize=8)
+            else:ax.set_title(label+' raw; blue H24',fontsize=8)
+            ax.tick_params(labelsize=6)
+    fig.suptitle(f'{parent} target{target} | all nine actual proposals | solid green accepted/red failed; blue H24\n'
+                 'Filled boxes true cuboids; dotted 2cm projection; label-only QA, no route changes',fontsize=12)
+    fig.tight_layout(rect=(0,0,1,.94));fig.savefig(path,dpi=120);plt.close(fig)
+
+def main():
+    started=time.perf_counter();OUTPUT.mkdir(exist_ok=False);collector,source=frozen_import()
+    remote=read(REPORT/'REMOTE_ARTIFACT_INDEX.json')
+    for item in remote['files']:
+        path=local(item['path'])
+        if path.stat().st_size!=item['bytes'] or sha(path)!=item['sha256']:raise ValueError('Original archive changed '+item['path'])
+    registration=read(local('corpus/registration.json'));allrows=[];parents=[];conditions=[];all_lengths=[];maxheights=[];failure=collections.Counter()
+    figures=OUTPUT/'figures';figures.mkdir()
+    for plan in registration['parent_plan'][:12]:
+        parent=plan['parent_id'];prefix='corpus/parents/TRAIN/'+parent+'/'
+        summary=read(local(prefix+'summary.json'));records=lines(local(prefix+'attempts.jsonl'))
+        assert len(records)==27
+        assert {(r['input_id'],r['attempt']) for r in records}=={(parent+'_target%d'%t,s) for t in range(3) for s in range(9)}
+        for name,digest in read(local(prefix+'artifact_hashes.json')).items():assert sha(local(prefix+name))==digest
+        config=read(local(prefix+'route_configs/'+parent+'.json'));assert config==plan['config']
+        initial=summary['initialization']
+        if not initial['passed']:
+            assert not any(r['attempted'] or r['success'] for r in records)
+            assert summary['route_attempts']==0 and summary['unattempted_route_proposals']==27
+            assert all(r['reason']=='initialization_gate_closed' for r in records)
+            assert summary['fatal_error'] is None and summary['shutdown_error'] is None
+            parents.append(dict(parent_id=parent,index=plan['index'],obstacle_count=sum(map(len,config['post_y'])),post_heights=config['post_heights'],
+                accepted=0,failed=0,unattempted=27,attempted=0,known_positive=0,unknown_positive=0,known_duplicates=0,
+                exact_pose_hash_duplicates=0,strict_restore_exact=0,constant_open_traces=0,initialization_passed=False,
+                initialization_error=initial.get('error'),initial_collision=initial.get('initial_collision'),
+                registered_geometry_1mm_sha256=plan['registered_geometry_1mm_sha256'],actual_geometry_1mm_sha256=None,
+                collection_body_seconds=summary['elapsed_seconds'],planning_api_entry_counts=summary['planning_api_entry_counts'],
+                planning_seconds=summary.get('planning_seconds',0),simulation_seconds=summary.get('simulation_seconds',0)))
+            for target in range(3):
+                sid=parent+'_target%d'%target
+                conditions.append(dict(id=sid,parent_id=parent,target_index=target,requested=9,attempted=0,unattempted=9,accepted=0,
+                    known_unique=0,known_positive=0,known_duplicate=0,unknown_positive=0,type_counts={},all_solution_count=None,
+                    reference_set_complete=False,reason='initialization_gate_closed',model_input_available=False))
+                for record in [r for r in records if r['input_id']==sid]:
+                    allrows.append(dict(parent_id=parent,id=sid,slot=record['attempt'],attempted=False,accepted=False,
+                        outcome='unattempted',failure_category=None,reason=record['reason'],initialization_error=initial.get('error')))
+                import matplotlib;matplotlib.use('Agg')
+                import matplotlib.pyplot as plt
+                fig,ax=plt.subplots(figsize=(12,5));ax.axis('off')
+                ax.text(.05,.75,sid+' | 9 REQUESTED / 0 ATTEMPTED',fontsize=15)
+                ax.text(.05,.5,'Initialization geometry hash gate closed. All nine slots remain unattempted.\n'+str(initial.get('error')),fontsize=11)
+                ax.text(.05,.2,'No valid initial model observation or route exists. No route is fabricated.\nFailed-initialization RGB is separately retained; this is not proof of no feasible solution.',fontsize=11)
+                fig.savefig(figures/(sid+'.png'),dpi=120);plt.close(fig)
+            continue
+        with np.load(local(prefix+parent+'/verification_only.npz'),allow_pickle=False) as z:geo={k:z[k].copy() for k in z.files}
+        assert collector.validate_initial_geometry(plan,geo['obstacle_centers'],geo['obstacle_halfsizes'],geo['target_centers'])==plan['registered_geometry_1mm_sha256']
+        with np.load(local(prefix+parent+'/observation.npz'),allow_pickle=False) as z:observation={k:z[k].copy() for k in z.files}
+        observations=lines(local(prefix+'observations.jsonl'));supervision=lines(local(prefix+'supervision.jsonl'))
+        assert len(observations)==len(supervision)==3 and len({r['image'] for r in observations})==1
+        assert all(set(r)=={'id','parent_id','split','image','instruction'} and r['split']=='TRAIN' for r in observations)
+        accepted=0;known=0;unknown=0;known_duplicates=0;raw_hashes=[];restores=0;events=0;parentrows=[]
+        for target in range(3):
+            seen=set();targetrows=[];type_counts=collections.Counter();reference_files=[]
+            for record in [r for r in records if r['input_id']==parent+'_target%d'%target]:
+                assert record['attempted']
+                restore=record['strict_restore'];world=restore['world']
+                assert restore['passed'] and world['max_abs']==0 and world['rgb_max_difference']==0 and world['same_object_inventory'] and world['global_inventory_equal']
+                assert all(restore['observation'].values()) and all(record['camera_flags'].values());restores+=1
+                item=record['trajectory'] if record['success'] else record['failed_partial_trajectory'];assert item is not None
+                path=local(prefix+parent+'/'+item['file']);assert sha(path)==item['sha256']
+                with np.load(path,allow_pickle=False) as z:trace={k:z[k].copy() for k in z.files}
+                poses=trace['gripper_pose'];opened=trace['gripper_open'];xyz=poses[:,:3]
+                assert len(poses)==record['simulated_steps']+1==item['samples'] and all(np.isfinite(x).all() for x in trace.values())
+                assert collector.legacy.array_hash(poses)==item['pose_array_sha256']
+                assert np.array_equal(poses[0],observation['gripper_pose']) and opened[0]==observation['gripper_open']
+                assert opened.shape==(len(poses),) and np.all((opened>=0)&(opened<=1))
+                fields,h24,passed=collector.route_acceptance(xyz,geo['target_centers'],target,config)
+                rawtype=normalize(fields['actual_route_type']);htype=normalize(fields['h24_route_type']);event_constant=bool(np.all(opened==opened[0]));events+=event_constant
+                postcheck='endpoint_error_m' in record
+                if postcheck:
+                    for key in ('endpoint_error_m','length_m'):assert np.isclose(fields[key],record[key],rtol=0,atol=1e-12)
+                    for key in ('tip_polyline_clear','tip_polyline_24_clear','actual_route_type','h24_route_type'):assert normalize(fields[key])==record[key]
+                category=None
+                if record['success']:
+                    assert passed and postcheck and not record.get('collision_pair') and event_constant
+                    assert np.array_equal(trace['xyz_24'],h24) and np.array_equal(trace['xyz_64'],collector.legacy.resample(xyz))
+                    assert len(record['planning_segments'])==len(record['collection_guides_supervision_only'])
+                    assert all(s['planning_status']==s['simulation_status']=='success' for s in record['planning_segments'])
+                    reference_files.append(parent+'/'+item['file']);accepted+=1;all_lengths.append(fields['length_m']);maxheights.append(float(xyz[:,2].max()));raw_hashes.append(item['pose_array_sha256'])
+                    if rawtype is None:unknown+=1;assert record['duplicate_passage_type'] is None
+                    else:
+                        known+=1;signature=tuple(rawtype);dup=signature in seen;known_duplicates+=dup
+                        assert record['duplicate_passage_type']==dup;seen.add(signature);type_counts['/'.join(rawtype)]+=1
+                else:
+                    error=record.get('error','')
+                    if 'ConfigurationPathError' in error:category='planning_no_path'
+                    elif 'robot collision' in error:category='executed_full_body_collision'
+                    elif postcheck:category='complete_route_acceptance_rejected'
+                    else:category='other';raise AssertionError('Unexpected failure '+error)
+                    failure[category]+=1
+                row=dict(parent_id=parent,id=record['input_id'],slot=record['attempt'],attempted=True,accepted=record['success'],failure_category=category,
+                    source_trajectory=str(path.relative_to(ROOT).as_posix()),trajectory_sha256=item['sha256'],strict_restore_exact=True,
+                    event_constant=event_constant,event_transitions=int(np.count_nonzero(np.diff(opened))),raw_length_m=fields['length_m'],
+                    endpoint_error_m=fields['endpoint_error_m'],raw_tip_clear=fields['tip_polyline_clear'],h24_tip_clear=fields['tip_polyline_24_clear'],
+                    raw_type=rawtype,h24_type=htype,types_stable=rawtype==htype,original_complete_postcheck=postcheck,
+                    collision_pair=record.get('collision_pair'),simulated_steps=record['simulated_steps'],
+                    explicit_get_path_calls=sum(s['get_path_calls'] for s in record['planning_segments']),
+                    planning_seconds=sum(s['planning_seconds'] for s in record['planning_segments']),
+                    simulation_seconds=sum(s['simulation_seconds'] for s in record['planning_segments']),
+                    original_attempt_seconds=record['seconds'],restore_seconds=restore['seconds'],maximum_height_m=float(xyz[:,2].max()),_xyz=xyz,_h24=h24)
+                targetrows.append(row);parentrows.append(row)
+            sup=supervision[target];assert sup['id']==parent+'_target%d'%target and sup['routes']==reference_files
+            assert sup['route_types']==[r['raw_type'] for r in targetrows if r['accepted']]
+            condition=dict(id=sup['id'],parent_id=parent,target_index=target,requested=9,attempted=9,accepted=len(reference_files),
+                unattempted=0,model_input_available=True,known_unique=len(seen),known_positive=sum(type_counts.values()),known_duplicate=sum(type_counts.values())-len(seen),
+                unknown_positive=sum(r['accepted'] and r['raw_type'] is None for r in targetrows),type_counts=dict(type_counts),
+                all_solution_count=None,reference_set_complete=False)
+            conditions.append(condition)
+            plot_target(parent,target,targetrows,config,geo,None,figures/(sup['id']+'.png'))
+        assert accepted==summary['accepted_routes'] and restores==summary['strict_route_restores']==27
+        assert sum(r['explicit_get_path_calls'] for r in parentrows)==summary['get_path_calls']
+        initial=summary['initialization'];assert initial['passed'] and initial['initial_collision'] is None and summary['fatal_error'] is None and summary['shutdown_error'] is None
+        assert all(v['visible_pixels']>=10 and v['points_outside_one_cm']==v['points_off_surface_one_cm']==0 for v in initial['post_depth_audit'])
+        assert all(x>=10 for x in initial['target_visible_pixels'])
+        assert all(k.startswith('route:') or v==0 for k,v in summary['planning_api_entry_counts'].items())
+        parents.append(dict(parent_id=parent,index=plan['index'],obstacle_count=len(geo['obstacle_centers']),post_heights=config['post_heights'],
+            accepted=accepted,failed=27-accepted,unattempted=0,attempted=27,initialization_passed=True,initialization_error=None,known_positive=known,unknown_positive=unknown,known_duplicates=known_duplicates,
+            exact_pose_hash_duplicates=len(raw_hashes)-len(set(raw_hashes)),strict_restore_exact=restores,constant_open_traces=events,
+            registered_geometry_1mm_sha256=plan['registered_geometry_1mm_sha256'],actual_geometry_1mm_sha256=initial['actual_geometry_1mm_sha256'],
+            initial_visible_post_pixels=[r['visible_pixels'] for r in initial['post_depth_audit']],target_visible_pixels=initial['target_visible_pixels'],
+            collection_body_seconds=summary['elapsed_seconds'],planning_api_entry_counts=summary['planning_api_entry_counts'],
+            planning_seconds=summary.get('planning_seconds',0),simulation_seconds=summary.get('simulation_seconds',0)))
+        allrows.extend([{k:v for k,v in r.items() if not k.startswith('_')} for r in parentrows])
+    from PIL import Image,ImageOps,ImageDraw
+    contact=Image.new('RGB',(1120,1000),'white');draw=ImageDraw.Draw(contact)
+    for index,p in enumerate(parents):
+        name=p['parent_id'];suffix='/front.png' if p['initialization_passed'] else '/failed_initialization.png'
+        image=Image.open(local('corpus/parents/TRAIN/'+name+'/'+name+suffix)).convert('RGB').resize((240,240))
+        x=(index%4)*280;y=(index//4)*330
+        contact.paste(image,(x,y+45));draw.text((x+4,y+4),name+' N='+str(p['obstacle_count']),fill='black')
+        draw.text((x+4,y+23),'initial OK' if p['initialization_passed'] else 'FAILED INITIALIZATION',fill='black' if p['initialization_passed'] else 'red')
+    contact.save(figures/'ALL12_RGB.png')
+    post=[r for r in allrows if r['attempted'] and not r['accepted'] and r['original_complete_postcheck']]
+    masks=dict(endpoint_gt_3cm=sum(r['endpoint_error_m']>.03 for r in post),raw_tip_collision=sum(not r['raw_tip_clear'] for r in post),
+        h24_tip_collision=sum(not r['h24_tip_clear'] for r in post),type_instability=sum(not r['types_stable'] for r in post))
+    outer=read(REPORT/'run/pilot12.status.json');outer_seconds=(datetime.datetime.fromisoformat(outer['end_utc'])-datetime.datetime.fromisoformat(outer['start_utc'])).total_seconds()
+    summary=dict(protocol='local_frozen_eba_pilot12_quality_v1',source_commit=REV,source_manifest_sha256=sha(REPORT/'recipe/layout_variation_sources_eba0994.json'),
+        analysis_source_sha256=sha(__file__),input_index_sha256=sha(REPORT/'REMOTE_ARTIFACT_INDEX.json'),archive_original_files_verified=len(remote['files']),
+        model_calls=0,simulator_calls=0,new_searches=0,new_route_proposals=0,raw_roles_opened=['TRAIN'],parents=parents,conditions=conditions,
+        requested_parents=12,requested_conditions=36,requested_slots=324,attempted_slots=sum(p['attempted'] for p in parents),unattempted_slots=sum(p['unattempted'] for p in parents),accepted=sum(p['accepted'] for p in parents),
+        failed=sum(p['failed'] for p in parents),unknown_positive=sum(p['unknown_positive'] for p in parents),known_positive=sum(p['known_positive'] for p in parents),
+        known_duplicate_positive=sum(p['known_duplicates'] for p in parents),exact_pose_hash_duplicates=sum(p['exact_pose_hash_duplicates'] for p in parents),
+        strict_restore_exact=sum(p['strict_restore_exact'] for p in parents),constant_open_traces=sum(p['constant_open_traces'] for p in parents),
+        all_original_accepted_raw_and_h24_checks_reproduced=True,all_saved_accepted_H24_and_H64_arrays_bit_exact=True,
+        failure_categories=dict(failure),complete_postcheck_failure_components_nonexclusive=masks,
+        recorded_collision_pairs=dict(collections.Counter(r['collision_pair'] for r in allrows if r.get('collision_pair'))),
+        accepted_length_m=describe(all_lengths),accepted_maximum_height_m=describe(maxheights),
+        accepted_longer_than_2m=sum(x>2 for x in all_lengths),accepted_longer_than_3m=sum(x>3 for x in all_lengths),
+        any_positive_conditions=sum(c['accepted']>0 for c in conditions),conditions_known_types_more_than4=sum(c['known_unique']>4 for c in conditions),
+        known_type_count_lower_bounds=[c['known_unique'] for c in conditions],all_solution_count=None,
+        collection_outer_seconds=outer_seconds,collection_body_sum_seconds=sum(p['collection_body_seconds'] for p in parents),
+        collection_attempt_sum_seconds=sum(r.get('original_attempt_seconds',0) for r in allrows),restore_sum_seconds=sum(r.get('restore_seconds',0) for r in allrows),
+        planning_sum_seconds=sum(p['planning_seconds'] for p in parents),simulation_sum_seconds=sum(p['simulation_seconds'] for p in parents),
+        explicit_get_path_calls=sum(r.get('explicit_get_path_calls',0) for r in allrows),simulated_steps=sum(r.get('simulated_steps',0) for r in allrows),
+        cost_scope='Outer contains worker/body/restore/planning/simulation; do not add nested costs',analysis_elapsed_seconds=time.perf_counter()-started,
+        limitations=['Full-body safety here is the original discrete simulation-step check, not a new replay or continuous certificate.',
+        'This uses collector arc H24, not a subsequent model event-aware representation audit.','All12 registered TRAIN layouts; no certify stage, both closed-member initialization failures remain unattempted.',
+        'The native scene export exists but roundtrip_verified remains false.'])
+    write(OUTPUT/'per_attempt.json',allrows);write(OUTPUT/'analysis.json',summary)
+    (OUTPUT/'analysis_source.py.txt').write_bytes(Path(__file__).read_bytes())
+    print(json.dumps({k:summary[k] for k in ('requested_parents','requested_conditions','requested_slots','attempted_slots','unattempted_slots','accepted','failed','known_positive','unknown_positive','known_duplicate_positive','strict_restore_exact','failure_categories','analysis_elapsed_seconds')},indent=2))
+
+if __name__=='__main__':main()

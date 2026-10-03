@@ -1,5 +1,9 @@
 # 数据卡：受控几何与观测任务分层
 
+## 2026-10-03：可变布局TRAIN12真实小批结果
+
+原eba采集324请求槽：108接受、162路线失败、54未尝试；后者是两个closed布局的浮点半毫米hash边界初始化失败，不能视为无解。270次实际restore均exact、108正例raw/H24验收和H24/H64重采样重现，15unknown保留。六柱四父108attempt/26接受，无条件已知类型>4；27/36请求目标条件有正例。原首4的238文件与12图字节不变，2registry仅append，全部失败和4.297m长弧保留。两开闭对尚无closed witness，未certify。root实际看ALL12_RGB、401008/401010/401005的target0完整页，agent完成其余新图；投影不代替原3D检查。新增8父outer1220.834587秒，两stage累计1893.042100秒，各nested worker口径不相加。此为TRAIN采集验证，非独立测试或方法优势。[完整结果](observed_layout_variation_pilot12_v1/PILOT12_RESULTS.md)。
+
 ## 2026-10-03 05:54 UTC：小批与技术门实测，尚无新方法优势
 
 可变布局TRAIN4实际108槽：65接受/43失败/3接受unknown，108严格恢复、原验收与重采样重现；已知类型下界1–4。全目标图已看，按原协议继续余8父，不把采集管道当生成优势。[小批实测](observed_layout_variation_pilot4_v1/PILOT4_RESULTS.md)。HAMSTER16真实forward下8步输出逐值相同，decode比0.34049，35%内存门通过；完整一请求尚未执行，原失败保留。[技术对照](hamster3d_transport_exact8_v1/TRANSPORT_RESULTS.md)。普通真实K条件基线已45服务器测试通过、pause2后预定3000步已完成，原池分析待进行；Min-SNR只计划固定TRAIN配对诊断。MAIN仍289，核心成立/公平强基线优势/独立设置/多训练种子/评分校准未闭合。
