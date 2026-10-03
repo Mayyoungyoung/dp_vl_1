@@ -27,10 +27,15 @@ def export():
     for plan in plans:
         parent=plan['parent_id'];index=plan['index'];folder=EXT/'parents/DEV_MODEL'/parent
         closure=read(EXT/'closures'/('%03d.json'%index))
+        assert closure['parent_id']==parent and closure['index']==index and closure['role']=='DEV_MODEL'
+        if closure.get('model_eligible'):
+            assert closure['actual_geometry_1mm_sha256']==plan['registered_geometry_1mm_sha256']
         inventory.append(dict(parent_id=parent,closure=closure))
         if not (folder/'observations.jsonl').exists():
             inventory[-1]['missing_observations']=3;continue
         artifacts=read(folder/'artifact_hashes.json')
+        assert sha(folder/'artifact_hashes.json')==closure['mechanical_files_sha256']['artifact_hashes.json']
+        hashes[str(folder/'artifact_hashes.json')]=sha(folder/'artifact_hashes.json')
         def checked(name):
             path=(folder/name).resolve()
             if not contained(path,folder) or name not in artifacts or sha(path)!=artifacts[name]:raise ValueError('Source hash/containment failed: '+name)
@@ -38,6 +43,8 @@ def export():
         rows=lines(checked('observations.jsonl'));attempts=lines(checked('attempts.jsonl'))
         original={r['id']:r for r in lines(checked('supervision.jsonl'))}
         inventory[-1]['actual_observations']=len(rows)
+        inventory[-1]['reference_attempts']=len(attempts)
+        inventory[-1]['successful_reference_attempts']=sum(bool(r['success']) for r in attempts)
         for row in rows:
             assert row['parent_id']==parent and row['split']=='DEV_MODEL'
             positive=sorted([r for r in attempts if r['input_id']==row['id'] and r['success']],key=lambda r:r['attempt'])
@@ -71,6 +78,9 @@ def infer():
     cache=DATA/'qwen_cache'; cc=read(cache/'cache_config.json')
     assert cc['manifest_sha256']==sha(DATA/'observations.jsonl') and cc['model_trainable_parameter_count']==0
     assert cc['revision']=='89644892e4d85e24eaac8bacfd4f463576704203'
+    old_cc=read(ROOT/'data/observation_two_row_composite108_v1/qwen_cache/cache_config.json')
+    for key in ('revision','processor','max_pixels','dtype','input_contract'):
+        assert cc[key]==old_cc[key], 'Frozen feature protocol mismatch: '+key
     rows=lines(DATA/'observations.jsonl');labels={r['id']:r for r in lines(DATA/'supervision.jsonl')}
     for arm,model in manifest['models'].items():
         assert sha(model['path'])==model['sha256']

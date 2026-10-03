@@ -1,3 +1,11 @@
+## Geometric coverage / fresh DEV32 round — 2026-10-04 (active)
+
+Read newest STATE entry. Existing expanded191 ordinary/balanced seed0 models frozen by configs/geometric_modes_v1.json at e9ecb9a. Old M8 real portal analysis completed; gate for relation-conditioned generator FALSE (only3/36 balanced requests exactly one valid mode,2 zero; K4 TwoDistinct .861). No new training/selector change. Source b8be6ef finalizes evidence without changing metric.
+
+User explicitly authorized collecting previously missing preregistered DEV_MODEL32 400256..400287. Actual immutable collector5c8f8e4f5cd478c793a0e0d9640005deaf700973 is running, session20261003T174036Z_dev32_1095188, SSH84090. Do not duplicate/restart. Check original session and closures256..287, CPU2/3, GPU hidden. NewDEV32 != already-used q DEV_SCORE32. TEST_LOCKED forbidden.
+
+After collection COMPLETE: use scripts/evaluate_frozen_dev32.py export from immutable release, cache only its role-specific observations.jsonl with existing pinned observation_cache_qwen.py/.venv-qwen (GPU1/35%,2threads), run evaluate_frozen_dev32.py infer once, then analyze_geometric_modes.py --new-dev .../runs/geometric_modes_v1/dev32_pools --output <fresh>. All jobs through launch_geometric_modes.sh with unique --id; cumulative evaluation3600s. Old failure JSON serialization preserved; server27 tests pass. Finish actual report/plots/source hashes, registry and push. Do not claim newDEV results before outputs exist.
+
 ## Probability-aware route round completed — 2026-10-04
 
 M4/M8 route/pi/q implementation and this registered experiment round completed. No running probability jobs; do not relaunch fresh wrappers. Final57 jobs:55completed/2failed,1664.431483s cumulative including failures/testing/analysis (<21600s). Latest actual server21tests/0skip. Both failures preserved. Source531623c packaging passes actual cached-Qwen/RGB-D comparison and exact reload for M4,ordinaryM8,balancedM8. Three bundles locally SHA verified under runs/probability_delivery. Analysis source5d42f14,63 exported files SHA verified; final audit adds analysis job timing to the earlier RESULT snapshot.
