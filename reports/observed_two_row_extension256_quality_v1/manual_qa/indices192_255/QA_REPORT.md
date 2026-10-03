@@ -1,0 +1,9 @@
+# TRAIN indices192–255 visual QA
+
+All 64 archived RGB images and all 192 target figures (27 registered slots per parent; 1,728 slots total) were actually inspected through 64 full contact sheets. The 256 original image hashes were rechecked against the sheet manifest; no original image, label, threshold, or result was changed. No missing, blank, or visibly corrupt RGB/target page was found. This is visual QA, not an independent collision or robot-execution certificate.
+
+Accepted and failed paths include high arcs, long lateral detours, repeated loops, and truncated failures. Accepted unknown routes remain positive references with unknown type. In particular, 400230 target0 slot7 and 400250 target1 slot1 show very large circular detours; both original all-nine figures were also inspected separately. The frozen numerical analysis identifies the latter's 7.25458 m length; the image alone does not measure that length. No route was discarded or shortened.
+
+Some original figures have overlapping subplot titles/tick labels and varying aspect ratios because extreme detours expand the axes. The route extents, all nine slots, and XY/XZ pairs remain visible. Contact sheets rescale whole figures without cropping. Apparent intersections in one projection cannot establish a 3D collision; green/red status is inherited from the original validator rather than inferred from appearance.
+
+`VIEW_LOG.jsonl` records every parent, all source-image hashes, the actually viewed contact sheet, and concrete observations. `QA_RECEIPT.json` records scope and the actual analysis JSON hash separately from the analysis source-code hash. The other 64 new parents (indices128–191) are outside this reviewer receipt and are reviewed separately. No reserved/new DEV input was read; there were zero new model, simulator, or search calls.

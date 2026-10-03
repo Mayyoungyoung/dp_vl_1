@@ -1,0 +1,35 @@
+"""Create readable all-route sheets from archived plots. Does not perform QA."""
+from pathlib import Path
+from PIL import Image,ImageDraw,ImageFont
+import json,hashlib
+
+ROOT=Path(__file__).resolve().parents[4]
+F=ROOT/'reports/observed_two_row_extension256_quality_v1'
+SRC=F/'analysis_run/train256'
+OUT=F/'manual_qa/indices128_191'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+    hashes=json.loads((SRC/'artifact_hashes.json').read_text());rows=[]
+    try:font=ImageFont.truetype('arial.ttf',28)
+    except OSError:font=ImageFont.load_default()
+    for index in range(128,192):
+        name='two_row_reach_%d'%(400000+index);sources=[]
+        for basename in ('front.png','target0_all9.png','target1_all9.png','target2_all9.png'):
+            path=SRC/name/basename;key=name+'/'+basename
+            assert sha(path)==hashes[key]
+            sources.append(dict(path=key,sha256=hashes[key]))
+        width=1800;header=265;h=round(1300*width/2730)
+        sheet=Image.new('RGB',(width,header+3*h),'white');draw=ImageDraw.Draw(sheet)
+        sheet.paste(Image.open(SRC/name/'front.png').convert('RGB'),(20,25))
+        draw.text((275,35),'Index %d | %s | RGB + target 0/1/2'%(index,name),fill='black',font=font)
+        draw.text((275,90),'All 27 requested route slots. Accepted/failed/unknown preserved.',fill='black',font=font)
+        draw.text((275,145),'Full XY/XZ plots; no crop or quality-label edits.',fill='black',font=font)
+        for target in range(3):
+            im=Image.open(SRC/name/('target%d_all9.png'%target)).convert('RGB')
+            sheet.paste(im.resize((width,h),Image.Resampling.LANCZOS),(0,header+target*h))
+        path=OUT/('%03d_all27_and_rgb.png'%index);assert not path.exists();sheet.save(path)
+        rows.append(dict(index=index,parent_id=name,sheet=path.name,sheet_sha256=sha(path),sources=sources))
+    (OUT/'CONTACT_SHEET_MANIFEST.json').write_text(json.dumps(dict(rows=rows,source_hash_index=sha(SRC/'artifact_hashes.json'),
+        generated_only_not_visual_qa=True,script_sha256=sha(Path(__file__))),indent=2)+'\n')
+    print(len(rows))
+if __name__=='__main__':main()

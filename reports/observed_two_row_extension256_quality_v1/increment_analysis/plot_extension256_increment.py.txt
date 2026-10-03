@@ -1,0 +1,22 @@
+import hashlib,json
+from pathlib import Path
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+r=Path('F:/dpvlm');base=r/'reports/observed_two_row_extension256_quality_v1';src=base/'analysis_run/train256';out=base/'increment_analysis'
+d=json.loads((src/'analysis.json').read_text());rows=json.loads((src/'all_requested_slots.json').read_text())
+accepted=np.zeros(256,int);unknown=np.zeros(256,int)
+for c in d['conditions']:
+ i=int(c['parent_id'].rsplit('_',1)[1])-400000;accepted[i]+=c['valid_references'];unknown[i]+=c['unknown_valid_references']
+assert int(accepted.sum())==4531 and int(unknown.sum())==1943
+lengths=np.array([x['recomputed_fields']['length_m'] for x in rows if x['status']=='accepted'])
+fig,axes=plt.subplots(2,2,figsize=(16,9),constrained_layout=True)
+x=np.arange(256);axes[0,0].bar(x,accepted-unknown,width=1,label='accepted, known type');axes[0,0].bar(x,unknown,bottom=accepted-unknown,width=1,label='accepted, unknown');axes[0,0].bar(x,27-accepted,bottom=accepted,width=1,color='#ddd',label='failed');axes[0,0].axvline(127.5,color='black',linestyle='--');axes[0,0].set(xlabel='All256 parent indices (dashed: prior128 / new128)',ylabel='All27 slots per parent',ylim=(0,27));axes[0,0].legend(fontsize=8)
+types=np.array([c['distinct_known_types'] for c in d['conditions']]);axes[0,1].hist(types,bins=np.arange(-.5,9.5,1),rwidth=.8);axes[0,1].axvline(4.5,color='#ad3333',linestyle='--');axes[0,1].set(xlabel='Observed known positive route types (not total solutions)',ylabel='All768 target conditions',xticks=range(9));axes[0,1].set_title('165 conditions have >4 known types; unknown retained')
+axes[1,0].hist(lengths,bins=np.linspace(0,8,49));axes[1,0].set(xlabel='Accepted original path length, m (no filtering)',ylabel='All4531 positive routes');axes[1,0].set_title('76 paths >4m; maximum 7.255m retained')
+groups=['Prior128','Added128'];a=np.array([2248,2283]);u=np.array([938,1005]);f=np.array([1208,1173]);xx=np.arange(2);axes[1,1].bar(xx,a-u,label='accepted known');axes[1,1].bar(xx,u,bottom=a-u,label='accepted unknown');axes[1,1].bar(xx,f,bottom=a,label='failed',color='#ddd');axes[1,1].set(xticks=xx,xticklabels=groups,ylabel='All3456 requested slots per stage');axes[1,1].legend(fontsize=8);axes[1,1].set_title('Same original checks; exact prior3456 records reproduced')
+fig.suptitle('TRAIN collection quality only | fixed 2cm tip/H24 and original full-motion checks | no new model result',fontsize=13)
+path=out/'ALL256_COLLECTION_QUALITY.png';assert not path.exists();fig.savefig(path,dpi=150);plt.close(fig)
+(out/'plot_extension256_increment.py.txt').write_bytes(Path(__file__).read_bytes())
+print(path)

@@ -1,0 +1,40 @@
+import collections,datetime,hashlib,json
+from pathlib import Path
+import numpy as np
+r=Path('F:/dpvlm');base=r/'reports/observed_two_row_extension256_quality_v1'
+old=r/'reports/observed_two_row_extension128_quality_v1'
+p=base/'analysis_run/train256';q=old/'analysis_run/train128'
+read=lambda f:json.loads(f.read_text(encoding='utf-8'))
+sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+d,o=read(p/'analysis.json'),read(q/'analysis.json');rows,oldrows=read(p/'all_requested_slots.json'),read(q/'all_requested_slots.json')
+assert len(rows)==6912 and rows[:3456]==oldrows
+assert len(oldrows)==3456
+dest=base/'increment_analysis';dest.mkdir(exist_ok=False)
+def summarize(first,last):
+ selected=[x for x in rows if first<=int(x['parent_id'].rsplit('_',1)[1])-400000<last]
+ conditions=[x for x in d['conditions'] if first<=int(x['parent_id'].rsplit('_',1)[1])-400000<last]
+ accepted=[x for x in selected if x['status']=='accepted'];failed=[x for x in selected if x['status']=='failed']
+ lengths=[x['recomputed_fields']['length_m'] for x in accepted]
+ return dict(indices=[first,last-1],requested_parents=last-first,conditions=len(conditions),slots=len(selected),
+  statuses=dict(collections.Counter(x['status'] for x in selected)),strict_restore=sum(x['strict_restore_passed'] for x in selected),
+  unknown_accepted=sum(x['unknown_valid_references'] for x in conditions),known_duplicates=sum(x['known_duplicate_references'] for x in conditions),
+  conditions_more_than_K4=sum(x['has_more_than_K4_known_types'] for x in conditions),
+  known_type_histogram=dict(sorted(collections.Counter(x['distinct_known_types'] for x in conditions).items())),
+  accepted_length_m=dict(minimum=min(lengths),median=float(np.median(lengths)),mean=float(np.mean(lengths)),p95=float(np.quantile(lengths,.95)),maximum=max(lengths),over2=sum(x>2 for x in lengths),over4=sum(x>4 for x in lengths)),
+  failure_errors=dict(collections.Counter(x['error'] for x in failed)),
+  longest_accepted=[dict(parent_id=x['parent_id'],input_id=x['input_id'],attempt=x['attempt'],type=x['actual_accepted_type'],length_m=x['recomputed_fields']['length_m']) for x in sorted(accepted,key=lambda x:(-x['recomputed_fields']['length_m'],x['input_id'],x['attempt']))[:5]])
+sections={name:summarize(a,b) for name,a,b in [('old128',0,128),('new128',128,256),('all256',0,256)]}
+status=read(base/'analysis_run/train256.status.json');duration=(datetime.datetime.fromisoformat(status['end_utc'])-datetime.datetime.fromisoformat(status['start_utc'])).total_seconds()
+result=dict(protocol='read_only_extension256_increment_v1',created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+ source_sha256={str(x.relative_to(r)):sha(x) for x in [p/'analysis.json',q/'analysis.json',p/'all_requested_slots.json',q/'all_requested_slots.json']},
+ all_old3456_slot_records_equal=True,old512_plot_bytes_equal=all(x['byte_equal'] for x in read(base/'SYNC_RECEIPT.json')['old128_images_byte_equal']),
+ original_quality_source_sha256=d['analysis_source_sha256'],quality_outer_seconds=duration,quality_inner_seconds=d['analysis_elapsed_seconds'],
+ cpu_only=True,additional_model_calls=0,additional_checker_calls=0,additional_raw_or_reserved_reads=0,sections=sections,
+ manual_qa_status='pending new128; image existence is not visual review',new_dev32_raw_sealed=True,training_population_unchanged=True)
+(dest/'INCREMENT_ANALYSIS.json').write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+(dest/'analyze_extension256_increment.py.txt').write_bytes(Path(__file__).read_bytes())
+print(json.dumps(dict(quality_outer_seconds=duration,old3456_exact=True,sections={k:{j:v[j] for j in ['slots','statuses','unknown_accepted','conditions_more_than_K4','accepted_length_m']} for k,v in sections.items()}),indent=2))
+# Correct an imprecise hand-written progress heading; actual job UTCs are unchanged.
+for name in ('STATE.md','RESUME.md','RESEARCH_LOG.md'):
+ f=r/name;s=f.read_text(encoding='utf-8');s=s.replace('真实配对筛选完成，下一机制与新数据检查 — 2026-10-03 07:24 UTC','真实配对筛选完成，下一机制与新数据检查 — 2026-10-03')
+ f.write_text(s,encoding='utf-8')

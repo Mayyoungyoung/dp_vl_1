@@ -1,0 +1,37 @@
+import datetime,hashlib,json
+from pathlib import Path
+r=Path('F:/dpvlm');base=r/'reports/observed_two_row_extension256_quality_v1';sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+read=lambda p:json.loads(p.read_text(encoding='utf-8'))
+a=base/'manual_qa/indices128_191';b=base/'manual_qa/indices192_255'
+assert sha(a/'LOCAL_INDEX.json')=='b914b6bc70e93b5ba7048794b035365de3178cfe3f4ef39200c890a972ed67ac'
+assert sha(b/'LOCAL_ARTIFACT_INDEX.json')=='108cb86e685477efaed224b3477473a183616bb540b391a69002350461718079'
+for x in read(a/'LOCAL_INDEX.json')['files']:
+ p=a/x['file'];assert p.stat().st_size==x['size'] and sha(p)==x['sha256']
+for name,x in read(b/'LOCAL_ARTIFACT_INDEX.json')['files'].items():
+ p=b/name;assert p.stat().st_size==x['bytes'] and sha(p)==x['sha256']
+p=base/'TRAIN256_RESULTS.md';s=p.read_text(encoding='utf-8')
+old='New128 RGB and all384 target plots are assigned to two independent review blocks, indices128–191 and192–255. Their receipts live under `manual_qa/`; final completion and the actual viewed scope will be recorded only after both blocks finish.'
+new='The two review blocks, indices128–191 and192–255, have now actually viewed all128 new RGB images and all384 complete nine-slot target figures (3,456 slots). Their separate view logs, source-image hashes and receipts are under `manual_qa/`. Both found no missing, blank or visibly corrupt images; plot text overlaps at some extreme trajectories are disclosed. Complete extents were retained and 2D overlap was not treated as a new safety judgment.'
+assert old in s;p.write_text(s.replace(old,new),encoding='utf-8')
+root_views=['increment_analysis/ALL256_COLLECTION_QUALITY.png','analysis_run/train256/two_row_reach_400250/front.png','analysis_run/train256/two_row_reach_400250/target1_all9.png']
+receipt=dict(completed_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),new_parents=128,new_rgb_actual_viewed=128,new_all9_target_figures_actual_viewed=384,new_requested_slots_viewed=3456,
+ old128_images_reused_by_exact512_byte_comparison=True,old3456_slot_records_exact=True,
+ qa_index_sha256={str(x.relative_to(base)):sha(x) for x in [a/'LOCAL_INDEX.json',b/'LOCAL_ARTIFACT_INDEX.json']},
+ root_actual_viewed_sha256={name:sha(base/name) for name in root_views},
+ root_observation='Longest accepted slot1 has two conspicuous large loops; no crop, simplification, filtering or relabel. Aggregate figure readable; all256 parents shown.',
+ visual_safety_certificate=False,new_model_calls=0,new_checker_calls=0,new_locked_or_dev_reads=0,training_population_unchanged=True)
+(base/'FINAL_QA_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
+(base/'increment_analysis/seal_extension256_quality.py.txt').write_bytes(Path(__file__).read_bytes())
+index={p.relative_to(base).as_posix():dict(bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(base.rglob('*')) if p.is_file()}
+assert 'LOCAL_INDEX.json' not in index
+(base/'LOCAL_INDEX.json').write_text(json.dumps(index,indent=2)+'\n',encoding='utf-8')
+f=r/'.gitattributes';s=f.read_text(encoding='utf-8');line='/reports/observed_two_row_extension256_quality_v1/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof'
+assert line not in s;f.write_text(s+line+'\n',encoding='utf-8')
+block='''## 2026-10-03：TRAIN256全槽质量与完整新增图QA
+
+原1a3检查完成6912/6912尝试、6912严格恢复；4531接受/2381失败，1943接受unknown保留，165目标条件参考已知类型>4。新增128为2283接受/1173失败；旧3456槽JSON完全相同、512旧图byte-equal。新128的128RGB+384九槽图均实际目视、完整3456槽，不把渲染当查看。root额外看最长7.255m路径的完整九槽图；全部76条>4m路线保留并报告长度限制。新DEV32封存，未改变正在比较的95父/285TRAIN人口，也没有新方法/全机器人成功结论。[全部原件、逐场景图和范围限制](observed_two_row_extension256_quality_v1/TRAIN256_RESULTS.md)。质量CPU外层1814.854565秒、内1811.136765秒嵌套；全256采集worker合计42307.259427秒是并行worker时间和，不是墙钟时长。
+
+'''
+for name in ('DATA_CARD.md','EVIDENCE_MATRIX.md'):
+ f=r/'reports'/name;s=f.read_text(encoding='utf-8');head,tail=s.split('\n',1);f.write_text(head+'\n\n'+block+tail.lstrip(),encoding='utf-8')
+print(json.dumps(dict(index_files=len(index),index_sha256=sha(base/'LOCAL_INDEX.json'),actual_new_visual_slots=3456,all_old_records_equal=True)))

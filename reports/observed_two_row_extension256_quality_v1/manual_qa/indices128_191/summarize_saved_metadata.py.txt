@@ -1,0 +1,86 @@
+"""Arithmetic on archived, already-authorized TRAIN metadata. No raw/checker/model."""
+from pathlib import Path
+from collections import Counter
+import hashlib,json,statistics,datetime
+
+HERE=Path(__file__).resolve().parent
+FAMILY=HERE.parents[1]
+SOURCE=FAMILY/'analysis_run/train256'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def describe(values):
+    values=sorted(values)
+    return dict(n=len(values),minimum=min(values),median=statistics.median(values),mean=statistics.mean(values),maximum=max(values)) if values else None
+
+def main():
+    analysis=json.loads((SOURCE/'analysis.json').read_text())
+    slots=json.loads((SOURCE/'all_requested_slots.json').read_text())
+    parents=[p for p in analysis['parents'] if 128<=p['index']<=191]
+    ids={p['parent_id'] for p in parents}
+    conditions=[c for c in analysis['conditions'] if c['parent_id'] in ids]
+    slots=[r for r in slots if r['parent_id'] in ids]
+    assert len(parents)==64 and len(conditions)==192 and len(slots)==1728
+    assert {r['input_id'] for r in slots}=={c['id'] for c in conditions}
+    assert all(sum(r['input_id']==c['id'] for r in slots)==9 for c in conditions)
+    accepted=[r for r in slots if r['status']=='accepted'];failed=[r for r in slots if r['status']=='failed']
+    viewlog=[json.loads(line) for line in (HERE/'VIEW_LOG.jsonl').read_text().splitlines()]
+    viewed=[i for row in viewlog for i in row['indices']]
+    assert len(viewed)==64 and sorted(viewed)==list(range(128,192))
+    manifest=json.loads((HERE/'CONTACT_SHEET_MANIFEST.json').read_text())
+    hashes=json.loads((SOURCE/'artifact_hashes.json').read_text())
+    for row in manifest['rows']:
+        assert sha(HERE/row['sheet'])==row['sheet_sha256']
+        for source in row['sources']:
+            assert sha(SOURCE/source['path'])==source['sha256']==hashes[source['path']]
+    closures=[p['closure'] for p in parents]
+    known=[r for r in accepted if r['actual_accepted_type'] is not None]
+    source_summary=dict(
+        selected_train_indices=list(range(128,192)),requested_parents=64,requested_conditions=192,requested_slots=1728,
+        status_counts=dict(Counter(r['status'] for r in slots)),
+        attempted_lower=sum(c['attempted_lower'] for c in closures),attempted_upper=sum(c['attempted_upper'] for c in closures),
+        unattempted_lower=sum(c['unattempted_lower'] for c in closures),unattempted_upper=sum(c['unattempted_upper'] for c in closures),
+        initial_observations_saved=sum(c['initial_observation_saved'] for c in closures),
+        same_image_three_distinct_instructions=sum(p['same_image_three_distinct_instructions'] for p in parents),
+        missing_observation_count=sum(len(p['missing_observation_ids']) for p in parents),
+        model_use_blocked=sum(p['model_use_blocked'] for p in parents),
+        strict_route_restore_passes=sum(r.get('strict_restore_passed',False) for r in slots),
+        accepted_known=len(known),accepted_unknown=sum(c['unknown_valid_references'] for c in conditions),
+        known_over_references=sum(c['known_over_references'] for c in conditions),
+        known_duplicates=sum(c['known_duplicate_references'] for c in conditions),
+        known_R_histogram=dict(Counter(c['distinct_known_types'] for c in conditions)),
+        conditions_R_above4=sum(c['has_more_than_K4_known_types'] for c in conditions),
+        failure_errors=dict(Counter(r['error'] for r in failed)),
+        failure_predicates_nonexclusive=dict(
+            recorded_robot_collision=sum(bool(r.get('collision_pair')) for r in failed),
+            failed_planning_stage=sum((r.get('first_failed_stage') or {}).get('stage')=='planning' for r in failed),
+            failed_simulation_stage=sum((r.get('first_failed_stage') or {}).get('stage')=='simulation' for r in failed),
+            strict_restore_not_passed=sum(not r.get('strict_restore_passed',False) for r in failed),
+            raw_tip_check_failed=sum(r.get('recomputed_fields',{}).get('tip_polyline_clear') is False for r in failed),
+            h24_tip_check_failed=sum(r.get('recomputed_fields',{}).get('tip_polyline_24_clear') is False for r in failed),
+            raw_h24_type_changed=sum('recomputed_fields' in r and r['recomputed_fields']['actual_route_type']!=r['recomputed_fields']['h24_route_type'] for r in failed)),
+        accepted_length_m=describe([r['recomputed_fields']['length_m'] for r in accepted]),
+        accepted_length_above2m=sum(r['recomputed_fields']['length_m']>2 for r in accepted),
+        accepted_max_z_m=describe([max(g['max_z_m'] for g in r['guide_segments']) for r in accepted if r['guide_segments']]),
+        accepted_max_z_above1_5m=sum(max(g['max_z_m'] for g in r['guide_segments'])>1.5 for r in accepted if r['guide_segments']),
+        accepted_longest=[{k:r[k] for k in ('input_id','attempt','actual_accepted_type')} | dict(length_m=r['recomputed_fields']['length_m']) for r in sorted(accepted,key=lambda r:r['recomputed_fields']['length_m'],reverse=True)[:10]],
+        accepted_raw_h24_type_changes=sum(r['recomputed_fields']['actual_route_type']!=r['recomputed_fields']['h24_route_type'] for r in accepted),
+        all_event_transitions=dict(Counter(r.get('event_transitions') for r in slots)),
+        explicit_get_path_calls=sum(r.get('planning_calls',0) for r in slots),
+        worker_elapsed_seconds=sum(c['worker_elapsed_seconds'] or 0 for c in closures),
+        unique_front_file_sha256=len({sha(SOURCE/p['parent_id']/'front.png') for p in parents}),
+        geometry_1mm_unique=len({c['actual_geometry_1mm_sha256'] for c in closures}),
+        actual_registered_geometry_match=sum(c['actual_matches_registered'] for c in closures))
+    result=dict(protocol='local_manual_QA_indices128_191_v1',completed_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        actual_visual_inspection=dict(tool='functions.view_image',parent_indices=viewed,original_RGB_images=64,original_target_all9_plots=192,requested_route_slots=1728,
+          per_target_views='both XY and XZ, all9 slots',display='64 no-crop parent contact sheets 1800x2836; high tool display1248x1966 except first128 original; target0 of128 also viewed individually',
+          no_blank_or_missing_rgb_observed=True,no_missing_target_slot_observed=True,no_cropped_route_extreme_observed=True,
+          caveats=['Some shared-axis tick/title labels crowd for extreme trajectories.','Visual QA does not certify collision, depth alignment, or independent physical layouts.','Accepted/failed/unknown labels remain archived checker results; no relabeling.']),
+        saved_metadata_arithmetic=source_summary,
+        provenance=dict(analysis_sha256=sha(SOURCE/'analysis.json'),slots_sha256=sha(SOURCE/'all_requested_slots.json'),
+          source_artifact_index_sha256=sha(SOURCE/'artifact_hashes.json'),view_log_sha256=sha(HERE/'VIEW_LOG.jsonl'),
+          contact_manifest_sha256=sha(HERE/'CONTACT_SHEET_MANIFEST.json'),summary_script_sha256=sha(Path(__file__)),verified_source_images=256,verified_contact_sheets=64),
+        budget=dict(new_model_calls=0,new_checker_calls=0,new_simulator_calls=0,remote_calls=0),
+        reference_types_are_incomplete=True,all_solution_count=None,old_indices_0_127_reused_not_reviewed_here=True,new_DEV_or_reserved_opened=False)
+    (HERE/'QA_LOCAL_128_191.json').write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+    (HERE/'SAVED_CONDITION_COUNTS.json').write_text(json.dumps(conditions,indent=2)+'\n')
+    print(json.dumps(source_summary,indent=2))
+if __name__=='__main__':main()
