@@ -415,11 +415,17 @@ def package(seed):
     torch.save(dict(planner_state=planner.state_dict(),feature_dim=4096,horizon=24,M=generator.head.max_candidates,
         anchor_mode='straight_through_peak',temperature=calibration['temperature'],has_pi=GENERATOR is not None,
         frozen_qwen_revision='89644892e4d85e24eaac8bacfd4f463576704203'),output/'planner.pt')
+    from routeset.observed_probability import load_scored_planner
+    restored=load_scored_planner(output/'planner.pt','cuda')
+    with torch.no_grad():replayed=restored(**inputs,return_k=4)
+    torch.testing.assert_close(replayed['paths'],prediction['paths'],rtol=0,atol=0)
+    torch.testing.assert_close(replayed['q'],prediction['q'],rtol=0,atol=0)
     write(output/'manifest.json',dict(generator_sha256=sha((GENERATOR or PARENT)/'last.pt'),scorer_sha256=sha(scorer_file),
         calibration_sha256=sha(RUN/('calibration_seed%d'%seed)/'summary.json'),planner_sha256=sha(output/'planner.pt'),
         example_id=row['id'],example_image=row['image'],example_image_sha256=sha(row['image']),q=actual.tolist(),pi=None if pi is None else pi.tolist(),
         K_selected_indices=selections,integrated_equal_to_saved_outputs=True,internal_M=generator.head.max_candidates,
-        new_forward_requests=1,new_complete_path_states=generator.head.max_candidates,new_qwen_encodings=0,
+        new_forward_requests=2,new_complete_path_states=2*generator.head.max_candidates,new_qwen_encodings=0,
+        bundle_reload_exact=True,pi_trained=GENERATOR is not None and 'balanced_probability' in GENERATOR.name,
         cached_feature_head_seconds=seconds,scope='One integrated cached-Qwen/RGB-D smoke request, not E2E VLM latency or robot execution',
         probability_scope='q calibrated to tip-only checker, empirical calibration does not guarantee accuracy; pi separately balanced reference mass'))
 

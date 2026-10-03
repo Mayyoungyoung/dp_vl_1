@@ -133,8 +133,24 @@ class ScoredRoutePlanner(nn.Module):
         q=(logits/self.temperature).sigmoid()
         pi=details.get('pi')
         indices=select_route_indices(paths,q,return_k)
+        rows=torch.arange(len(paths),device=paths.device)[:,None]
         return dict(paths=paths,events=events,pi=pi,q=q,selected_indices=indices,
+                    selected_paths=paths[rows,indices],selected_events=events[rows,indices],
+                    selected_q=q[rows,indices],selected_pi=None if pi is None else pi[rows,indices],
                     internal_candidates=paths.shape[1],returned_candidates=return_k)
+
+
+def load_scored_planner(path,device='cpu'):
+    """Load a locally generated deployment bundle; Qwen remains external/frozen."""
+    saved=torch.load(path,map_location='cpu',weights_only=False)
+    cls=ProbabilisticGeometryRouteHead if saved['has_pi'] else ObservedGeometryRouteHead
+    generator=cls(feature_dim=saved['feature_dim'],horizon=saved['horizon'],max_candidates=saved['M'],
+                  anchor_mode=saved['anchor_mode'])
+    state=saved['planner_state']
+    norm={key:state[key] for key in ('nodes_mean','nodes_std','context_mean','context_std')}
+    planner=ScoredRoutePlanner(generator,RouteValidityHead(),norm,saved['temperature'])
+    planner.load_state_dict(state,strict=True)
+    return planner.to(device).eval()
 
 
 def reference_cluster_weights(paths, mask, threshold=.04):
