@@ -1,5 +1,9 @@
 # 主张—证据对应表
 
+## 2026-10-03 Min-SNR真实TRAIN配对筛选
+
+同初态/四流的500步修复：Tip470→494/1140、Any237→253/285，known unique212→234；95父42改善43退步，unknown193→237，高t75/99重建变差。保留uniform后验exit1及无重训恢复。只有一个训练种子的TRAIN内部证据，无DEV/新核心/泛化主张，MAIN293未改。外层GPU成本0.041738930小时；[完整分析与所有失败](observed_diffusion_minsnr_probe_v2/MIN_SNR_RESULTS.md)。下一+2500续训暂为提案，优先实际核心三臂。
+
 ## 2026-10-03：有序损失实际资源门、外部系统接口限制
 
 e69有序损失服务器真实20tests/0skip；B32/K4/R9/H24/N12544全部15次synthetic forward/backward有限，A/B/C中位.014036/.140202/.196731秒，C峰值allocated432907776B，GPU外层5.368177秒。当前资源可做固定三臂3000步验证，训练器准备中；这些是合成数值/成本结果，没有方法质量优势。[原件](observed_ordered_relation_microbenchmark_v1/MICROBENCHMARK_RESULTS.md)。

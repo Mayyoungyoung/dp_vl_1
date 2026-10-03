@@ -1,0 +1,105 @@
+"""Pure recovery contract tests against actual completed uniform JSON; no PT/model."""
+import copy
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import pytest
+
+B=Path(__file__).resolve().parent
+def load(name,file):
+    spec=importlib.util.spec_from_file_location(name,B/file);module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module);return module
+recovery=load('recovery_fixture','minsnr_recovery_f72e1aa.py')
+fixed=load('fixed_validation_fixture','minsnr_runner_f72e1aa_corrected_guard_reference.py')
+broken=load('broken_validation_fixture','minsnr_runner_f72e1aa.py')
+F=B/'minsnr_uniform_postvalidation_failure'
+
+
+def fixture(tmp_path,monkeypatch):
+    folder=tmp_path/'uniform';folder.mkdir()
+    q=json.loads((F/'uniform/summary.json').read_text());status=json.loads((F/'uniform/status.json').read_text())
+    for name,obj in [('summary.json',q),('status.json',status)]:
+        (folder/name).write_text(json.dumps(obj))
+    (folder/'last.pt').write_bytes(b'PURE TEST PLACEHOLDER, NOT A CHECKPOINT')
+    for module in (fixed,broken):
+        original=module.sha
+        monkeypatch.setattr(module,'RUN',tmp_path)
+        monkeypatch.setattr(module,'sha',lambda p,fn=original:q['final_checkpoint_sha256'] if Path(p).name=='last.pt' else fn(p))
+    return q,status,folder
+
+
+def test_actual_uniform_summary_is_16000_and_only_broken_guard_rejects(tmp_path,monkeypatch):
+    q,status,folder=fixture(tmp_path,monkeypatch)
+    assert q['additional_input_draws']==q['additional_stream']['input_draws']==500*32==16000
+    with pytest.raises(ValueError,match='Incomplete or over-budget'):broken.validate_success('uniform',{})
+    value,files=fixed.validate_success('uniform',{})
+    assert value['total_geometry_calls']==791 and value['total_denoise_calls']==11930
+    assert Path('uniform/last.pt') in [Path(name) for name in files]
+
+
+@pytest.mark.parametrize('key',['final_step','additional_steps','additional_input_draws','additional_target_states',
+    'total_geometry_calls','total_denoise_calls','dev_calls','new_qwen_calls','dev_selection_opportunities'])
+def test_corrected_guard_still_rejects_every_changed_scientific_budget(tmp_path,monkeypatch,key):
+    q,status,folder=fixture(tmp_path,monkeypatch);q[key]+=1
+    (folder/'summary.json').write_text(json.dumps(q))
+    with pytest.raises(ValueError):fixed.validate_success('uniform',{})
+
+
+def test_corrected_guard_rejects_original_18000_mistake(tmp_path,monkeypatch):
+    q,status,folder=fixture(tmp_path,monkeypatch);q['additional_input_draws']=18000
+    (folder/'summary.json').write_text(json.dumps(q))
+    with pytest.raises(ValueError):fixed.validate_success('uniform',{})
+
+
+def test_original_failure_boundary_matches_actual_metadata_without_mutation(monkeypatch):
+    monkeypatch.setattr(recovery,'ORIGINAL',F)
+    before={p:recovery.sha(p) for p in F.rglob('*') if p.is_file()}
+    recovery.validate_failure_boundary()
+    assert all(recovery.sha(p)==h for p,h in before.items())
+
+
+def test_nonzero_scientific_child_is_not_sealable(tmp_path,monkeypatch):
+    import shutil
+    local=tmp_path/'original';shutil.copytree(F,local)
+    outer=json.loads((local/'uniform_receipt.json').read_text());outer['child_exit_code']=1
+    (local/'uniform_receipt.json').write_text(json.dumps(outer));monkeypatch.setattr(recovery,'ORIGINAL',local)
+    with pytest.raises(ValueError):recovery.validate_failure_boundary()
+
+
+def test_commands_never_train_uniform_or_repeat_tests_or_inspection():
+    assert recovery.STAGES==('seal-uniform','min_snr_5','compare')
+    assert recovery.command('seal-uniform') is None
+    with pytest.raises(ValueError):recovery.command('uniform')
+    for name in ('tests','inspect-parent'):
+        with pytest.raises(ValueError):recovery.command(name)
+    cmd=recovery.command('min_snr_5')
+    assert cmd[cmd.index('--arm')+1]=='min_snr_5'
+    assert cmd[cmd.index('--output')+1]==str(recovery.RUN/'min_snr_5')
+    assert cmd[cmd.index('--parent-inspection')+1]==str(recovery.ORIGINAL/'parent_inspection.json')
+    assert '--resume' not in cmd and '--stop-after' not in cmd
+    cmd=recovery.command('compare')
+    assert cmd[cmd.index('--uniform-run')+1]==str(recovery.ORIGINAL/'uniform')
+    assert cmd[cmd.index('--weighted-run')+1]==str(recovery.RUN/'min_snr_5')
+
+
+def test_all56_numeric_constants_proved_not_just_current_summary():
+    proof=json.loads((B/'minsnr_recovery_numeric_semantics.json').read_text())
+    assert proof['numeric_constants']==56 and len(proof['differences'])==7
+    assert sum(d['old']==16 and d['corrected']==18 for d in proof['differences'])==6
+    bad=[d for d in proof['differences'] if d['old']==16000]
+    assert len(bad)==1 and bad[0]['broken']==18000 and bad[0]['corrected']==16000
+    assert proof['broken_runner_sha256']==recovery.sha(B/'minsnr_runner_f72e1aa.py')
+    assert proof['corrected_guard_reference_sha256']==recovery.sha(B/'minsnr_runner_f72e1aa_corrected_guard_reference.py')
+
+
+def test_new_manifest_and_shell_hashes_and_lf():
+    manifest=json.loads((B/'minsnr_recovery_f72e1aa_manifest.json').read_text())
+    assert manifest['uniform_retraining'] is False
+    for n,h in manifest['incoming_sha256'].items():assert recovery.sha(B/n)==h
+    for n,h in manifest['original_evidence_sha256'].items():assert recovery.sha(F/n)==h
+    shell=B/'minsnr_recovery_f72e1aa.sh'
+    assert b'\r' not in shell.read_bytes()
+    assert recovery.sha(B/'minsnr_recovery_f72e1aa.py') in shell.read_text()
+    assert recovery.sha(B/'minsnr_recovery_f72e1aa_manifest.json') in shell.read_text()
+    subprocess.run(['F:/Git/bin/bash.exe','-n',str(shell)],check=True)

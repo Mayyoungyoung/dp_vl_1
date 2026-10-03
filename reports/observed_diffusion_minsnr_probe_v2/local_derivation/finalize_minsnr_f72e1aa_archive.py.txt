@@ -1,0 +1,69 @@
+"""Seal completed saved-pool analysis; no model, checker, SSH or raw access."""
+from pathlib import Path
+from datetime import datetime,timezone
+import hashlib,json,shutil
+
+ROOT=Path(__file__).resolve().parents[1]
+F=ROOT/'reports/observed_diffusion_minsnr_probe_v2'
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p):return json.loads(Path(p).read_text(encoding='utf-8'))
+def write(p,v):Path(p).write_text(json.dumps(v,indent=2,allow_nan=False)+'\n',encoding='utf-8')
+
+def main():
+    before=read(F/'INDEX.json');before_sha=sha(F/'INDEX.json')
+    for name,value in before.items():
+        path=F/name
+        assert sha(path)==value['sha256'] and path.stat().st_size==value['bytes'],name
+    stages=('preparation','uniform','recovery-seal','recovery-weighted','recovery-compare')
+    all_local=[];remote_pt=[];stage_counts={}
+    for stage in stages:
+        index=read(F/stage/'REMOTE_ARTIFACT_INDEX.json')
+        receipt=read(F/stage/'LOCAL_SYNC_RECEIPT.json')
+        stage_counts[stage]={'remote_entries':len(index),'copied_entries':len(receipt['local_mapping'])}
+        for name,path in receipt['local_mapping'].items():
+            actual=ROOT/path;assert sha(actual)==index[name]['sha256'] and actual.stat().st_size==index[name]['bytes'],path
+            all_local.append(path)
+        for name,row in index.items():
+            if name.endswith('.pt'):remote_pt.append({'stage':stage,'path':name,**row})
+    derivation=read(F/'paired_analysis/DERIVATION_RECEIPT.json')
+    for row in derivation['source_files_checked']:
+        assert sha(ROOT/row['path'])==row['sha256']
+    seen=['two_row_reach_283206_target0.png','two_row_reach_283222_target2.png',
+        'two_row_reach_283201_target0.png','two_row_reach_283207_target0.png',
+        'two_row_reach_283209_target2.png','all_parents_and_teacher.png','CONTACT_SHEET.png']
+    qa={'scope':'All five selected conditions, both arms, all K4 in XY/XZ; complete95parent/5teacher summary; contact sheet also viewed.',
+        'viewing_method':'Actual assistant view_image pixel inspection, not inferred from file creation.',
+        'images':[{'path':n,'sha256':sha(F/'paired_analysis'/n)} for n in seen],
+        'issues':[],
+        'observations':['Axes retain full extreme loops and heights; shared bounds per condition across arms.',
+            '283206 improved Tip0to4 consists entirely of unknown types; no relabeling.',
+            '283201 and283207 losses preserve all failed candidates; visually similar paths do not override saved collision labels.',
+            '283209 known0to2 accompanies Tip3to2; both sides displayed.',
+            'No geometry overlays or executable-route claims: only saved tip-check labels.'],
+        'no_new_forward_or_checker':True,'not_a_prevalence_sample':True,'full_table_inputs':285,'full_table_parents':95}
+    assert not (F/'paired_analysis/VISUAL_QA.json').exists()
+    write(F/'paired_analysis/VISUAL_QA.json',qa)
+    source=F/'local_derivation'/ (Path(__file__).name+'.txt');shutil.copyfile(__file__,source)
+    proof={'verified_utc':datetime.now(timezone.utc).isoformat(),'prior_index_sha256':before_sha,
+        'prior_indexed_files_preserved':len(before),'stage_counts':stage_counts,
+        'verified_remote_mapped_local_entries':len(all_local),
+        'verified_unique_local_paths':len(set(all_local)),
+        'binary_npz_paths':[p for p in sorted(set(all_local)) if p.endswith('.npz')],
+        'remote_only_pt_entries':remote_pt,'unique_remote_pt_hashes':sorted({r['sha256'] for r in remote_pt}),
+        'source_script_sha256':sha(__file__),'no_ssh_in_this_verification':True,
+        'no_model_or_checker_calls':True,'no_executable_python_in_report_family':not list(F.rglob('*.py')),
+        'historical_failed_families_untouched':True}
+    assert proof['no_executable_python_in_report_family']
+    write(F/'ARCHIVE_VERIFICATION.json',proof)
+    history=F/'index_history'/(before_sha+'.json')
+    if history.exists():assert sha(history)==before_sha
+    else:shutil.copyfile(F/'INDEX.json',history)
+    final={str(p.relative_to(F)).replace('\\','/'):{'bytes':p.stat().st_size,'sha256':sha(p)}
+        for p in sorted(F.rglob('*')) if p.is_file() and p!=F/'INDEX.json'}
+    write(F/'INDEX.json',final)
+    for name,row in read(F/'INDEX.json').items():assert sha(F/name)==row['sha256']
+    print(json.dumps({'files':len(final),'index_sha256':sha(F/'INDEX.json'),
+        'remote_pt_unique':proof['unique_remote_pt_hashes'],'stage_counts':stage_counts,
+        'mapped_entries_verified':len(all_local)},indent=2))
+
+if __name__=='__main__':main()

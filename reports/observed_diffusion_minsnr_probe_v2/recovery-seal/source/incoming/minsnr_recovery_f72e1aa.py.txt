@@ -1,0 +1,185 @@
+"""Explicit postvalidation recovery; original successful uniform is never rerun."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+COMMIT='f72e1aa11a37df2001877035fbfde9a4525c0aa0'
+P=Path('/home/wzy/dpvlm/route_set_v1');INCOMING=P/'research_v2/incoming'
+SOURCE=P/'research_v2/releases'/COMMIT
+ORIGINAL=P/'runs/observed_diffusion_minsnr_probe_v2'
+RUN=P/'runs/observed_diffusion_minsnr_probe_v2_recovery_v1'
+STAGES=('seal-uniform','min_snr_5','compare')
+RECIPE=INCOMING/'minsnr_recovery_f72e1aa_manifest.json'
+UUID='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for chunk in iter(lambda:stream.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+
+
+def read(path):return json.loads(Path(path).read_text())
+
+
+def write(path,value):
+    path=Path(path);tmp=path.with_name(path.name+'.writing')
+    tmp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n');tmp.replace(path)
+
+
+def load(name,path):
+    spec=importlib.util.spec_from_file_location(name,path);module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module);return module
+
+
+def recipe_guard():
+    recipe=read(RECIPE)
+    if recipe['source_commit']!=COMMIT or recipe['stages']!=list(STAGES):raise ValueError('Wrong recovery identity')
+    for name,h in recipe['incoming_sha256'].items():
+        path=INCOMING/name
+        if Path(name).name!=name or path.is_symlink() or sha(path)!=h:raise ValueError('Recovery source bytes changed')
+    old=load('original_f72_recipe',INCOMING/'minsnr_runner_f72e1aa.py')
+    fixed=load('fixed_f72_validation',INCOMING/'minsnr_runner_f72e1aa_corrected_guard_reference.py')
+    old.verify_source()
+    # Original actual18 tests and zero-model parent inspection are reused by hash.
+    prior={s:old.previous(s,old.read(old.MANIFEST)) for s in ('tests','inspect-parent')}
+    identity=read(ORIGINAL/'uniform_identity.json')
+    if identity['prior_stages']!=prior:raise ValueError('Original uniform had different prior gates')
+    for name,h in recipe['original_evidence_sha256'].items():
+        path=ORIGINAL/name;path.resolve().relative_to(ORIGINAL.resolve())
+        if path.is_symlink() or sha(path)!=h:raise ValueError('Original postvalidation failure evidence changed')
+    return recipe,old,fixed,prior
+
+
+def validate_failure_boundary():
+    state=read(ORIGINAL/'job_records/uniform.status.json')
+    outer=read(ORIGINAL/'uniform_receipt.json')
+    identity=read(ORIGINAL/'uniform_identity.json')
+    if (state['status']!='failed' or state['exit_code']!=1 or state['code_commit']!=COMMIT or
+            outer['status']!='failed' or outer['child_exit_code']!=0 or
+            outer['exception']!="ValueError('Incomplete or over-budget arm; no automatic next stage')" or
+            outer['identity_sha256']!=sha(ORIGINAL/'uniform_identity.json') or identity['stage']!='uniform' or
+            (ORIGINAL/'job_records/uniform.lock').exists()):
+        raise ValueError('Only the exact completed-child/postvalidation-failed boundary is recoverable')
+
+
+def completed_arm(folder,arm,fixed):
+    # This reference function differs from original f72 ONLY in 18000 -> 16000.
+    previous=fixed.RUN;fixed.RUN=Path(folder).parent
+    try:values,names=fixed.validate_success(arm,read(fixed.MANIFEST))
+    finally:fixed.RUN=previous
+    q=read(Path(folder)/'summary.json');status=read(Path(folder)/'status.json')
+    if q['additional_stream']['input_draws']!=16000 or q['additional_stream']['target_states']!=64000:
+        raise ValueError('Actual sampled budget differs')
+    if status['cap_seconds']!=360. or status['step']!=12500:raise ValueError('Scientific cap or final step differs')
+    # Import only frozen read-only ledger/pool verifiers: no checkpoint load/model.
+    from scripts import train_observed_diffusion_minsnr_probe as driver
+    if q['identity']!=read(Path(folder)/'identity.json'):raise ValueError('Arm identity differs from summary')
+    for name,h in q['identity']['source_sha256'].items():
+        if sha(SOURCE/name)!=h:raise ValueError('Scientific source differs')
+    if q['identity']['parent_inspection_sha256']!=sha(ORIGINAL/'parent_inspection.json'):
+        raise ValueError('Parent inspection changed')
+    for name,key in [('last.pt','final_checkpoint_sha256'),('restore_receipt.json','restore_receipt_sha256'),
+                     ('teacher/receipt.json','teacher_receipt_sha256'),('fixed_last_train/pool_receipt.json','fixed_train_receipt_sha256')]:
+        if sha(Path(folder)/name)!=q[key]:raise ValueError('Sealed artifact changed: '+name)
+    teacher=read(Path(folder)/'teacher/receipt.json')
+    driver.sealed_stage(Path(folder)/'teacher',teacher['identity'],{'teacher.json','predictions.npz','requests.jsonl'})
+    pool=read(Path(folder)/'fixed_last_train/pool_receipt.json')
+    driver.old.verify_pool(Path(folder)/'fixed_last_train',pool['identity'])
+    if pool['metrics']!=q['fixed_train_metrics']:raise ValueError('Pool/summary metrics differ')
+    for name,key in [('requests.jsonl','actual_train_calls'),('teacher/requests.jsonl','actual_teacher_calls'),('free_requests.jsonl','actual_free_calls')]:
+        if driver.RequestJournal(Path(folder)/name).snapshot()!=q[key]:raise ValueError('Issued-call ledger differs')
+    files=sorted(f for f in Path(folder).rglob('*') if f.is_file())
+    if any(f.is_symlink() for f in files):raise ValueError('No symlink artifacts')
+    return values,{str(f):sha(f) for f in files}
+
+
+def prior_recovery(stage):
+    state=read(RUN/'job_records'/(stage+'.status.json'));receipt=read(RUN/(stage+'_receipt.json'))
+    identity=read(RUN/(stage+'_identity.json'))
+    if (state['status']!='completed' or state['exit_code']!=0 or state['code_commit']!=COMMIT or
+            receipt['status']!='completed' or identity['stage']!=stage or identity['runner_sha256']!=sha(__file__) or
+            identity['recipe_sha256']!=sha(RECIPE) or receipt['identity_sha256']!=sha(RUN/(stage+'_identity.json'))):
+        raise ValueError('Prior recovery stage must actually complete')
+    for name,h in receipt['artifacts'].items():
+        path=Path(name);path.resolve().relative_to(P.resolve())
+        if path.is_symlink() or sha(path)!=h:raise ValueError('Prior recovery sealed bytes changed')
+    return dict(status_sha256=sha(RUN/'job_records'/(stage+'.status.json')),receipt_sha256=sha(RUN/(stage+'_receipt.json')))
+
+
+def command(stage):
+    base=[sys.executable,'-m','scripts.train_observed_diffusion_minsnr_probe']
+    if stage=='seal-uniform':return None
+    if stage=='compare':return base+['--stage','compare','--uniform-run',str(ORIGINAL/'uniform'),
+        '--weighted-run',str(RUN/'min_snr_5'),'--output',str(RUN/'comparison.json')]
+    if stage!='min_snr_5':raise ValueError('No uniform training or implicit stage permitted')
+    return base+['--stage','run','--arm','min_snr_5','--parent-run',str(P/'runs/observed_two_row_diffusion_v1_fixed_receipt/independent'),
+        '--parent-inspection',str(ORIGINAL/'parent_inspection.json'),
+        '--ordinary-source-hashes',str(P/'runs/observed_two_row_composite108_v1/peak_seed0/source_hashes.json'),
+        '--data',str(P/'data/observation_two_row_composite108_v1'),
+        '--quality-audit',str(P/'runs/observed_two_row_composite108_preparation_v1/train_quality.json'),
+        '--output',str(RUN/'min_snr_5')]
+
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in STAGES:raise ValueError('One recovery stage required')
+    stage=sys.argv[1];started=time.perf_counter();gpu=stage=='min_snr_5'
+    if (Path.cwd()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT or sorted(os.sched_getaffinity(0))!=[0] or
+            sys.version_info[:2]!=(3,8) or Path(sys.prefix)!=P/'.venv' or
+            any(os.environ.get(k)!='1' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS','LP_NUM_THREADS')) or
+            os.environ.get('CUDA_VISIBLE_DEVICES')!=('1' if gpu else '')):
+        raise ValueError('Fixed source/private environment/CPU0/threads/GPU policy required')
+    if gpu:
+        actual=subprocess.check_output(['nvidia-smi','--id=1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
+        if actual!=UUID or os.environ.get('RESEARCH_GPU_UUID')!=UUID:raise ValueError('GPU1 differs')
+    elif os.environ.get('RESEARCH_GPU_UUID'):raise ValueError('Read-only stage must not reserve GPU')
+    recipe,old,fixed,prior=recipe_guard();validate_failure_boundary()
+    wrapper=Path(os.environ.get('MINSNR_RECOVERY_WRAPPER','')).resolve()
+    if wrapper!=INCOMING/'minsnr_recovery_f72e1aa.sh':raise ValueError('Exact recovery wrapper required')
+    deps={'seal-uniform':[],'min_snr_5':['seal-uniform'],'compare':['seal-uniform','min_snr_5']}[stage]
+    sealed={s:prior_recovery(s) for s in deps}
+    target=RUN/('uniform_seal.json' if stage=='seal-uniform' else 'comparison.json' if stage=='compare' else stage)
+    if target.exists() or (RUN/(stage+'_identity.json')).exists() or (RUN/(stage+'_receipt.json')).exists():
+        raise FileExistsError('Fresh-only recovery stages; no overwrite/replay')
+    RUN.mkdir(parents=True,exist_ok=True)
+    identity=dict(source_commit=COMMIT,stage=stage,runner_sha256=sha(__file__),recipe_sha256=sha(RECIPE),
+        wrapper_path=str(wrapper),wrapper_sha256=sha(wrapper),
+        original_prior_gates=prior,prior_recovery_gates=sealed,original_uniform=str(ORIGINAL/'uniform'),
+        cpu_affinity=[0],gpu_uuid=UUID if gpu else None,gpu_memory_fraction=.35 if gpu else None,
+        automatic_stage_chaining=False,uniform_retraining_allowed=False)
+    write(RUN/(stage+'_identity.json'),identity)
+    receipt=dict(status='failed',stage=stage,identity_sha256=sha(RUN/(stage+'_identity.json')),artifacts={},
+        cost_scope='This recovery record_job includes runner/child; do not add nested times. Original uniform cost stays separate, never recharged as new training.')
+    try:
+        if stage=='seal-uniform':
+            values,artifacts=completed_arm(ORIGINAL/'uniform','uniform',fixed)
+            artifacts.update({str(ORIGINAL/n):h for n,h in recipe['original_evidence_sha256'].items()})
+            result=dict(status='completed',scope='Read-only seal of actual completed uniform child; original outer failure preserved',
+                source_commit=COMMIT,actual_budget=values,artifacts=artifacts,
+                model_calls=0,optimizer_calls=0,checker_calls=0,parent_checkpoint_loads=0,data_raw_reads=0)
+            write(target,result);artifacts[str(target)]=sha(target)
+        else:
+            cmd=command(stage);receipt['command']=cmd;begin=time.perf_counter()
+            child=subprocess.run(cmd,cwd=SOURCE);receipt.update(child_exit_code=child.returncode,child_seconds=time.perf_counter()-begin)
+            if child.returncode:raise RuntimeError('Recovery child failed; no retry/next stage')
+            if gpu:values,artifacts=completed_arm(RUN/'min_snr_5','min_snr_5',fixed)
+            else:
+                q=read(target)
+                if q['status']!='completed' or any(q[k]!=0 for k in ('model_calls','checker_calls','labels_read')) or q['main_result_eligible'] is not False:
+                    raise ValueError('Comparison is not a sealed read-only diagnostic')
+                values=dict(model_calls=0,checker_calls=0,labels_read=0);artifacts={str(target):sha(target)}
+            receipt['actual_budget']=values
+        old.verify_source();receipt.update(status='completed',artifacts=artifacts)
+    except BaseException as exc:receipt['exception']=repr(exc);raise
+    finally:
+        receipt['runner_elapsed_seconds']=time.perf_counter()-started;write(RUN/(stage+'_receipt.json'),receipt)
+    print(json.dumps(dict(status='completed',stage=stage,sealed_files=len(artifacts),model_stage=gpu)),flush=True)
+
+
+if __name__=='__main__':main()

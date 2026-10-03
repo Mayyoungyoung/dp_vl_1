@@ -1,0 +1,163 @@
+"""Archive one already-terminated v2 stage, CPU3/read-only. Never run a model."""
+import argparse
+import base64
+import datetime
+import hashlib
+import io
+import json
+from pathlib import Path
+import shlex
+import subprocess
+import tarfile
+
+ROOT=Path(__file__).resolve().parents[1]
+COMMIT='f72e1aa11a37df2001877035fbfde9a4525c0aa0'
+SERVER='/home/wzy/dpvlm/route_set_v1'
+FAMILY=ROOT/'reports/observed_diffusion_minsnr_probe_v2'
+BINARY=ROOT/'runs/synced_observed_diffusion_minsnr_probe_v2'
+
+REMOTE=r'''
+from pathlib import Path
+import datetime,hashlib,io,json,os,sys,tarfile
+p=Path(SERVER);original=p/'runs/observed_diffusion_minsnr_probe_v2';recovery=p/'runs/observed_diffusion_minsnr_probe_v2_recovery_v1'
+requested=STAGE
+run=recovery if requested.startswith('recovery-') else original
+source=p/'research_v2/releases'/COMMIT
+assert sorted(os.sched_getaffinity(0))==[3]
+assert os.environ.get('CUDA_VISIBLE_DEVICES')==''
+stage={'recovery-seal':'seal-uniform','recovery-weighted':'min_snr_5','recovery-compare':'compare'}.get(requested,requested)
+stages=['tests','inspect-parent'] if stage=='preparation' else [stage]
+selected={};outcomes={}
+def read(f):return json.loads(f.read_text())
+def add(f,key):
+    f=Path(f)
+    assert not f.is_symlink() and f.is_file(),str(f)
+    selected[key]=f
+def artifact(name):
+    f=run/name
+    for base in (original,recovery):
+        try:relative=f.resolve().relative_to(base.resolve())
+        except ValueError:continue
+        key='run/'+relative.as_posix() if base==run else 'linked/'+base.name+'/'+relative.as_posix()
+        return f,key
+    raise ValueError('Artifact outside exact two run roots')
+for s in stages:
+    state=read(run/'job_records'/(s+'.status.json'))
+    assert state['status'] in ('completed','failed') and 'end_utc' in state and 'exit_code' in state
+    assert state['code_commit']==COMMIT
+    assert not (run/'job_records'/(s+'.lock')).exists()
+    outcomes[s]=state
+    for name in (s+'.status.json',s+'.log'):add(run/'job_records'/name,'run/job_records/'+name)
+    for name in (s+'_receipt.json',s+'_identity.json'):
+        if (run/name).exists():add(run/name,'run/'+name)
+    if state['status']=='completed':
+        receipt=read(run/(s+'_receipt.json'));identity=read(run/(s+'_identity.json'))
+        assert receipt['status']=='completed'
+        if s!='seal-uniform':assert receipt['child_exit_code']==0
+        assert identity['source_commit']==COMMIT
+        for name,h in receipt['artifacts'].items():
+            f,key=artifact(name);add(f,key)
+    else:
+        # Only the failed stage subtree, never another live arm or dataset.
+        folder=run/('validation' if s=='tests' else s)
+        if folder.is_dir():
+            assert not list(folder.rglob('*.lock'))
+            for f in folder.rglob('*'):
+                if f.is_file():add(f,'run/'+f.relative_to(run).as_posix())
+        if s=='inspect-parent' and (run/'parent_inspection.json').exists():add(run/'parent_inspection.json','run/parent_inspection.json')
+if stage=='preparation':
+    incoming=p/'research_v2/incoming'
+    for name in ('minsnr_sources_f72e1aa.json','minsnr_runner_f72e1aa.py','minsnr_f72e1aa.sh'):
+        add(incoming/name,'source/incoming/'+name)
+    manifest=read(incoming/'minsnr_sources_f72e1aa.json')
+    names=set(manifest['historical_parent_source_hashes'])|{'scripts/train_observed_diffusion_minsnr_probe.py',
+        'tests/test_observed_diffusion_minsnr_probe.py','configs/observed_diffusion_minsnr_probe_v1.json',
+        'reports/OBSERVED_DIFFUSION_MINSNR_PROBE_PROTOCOL.md','scripts/record_job.py'}
+    for name in sorted(names):add(source/name,'source/release/'+name)
+if stage=='seal-uniform':
+    for name in ('minsnr_recovery_f72e1aa.py','minsnr_recovery_f72e1aa_manifest.json',
+                 'minsnr_runner_f72e1aa_corrected_guard_reference.py','minsnr_recovery_f72e1aa.sh'):
+        add(p/'research_v2/incoming'/name,'source/incoming/'+name)
+if (run/'job_records/registry.jsonl').is_file():add(run/'job_records/registry.jsonl','run/job_records/registry.snapshot.jsonl')
+index={};payload={}
+for key,f in sorted(selected.items()):
+    remote_only=f.suffix=='.pt'
+    if remote_only:
+        h=hashlib.sha256()
+        with f.open('rb') as stream:
+            for block in iter(lambda:stream.read(2**20),b''):h.update(block)
+        size=f.stat().st_size;digest=h.hexdigest()
+    else:
+        value=f.read_bytes();size=len(value);digest=hashlib.sha256(value).hexdigest()
+        assert size<=128*2**20
+        payload[key]=value
+    index[key]=dict(server_path=str(f),bytes=size,sha256=digest,remote_only=remote_only,
+        ignored_binary=f.suffix=='.npz')
+for s in stages:
+    if outcomes[s]['status']=='completed':
+        for n,h in read(run/(s+'_receipt.json'))['artifacts'].items():assert index[artifact(n)[1]]['sha256']==h
+receipt=dict(protocol='minsnr_v2_readonly_stage_archive_v1',stage=stage,source_commit=COMMIT,
+    snapshot_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),cpu_affinity=[3],cuda_visible_devices='',
+    stage_outcomes=outcomes,indexed_files=len(index),remote_only_files=sum(v['remote_only'] for v in index.values()),
+    model_calls=0,checker_calls=0,dataset_reads=0,source_or_run_writes=0)
+for name,value in [('REMOTE_ARTIFACT_INDEX.json',index),('SYNC_RECEIPT.json',receipt)]:
+    payload[name]=(json.dumps(value,indent=2)+'\n').encode()
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+    for name,value in payload.items():
+        info=tarfile.TarInfo(name);info.size=len(value);tar.addfile(info,io.BytesIO(value))
+'''
+
+
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('stage',choices=['preparation','uniform','recovery-seal','recovery-weighted','recovery-compare'])
+    args=parser.parse_args();dest=FAMILY/args.stage
+    if dest.exists():raise FileExistsError('Archive stage already exists; preserve it')
+    code=REMOTE.replace('SERVER',repr(SERVER)).replace('COMMIT',repr(COMMIT)).replace('STAGE',repr(args.stage))
+    token=base64.b64encode(code.encode()).decode()
+    command='env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 taskset -c 3 '+SERVER+'/.venv/bin/python -c '+shlex.quote("import base64;exec(base64.b64decode('"+token+"'))")
+    started=datetime.datetime.now(datetime.timezone.utc)
+    proc=subprocess.run(['ssh','wzy3090',command],capture_output=True)
+    if proc.returncode:
+        error=ROOT/'.bootstrap'/('minsnr_v2_'+args.stage+'_archive_failure.log')
+        if not error.exists():error.write_bytes(proc.stderr)
+        raise RuntimeError('Read-only archive remote validation failed; see '+str(error))
+    archive=ROOT/'.bootstrap'/('minsnr_v2_'+args.stage+'_archive.tar.gz')
+    if archive.exists():raise FileExistsError('Preserve existing transfer artifact')
+    archive.write_bytes(proc.stdout)
+    with tarfile.open(archive) as tar:
+        members=tar.getmembers()
+        for m in members:assert m.isfile() and not Path(m.name).is_absolute() and '..' not in Path(m.name).parts
+        index=json.loads(tar.extractfile('REMOTE_ARTIFACT_INDEX.json').read())
+        dest.mkdir(parents=True);mapping={}
+        for m in members:
+            if m.name.endswith('.npz'):
+                local=BINARY/args.stage/m.name
+            else:
+                local=dest/(m.name+'.txt' if m.name.endswith('.py') else m.name)
+            if local.exists():raise FileExistsError(str(local))
+            value=tar.extractfile(m).read();local.parent.mkdir(parents=True,exist_ok=True);local.write_bytes(value)
+            if m.name in index:
+                assert len(value)==index[m.name]['bytes'] and sha(local)==index[m.name]['sha256']
+                mapping[m.name]=local.relative_to(ROOT).as_posix()
+    receipt=dict(archive_sha256=sha(archive),archive_bytes=archive.stat().st_size,
+        started_utc=started.isoformat(),ended_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        script_sha256=sha(__file__),source_commit=COMMIT,local_mapping=mapping,
+        remote_only={k:v for k,v in index.items() if v['remote_only']},model_calls=0,checker_calls=0,dataset_reads=0)
+    (dest/'LOCAL_SYNC_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    current=FAMILY/'INDEX.json'
+    if current.exists():
+        old=current.read_bytes();history=FAMILY/'index_history';history.mkdir(exist_ok=True)
+        previous=history/(hashlib.sha256(old).hexdigest()+'.json')
+        if not previous.exists():previous.write_bytes(old)
+    items={f.relative_to(FAMILY).as_posix():dict(bytes=f.stat().st_size,sha256=sha(f))
+        for f in sorted(FAMILY.rglob('*')) if f.is_file() and f!=current}
+    current.write_text(json.dumps(items,indent=2)+'\n')
+    assert not list(FAMILY.rglob('*.py'))
+    print(json.dumps(dict(stage=args.stage,indexed_remote=len(index),remote_only=len(receipt['remote_only']),
+        local_files=len(mapping),family_index_sha256=sha(current),status='archived'),indent=2))
+
+
+if __name__=='__main__':main()

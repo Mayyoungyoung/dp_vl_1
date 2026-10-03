@@ -1,0 +1,188 @@
+"""Local arithmetic and plots of sealed TRAIN pools only; zero checker/forward."""
+from collections import Counter,defaultdict
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import numpy as np
+
+ROOT=Path(__file__).resolve().parents[1]
+F=ROOT/'reports/observed_diffusion_minsnr_probe_v2'
+BIN=ROOT/'runs/synced_observed_diffusion_minsnr_probe_v2'
+OUT=F/'paired_analysis'
+LOC={'uniform':F/'uniform/run/uniform','min_snr_5':F/'recovery-weighted/run/min_snr_5'}
+NPZ={'uniform':BIN/'uniform/run/uniform/fixed_last_train/predictions.npz',
+     'min_snr_5':BIN/'recovery-weighted/run/min_snr_5/fixed_last_train/predictions.npz'}
+def read(p):return json.loads(Path(p).read_text())
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def write(p,v):Path(p).write_text(json.dumps(v,indent=2,allow_nan=False)+'\n',encoding='utf-8')
+
+
+def verify_archives():
+    checked=[]
+    for stage in ('preparation','uniform','recovery-seal','recovery-weighted','recovery-compare'):
+        receipt=read(F/stage/'LOCAL_SYNC_RECEIPT.json');index=read(F/stage/'REMOTE_ARTIFACT_INDEX.json')
+        for name,path in receipt['local_mapping'].items():
+            file=ROOT/path
+            if sha(file)!=index[name]['sha256'] or file.stat().st_size!=index[name]['bytes']:raise ValueError('Archived bytes changed')
+            checked.append(dict(path=path,sha256=sha(file)))
+    return checked
+
+
+def summarize(rows):
+    candidates=[c for r in rows for c in r['tip_candidates']]
+    assert len(candidates)==len(rows)*4
+    for r in rows:
+        cs=r['tip_candidates'];v=[c for c in cs if c['TipValid']]
+        types=[tuple(c['declared_passage_type']) for c in v if c['declared_passage_type'] is not None]
+        e=r['tip_evaluation']
+        assert e['TipValidAtK']==len(v)/4
+        assert e['UniqueClassifiedTipValidAtK']==len(set(types))
+        assert e['DuplicateClassifiedTipValidCount']==len(types)-len(set(types))
+    def e(key):
+        values=[r['tip_evaluation'][key] for r in rows if r['tip_evaluation'][key] is not None]
+        return float(np.mean(values)) if values else None
+    return dict(inputs=len(rows),parents=len({r['parent_id'] for r in rows}),candidate_slots=len(candidates),
+        tip_valid=sum(c['TipValid'] for c in candidates),tip_clear=sum(c['tip_segments_clear'] for c in candidates),
+        semantic_correct=sum(c['semantic_goal_correct'] for c in candidates),
+        any_tip_valid=sum(any(c['TipValid'] for c in r['tip_candidates']) for r in rows),
+        known_unique_sum=sum(r['tip_evaluation']['UniqueClassifiedTipValidAtK'] for r in rows),
+        known_duplicate_sum=sum(r['tip_evaluation']['DuplicateClassifiedTipValidCount'] for r in rows),
+        unknown_valid_sum=sum(r['tip_evaluation']['UnknownTypeTipValidCount'] for r in rows),
+        collision_count=sum(not c['tip_segments_clear'] for c in candidates),
+        finite_failures=sum(not c['finite_xyz'] or not c['finite_event_values'] for c in candidates),
+        start_failures=sum(not c['starts_at_current_state'] for c in candidates),
+        event_failures=sum(not c['event_state_sequence_correct'] for c in candidates),
+        known_reference_coverage=e('KnownReferenceTypeCoverageAtK'),
+        known_reference_coverage_defined_inputs=sum(r['tip_evaluation']['KnownReferenceTypeCoverageAtK'] is not None for r in rows),
+        candidate_to_nearest_reference_ADE_m=float(np.mean([r['candidate_matched_ADE_m'] for r in rows])),
+        reference_to_nearest_candidate_ADE_m=float(np.mean([r['reference_matched_ADE_m'] for r in rows])))
+
+
+def main():
+    if OUT.exists():raise FileExistsError('Fresh derived analysis only')
+    checked=verify_archives()
+    comparison=read(F/'recovery-compare/run/comparison.json')
+    assert comparison['same_initial_state'] and comparison['same_parent_reference_t_epsilon']
+    rows={a:read(p/'fixed_last_train/per_scene.json') for a,p in LOC.items()}
+    ids=[r['scene_id'] for r in rows['uniform']]
+    assert len(ids)==285 and ids==[r['scene_id'] for r in rows['min_snr_5']]
+    assert len({r['parent_id'] for r in rows['uniform']})==95
+    arrays={}
+    for a,p in NPZ.items():
+        with np.load(p,allow_pickle=False) as archive:
+            arrays[a]={k:archive[k].copy() for k in ('paths','gripper_open','scene_ids','parent_ids')}
+        assert arrays[a]['paths'].shape==(285,4,24,3) and arrays[a]['scene_ids'].astype(str).tolist()==ids
+    summaries={a:summarize(r) for a,r in rows.items()};per_input=[];parent=defaultdict(list)
+    transitions=Counter();semantic_groups=Counter();valid_transitions=Counter();joint_changes=Counter()
+    for i,(left,right) in enumerate(zip(rows['uniform'],rows['min_snr_5'])):
+        assert left['scene_id']==right['scene_id'] and left['parent_id']==right['parent_id']
+        l,r=left['tip_evaluation'],right['tip_evaluation']
+        entry=dict(id=ids[i],parent_id=left['parent_id'],uniform=l,min_snr_5=r,
+            tip_valid_difference=int(round(4*(r['TipValidAtK']-l['TipValidAtK']))),
+            known_unique_difference=r['UniqueClassifiedTipValidAtK']-l['UniqueClassifiedTipValidAtK'])
+        per_input.append(entry);parent[left['parent_id']].append(entry)
+        for k,(x,y) in enumerate(zip(left['tip_candidates'],right['tip_candidates'])):
+            assert x['candidate']==y['candidate']==k
+            sem='%d_to_%d'%(x['semantic_goal_correct'],y['semantic_goal_correct'])
+            clear='%d_to_%d'%(x['tip_segments_clear'],y['tip_segments_clear'])
+            valid='%d_to_%d'%(x['TipValid'],y['TipValid'])
+            semantic_groups[sem]+=1;transitions['semantic_'+sem+'/clear_'+clear]+=1
+            valid_transitions[valid]+=1;joint_changes['semantic_'+sem+'/valid_'+valid]+=1
+    per_parent=[dict(parent_id=p,inputs=len(v),tip_valid_difference=sum(r['tip_valid_difference'] for r in v),
+        known_unique_difference=sum(r['known_unique_difference'] for r in v)) for p,v in sorted(parent.items())]
+    def sign_counts(items,key):return dict(improved=sum(r[key]>0 for r in items),unchanged=sum(r[key]==0 for r in items),worse=sum(r[key]<0 for r in items))
+    teacher={}
+    for a,p in LOC.items():
+        tr=read(p/'teacher/teacher.json')['rows']
+        assert len(tr)==30
+        teacher[a]={str(t):{k:float(np.mean([r[k] for r in tr if r['t']==t])) for k in
+            ('xyz_rmse_m','body_xyz_rmse_m','endpoint_error_m','event_mae')} for t in (0,25,50,75,99)}
+    statuses={'tests':F/'preparation/run/job_records/tests.status.json',
+        'inspect':F/'preparation/run/job_records/inspect-parent.status.json',
+        'uniform_original_outer_failed':F/'uniform/run/job_records/uniform.status.json',
+        'seal_uniform':F/'recovery-seal/run/job_records/seal-uniform.status.json',
+        'min_snr_5':F/'recovery-weighted/run/job_records/min_snr_5.status.json',
+        'compare':F/'recovery-compare/run/job_records/compare.status.json'}
+    wall={k:(datetime.fromisoformat(read(p)['end_utc'])-datetime.fromisoformat(read(p)['start_utc'])).total_seconds() for k,p in statuses.items()}
+    costs=dict(outer_seconds=wall,charged_new_gpu_outer_seconds=wall['uniform_original_outer_failed']+wall['min_snr_5'],
+        charged_new_gpu_outer_hours=(wall['uniform_original_outer_failed']+wall['min_snr_5'])/3600,
+        scientific_inner_seconds={a:read(p/'summary.json')['elapsed_seconds'] for a,p in LOC.items()},
+        process_inner_seconds={a:read(p/'status.json')['process_seconds'] for a,p in LOC.items()},
+        scope='Outer includes inner. Uniform charged once despite postvalidation failure. CPU tests/inspection/seal/compare and older failed validation stay separate.')
+    ordinary_path=ROOT/'reports/observed_two_row_composite108_v1/peak_seed0/fixed_last_train/per_scene.json'
+    ordinary=None
+    if ordinary_path.exists():
+        old=read(ordinary_path)
+        assert [r['scene_id'] for r in old]==ids
+        ordinary=dict(metrics=summarize(old),source=str(ordinary_path.relative_to(ROOT)),sha256=sha(ordinary_path),
+            scope='Historical ordinary12000 saved TRAIN fit only; not equal new exposure, objective, architecture or compute')
+    result=dict(protocol='minsnr_train_continuation_paired_saved_pools_v1',source_commit='f72e1aa11a37df2001877035fbfde9a4525c0aa0',
+        arms=summaries,per_input=per_input,per_parent=per_parent,
+        semantic_transitions=dict(semantic_groups),semantic_clear_joint_transitions=dict(transitions),
+        valid_transitions=dict(valid_transitions),semantic_valid_joint_transitions=dict(joint_changes),
+        input_tip_change=sign_counts(per_input,'tip_valid_difference'),parent_tip_change=sign_counts(per_parent,'tip_valid_difference'),
+        input_known_change=sign_counts(per_input,'known_unique_difference'),parent_known_change=sign_counts(per_parent,'known_unique_difference'),
+        teacher=teacher,costs=costs,ordinary_train_fit_reference=ordinary,
+        screen={k:comparison[k] for k in ('same_initial_state','same_parent_reference_t_epsilon','lowt_body_improved','free_tip_valid_and_clear_improved','eligible_for_further_review')},
+        independent_training_seeds=1,pools_merged=False,scored_inputs_per_arm=285,candidates_per_input=4,
+        new_model_calls=0,new_checker_calls=0,new_raw_data_reads=0,global_main_written=False)
+    OUT.mkdir();write(OUT/'PAIRED_ANALYSIS.json',result)
+    # Deterministic examples chosen from the complete table, not hidden failures.
+    chosen=[]
+    rules=[('largest_Tip_gains',sorted(per_input,key=lambda r:(-r['tip_valid_difference'],r['id']))[:2]),
+           ('largest_Tip_losses',sorted(per_input,key=lambda r:(r['tip_valid_difference'],r['id']))[:2]),
+           ('largest_known_gain',sorted(per_input,key=lambda r:(-r['known_unique_difference'],r['id']))[:1]),
+           ('largest_known_loss',sorted(per_input,key=lambda r:(r['known_unique_difference'],r['id']))[:1])]
+    why=defaultdict(list)
+    for rule,items in rules:
+        for item in items:
+            why[item['id']].append(rule)
+            if item['id'] not in chosen:chosen.append(item['id'])
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from PIL import Image,ImageDraw
+    colors=['#256da0','#d77718','#25944c','#994398'];images=[]
+    for identifier in chosen:
+        i=ids.index(identifier);values=np.concatenate([arrays[a]['paths'][i].reshape(-1,3) for a in LOC]);finite=values[np.isfinite(values).all(1)]
+        lo=finite.min(0);hi=finite.max(0);pad=np.maximum((hi-lo)*.07,.02);lo-=pad;hi+=pad
+        fig,axes=plt.subplots(2,2,figsize=(13,9))
+        for ri,a in enumerate(LOC):
+            row=rows[a][i];labels=[]
+            for k,c in enumerate(row['tip_candidates']):
+                typ='?' if c['declared_passage_type'] is None else '/'.join(c['declared_passage_type'])
+                labels.append('k%d: V%d S%d C%d %s'%(k,c['TipValid'],c['semantic_goal_correct'],c['tip_segments_clear'],typ))
+            for ci,coord in enumerate((1,2)):
+                ax=axes[ri,ci]
+                for k,path in enumerate(arrays[a]['paths'][i]):
+                    c=row['tip_candidates'][k]
+                    ax.plot(path[:,0],path[:,coord],color=colors[k],ls='-' if c['TipValid'] else '--',lw=1.4,label=labels[k])
+                    ax.scatter(path[0,0],path[0,coord],c='black',marker='s',s=25)
+                    ax.scatter(path[-1,0],path[-1,coord],c=colors[k],marker='o' if c['TipValid'] else 'x',s=40)
+                ax.set_xlim(lo[0],hi[0]);ax.set_ylim(lo[coord],hi[coord]);ax.grid(alpha=.2)
+                ax.set_xlabel('X (m)');ax.set_ylabel(('Y' if coord==1 else 'Z')+' (m)')
+                ax.legend(fontsize=6,loc='best');ax.set_title(a+' | Tip%d/4 known%d unknown%d'%(
+                    round(row['tip_evaluation']['TipValidAtK']*4),row['tip_evaluation']['UniqueClassifiedTipValidAtK'],row['tip_evaluation']['UnknownTypeTipValidCount']))
+        fig.suptitle(identifier+' | '+'; '.join(why[identifier])+'\nAll4 saved candidates per arm; same axes; no crop/filter/repair.\nV=TipValid S=target-correct C=tip-clear. No new checker or raw geometry overlay.');fig.tight_layout(rect=(0,0,1,.91))
+        path=OUT/(identifier+'.png');fig.savefig(path,dpi=130);plt.close(fig)
+        images.append(dict(id=identifier,path=path.name,sha256=sha(path),selection=why[identifier],slots_per_arm=4))
+    fig,ax=plt.subplots(1,2,figsize=(14,4));positions=np.arange(len(per_parent))
+    ax[0].bar(positions,[r['tip_valid_difference'] for r in per_parent]);ax[0].axhline(0,color='black',lw=.5)
+    ax[0].set(xlabel='All95 TRAIN parents, sorted by ID',ylabel='MinSNR minus uniform valid slots',title='Every parent; no success filtering')
+    for a in LOC:
+        ax[1].plot([0,25,50,75,99],[teacher[a][str(t)]['body_xyz_rmse_m']*1000 for t in (0,25,50,75,99)],marker='o',label=a)
+    ax[1].set(xlabel='Teacher noise index t',ylabel='Body RMSE (mm)',title='All five teacher noise levels');ax[1].legend();fig.tight_layout()
+    path=OUT/'all_parents_and_teacher.png';fig.savefig(path,dpi=140);plt.close(fig);images.append(dict(path=path.name,sha256=sha(path),selection='all95parents and all5teacher levels'))
+    sheet=Image.new('RGB',(1500,((len(images)+1)//2)*550),'white');draw=ImageDraw.Draw(sheet)
+    for slot,item in enumerate(images):
+        im=Image.open(OUT/item['path']).convert('RGB');im.thumbnail((745,515));x=(slot%2)*750;y=(slot//2)*550
+        sheet.paste(im,(x,y));draw.text((x+4,y+520),item['path'],fill='black')
+    sheet.save(OUT/'CONTACT_SHEET.png')
+    write(OUT/'DERIVATION_RECEIPT.json',dict(script_sha256=sha(__file__),source_files_checked=checked,figures=images,
+        figure_selection='Fixed extrema rules recorded; complete285/95 tables retained; not prevalence estimates.',
+        no_model_forward=True,no_checker_rerun=True,no_raw_data_read=True,pool_hashes={a:sha(p) for a,p in NPZ.items()}))
+    print(json.dumps({k:result[k] for k in ('arms','valid_transitions','semantic_valid_joint_transitions','input_tip_change','parent_tip_change','teacher','costs','screen')},indent=2))
+
+
+if __name__=='__main__':main()

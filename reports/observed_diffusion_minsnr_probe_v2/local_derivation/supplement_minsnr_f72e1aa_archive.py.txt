@@ -1,0 +1,51 @@
+"""Arithmetic-only historical TRAIN fit reference and append-only local archival."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import shutil
+
+ROOT=Path(__file__).resolve().parents[1]
+F=ROOT/'reports/observed_diffusion_minsnr_probe_v2'
+def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p): return json.loads(Path(p).read_text(encoding='utf-8'))
+def write(p,v): Path(p).write_text(json.dumps(v,indent=2,allow_nan=False)+'\n',encoding='utf-8')
+
+def main():
+    spec=importlib.util.spec_from_file_location('saved_pool_analysis',ROOT/'.bootstrap/analyze_minsnr_f72e1aa_paired.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    old=ROOT/'reports/observed_two_row_composite108_v1/fixed_last_train'
+    receipt=read(old/'diagnostic_receipt.json')
+    checked={}
+    for name in ('per_scene.json','metrics.json','request_receipt.json'):
+        actual=sha(old/name)
+        assert actual==receipt['artifact_sha256'][name]
+        checked[str((old/name).relative_to(ROOT))]=actual
+    current=module.read(F/'uniform/run/uniform/fixed_last_train/per_scene.json')
+    rows=read(old/'per_scene.json')
+    assert [(x['scene_id'],x['parent_id']) for x in rows]==[(x['scene_id'],x['parent_id']) for x in current]
+    metrics=module.summarize(rows)
+    output=F/'paired_analysis/ORDINARY_TRAIN_FIT_REFERENCE.json'
+    assert not output.exists()
+    write(output,dict(protocol='historical_ordinary_train_fit_only_v1',metrics=metrics,
+        exact_ordered_285_input_and_parent_identity=True,
+        diagnostic_receipt_sha256=sha(old/'diagnostic_receipt.json'),checked_original_artifacts=checked,
+        source_script_sha256=sha(__file__),new_forward_calls=0,new_checker_calls=0,
+        limitation='Historical ordinary12000 TRAIN fit only: architecture, objective, cumulative exposure and computation differ. No fair method comparison or new DEV claim.'))
+    source=F/'local_derivation';source.mkdir(exist_ok=True)
+    names=['analyze_minsnr_f72e1aa_paired.py','archive_minsnr_f72e1aa_v2.py',Path(__file__).name,
+        'minsnr_recovery_numeric_semantics.json','minsnr_recovery_preparation_receipt.json',
+        'minsnr_recovery_local_tests.xml','minsnr_recovery_local_tests_v2.xml',
+        'test_minsnr_recovery_recipe.py','minsnr_recovery_deployment_f72e1aa.json',
+        'MINSNR_F72E1AA_RECOVERY_HANDOFF.md','minsnr_freeze_f72e1aa.json',
+        'minsnr_recipe_local_validation_f72e1aa.json','minsnr_deployment_f72e1aa.json']
+    sources=[]
+    for name in names:
+        src=ROOT/'.bootstrap'/name;dst=source/(name+'.txt' if name.endswith('.py') else name)
+        if dst.exists(): assert sha(dst)==sha(src)
+        else: shutil.copyfile(src,dst)
+        sources.append(dict(source=str(src.relative_to(ROOT)),archived=str(dst.relative_to(F)),sha256=sha(dst),bytes=dst.stat().st_size))
+    write(source/'SOURCE_COPY_RECEIPT.json',dict(scope='Original local recipe tests, numeric failure/recovery proof, and arithmetic-only derivation sources; Python renamed .py.txt without changing bytes.',files=sources))
+    print(json.dumps(metrics,sort_keys=True))
+
+if __name__=='__main__':main()

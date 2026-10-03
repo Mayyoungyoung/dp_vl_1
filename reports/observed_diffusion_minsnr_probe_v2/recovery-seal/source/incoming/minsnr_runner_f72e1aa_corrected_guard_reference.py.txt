@@ -1,0 +1,182 @@
+"""One explicitly requested stage; no chaining, retries, or model work at import."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT='f72e1aa11a37df2001877035fbfde9a4525c0aa0'
+MANIFEST_SHA='c7fe8a469104c05b8526c95b7defd9db5f33b754dd8e73c656bf53a409a2cbba'
+P=Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE=P/'research_v2/releases'/COMMIT
+INCOMING=P/'research_v2/incoming'
+MANIFEST=INCOMING/'minsnr_sources_f72e1aa.json'
+RUN=P/'runs/observed_diffusion_minsnr_probe_v2'
+JOBS=RUN/'job_records'
+PARENT=P/'runs/observed_two_row_diffusion_v1_fixed_receipt/independent'
+DATA=P/'data/observation_two_row_composite108_v1'
+QUALITY=P/'runs/observed_two_row_composite108_preparation_v1/train_quality.json'
+ORDINARY_SOURCES=P/'runs/observed_two_row_composite108_v1/peak_seed0/source_hashes.json'
+UUID='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+STAGES=('tests','inspect-parent','uniform','min_snr_5','compare')
+CPU_STAGES=('tests','inspect-parent','compare')
+THREADS=('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS','LP_NUM_THREADS')
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(2**20),b''):h.update(block)
+    return h.hexdigest()
+
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def write(path,value):
+    path=Path(path);temp=path.with_name(path.name+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+
+def verify_source():
+    if sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen actual-source manifest changed')
+    manifest=read(MANIFEST)
+    if manifest['code_commit']!=COMMIT or manifest['expected_tests']!=18:raise ValueError('Wrong source/test identity')
+    for name,item in manifest['files'].items():
+        path=SOURCE/name
+        path.resolve().relative_to(SOURCE.resolve())
+        if path.is_symlink() or not path.is_file() or path.stat().st_size!=item['bytes'] or sha(path)!=item['sha256']:
+            raise ValueError('Actual frozen archive byte mismatch: '+name)
+    return manifest
+
+
+def validate_junit(path,manifest):
+    root=ET.parse(path).getroot();suites=list(root.iter('testsuite'));cases=list(root.iter('testcase'))
+    actual=[[c.get('classname'),c.get('name')] for c in cases]
+    if (not suites or len(cases)!=18 or len(set(map(tuple,actual)))!=18 or
+            sum(int(s.get('tests','0')) for s in suites)!=18 or
+            any(int(s.get(k,'0')) for s in suites for k in ('skipped','failures','errors')) or
+            any(c.find(k) is not None for c in cases for k in ('skipped','failure','error')) or
+            sorted(actual)!=sorted(manifest['expected_pytest_cases'])):
+        raise ValueError('All exact18 cases including actual seven Torch tests must pass without skips')
+    return dict(tests=18,passed=18,skipped=0,errors=0,failures=0,actual_testcases=actual)
+
+
+def previous(stage,manifest):
+    status=read(JOBS/(stage+'.status.json'));receipt=read(RUN/(stage+'_receipt.json'))
+    identity_path=RUN/(stage+'_identity.json');identity=read(identity_path)
+    if (status.get('status')!='completed' or status.get('exit_code')!=0 or status.get('code_commit')!=COMMIT or
+            receipt.get('status')!='completed' or receipt.get('child_exit_code')!=0 or
+            receipt.get('identity_sha256')!=sha(identity_path) or identity.get('stage')!=stage or
+            identity.get('source_commit')!=COMMIT or identity.get('source_manifest_sha256')!=MANIFEST_SHA or
+            identity.get('runner_sha256')!=sha(__file__)):
+        raise ValueError('Exact prior stage must actually complete: '+stage)
+    for name,value in receipt['artifacts'].items():
+        path=RUN/name;path.resolve().relative_to(RUN.resolve())
+        if path.is_symlink() or sha(path)!=value:raise ValueError('Prior sealed evidence changed: '+name)
+    if stage=='tests':validate_junit(RUN/'validation/pytest.xml',manifest)
+    return dict(status_sha256=sha(JOBS/(stage+'.status.json')),receipt_sha256=sha(RUN/(stage+'_receipt.json')))
+
+
+def dependencies(stage):
+    return {'tests':[], 'inspect-parent':['tests'], 'uniform':['tests','inspect-parent'],
+        'min_snr_5':['tests','inspect-parent','uniform'],
+        'compare':['tests','inspect-parent','uniform','min_snr_5']}[stage]
+
+
+def command(stage):
+    if stage=='tests':
+        return [sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+            '--junitxml='+str(RUN/'validation/pytest.xml'),'tests/test_observed_diffusion_minsnr_probe.py']
+    base=[sys.executable,'-m','scripts.train_observed_diffusion_minsnr_probe']
+    if stage=='inspect-parent':
+        return base+['--stage','inspect-parent','--parent-run',str(PARENT),'--output',str(RUN/'parent_inspection.json')]
+    if stage=='compare':
+        return base+['--stage','compare','--uniform-run',str(RUN/'uniform'),'--weighted-run',str(RUN/'min_snr_5'),
+            '--output',str(RUN/'comparison.json')]
+    return base+['--stage','run','--arm',stage,'--parent-run',str(PARENT),
+        '--parent-inspection',str(RUN/'parent_inspection.json'),'--ordinary-source-hashes',str(ORDINARY_SOURCES),
+        '--data',str(DATA),'--quality-audit',str(QUALITY),'--output',str(RUN/stage)]
+
+
+def validate_success(stage,manifest):
+    if stage=='tests':
+        return validate_junit(RUN/'validation/pytest.xml',manifest),['validation/pytest.xml']
+    if stage=='inspect-parent':
+        q=read(RUN/'parent_inspection.json')
+        if (q.get('status')!='completed' or q.get('code_commit')!=COMMIT or q.get('stage')!='inspect_parent' or
+                q.get('step')!=12000 or q.get('model_forward_calls')!=0 or q.get('optimizer_calls')!=0 or
+                q.get('data_raw_reads')!=0 or q.get('scheduler_last_epoch')!=12000):
+            raise ValueError('Actual CPU parent inspection failed its zero-model/zero-data contract')
+        return dict(model_calls=0,optimizer_calls=0,data_raw_reads=0),['parent_inspection.json']
+    if stage=='compare':
+        q=read(RUN/'comparison.json')
+        if (q.get('status')!='completed' or q.get('model_calls')!=0 or q.get('checker_calls')!=0 or
+                q.get('labels_read')!=0 or q.get('main_result_eligible') is not False):
+            raise ValueError('Read-only sealed pair comparison required')
+        return dict(model_calls=0,checker_calls=0,labels_read=0),['comparison.json']
+    out=RUN/stage;q=read(out/'summary.json');status=read(out/'status.json')
+    if (q.get('status')!='completed' or status.get('status')!='completed' or q.get('arm')!=stage or
+            q.get('final_step')!=12500 or q.get('additional_steps')!=500 or
+            q.get('additional_input_draws')!=16000 or q.get('additional_target_states')!=64000 or
+            q.get('total_geometry_calls')!=791 or q.get('total_denoise_calls')!=11930 or
+            q.get('dev_calls')!=0 or q.get('new_qwen_calls')!=0 or
+            q.get('dev_selection_opportunities')!=0 or q.get('main_result_eligible') is not False or
+            q['actual_train_calls']['counts']!={'train_geometry':500,'train_denoise':500,'optimizer':500}):
+        raise ValueError('Incomplete or over-budget arm; no automatic next stage')
+    if sha(out/'last.pt')!=q['final_checkpoint_sha256']:raise ValueError('Final checkpoint changed')
+    paths=sorted(p for p in out.rglob('*') if p.is_file())
+    if any(p.is_symlink() for p in paths) or (out/'train.lock').exists():raise ValueError('Unclosed/unsafe arm')
+    return dict(total_geometry_calls=791,total_denoise_calls=11930,optimizer_calls=500,
+        additional_target_states=64000,inner_elapsed_seconds=q['elapsed_seconds'],
+        actual_script_process_seconds=status['process_seconds']),[str(p.relative_to(RUN)) for p in paths]
+
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in STAGES:raise ValueError('Exactly one explicit stage required')
+    stage=sys.argv[1];started=time.perf_counter()
+    if (Path.cwd()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT or
+            sorted(os.sched_getaffinity(0))!=[0] or sys.version_info[:2]!=(3,8) or Path(sys.prefix)!=P/'.venv' or
+            any(os.environ.get(k)!='1' for k in THREADS) or
+            os.environ.get('CUDA_VISIBLE_DEVICES')!=('' if stage in CPU_STAGES else '1')):
+        raise ValueError('Fixed immutable release, .venv3.8, CPU0/thread1 and stage GPU visibility required')
+    if stage not in CPU_STAGES:
+        actual=subprocess.check_output(['nvidia-smi','--id=1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
+        if actual!=UUID or os.environ.get('RESEARCH_GPU_UUID')!=UUID:raise ValueError('Physical GPU1 UUID differs')
+    elif os.environ.get('RESEARCH_GPU_UUID'):raise ValueError('CPU stages must not reserve GPU')
+    manifest=verify_source();RUN.mkdir(parents=True,exist_ok=True)
+    receipt_path=RUN/(stage+'_receipt.json');identity_path=RUN/(stage+'_identity.json')
+    if receipt_path.exists() or identity_path.exists():raise FileExistsError('Each wrapper stage is fresh-only')
+    prior={key:previous(key,manifest) for key in dependencies(stage)}
+    target={'tests':RUN/'validation','inspect-parent':RUN/'parent_inspection.json','compare':RUN/'comparison.json'}.get(stage,RUN/stage)
+    if target.exists():raise FileExistsError('Preserve all previous outputs and partial attempts')
+    if any((RUN/arm/'train.lock').exists() for arm in ('uniform','min_snr_5')):
+        raise ValueError('Another arm is active')
+    wrapper=Path(os.environ['MINSNR_WRAPPER']).resolve()
+    if wrapper!=INCOMING/'minsnr_f72e1aa.sh':raise ValueError('Unexpected frozen wrapper path')
+    identity=dict(source_commit=COMMIT,stage=stage,source_manifest_sha256=MANIFEST_SHA,
+        runner_sha256=sha(__file__),wrapper_path=str(wrapper),wrapper_sha256=sha(wrapper),prior_stages=prior,
+        cpu_affinity=[0],threads=1,gpu_uuid=None if stage in CPU_STAGES else UUID,
+        gpu_memory_fraction=None if stage in CPU_STAGES else .35,automatic_stage_chaining=False,
+        recovery='Fresh-only recipe. Any failure preserves all issued work; a separate reviewed recovery recipe must verify driver checkpoint/journal and cumulative360s cost. No replay here.')
+    write(identity_path,identity)
+    result=dict(status='failed',source_commit=COMMIT,stage=stage,identity_sha256=sha(identity_path),artifacts={},
+        cost_scope='Runner time includes child and guards; record_job outer includes runner. All are nested, never summed. Old12000 and inspection/test costs stay separate.')
+    try:
+        if stage=='tests':target.mkdir()
+        cmd=command(stage);result['command']=cmd;begin=time.perf_counter()
+        child=subprocess.run(cmd,cwd=SOURCE);result.update(child_exit_code=child.returncode,child_seconds=time.perf_counter()-begin)
+        if child.returncode!=0:raise RuntimeError('Explicit stage child failed; no retry/next stage')
+        values,names=validate_success(stage,manifest);verify_source()
+        result.update(values,status='completed',artifacts={name:sha(RUN/name) for name in names})
+    except BaseException as exc:
+        result['exception']=repr(exc);raise
+    finally:
+        result['runner_elapsed_seconds']=time.perf_counter()-started;write(receipt_path,result)
+    print(json.dumps(result),flush=True)
+
+
+if __name__=='__main__':main()
