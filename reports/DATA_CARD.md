@@ -1,5 +1,9 @@
 # 数据卡：受控几何与观测任务分层
 
+## 2026-10-03 05:54 UTC：小批与技术门实测，尚无新方法优势
+
+可变布局TRAIN4实际108槽：65接受/43失败/3接受unknown，108严格恢复、原验收与重采样重现；已知类型下界1–4。全目标图已看，按原协议继续余8父，不把采集管道当生成优势。[小批实测](observed_layout_variation_pilot4_v1/PILOT4_RESULTS.md)。HAMSTER16真实forward下8步输出逐值相同，decode比0.34049，35%内存门通过；完整一请求尚未执行，原失败保留。[技术对照](hamster3d_transport_exact8_v1/TRANSPORT_RESULTS.md)。普通真实K条件基线已45服务器测试通过、pause2后预定3000步已完成，原池分析待进行；Min-SNR只计划固定TRAIN配对诊断。MAIN仍289，核心成立/公平强基线优势/独立设置/多训练种子/评分校准未闭合。
+
 ## 2026-10-03 05:12 UTC：TRAIN128核验与新布局采集
 
 原TRAIN128/3456槽已有完整质量与新增全图核验：2248接受、1208失败、938有效unknown、1已知类型重复均保留；[TRAIN128结果](observed_two_row_extension128_quality_v1/TRAIN128_RESULTS.md)。TRAIN256只追加采集进行中，新DEV32仍封存。新可变布局源eba0994的1/2/4/6障碍、变目标、开闭通道配对已独立登记12 TRAIN父/324槽；真实114测试/0skip后首4开始采集，尚无采集质量结论，不计入任何训练人口或主要结果。[来源与登记](observed_layout_variation_preparation_v1/PREPARATION_RESULTS.md)。

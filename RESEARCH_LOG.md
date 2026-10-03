@@ -525,3 +525,15 @@ HAMSTER官方68资产复用核验与私有环境均实际完成，CPU/GPU成本�
 固定TRAIN768原K4保存池实际0forward审计完成：100/768最优标签指派不相容，但全部为R2/R3父的首2个合法同类重复被未训练K2匹配强迫换标签；R≥4的519父0冲突。16纯CPU测试通过，真实审计11.583367秒/2.0625进程CPU秒，3072原路径和全部父保留。95%自动数量门未触发，原状态仍oracle_conflict_only_requires_physical_interpretation；根据全部100父的物理解释停止joint-assignment核心，不改门槛或造样本。源码与全部证据见reports/budget_assignment_conflicts_v1。当前实际下一动作是实现真正K条件普通基线：1/2/4/8循环3000×64=720000真实训练槽，不从8条截断冒充预算，单一四K均值选模。
 
 扩散审计没有发现DDIM、米制decode、参考对齐或条件断梯度bug。原6TRAIN teacher噪声SHA全重构一致，t0不去噪反缩放输入25.171mm RMSE，已存独立35.118/集合37.048mm，11/12臂×输入反而更差；该算术0新模型。决定唯一标准Min-SNR γ5时间加权对照，原独立last12000双分叉各追加500步且同实际RNG/抽样，固定teacher与全285TRAIN自由生成、0DEV。低噪声恢复和自由几何须同时改善才考虑完整基线；不叠加归一化/skip/几何模块，不称方法创新。现代码编写中尚未新训练。
+
+## 实际传输门通过、布局小批封存、K预算训练继续 — 2026-10-03 05:54 UTC
+
+HAMSTER exact8 source cbcd812 的两个真实调用完成：16 forward/16 token，全部8组[1,1,151936] bf16 logits逐值相同、与旧87token前缀一致。旧/新decode中位3.3854/1.1527秒（比0.34049），新peak reserved6.619GB低于35%上限，RSS22.116GB。原后新固定顺序、缓存和驻留差异不能拆因；模型加载94.51秒、转换135.26秒均记账。外层332.053368秒/0.092237047 GPUh含内层322.056326秒，不相加；旧300秒失败仍在。真实私有环境39测试0skip，新增4纯测试依赖未改原45包或Accelerate源。[实测](reports/hamster3d_transport_exact8_v1/TRANSPORT_RESULTS.md)。这不是完整路线质量，下一步只发一个TRAIN0完整请求，900秒/1024token，无自动六请求。
+
+新布局首4父108槽已经完成并全量质量核验：65接受、43失败、3有效unknown；108严格恢复精确，65原始/H24验收及H24/H64字节重现，12目标条件均有正例。高柱布局规划失败较多，全部保留；已知类型下界1–4，尚无R>4。root实际看4RGB与4个target0九槽图，agent看全12目标图。已决定按原eba协议继续余8父，仍需独立执行；未改变布局/guide/验收阈值。[完整报告](reports/observed_layout_variation_pilot4_v1/PILOT4_RESULTS.md)。
+
+普通K条件受控基线源443ea311d53cf33ff7ab4fe3d533bb61deee4726已推送核远端，428源文件部署SHA一致。真实45测试全通过/0skip；CUDA Driver四接口metadata验证授权UUID、0模型/数据；pause2实际2步保存完成，checkpoint f2cff69a1e4423bfdc416ad5ddc17fb2f453e6deaca726f2e3c7daa34f28ff5d。root读后独立恢复3000步已完成（原SSH9772已exit0/CPU0/GPU1/35%，resume主体配方130.803175秒），每次真实K1/2/4/8、总720000训练槽，6次DEV选择和timing额外槽显式计入。fresh wrapper仅首次pause2→resume，失败恢复须新配方先查checkpoint/ledger，不得重发。完整原池质量分析尚待进行，本段不宣称优势。
+
+扩散固定TRAIN指派/拟合审计后只保留标准归一化Min-SNR γ5诊断：源75586c573d8d67b3a3a0d33ee2a027538a1bacad已推送核远端；原独立last12000 fork两臂各500、相同恢复状态/输入/noise，全285 TRAIN免费生成与六输入teacher、0DEV。服务器父checkpoint真实inspect与16实际测试尚待执行，不将其当新机制或正式MAIN结果。MAIN仍289，未追加技术探针行。
+
+原TRAIN256 collector仍为5c8/SSH26105/CPU2、3，05:49附近shard0闭合到226；新DEV32封存，训练人口仍95父/285条件。继续实验闭环；新核心优势、三训练种子独立观测验证与论文A–H仍未成立。

@@ -1,0 +1,60 @@
+"""Read only closed TRAIN4 source/data; no model, simulator, or new proposal."""
+import hashlib,json,subprocess,tarfile
+from pathlib import Path
+ROOT=Path('F:/dpvlm');OUT=ROOT/'reports/observed_layout_variation_pilot4_v1'
+BIN=ROOT/'runs/synced_observed_layout_variation_pilot4_v1'
+ARCHIVE=ROOT/'.bootstrap/layout_variation_pilot4_originals.tar.gz'
+REMOTE=r'''
+import os,sys,json,hashlib,tarfile,io
+from pathlib import Path
+P=Path('/home/wzy/dpvlm/route_set_v1');REV='eba09945ecade4bdb9a5b4ab123a92da898283ed'
+S=P/'research_v2/releases'/REV;sys.path.insert(0,str(S));os.chdir(S)
+from scripts import collect_observed_layout_variation as c
+D=P/'data/observed_layout_variation_train12_v1';R=P/'runs/observed_layout_variation_train12_v1'
+value,manifest=c.verify_corpus(D);closures=c.checked_closures(D,value);gate=c.live_layout_gate(D)
+assert sorted(x['index'] for x in closures)==[0,1,2,3]
+status=json.loads((R/'pilot4.status.json').read_text());assert status['status']=='completed' and status['exit_code']==0
+plans=value['parent_plan'][:4];assert [p['parent_id'] for p in plans]==['layout_variation_40100'+str(i) for i in range(4)]
+files={}
+def add(path,name):
+ assert path.is_file() and not path.is_symlink();files[name]=path
+for name in ['registration.json','corpus_manifest.json']:add(D/name,'corpus/'+name)
+for i in range(4):add(D/'closures'/('%03d.json'%i),'corpus/closures/%03d.json'%i)
+for plan in plans:
+ parent=D/'parents/TRAIN'/plan['parent_id'];assert parent.is_dir()
+ for path in parent.rglob('*'):
+  if path.is_file():add(path,'corpus/'+path.relative_to(D).as_posix())
+for path in R.rglob('*'):
+ if path.is_file():
+  name=path.relative_to(R).as_posix()
+  assert not any(('40100'+str(i)) in name for i in range(4,10)) and not any(x in name for x in ('401010','401011'))
+  add(path,'run/'+name)
+for name in manifest['source_sha256']:add(S/name,'source/'+name+'.txt')
+for name in ('layout_variation_runner_eba0994.py','layout_variation_pilot4_eba0994.sh','layout_variation_prepare_eba0994.sh','layout_variation_tests_eba0994.sh','layout_variation_sources_eba0994.json'):
+ add(P/'research_v2/incoming'/name,'recipe/'+name+('.txt' if name.endswith('.py') else ''))
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+ for name,path in sorted(files.items()):
+  index.append(dict(path=name,remote_path=str(path),bytes=path.stat().st_size,sha256=sha(path)))
+  tar.add(path,arcname=name,recursive=False)
+ info=dict(source_commit=REV,files=index,mechanical_gate=gate,checked_closures=closures,
+  requested_parent_indices=[0,1,2,3],raw_roles_opened=['TRAIN'],model_calls=0,simulator_calls=0,new_searches=0,
+  archive_cpu_affinity=sorted(os.sched_getaffinity(0)),cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES'))
+ data=(json.dumps(info,indent=2)+'\n').encode();item=tarfile.TarInfo('REMOTE_ARTIFACT_INDEX.json');item.size=len(data);tar.addfile(item,io.BytesIO(data))
+'''
+assert not OUT.exists() and not BIN.exists() and not ARCHIVE.exists()
+command=['ssh','wzy3090','env','CUDA_VISIBLE_DEVICES=','OMP_NUM_THREADS=1','MKL_NUM_THREADS=1','OPENBLAS_NUM_THREADS=1','PYTHONDONTWRITEBYTECODE=1',
+         'taskset','-c','1','/home/wzy/dpvlm/route_set_v1/.venv/bin/python','-']
+with ARCHIVE.open('wb') as target:
+ result=subprocess.run(command,input=REMOTE.encode(),stdout=target,stderr=subprocess.PIPE)
+if result.returncode:raise RuntimeError(result.stderr.decode(errors='replace'))
+with tarfile.open(ARCHIVE) as tar:
+ index=json.load(tar.extractfile('REMOTE_ARTIFACT_INDEX.json'));lookup={r['path']:r for r in index['files']}
+ for item in tar.getmembers():
+  assert item.isfile() and not Path(item.name).is_absolute() and '..' not in Path(item.name).parts
+  data=tar.extractfile(item).read()
+  if item.name!='REMOTE_ARTIFACT_INDEX.json':assert len(data)==lookup[item.name]['bytes'] and hashlib.sha256(data).hexdigest()==lookup[item.name]['sha256']
+  root=BIN if item.name.endswith(('.npz','.npy','.pt','.bin','.ttt')) else OUT
+  path=root/item.name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+print(json.dumps(dict(files=len(index['files']),bytes=sum(r['bytes'] for r in index['files']),archive_sha256=hashlib.sha256(ARCHIVE.read_bytes()).hexdigest(),gate=index['mechanical_gate']),indent=2))

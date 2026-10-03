@@ -1,0 +1,139 @@
+"""One private .venv-hamster3d supplement. No model import, GPU or tests."""
+import datetime
+import hashlib
+import importlib.metadata as metadata
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import time
+
+P=Path('/home/wzy/dpvlm/route_set_v1');ENV=P/'.venv-hamster3d'
+COMMIT='cbcd8129c967db6f0995a824754752cc7a6f0f5b';SOURCE=P/'research_v2/releases'/COMMIT;INCOMING=P/'research_v2/incoming'
+MANIFEST=INCOMING/'hamster_test_dependencies_v1.json';MANIFEST_SHA='5204776ec3b9c51e0d24704f097ddaec55752a185941fc3b755b7660e0edc5ac'
+REQUIREMENTS=INCOMING/'hamster_test_dependencies_v1.txt'
+OUT=P/'runs/hamster3d_test_dependencies_v1';ORIGINAL=P/'runs/hamster3d_preparation_v1'
+
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def read(path):return json.loads(Path(path).read_text(encoding='utf8'))
+def write(path,value):
+    path=Path(path);temporary=path.with_name(path.name+'.writing')
+    temporary.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf8');temporary.replace(path)
+def canonical(name):return re.sub(r'[-_.]+','-',name).lower()
+
+def inventory():
+    values={}
+    for dist in metadata.distributions():
+        name=canonical(dist.metadata['Name']);location=Path(dist.locate_file('')).resolve();location.relative_to(ENV.resolve())
+        if name in values:raise ValueError('Duplicate package metadata: '+name)
+        values[name]=dist.version
+    return dict(sorted(values.items()))
+
+def dependency_check(manifest,before):
+    from packaging.requirements import Requirement
+    from packaging.specifiers import SpecifierSet
+    from packaging.markers import default_environment
+    if before!=manifest['original_packages']:raise ValueError('Existing package population differs from sealed original environment')
+    if set(manifest['packages'])&set(before):raise ValueError('Fresh supplement cannot replace an existing package')
+    planned={**before,**{name:item['version'] for name,item in manifest['packages'].items()}};checks=[]
+    environment=default_environment();environment['extra']=''
+    if environment['sys_platform']!='linux' or environment['python_version']!='3.11':raise ValueError('Linux/Python3.11 only')
+    for name,item in manifest['packages'].items():
+        if environment['python_full_version'] not in SpecifierSet(item['requires_python']):raise ValueError('Incompatible Python '+name)
+        for text in item['requires_dist']:
+            req=Requirement(text)
+            if req.marker and not req.marker.evaluate(environment):continue
+            target=canonical(req.name)
+            if target not in planned or planned[target] not in req.specifier:raise ValueError('Unsatisfied planned dependency: '+text)
+            checks.append(dict(requirement=text,selected_version=planned[target],preexisting=target in before))
+    return checks
+
+def unchanged(before,after,manifest):
+    if any(after.get(name)!=version for name,version in before.items()):raise ValueError('An original package was changed/removed')
+    added={name:version for name,version in after.items() if name not in before}
+    expected={name:item['version'] for name,item in manifest['packages'].items()}
+    if added!=expected:raise ValueError('Only the four fixed new test dependencies may be added')
+    return added
+
+def accelerate_hashes():
+    root=ENV/'lib/python3.11/site-packages/accelerate'
+    return {name:sha(root/name) for name in ('big_modeling.py','hooks.py','utils/modeling.py','utils/memory.py')}
+
+def command(name,args,timeout=60):
+    file=OUT/(name+'.txt')
+    with file.open('wb') as stream:
+        result=subprocess.run(args,stdout=stream,stderr=subprocess.STDOUT,timeout=timeout)
+    write(OUT/(name+'.command.json'),dict(command=args,exit_code=result.returncode,output_sha256=sha(file)))
+    if result.returncode:raise RuntimeError('Recorded command failed: '+name)
+
+def original_files(manifest):
+    marker=ORIGINAL/'environment.completed.json';value=read(marker);folder=Path(value['session']);folder.resolve().relative_to(ORIGINAL.resolve())
+    state=read(folder/'status.json')
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or sha(folder/'receipt.json')!=value['receipt_sha256']
+            or sha(folder/'pip_freeze.txt')!=manifest['original_pip_freeze_sha256']):
+        raise ValueError('Actual original environment identity differs')
+    paths=[ORIGINAL/'preparation_identity.json',marker]
+    paths += [path for path in folder.rglob('*') if path.is_file()]
+    return {str(path):sha(path) for path in paths}
+
+def main():
+    started=time.perf_counter();receipt=OUT/'install_receipt.json';before=None;manifest=None;old_files=None
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,11) or Path(sys.prefix).resolve()!=ENV.resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or os.sched_getaffinity(0)!={0} or os.environ.get('CUDA_VISIBLE_DEVICES')!=''
+            or any(os.environ.get(k)!='1' for k in ('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS'))
+            or Path(os.environ.get('FROZEN_HAMSTER_DEPENDENCY_WRAPPER','')).resolve()!=INCOMING/'hamster_test_dependencies_v1.sh'):
+        raise ValueError('Private environment/CPU0/hiddenCUDA/source/wrapper boundary failed')
+    if receipt.exists() or (OUT/'before_packages.json').exists():raise FileExistsError('Fresh environment supplement only; no retry')
+    result=dict(protocol='hamster_private_test_dependencies_v1',status='failed',pid=os.getpid(),code_commit=COMMIT,
+        executable=sys.executable,prefix=sys.prefix,cpu_affinity=[0],cuda_visible_devices='',source_sha256=sha(__file__),
+        wrapper_sha256=sha(INCOMING/'hamster_test_dependencies_v1.sh'),manifest_sha256=sha(MANIFEST),gpu_hours=0,
+        model_calls=0,tests_executed=0,started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+    try:
+        if sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen dependency manifest changed')
+        manifest=read(MANIFEST)
+        if sha(REQUIREMENTS)!=manifest['requirements_sha256']:raise ValueError('Fixed wheel requirement bytes changed')
+        old_files=original_files(manifest);write(OUT/'original_environment_receipt_files.json',old_files)
+        before=inventory();write(OUT/'before_packages.json',before)
+        original_sources=accelerate_hashes();write(OUT/'before_accelerate_source_sha256.json',original_sources)
+        if original_sources!=manifest['accelerate_source_sha256']:raise ValueError('Original installed Accelerate source differs')
+        result['planned_dependency_checks']=dependency_check(manifest,before)
+        command('pip_freeze_before',[sys.executable,'-m','pip','--isolated','freeze','--all','--local'])
+        command('pip_check_before',[sys.executable,'-m','pip','--isolated','check'])
+        args=[sys.executable,'-m','pip','--isolated','install','--no-deps','--no-index','--only-binary=:all:',
+              '--require-hashes','--no-cache-dir','--no-input','--disable-pip-version-check','--timeout','30','--retries','0',
+              '--report',str(OUT/'pip_install_report.json'),'-r',str(REQUIREMENTS)]
+        command('pip_install',args,timeout=300)
+        after=inventory();write(OUT/'after_packages.json',after);result['new_packages']=unchanged(before,after,manifest)
+        command('pip_freeze_after',[sys.executable,'-m','pip','--isolated','freeze','--all','--local'])
+        command('pip_check_after',[sys.executable,'-m','pip','--isolated','check'])
+        command('pytest_version',[sys.executable,'-m','pytest','--version'])
+        installed=read(OUT/'pip_install_report.json')['install']
+        actual={canonical(row['metadata']['name']):row for row in installed}
+        if set(actual)!=set(manifest['packages']):raise ValueError('pip report installed unexpected population')
+        for name,row in actual.items():
+            expected=manifest['packages'][name]
+            if (row['metadata']['version']!=expected['version'] or row['download_info']['url']!=expected['url']
+                    or row['download_info']['archive_info']['hashes'].get('sha256')!=expected['sha256']):
+                raise ValueError('Installed wheel identity differs: '+name)
+        if accelerate_hashes()!=original_sources:raise ValueError('Installed Accelerate source changed')
+        if any(sha(path)!=digest for path,digest in old_files.items()):raise ValueError('Old environment receipt was changed')
+        result.update(status='completed',exit_code=0,all_original_package_versions_unchanged=True,
+                      four_accelerate_sources_unchanged=True,original_environment_receipts_unchanged=True,
+                      shared_environment_touched=False,new_training_or_gpu_calls=0)
+    except BaseException as error:
+        import traceback
+        result.update(status='failed',exit_code=1,exception_type=type(error).__name__,error=str(error),traceback=traceback.format_exc())
+    finally:
+        try:
+            final=inventory();write(OUT/'final_packages.json',final);write(OUT/'after_accelerate_source_sha256.json',accelerate_hashes())
+            if before is not None:result['actual_original_versions_unchanged_at_exit']=all(final.get(n)==v for n,v in before.items())
+        except BaseException as error:result['final_inventory_error']=repr(error)
+        result.update(elapsed_seconds=time.perf_counter()-started,finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                      rollback_or_retry_attempted=False)
+        write(receipt,result)
+    print(json.dumps(result),flush=True);return result['exit_code']
+
+if __name__=='__main__':raise SystemExit(main())

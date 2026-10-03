@@ -1,5 +1,17 @@
 # Resume
 
+## 实际传输门通过、布局小批封存、K预算训练继续 — 2026-10-03 05:54 UTC
+
+HAMSTER exact8 source cbcd812 的两个真实调用完成：16 forward/16 token，全部8组[1,1,151936] bf16 logits逐值相同、与旧87token前缀一致。旧/新decode中位3.3854/1.1527秒（比0.34049），新peak reserved6.619GB低于35%上限，RSS22.116GB。原后新固定顺序、缓存和驻留差异不能拆因；模型加载94.51秒、转换135.26秒均记账。外层332.053368秒/0.092237047 GPUh含内层322.056326秒，不相加；旧300秒失败仍在。真实私有环境39测试0skip，新增4纯测试依赖未改原45包或Accelerate源。[实测](reports/hamster3d_transport_exact8_v1/TRANSPORT_RESULTS.md)。这不是完整路线质量，下一步只发一个TRAIN0完整请求，900秒/1024token，无自动六请求。
+
+新布局首4父108槽已经完成并全量质量核验：65接受、43失败、3有效unknown；108严格恢复精确，65原始/H24验收及H24/H64字节重现，12目标条件均有正例。高柱布局规划失败较多，全部保留；已知类型下界1–4，尚无R>4。root实际看4RGB与4个target0九槽图，agent看全12目标图。已决定按原eba协议继续余8父，仍需独立执行；未改变布局/guide/验收阈值。[完整报告](reports/observed_layout_variation_pilot4_v1/PILOT4_RESULTS.md)。
+
+普通K条件受控基线源443ea311d53cf33ff7ab4fe3d533bb61deee4726已推送核远端，428源文件部署SHA一致。真实45测试全通过/0skip；CUDA Driver四接口metadata验证授权UUID、0模型/数据；pause2实际2步保存完成，checkpoint f2cff69a1e4423bfdc416ad5ddc17fb2f453e6deaca726f2e3c7daa34f28ff5d。root读后独立恢复3000步已完成（原SSH9772已exit0/CPU0/GPU1/35%，resume主体配方130.803175秒），每次真实K1/2/4/8、总720000训练槽，6次DEV选择和timing额外槽显式计入。fresh wrapper仅首次pause2→resume，失败恢复须新配方先查checkpoint/ledger，不得重发。完整原池质量分析尚待进行，本段不宣称优势。
+
+扩散固定TRAIN指派/拟合审计后只保留标准归一化Min-SNR γ5诊断：源75586c573d8d67b3a3a0d33ee2a027538a1bacad已推送核远端；原独立last12000 fork两臂各500、相同恢复状态/输入/noise，全285 TRAIN免费生成与六输入teacher、0DEV。服务器父checkpoint真实inspect与16实际测试尚待执行，不将其当新机制或正式MAIN结果。MAIN仍289，未追加技术探针行。
+
+原TRAIN256 collector仍为5c8/SSH26105/CPU2、3，05:49附近shard0闭合到226；新DEV32封存，训练人口仍95父/285条件。继续实验闭环；新核心优势、三训练种子独立观测验证与论文A–H仍未成立。
+
 ## 扩散配对入表、空间筛选封存、可变布局实际采集 — 2026-10-03 05:12 UTC
 
 观测独立/集合扩散两臂及全部10阶段完成，b127只读原池分析v2也完成。三次采样best Tip32.870%/29.167%，known Unique0.8426/0.9259；last29.861%/34.491%、known0.6574/0.6111。普通同曝光best43.75%/0.9444仍强；扩散TRAIN仅34.39%/40.79%，优先属于自由生成拟合不足，不能归结为泛化或证明扩散机制无效。一个训练seed、三个采样repeat分开，各K4不并池。两臂全部成功作业外层0.617431797 GPUh（嵌套主体不相加），原0f失败另0.003076219h。MAIN已277→289，旧277 JSON对象/CSV原列单元格root独立逐项不变。全部12父完整预测图与收敛图已实际查看，全部失败/大绕行保留；[完整报告](reports/observed_two_row_diffusion_v1/DIFFUSION_RESULTS.md)。无SelectedValid或全机械臂执行指标。

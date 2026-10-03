@@ -1,5 +1,9 @@
 # 剩余实验：核心缺口尚未关闭
 
+## 2026-10-03 05:54 UTC：小批与技术门实测，尚无新方法优势
+
+可变布局TRAIN4实际108槽：65接受/43失败/3接受unknown，108严格恢复、原验收与重采样重现；已知类型下界1–4。全目标图已看，按原协议继续余8父，不把采集管道当生成优势。[小批实测](observed_layout_variation_pilot4_v1/PILOT4_RESULTS.md)。HAMSTER16真实forward下8步输出逐值相同，decode比0.34049，35%内存门通过；完整一请求尚未执行，原失败保留。[技术对照](hamster3d_transport_exact8_v1/TRANSPORT_RESULTS.md)。普通真实K条件基线已45服务器测试通过、pause2后预定3000步已完成，原池分析待进行；Min-SNR只计划固定TRAIN配对诊断。MAIN仍289，核心成立/公平强基线优势/独立设置/多训练种子/评分校准未闭合。
+
 ## 2026-10-03 05:12 UTC：实测配对与当前决定
 
 观测扩散真实12k两臂、teacher、全285 TRAIN保存池及3次独立采样全部完成。best Tip独立32.87%/集合29.17%，known Unique0.8426/0.9259；普通同曝光43.75%/0.9444仍强。TRAIN拟合34.39%/40.79%也弱，继续查基线去噪尺度，不把集合交互写成方法贡献。MAIN289保留原277行，全部12父图root实际查看；[原指标/预算/失败与权重hash](observed_two_row_diffusion_v1/DIFFUSION_RESULTS.md)。每臂1训练seed，3采样repeat不冒充3种子。

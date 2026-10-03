@@ -1,0 +1,75 @@
+{
+  "code_commit": "cbcd8129c967db6f0995a824754752cc7a6f0f5b",
+  "source_files": 429,
+  "local_only": true,
+  "ssh_or_scp_calls": 0,
+  "server_execution": false,
+  "model_calls": 0,
+  "old_b127_actual_source_sha256": "63a561d8c12fafe2fbe07eafbf3d72bf69db6d507203f14fa316ae10f60fc76d",
+  "archive_paths": [
+    ".gitattributes",
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "RESOURCE_ENVELOPE.md",
+    "requirements.txt",
+    "configs",
+    "routeset",
+    "scripts",
+    "tests",
+    "reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md",
+    "reports/HAMSTER3D_TRANSPORT_EXACT8_PROTOCOL.md",
+    "reports/HAMSTER3D_PREPARATION_PROTOCOL.md"
+  ],
+  "artifacts": {
+    "hamster_transport_code_cbcd812.tar": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_transport_code_cbcd812.tar",
+      "sha256": "f69183b86872bd562ed670f673fb7cc3a724d76a05d1a2f02a5aa8b536b70fa6",
+      "bytes": 5826560
+    },
+    "hamster_transport_sources_cbcd812.json": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_transport_sources_cbcd812.json",
+      "sha256": "d061d58377483ba09479bc961d0bfe0a1a0c8d5b0c96ec5ca89e5e9ff2178d45",
+      "bytes": 73110
+    },
+    "hamster_transport_runner_cbcd812.py": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_transport_runner_cbcd812.py",
+      "sha256": "49558f81fb7a3a24bbac7835cb24cd89c02ec9ba202252b8e831d7de3d774c58",
+      "bytes": 13193
+    },
+    "hamster_transport_tests_cbcd812.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_transport_tests_cbcd812.sh",
+      "sha256": "b1328407efdf80367b2cb4ceb2df49f8a91bdc338241425240dfc7be34b06a0e",
+      "bytes": 1274
+    },
+    "hamster_transport_probe_cbcd812.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_transport_probe_cbcd812.sh",
+      "sha256": "fcfda52489bbba2bdd0f497ef095434d371dd897e2feb32b2f19f95b21c53b64",
+      "bytes": 1330
+    }
+  },
+  "independent_commands": {
+    "tests": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/hamster_transport_tests_cbcd812.sh"
+    ],
+    "probe": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/hamster_transport_probe_cbcd812.sh"
+    ]
+  },
+  "local_checks": {
+    "collected_exact_tests": 39,
+    "generated_runner_AST": true,
+    "synthetic_JUnit_checks": 8,
+    "bash_n": 2,
+    "server_tests_executed": false
+  },
+  "order": "Root deploy/hash then actual39 tests first. Only after root reads completed receipt may separately launch exact8. No full request stage, no auto chain/retry."
+}

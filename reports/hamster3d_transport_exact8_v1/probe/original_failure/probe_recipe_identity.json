@@ -1,0 +1,68 @@
+{
+  "protocol": "diffusion_analysis_hamster_frozen_recipe_v1",
+  "stage": "probe",
+  "code_commit": "b127ce8514a63917cc3f1b7278db8f65289ba985",
+  "source_manifest": {
+    "path": "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_validation_sources_b127ce8.json",
+    "sha256": "00eda8858af348992cd81cd37fd7c0aa4843240c125bda7741af0ffb450ec830",
+    "files": 420,
+    "archive_sha256": "555bce082b7ea0799acbbeb59f5609c7c840b8e1665ff3ef6d44679693ea9ec9"
+  },
+  "runner": {
+    "path": "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_stage_runner_b127ce8.py",
+    "sha256": "5c2c70afd03c0831fd7965ef77d6534bb92e5b94689a322e098fad3c78538fb6"
+  },
+  "wrapper": {
+    "path": "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_probe_b127ce8.sh",
+    "sha256": "bbd7ae7f03e1f6045650cd49801779403ad853e83ee86f3669230dd150e1b1c2"
+  },
+  "runtime": {
+    "python": "3.11.13 (main, Sep 18 2025, 19:46:39) [Clang 20.1.4 ]",
+    "executable": "/home/wzy/dpvlm/route_set_v1/.venv-hamster3d/bin/python",
+    "prefix": "/home/wzy/dpvlm/route_set_v1/.venv-hamster3d",
+    "cpu_affinity": [
+      0
+    ],
+    "cuda_visible_devices": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+    "omp_threads": "1"
+  },
+  "start_utc": "2026-10-03T04:21:28.739864+00:00",
+  "fresh_only": true,
+  "automatic_following_stage": false,
+  "actual_validation": {
+    "tests.status.json": "73299c8058aaea412e6cb3d4230f75b2538c95323a1ea750cd6598a0a16888d1",
+    "validation_receipt.json": "5cbc7a8fd200a2c8708567dcbb4163d1ee1b412a507f24d78606dc05a2e764fb",
+    "validation_identity.json": "e40ed42e5018ed0cfb70ab873b73932449a738926857d3c14e53aa80d63c026d",
+    "pytest.xml": "7c344d8081b3ea9da3a0da506a95a52d18c0ceb45862c01f2d287cb59a7d9de6"
+  },
+  "preparation_gate": {
+    "assets": {
+      "marker_sha256": "de4e98dde4b97b52ebed93b6bec3ca6a14471834462fcf5e8e046e9c7ad62bca",
+      "receipt_sha256": "55c95b97dcd941a3960e4fa4ac9f0e8e6539bcdf36d8a1fc843238c310a4d1d4",
+      "status_sha256": "5c62faf4901beaa1a80108fb2293b3f39fd3007ca779d3e5a338c585aa14735e"
+    },
+    "environment": {
+      "marker_sha256": "f295c60433326d13e66eae447b0b3a19a3b46308e58cc4d1040f8a6553a66b8e",
+      "receipt_sha256": "357c264b7b0b666f3ab82dc619a3805338e9b81beee2f606dbbade8440c2ce3a",
+      "status_sha256": "55eacf385e1074c6b16a2987ca8636c84c8b67970b8d7e0309ca30c7b3aff546"
+    }
+  },
+  "maximum_generate_calls": 6,
+  "candidates_per_request": 1,
+  "maximum_tokens_total": 6144,
+  "maximum_gpu_fraction": 0.35,
+  "maximum_gpu_GiB": 8.4,
+  "maximum_request_seconds": 300,
+  "maximum_load_seconds": 600,
+  "maximum_body_seconds": 2400,
+  "model_calls_actual": "read child issued ledger",
+  "command": [
+    "/home/wzy/dpvlm/route_set_v1/.venv-hamster3d/bin/python",
+    "-m",
+    "scripts.probe_hamster3d_train6",
+    "--config",
+    "/home/wzy/dpvlm/route_set_v1/research_v2/releases/b127ce8514a63917cc3f1b7278db8f65289ba985/configs/hamster3d_train6_probe_v1.json",
+    "--output",
+    "/home/wzy/dpvlm/route_set_v1/runs/hamster3d_train6_probe_v1/probe"
+  ]
+}
