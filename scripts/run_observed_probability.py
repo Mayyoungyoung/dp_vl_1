@@ -376,9 +376,57 @@ def calibrate(seed):
         note='Old DEV_MODEL is reused development evidence. Temperature cannot change ranking. No final-test claim.'))
 
 
+def package(seed):
+    torch=torch_setup()
+    from routeset.observed_probability import RouteValidityHead,ScoredRoutePlanner
+    from scripts.train_observed_geometry import read_geometry
+    output=RUN/('deployment_seed%d'%seed);output.mkdir(exist_ok=False)
+    scorer_file=RUN/('q_seed%d'%seed)/'best.pt'
+    state=torch.load(scorer_file,map_location='cpu',weights_only=False)
+    calibration=read(RUN/('calibration_seed%d'%seed)/'summary.json')
+    if calibration['scorer_checkpoint_sha256']!=sha(scorer_file):raise ValueError('Calibrator/scorer mismatch')
+    generator=model_load()
+    for role in ('SCORE_TRAIN','DEV_SCORE'):
+        receipt=read(RUN/'pools'/role/'receipt.json')
+        if receipt['parent_checkpoint_sha256']!=sha((GENERATOR or PARENT)/'last.pt') or receipt['pool_sha256']!=state['pool_hashes'][role]:
+            raise ValueError('Scorer belongs to another generator/pool')
+    scorer=RouteValidityHead().cuda().eval();scorer.load_state_dict(state['model'])
+    planner=ScoredRoutePlanner(generator,scorer,state['normalization'],calibration['temperature']).cuda().eval()
+    rows,labels,cache=observation_rows('DEV_MODEL');row=rows[0];label=labels[row['id']]
+    key=hashlib.sha256(json.dumps(row,sort_keys=True).encode()).hexdigest()[:20]
+    with np.load(cache/(key+'.npz'),allow_pickle=False) as a:feat=np.r_[a['mean_hidden'].reshape(-1),a['last_hidden'].reshape(-1)].astype('float32')
+    geo=read_geometry(row['image'],label['observation'],2)
+    with np.load(label['observation'],allow_pickle=False) as a:current=np.r_[a['gripper_pose'],np.asarray(a['gripper_open']).reshape(1)].astype('float32')
+    inputs=dict(features=torch.tensor(feat[None],device='cuda'),current=torch.tensor(current[None],device='cuda'),
+                **{k:torch.tensor(v[None],device='cuda') for k,v in geo.items()})
+    tic=time.perf_counter()
+    with torch.no_grad():prediction=planner(**inputs,return_k=4)
+    torch.cuda.synchronize();seconds=time.perf_counter()-tic
+    pool=load_pool('DEV_MODEL');pos=int(np.flatnonzero(pool['ids']==row['id'])[0])
+    with np.load(RUN/('calibration_seed%d'%seed)/'predictions.npz',allow_pickle=False) as a:logits=a['dev_logits'][pos]
+    expected=1/(1+np.exp(-logits/calibration['temperature']))
+    actual=prediction['q'][0].cpu().numpy();paths=prediction['paths'][0].cpu().numpy()
+    if not np.allclose(paths,pool['paths'][pos],atol=1e-6,rtol=1e-5) or not np.allclose(actual,expected,atol=1e-5,rtol=1e-5):
+        raise ValueError('Integrated deployment differs from sealed candidate/scorer output')
+    from routeset.observed_probability import select_route_indices
+    selections={str(k):select_route_indices(prediction['paths'],prediction['q'],k)[0].cpu().tolist() for k in (1,2,4)}
+    pi=prediction['pi'][0].cpu().numpy() if prediction['pi'] is not None else None
+    np.savez_compressed(output/'example.npz',paths=paths,q=actual,pi=pi if pi is not None else np.array([]))
+    torch.save(dict(planner_state=planner.state_dict(),feature_dim=4096,horizon=24,M=generator.head.max_candidates,
+        anchor_mode='straight_through_peak',temperature=calibration['temperature'],has_pi=GENERATOR is not None,
+        frozen_qwen_revision='89644892e4d85e24eaac8bacfd4f463576704203'),output/'planner.pt')
+    write(output/'manifest.json',dict(generator_sha256=sha((GENERATOR or PARENT)/'last.pt'),scorer_sha256=sha(scorer_file),
+        calibration_sha256=sha(RUN/('calibration_seed%d'%seed)/'summary.json'),planner_sha256=sha(output/'planner.pt'),
+        example_id=row['id'],example_image=row['image'],example_image_sha256=sha(row['image']),q=actual.tolist(),pi=None if pi is None else pi.tolist(),
+        K_selected_indices=selections,integrated_equal_to_saved_outputs=True,internal_M=generator.head.max_candidates,
+        new_forward_requests=1,new_complete_path_states=generator.head.max_candidates,new_qwen_encodings=0,
+        cached_feature_head_seconds=seconds,scope='One integrated cached-Qwen/RGB-D smoke request, not E2E VLM latency or robot execution',
+        probability_scope='q calibrated to tip-only checker, empirical calibration does not guarantee accuracy; pi separately balanced reference mass'))
+
+
 def main():
     global RUN,GENERATOR
-    p=argparse.ArgumentParser();p.add_argument('stage',choices=['export','export-role','pool','train-q','calibrate'])
+    p=argparse.ArgumentParser();p.add_argument('stage',choices=['export','export-role','pool','train-q','calibrate','package'])
     p.add_argument('--role');p.add_argument('--seed',type=int,default=0)
     p.add_argument('--generator-family',choices=['M8_ordinary_seed0_v2','M8_balanced_probability_seed0_v2',
         'M8_ordinary_seed0_expanded','M8_balanced_probability_seed0_expanded'])
@@ -391,6 +439,7 @@ def main():
     elif a.stage=='pool':pool(a.role)
     elif a.stage=='train-q':train_q(a.seed)
     elif a.stage=='calibrate':calibrate(a.seed)
+    elif a.stage=='package':package(a.seed)
 
 
 if __name__=='__main__':main()
