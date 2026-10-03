@@ -1,5 +1,17 @@
 # Resume
 
+## 正式冻结臂已恢复续训 — 2026-10-03 01:47 UTC
+
+source f41be1ff1a35b0eab3d36edf4ca23197359f4731 已推送远端核验、冻结部署。实际服务器79项Torch测试全部通过/0skip（6.74s），包括B1×32累积、两臂暂停恢复参数/Adam/RNG/账本一致性。完整321缓存证据归档已核37项，见 reports/observed_qwen_prefix_corpus_v1/CACHE_RESULTS.md；缓存不是质量结果。
+
+root实际启动frozen臂并在完整step2行政暂停：PID687612/687613于01:43:09.776422–01:43:51.020626UTC exit0，内部状态paused，64tail+64head+2optimizer、256路径状态，没有DEV或completed summary。主体39.016476s、外层41.244204s，含加载/验证；不是新增独立smoke预算，原样进入同一个3000步正式run。随后root单独以同source/同draw-plan恢复：01:44:42.991123UTC开始，child688762，SSH53445，GPU1/35%、CPU1，输出 runs/observed_two_row_lora_continuation_v1/frozen。不得重启fresh；3000总预算、96000抽样、384000路径状态和12次旧DEV选择不变。LoRA臂尚未启动，GPU作业串行。完整fixed-last285诊断仍需两臂各自完成后独立运行。
+
+当前恢复启动命令：`taskset -c 1 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/qwen_continuation_f41be1f.sh train frozen resume`。wrapper该run-id已有记录，禁止直接重复；意外中断先核PID与journal/checkpoint边界，再以原source和原记录CLI的--resume建立新的作业记录，未封存issued调用默认拒绝重放。可控暂停不改变训练policy。初次pause2内部状态已保存在本地.bootstrap/frozen_pause2_inner_status.json，外层永久job记录保留；下一归档收录。
+
+TRAIN128仍由5c8原collector在CPU2/3运行，session20261003T011626Z_train128_675690。01:41:27UTC metadata-only快照82/128父已闭合、2214槽已发，0非零退出/缺初态/闭合未发；parent82/83运行、其余1242槽结果未知。不能据此报告有效轨迹。全128闭合后才独立质量分析，新DEV继续封存。采集不改变本次训练285人口。
+
+JOBS实际快照 2026-10-03T01:45:39.579586+00:00 共608条，registry同步；MAIN273保持。尚无新核心方法优势，当前活跃会话继续训练、分析与改进，不存在会话结束后自主思考服务。
+
 ## 全量前缀准备与采集接续 — 2026-10-03 01:28 UTC
 
 本段覆盖下方待全量cache和旧采集状态。source4371e5b98a8bbab91d2107ed79de7d9e107b9bea已推送核验、冻结部署；53真实Linux/Torch测试0skip通过（4.63秒）。全321输入prefix于01:24:34.126730–01:25:55.993691UTC完成exit0，PID678871/678872，SSH12675已结束。285TRAIN+36旧DEV全部实际官方特征=原缓存=写盘重读尾层回放逐值相同，321full+321tail、0head/0optimizer；无新DEV。manifest SHA4a3152db319e67c158f692a4b88e8575fd5e00b7ebe483ebfe4fafec1552bf15；固定位置 data/observation_two_row_composite108_v1/qwen_prefix_corpus。主体80.600073171秒/.0223889092GPUh，外层81.866961秒，peak4278929920B；嵌套不能相加。这是计算等价性，不是质量收益。
