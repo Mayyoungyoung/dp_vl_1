@@ -1,5 +1,16 @@
 # 任务层路线集合：近邻工作核验矩阵
 
+## 2026-10-03补核：新近三维轨迹接口与本轮损失边界
+
+以下核验与实际Min-SNR配对/有序损失训练器准备并行完成，没有下载新权重或声称复现。
+
+| 工作与一手来源 | 已核机制/状态 | 与本项目的具体边界及决定 |
+|---|---|---|
+| MolmoMotion，[2026-06-17 v1原文](https://arxiv.org/html/2606.18558v1)，[作者代码README](https://github.com/allenai/molmo-motion) | 以RGB历史、语言、初始2D/3D查询点预测未来物体点；论文包含AR坐标与10步Flow Matching。实际打开官方仓库，README说明公开代码/权重为4B AR版本，不能称FM实现已核。当前仅核预印本，无正式会议状态确认。 | 查询点数N指同一物体的多个点，不能当同任务K条可选解；初始物体点提供额外定位条件。采用此系统需另计定位来源/预算，不能直接对比只图像语言定位的路线集合。原文机器人迁移是抓取后策略与初始化对比，不是本项目已复现结果。本次未运行、未阅读其完整训练实现。 |
+| OASIS，[2026-05-25 v1原文§4.3–4.4](https://arxiv.org/html/2605.25829v1)，[作者项目](https://npuhandsome.github.io/OASIS_web/) | 视觉语言与metric-depth编码，camera-frame SE(3)未来位姿及其监督隐状态条件化动作解码；位姿L1与动作L1联合训练。作者项目当前明确Code coming soon，无可核官方训练实现；正式发表未确认。 | 观测几何+三维中间轨迹+学习解码器已有明确近邻，不能把默认Qwen/RGB-D/路线架构本身当贡献。本项目仍聚焦可选任务路线集合及完整正参考有序关系，不扩为低层动作解码优化；该差异只是研究问题边界，不证明新机制新颖。 |
+
+本轮C只能作为待证伪的观测关系辅助目标；B标准Soft-DTW self correction不可省略。N个物体点、H个时间点、K个候选任务方案分别计数；高层路径格式成功也不等于下游执行成功。新增近邻不改变已冻结三臂尺度、数据、判据或预算。
+
 2026-10-02 20:23 UTC：补充核验见[跨目标机会协议中的一手来源](TWO_ROW_CROSS_GOAL_OPPORTUNITY_PROTOCOL.md)。[GoalFlow，CVPR2025正式论文](https://openaccess.thecvf.com/content/CVPR2025/html/Xing_GoalFlow_Goal-Driven_Flow_Matching_for_Multimodal_Trajectories_Generation_in_End-to-End_CVPR_2025_paper.html)及[官方实现](https://github.com/YvanYin/GoalFlow)已包含场景驱动目标选择和目标条件flow轨迹生成；“目标条件＋flow”不是本项目可单独主张的区别。MTR意图/局部读取、ModeSeq顺序模式记忆、T-MPC跨目标拓扑维护、目标条件VAE的形状/目标分离也继续作为直接限制。此次均为论文与实现来源核验，未复现这些系统。
 
 2026-10-02 18:20 UTC 补充：已核对目标条件轨迹原语、T-MPC、MomAD、EDGI和Eq-Net，见 [跨目标近邻五项核验](POST_K2_CROSS_GOAL_NEIGHBORS.md)。T-MPC明确维护不同目标之间的拓扑类别关系；改变目标本身不构成EDGI式全局等变作用。全部仍为原论文/源码核验，未声称复现。历史补全和局部更新未建立稳定优势，当前先完成新观测数据上的强普通基线。
