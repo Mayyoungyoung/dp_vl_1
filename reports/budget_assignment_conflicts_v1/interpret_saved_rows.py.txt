@@ -1,0 +1,39 @@
+"""Post-audit arithmetic only: read original audit JSON, never raw data/model."""
+from collections import Counter
+import hashlib
+import json
+from pathlib import Path
+
+root = Path(__file__).resolve().parent
+source = root / 'audit' / 'parents.json'
+destination = root / 'interpretation.json'
+if destination.exists():
+    raise ValueError('fresh interpretation output required')
+rows = json.loads(source.read_text(encoding='utf-8'))
+conflicts = [r for r in rows if r['valid_slot_assigned_type_conflict']]
+counts = Counter()
+for r in conflicts:
+    modes, valid = r['actual_predicted_modes'], r['actual_valid']
+    counts['all_four_actually_valid'] += all(valid)
+    counts['first_two_same_actual_known_type'] += modes[0] == modes[1] and modes[0] >= 0
+    counts['first_two_actually_valid'] += all(valid[:2])
+    for k in (1, 2, 4):
+        counts['physical_type_consistent_optimum_k%d' % k] += r['free'][str(k)]['exists_optimum_consistent_with_actual_valid_types']
+hist = Counter(r['reference_count'] for r in conflicts)
+result = dict(
+    source_parents_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+    interpreter_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    parents=len(rows), conflicts=len(conflicts), conflict_reference_histogram=dict(hist),
+    conflict_conditions=dict(counts),
+    r_at_least_four_parents=sum(r['reference_count'] >= 4 for r in rows),
+    r_at_least_four_conflicts=sum(r['reference_count'] >= 4 for r in conflicts),
+    original_gate_decision='oracle_conflict_only_requires_physical_interpretation',
+    scientific_decision='stop_joint_assignment_core_on_current_evidence',
+    reason='Every conflict is a fixed-K4 same-type prefix repeated before full known-type coverage. K2 injective label matching contradicts the unchanged actual type of that prefix. This is not a trained K2 or budget-conditioned failure, nor a gain achievable by changing labels.',
+    no_relabelled_route_claim=True, new_forward=0, new_training=0,
+    first_conflict_witnesses=[{k: r[k] for k in (
+        'parent_id', 'reference_count', 'actual_predicted_modes', 'actual_valid', 'free',
+        'joint_chain_minimax_mean_mse_regret')} for r in conflicts[:3]],
+)
+destination.write_text(json.dumps(result, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+print(json.dumps({k: v for k, v in result.items() if k != 'first_conflict_witnesses'}, ensure_ascii=False))

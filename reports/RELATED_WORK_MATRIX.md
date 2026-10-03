@@ -109,3 +109,9 @@ Research implication: using valid trajectory states as geometric support, or rec
 | [Topological Motion Planning Diffusion, arXiv:2603.26696](https://arxiv.org/html/2603.26696) | 扩散前端跨同伦类采样，后端用已执行系缆路径记忆、广义绕数和曲线缩短筛选优化，针对避缠绕导航。 | 本次核验到2026预印本原文；没有独立核验会议接受或官方实现版本，未复现。 | 已覆盖生成前端加拓扑记忆/过滤。其执行历史安全记忆与“已提议候选覆盖哪些仍有效方案”的任务集合记忆不同，但该区别本身仍需机制和同预算实验成立。 |
 
 当前证据决定：先完成既定普通独立/集合扩散的全训练、固定噪声重复与TRAIN诊断，再决定是否转向新的生成机制。以上文献检查没有触发额外模型调用、模块叠加、数据解封或测试口径变动。
+
+## 2026-10-03：低噪声拟合的标准优化对照
+
+| 工作与一手核验 | 已有机制 | 本项目边界 |
+|---|---|---|
+| [Efficient Diffusion Training via Min-SNR Weighting Strategy](https://openaccess.thecvf.com/content/ICCV2023/html/Hang_Efficient_Diffusion_Training_via_Min-SNR_Weighting_Strategy_ICCV_2023_paper.html)，ICCV2023 pp.7441–7451；[原文](https://arxiv.org/abs/2303.09556)、[作者 START_X 实现](https://github.com/TiankaiHang/Min-SNR-Diffusion-Training/blob/main/guided_diffusion/gaussian_diffusion.py)均已读取。CVF直开曾失败，随后官方检索结果及论文PDF确认正式记录。 | 把不同噪声时刻视为训练任务，按截断信噪比加权。作者直接x0分支采用min(SNR,gamma)，epsilon分支的权重另除SNR，不能混用。 | 拟只用gamma=5对既有独立x0基线做TRAIN内500步双分叉诊断；本项目额外以100时刻均值归一化权重，必须披露这一差别。不是新方法，也没有复现其ImageNet实验；本项目尚未证明存在原论文讨论的跨时刻梯度冲突。坐标/架构/采样/checker保持原样，不能只报teacher恢复改善而忽略自由生成退化。 |
