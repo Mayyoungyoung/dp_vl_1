@@ -1,0 +1,126 @@
+"""Read only completed validation; preserve failed local invocation separately."""
+import hashlib
+import json
+import subprocess
+import tarfile
+import xml.etree.ElementTree as ET
+from datetime import datetime
+from pathlib import Path
+
+ROOT = Path('F:/dpvlm')
+COMMIT = '04ed74fbc2912af58d65c487ce9947ea5cc71dc1'
+OUT = ROOT / 'reports/hamster3d_full1_preparation_v1'
+ARCHIVE = ROOT / '.bootstrap/hamster_full1_preparation_completed.tar.gz'
+assert not OUT.exists() and not ARCHIVE.exists()
+remote = r'''
+from pathlib import Path
+import hashlib,io,json,sys,tarfile
+r=Path('/home/wzy/dpvlm/route_set_v1');commit='04ed74fbc2912af58d65c487ce9947ea5cc71dc1'
+v=r/'runs/hamster3d_full1_validation_v1'/commit
+source=r/'research_v2/releases'/commit;incoming=r/'research_v2/incoming'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+status=json.loads((v/'tests.status.json').read_text());receipt=json.loads((v/'tests_receipt.json').read_text())
+assert status['status']=='completed' and status['exit_code']==0 and status['code_commit']==commit
+assert receipt['status']=='passed' and receipt['child_exit_code']==0 and receipt['source_unchanged']
+manifest=incoming/'hamster_full1_sources_04ed74f.json';m=json.loads(manifest.read_text())
+assert sha(manifest)=='401b6a3528fe3eb7b5b490b47bb1becea0792177f030d0e5df4129643654a676'
+files=[]
+for p in sorted(v.rglob('*')):
+ if p.is_file():files.append(('validation/'+p.relative_to(v).as_posix(),p))
+for name in ('hamster_full1_sources_04ed74f.json','hamster_full1_runner_04ed74f.py','hamster_full1_tests_04ed74f.sh','hamster_full1_probe_04ed74f.sh'):
+ files.append(('actual_incoming/'+name+('.txt' if name.endswith('.py') else ''),incoming/name))
+for name in ('scripts/probe_hamster3d_full1.py','configs/hamster3d_pinned_full1_v1.json','tests/test_hamster3d_full1.py','reports/HAMSTER3D_PINNED_FULL1_PROTOCOL.md','scripts/probe_hamster3d_train6.py','scripts/probe_hamster3d_transport.py','routeset/hamster_layer_transport.py','tests/test_hamster3d_train6_probe.py','scripts/record_job.py'):
+ p=source/name;assert sha(p)==m['files'][name]['sha256']
+ files.append(('source/'+name+('.txt' if name.endswith('.py') else ''),p))
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+ for name,p in files:
+  assert not p.is_symlink() and p.stat().st_size<10*2**20 and p.suffix not in ('.pt','.safetensors','.npz','.whl')
+  index.append(dict(path=name,remote_path=p.as_posix(),bytes=p.stat().st_size,sha256=sha(p)))
+  tar.add(p,arcname=name,recursive=False)
+ b=(json.dumps(dict(source_commit=commit,files=index,read_scope='completed validation and frozen source only',new_tests=0,new_model_calls=0,weights_copied=0),indent=2)+'\n').encode()
+ member=tarfile.TarInfo('REMOTE_ARTIFACT_INDEX.json');member.size=len(b);tar.addfile(member,io.BytesIO(b))
+'''
+with ARCHIVE.open('wb') as f:
+    p = subprocess.run(['ssh', 'wzy3090', 'taskset', '-c', '1', 'env', 'CUDA_VISIBLE_DEVICES=-1',
+                        'OMP_NUM_THREADS=1', '/home/wzy/dpvlm/route_set_v1/.venv/bin/python', '-'],
+                       input=remote.encode(), stdout=f, stderr=subprocess.PIPE)
+assert p.returncode == 0, p.stderr.decode()
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+with tarfile.open(ARCHIVE) as tar:
+    index = json.load(tar.extractfile('REMOTE_ARTIFACT_INDEX.json'))
+    lookup = {x['path']: x for x in index['files']}
+    for member in tar.getmembers():
+        assert member.isfile() and not Path(member.name).is_absolute() and '..' not in Path(member.name).parts
+        data = tar.extractfile(member).read()
+        if member.name != 'REMOTE_ARTIFACT_INDEX.json':
+            assert hashlib.sha256(data).hexdigest() == lookup[member.name]['sha256']
+        dst = OUT / member.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(data)
+
+local_names = ('freeze_hamster_full1_04ed74f.py','hamster_full1_freeze_04ed74f.json',
+               'hamster_full1_deployment_04ed74f.json','deploy_hamster_full1_checked.py',
+               'hamster_full1_root_tests.xml','hamster_full1_root_tests_v2.xml',
+               'hamster_full1_local_receipt.json','hamster_full1_actual_tests_receipt.json',
+               'hamster_full1_actual_tests_status.json')
+for name in local_names:
+    dst = OUT / 'local_evidence' / (name + ('.txt' if name.endswith('.py') else ''))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes((ROOT / '.bootstrap' / name).read_bytes())
+freeze = json.loads((ROOT / '.bootstrap/hamster_full1_freeze_04ed74f.json').read_text())
+for name, item in freeze['artifacts'].items():
+    assert sha(ROOT / '.bootstrap' / name) == item['sha256']
+    actual = OUT / 'actual_incoming' / (name + ('.txt' if name.endswith('.py') else ''))
+    if actual.exists(): assert sha(actual) == item['sha256']
+with tarfile.open(ROOT / '.bootstrap/hamster_full1_code_04ed74f.tar') as tar:
+    for path in (OUT / 'source').rglob('*'):
+        if path.is_file():
+            name = path.relative_to(OUT / 'source').as_posix()
+            if name.endswith('.py.txt'): name = name[:-4]
+            assert path.read_bytes() == tar.extractfile(name).read()
+status = json.loads((OUT / 'validation/tests.status.json').read_text())
+receipt = json.loads((OUT / 'validation/tests_receipt.json').read_text())
+manifest = json.loads((OUT / 'actual_incoming/hamster_full1_sources_04ed74f.json').read_text())
+xml = ET.parse(OUT / 'validation/pytest.xml').getroot()
+cases = list(xml.iter('testcase'))
+assert len(cases) == 48 and all(c.find(k) is None for c in cases for k in ('error','failure','skipped'))
+assert sorted((c.get('classname'), c.get('name')) for c in cases) == sorted(map(tuple, manifest['expected_pytest_cases']))
+assert sha(OUT / 'validation/pytest.xml') == receipt['pytest_xml_sha256']
+assert json.loads((OUT / 'local_evidence/hamster_full1_actual_tests_receipt.json').read_text()) == receipt
+old_xml = ET.parse(OUT / 'local_evidence/hamster_full1_root_tests.xml').getroot()
+assert len(list(old_xml.iter('testcase'))) == 0
+local_xml = ET.parse(OUT / 'local_evidence/hamster_full1_root_tests_v2.xml').getroot()
+local_cases = list(local_xml.iter('testcase'))
+assert len(local_cases) == 48 and sum(c.find('skipped') is not None for c in local_cases) == 2
+outer = (datetime.fromisoformat(status['end_utc']) - datetime.fromisoformat(status['start_utc'])).total_seconds()
+audit = dict(source_commit=COMMIT, remote_files=len(index['files']), all_remote_files_sha_verified=True,
+             frozen_source_files=442, selected_source_matches_code_archive=True,
+             actual_testcases=48, actual_skipped=0, actual_cpu_torch_testcases=2,
+             local_corrected_passed=46, local_corrected_skipped=2, local_wrong_filename_testcases=0,
+             wrong_filename_failure_source='Root execution report; XML itself only records zero collected cases',
+             validation_outer_seconds=outer, validation_inner_seconds=receipt['elapsed_seconds'],
+             cost_scope='Inner is nested inside outer; do not sum. CPU validation only.',
+             gpu_hours=0, cuda_visible_devices='-1', new_tests=0,new_model_calls=0,
+             archive_sha256=sha(ARCHIVE), code_archive_sha256=freeze['artifacts']['hamster_full1_code_04ed74f.tar']['sha256'])
+(OUT / 'ARCHIVE_AUDIT.json').write_text(json.dumps(audit, indent=2)+'\n', encoding='utf-8')
+(OUT / 'PREPARATION_RESULTS.md').write_text(f'''# HAMSTER 单请求完整生成：已完成准备证据
+
+固定源 `{COMMIT}` 的442文件实际部署SHA全部通过。服务器私有 `.venv-hamster3d` 在 CPU0、`CUDA_VISIBLE_DEVICES=-1` 下完成48项测试，48通过、0跳过：新29项包含2个真实CPU Torch测试，旧probe19项回归。此处CPU小模型测试不构成官方HAMSTER完整生成或任务质量结果。
+
+实际外层时间 `{status['start_utc']}` 至 `{status['end_utc']}`，PID {status['pid']} / child {status['child_pid']}，exit0；外层 {outer:.6f} 秒，runner主体 {receipt['elapsed_seconds']:.9f} 秒，两者嵌套不相加。GPU小时0。JUnit SHA `{sha(OUT / 'validation/pytest.xml')}`，逐测试身份与冻结manifest精确一致。
+
+保留此前root本地错误测试文件名调用的零测试XML，其错误原因来自root执行记录（XML自身只记录0收集项），没有把它改成通过。正确文件名的第二次本地执行为46通过、2个Torch测试因本机缺Torch跳过；随后这两个项目已由本次服务器真实运行通过。原文件、冻结配方、部署收据和本地/服务器收据原字节分别留存。归档没有重跑任何测试。
+
+code-only archive SHA `{audit['code_archive_sha256']}`；9个关键源/依赖原件与该包逐字节一致，Python源码以 `.py.txt` 归档避免pytest重复发现。完整442文件SHA清单及actual incoming runner/wrappers保留。基础权重、数据标签、运行中输出没有复制。
+
+root在读取通过收据后另行启动了唯一TRAIN0完整请求，独立输出 `runs/hamster3d_pinned_full1_v1/probe`。本准备报告不读取或推断该请求结果；其真实生成、解析、失败和费用应另行归档。没有额外模型调用、候选或自动重试。
+
+原件恢复路径在 `REMOTE_ARTIFACT_INDEX.json`；本地全部文件校验在 `LOCAL_ARTIFACT_INDEX.json`。本次只读归档源见 `archive_source.py.txt`。
+''', encoding='utf-8')
+(OUT / 'archive_source.py.txt').write_bytes(Path(__file__).read_bytes())
+(OUT / 'LOCAL_ARTIFACT_INDEX.json').write_text(json.dumps({p.relative_to(OUT).as_posix():
+    dict(sha256=sha(p), bytes=p.stat().st_size) for p in sorted(OUT.rglob('*'))
+    if p.is_file() and p.name != 'LOCAL_ARTIFACT_INDEX.json'}, indent=2)+'\n', encoding='utf-8')
+print(json.dumps(dict(remote_files=len(index['files']),local_files=len(list(OUT.rglob('*'))),
+    index_sha256=sha(OUT/'LOCAL_ARTIFACT_INDEX.json'), audit=audit)))

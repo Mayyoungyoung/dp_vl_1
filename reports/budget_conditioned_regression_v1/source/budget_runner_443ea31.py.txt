@@ -1,0 +1,74 @@
+import argparse,hashlib,json,os,subprocess,sys,time,xml.etree.ElementTree as ET
+from pathlib import Path
+P=Path('/home/wzy/dpvlm/route_set_v1')
+C='443ea311d53cf33ff7ab4fe3d533bb61deee4726'
+S=P/'research_v2/releases'/C
+R=P/'runs/budget_conditioned_regression_v1'
+M=P/'research_v2/incoming/budget_sources_443ea31.json'
+MS='44f156f90a91863ff76dacb2161e65a98dd5e06f8f241d1769995acc277956f7'
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p):return json.loads(Path(p).read_text())
+def verify():
+ assert sha(M)==MS
+ for name,item in read(M)['files'].items():
+  p=S/name
+  assert p.is_file() and not p.is_symlink() and p.stat().st_size==item['bytes'] and sha(p)==item['sha256'],name
+def complete(stage):
+ s=read(R/(stage+'.status.json'));q=read(R/(stage+'_receipt.json'))
+ assert s['status']=='completed' and s['exit_code']==0 and q['status']=='completed' and q['source_commit']==C
+ for p,h in q['artifacts'].items():assert sha(R/p)==h
+def main():
+ stage=sys.argv[1];start=time.perf_counter()
+ assert stage in ('tests','metadata','pause2','resume')
+ assert Path.cwd()==S and os.environ['CODE_COMMIT']==C and sorted(os.sched_getaffinity(0))==[0]
+ assert sys.version_info[:2]==(3,8) and Path(sys.prefix)==P/'.venv'
+ assert all(os.environ.get(k)=='1' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS'))
+ assert os.environ.get('CUDA_VISIBLE_DEVICES')==('' if stage=='tests' else 'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab')
+ verify(); receipt=R/(stage+'_receipt.json');assert not receipt.exists()
+ result=dict(status='failed',source_commit=C,stage=stage,artifacts={},model_calls=0 if stage=='metadata' else None)
+ try:
+  config=S/'configs/budget_conditioned_regression_v1.json'
+  if stage=='tests':
+   out=R/'validation';out.mkdir()
+   command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider','--junitxml='+str(out/'pytest.xml'),'tests/test_budget_conditioned_regression.py','tests/test_budget_assignment_conflicts.py']
+  else:
+   complete('tests')
+   command=[sys.executable,'-m','scripts.train_budget_conditioned_regression','--config',str(config)]
+   if stage=='metadata':command+=['--probe-cuda-metadata','--output',str(R/'cuda_metadata.json')]
+   else:
+    complete('metadata')
+    assert not (R/'seed0/active.lock').exists()
+    command+=['--output',str(R/'seed0'),'--device','cuda']
+    if stage=='pause2':
+     assert not (R/'seed0').exists();command+=['--stop-after','2']
+    else:
+     complete('pause2');q=read(R/'seed0/status.json')
+     assert q['status']=='paused_at_checkpoint' and q['step']==2 and q['exit_code']==0
+     command+=['--resume']
+  result['command']=command
+  child=subprocess.run(command,cwd=S);result['child_exit_code']=child.returncode
+  assert child.returncode==0
+  if stage=='tests':
+   xml=ET.parse(R/'validation/pytest.xml');cases=list(xml.iter('testcase'))
+   assert len(cases)==45 and all(not any(c.find(k) is not None for k in ('skipped','failure','error')) for c in cases)
+   result.update(passed=45,skipped=0); names=['validation/pytest.xml']
+  elif stage=='metadata':
+   q=read(R/'cuda_metadata.json');assert q['status']=='completed' and q['model_forwards']==0 and q['dataset_payload_reads']==0
+   names=['cuda_metadata.json']
+  elif stage=='pause2':
+   q=read(R/'seed0/status.json');assert q['status']=='paused_at_checkpoint' and q['step']==2
+   # This immutable copy is used by resume; live status is expected to change.
+   (R/'pause2_inner_status.json').write_bytes((R/'seed0/status.json').read_bytes())
+   names=['pause2_inner_status.json']
+   result['checkpoint_sha256']=sha(R/'seed0/last.pt')
+   result['calls_sha256']=sha(R/'seed0/calls.jsonl')
+  else:
+   q=read(R/'seed0/status.json');assert q['status']=='completed' and q['step']==3000
+   names=['seed0/summary.json']
+  verify();result.update(status='completed',artifacts={n:sha(R/n) for n in names})
+ except BaseException as e:result['exception']=repr(e);raise
+ finally:
+  result['elapsed_seconds']=time.perf_counter()-start
+  receipt.write_text(json.dumps(result,indent=2)+'\n')
+ print(json.dumps(result),flush=True)
+if __name__=='__main__':main()

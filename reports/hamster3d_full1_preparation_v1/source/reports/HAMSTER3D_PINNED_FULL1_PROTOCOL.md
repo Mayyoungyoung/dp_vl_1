@@ -1,0 +1,40 @@
+# 3D HAMSTER pinned-transport one-request technical follow-up
+
+This is a separately authorized engineering follow-up after the completed exact8 experiment, not a route-quality comparison or a new method. Only `two_row_reach_283200_target0`, the original first TRAIN observation, is allowed. No DEV/reserved data, trajectory labels, target coordinates or obstacle labels are read. Camera calibration is used only to convert predicted UVD coordinates after generation.
+
+## Completed prerequisite
+
+Source `cbcd8129c967db6f0995a824754752cc7a6f0f5b` completed the original/new eight-token comparison: 16 forwards / 16 tokens total; all eight `[1,1,151936]` bf16 full-vocabulary logits are finite and `torch.equal`, maximum difference zero. Both token prefixes match the first eight of the historical 87-token partial. Old/new decode median was 3.385401/1.152700 s, ratio 0.340491 under the registered 0.75 threshold; reserved VRAM 6,618,611,712 B and RSS 22,116,167,680 B passed the original limits. Fixed order and matched CPU logit copying limit the speed interpretation.
+
+The new driver checks all **41 actual artifact byte hashes**, including both full-logit tensors, the complete original-failure copies, sealed artifact index, source receipt, ledger and completed outer job. Its configuration binds this exact inventory, rather than accepting a caller-supplied success boolean. The original outer job completed at 05:25:20.707600 UTC; its elapsed time and the old failed request are historical costs, not charged again. This prerequisite is checked before model loading and again after a successful request.
+
+## Fixed operation and information
+
+Only four new files implement this follow-up: `scripts/probe_hamster3d_full1.py`, `configs/hamster3d_pinned_full1_v1.json`, its tests and this protocol. Original b127 and cbcd source bytes and installed Accelerate remain unchanged. Official model revision `ddc5987a56cdcb14e5e2297817612532e46e912b` and code `97216a8493f46301bf569d398462b8bb21c458c5` are verified through the existing completed asset/environment gates.
+
+Reuse the exact official bf16 loader and original 640-pixel RGB/depth path, including float16-depth serialization followed by official processing. Input tokens, original prompt, every prepared tensor shape/dtype/byte hash and RGB/depth artifacts must match the sealed exact8 run. Only the first observation JSONL row is parsed. All original failure artifacts remain byte-preserved.
+
+Install the existing project-owned synchronous transport hook before any model forward: decoder layers 0–3 resident, layers 4–35 pinned CPU storage with whole-layer upload and post-forward meta placement, `clear_cache=False`, no asynchronous streams or quantization. The resident/active/buffer inventory must leave the already registered 2 GiB workspace allowance. All official decoder tensor hashes and placement/call counters are checked after a completed request using a new full1-budget checker; the old eight-call verifier is not bypassed or edited.
+
+## Request and cost budget
+
+- Exactly **one** `generate` call, K1, at most 1,024 greedy tokens and 1,024 actual model forwards. No warmup, original-hook generation, alternate candidate, retry or resume. A timeout leaves one failed partial candidate and zero replacements.
+- Request deadline **900 s**; model-load limit 600 s, hook-conversion limit 180 s and a shared **1,800 s major-phase elapsed allowance**. Each guarded major phase is capped by its own limit and the remaining allowance from body start. This is **not a global hard wall-clock alarm**: initial evidence hashing, final parsing, input/prior-evidence rechecking and status/artifact-index writes can run outside the phase alarms. Their actual costs are retained; no timeout is silently reset or a request retried. The 900 s request includes forward hooks, synchronous logit checks and streamed-token persistence, while its final parse/save cleanup follows the generation deadline. It is deliberately a larger technical budget than the earlier 300 s failed request and is not a fair fixed-time quality comparison.
+- CPU0, one CPU thread, physical GPU1 UUID `GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab`, original 35%/8,864,694,272 B CUDA cap and 32 GiB process RSS cap. No shared environment changes or network/model downloads.
+- Every forward is issued in the ledger before execution. Streamed token IDs and partial text are saved after each emitted token. Every actual forward and token is counted, including a forward interrupted before its token is emitted.
+- First eight actual output logits are copied to CPU and compared exactly to sealed exact8 pinned-arm tensors, without extra model calls. Subsequent logits receive a finiteness check without full CPU capture. The first 87 emitted tokens are compared with the old failed prefix after the call; if fewer exist, only the actual compared count is reported. No prefix is teacher-forced.
+- Loading, preprocessing, approximately 135 s historical conversion (future actual timing must be measured), generation/copy/persistence, parse cleanup, post-run tensor verification and peak RSS/VRAM are recorded. Inner status elapsed/GPU reservation hours run from body start through exit-status preparation; final status/index serialization occurs afterward. The outer `record_job` start/end captures the full process wall, including initial evidence checks and all closing work, and is the complete cost denominator. Phase, inner and outer timings are nested and must not be added.
+
+## Output and failure interpretation
+
+Fresh output is exclusively `runs/hamster3d_pinned_full1_v1/probe`; an existing directory is refused. The three prior partials are untouched. Raw text/tokens and the issued ledger are authoritative on failure. No JSON completion, numerical clipping, target substitution, geometric repair or generation retry is permitted.
+
+Use the unchanged official `parse_trajectory(raw, 'v5')`, including its documented fallback, then the existing original-image-size signed-inverse-K and camera-to-world conversion. Preserve UVD, camera XYZ and world XYZ with original calibration. Official parsing and strict format auditing are separate: `official_parse_nonempty` may be true for malformed or partially extractable output and its points are retained.
+
+The independent strict audit accepts only the entire stripped output as one JSON value, optionally wrapped in one complete official ` ```json ... ``` ` fence; surrounding prose, trailing text and substring extraction do not pass. Require a nonempty array whose every object has exactly three finite JSON numbers in `point_3d` and explicit `gripper` equal to `close`, `open` or `none`; the optional `label` must be a string. Duplicate keys and nonstandard NaN/Infinity constants are rejected. Other JSON metadata does not replace these required fields. `strict_format` records whole-output closure, JSON syntax and waypoint structure separately. **`complete_parsed_output` requires strict structure, matching official waypoint count, EOS and no time/token truncation.** Thus EOS alone or official fallback point extraction cannot establish completeness. No raw text is modified. Empty/invalid parse is reported explicitly. `quality_metrics` and `task_success` remain null; this probe does not run a task checker, scorer or robot executor.
+
+## Verification and execution status
+
+Pure tests check fixed scope, all-artifact/source bindings, outer completion, numerical/resource gates, partial-prefix accounting, clock bounds, official parsing/coordinate conversion and a single generation site. Two tiny real-Torch CPU tests exercise actual forward hooks/stream persistence for normal completion and an interrupted fifth forward; no official weights or GPU are used. Local environment lacks Torch, so those two are explicitly skipped locally and require the later private-environment server validation.
+
+No full1 model call or server deployment was performed during implementation. Root must freeze the source, run the tests, review receipts, and independently start this one stage. Nothing automatically follows either success or failure.

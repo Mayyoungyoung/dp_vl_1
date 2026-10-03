@@ -1,5 +1,9 @@
 # 方法实现与证据边界
 
+## 2026-10-03 06:15 UTC：强基线真实预算与方法边界
+
+真正K条件普通回归3000步已完成，K1/2/4/8有效率99.22/100/100/99.71%，已知Unique0.9922/1.9375/3.3984/4.9766。K8已637/639容量，384重复主要是R<K合法变体，无大幅去重空间。MAIN293保留旧289对象和CSV原单元格；共享单seed训练成本只计一次，模型曝光属性非加性，非旧single-K同曝光声称。[完整结果](budget_conditioned_regression_v1/BUDGET_RESULTS.md)。新布局pilot12、HAMSTER唯一完整请求在运行，技术/采集进展不算方法优势；Min-SNR尚待实际阶段。有序观测对应仍是单一待验证候选，核心新颖性、独立观测多种子优势与评分校准未成立。
+
 ## 2026-10-03 01:10 UTC：真实前缀回放/LoRA技术门禁已通过
 
 真实Qwen的6条TRAIN输入、两独立分支各2次更新已实测：原完整forward与冻结layer26输入回放在初始/更新后特征、损失、梯度、optimizer及RNG上逐值一致；8adapter+60head张量变化、625冻结参数hash不变。37真实测试0skip，10full+10tail+4head/16状态预算全部计入。[技术原件与成本](observed_qwen_prefix_replay_probe_v1/TECHNICAL_RESULTS.md)。这是普通LoRA基线的串行计算工程验证，不是质量收益或创新，未证明padding/batched replay。

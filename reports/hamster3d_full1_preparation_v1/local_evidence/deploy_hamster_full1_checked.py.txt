@@ -1,0 +1,36 @@
+import base64, hashlib, json, shlex, subprocess
+from pathlib import Path
+r=Path('F:/dpvlm');b=r/'.bootstrap'
+freeze=json.loads((b/'hamster_full1_freeze_04ed74f.json').read_text(encoding='utf-8'))
+remote='/home/wzy/dpvlm/route_set_v1/research_v2'
+def run_remote(code):
+    encoded=base64.b64encode(code.encode()).decode()
+    command='/home/wzy/dpvlm/route_set_v1/.venv/bin/python -c '+shlex.quote("import base64;exec(base64.b64decode('"+encoded+"'))")
+    return subprocess.run(['ssh','wzy3090',command],check=True,text=True,capture_output=True).stdout
+for name,item in freeze['artifacts'].items():
+    p=b/name
+    assert p.stat().st_size==item['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256']
+    print(run_remote('from pathlib import Path\nimport hashlib\np=Path('+repr(remote+'/incoming/'+name)+')\nassert not p.exists() or hashlib.sha256(p.read_bytes()).hexdigest()=='+repr(item['sha256'])+'\nprint("destination_checked '+name+'")'),flush=True)
+subprocess.run(['scp']+[str(b/name) for name in freeze['artifacts']]+['wzy3090:'+remote+'/incoming/'],check=True)
+code='''from pathlib import Path
+import hashlib,json,tarfile
+root=Path(REMOTE)
+items=ITEMS
+for name,item in items.items():
+ p=root/'incoming'/name
+ assert p.stat().st_size==item['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256']
+dest=root/'releases'/COMMIT
+assert not dest.exists(), 'Existing release preserved'
+with tarfile.open(root/'incoming'/'hamster_full1_code_04ed74f.tar') as t:
+ for m in t.getmembers():
+  assert not Path(m.name).is_absolute() and '..' not in Path(m.name).parts and not m.issym() and not m.islnk()
+ dest.mkdir()
+ t.extractall(dest)
+manifest=json.loads((root/'incoming'/'hamster_full1_sources_04ed74f.json').read_text())
+for name,item in manifest['files'].items():
+ p=dest/name
+ assert p.stat().st_size==item['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256'], name
+print(json.dumps(dict(code_commit=COMMIT,verified_files=len(manifest['files']),all_incoming_hashes_verified=True)))
+'''.replace('REMOTE',repr(remote)).replace('ITEMS',repr(freeze['artifacts'])).replace('COMMIT',repr(freeze['code_commit']))
+result=run_remote(code);print(result,flush=True)
+(b/'hamster_full1_deployment_04ed74f.json').write_text(result,encoding='utf-8')

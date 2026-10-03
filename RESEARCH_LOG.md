@@ -537,3 +537,17 @@ HAMSTER exact8 source cbcd812 的两个真实调用完成：16 forward/16 token�
 扩散固定TRAIN指派/拟合审计后只保留标准归一化Min-SNR γ5诊断：源75586c573d8d67b3a3a0d33ee2a027538a1bacad已推送核远端；原独立last12000 fork两臂各500、相同恢复状态/输入/noise，全285 TRAIN免费生成与六输入teacher、0DEV。服务器父checkpoint真实inspect与16实际测试尚待执行，不将其当新机制或正式MAIN结果。MAIN仍289，未追加技术探针行。
 
 原TRAIN256 collector仍为5c8/SSH26105/CPU2、3，05:49附近shard0闭合到226；新DEV32封存，训练人口仍95父/285条件。继续实验闭环；新核心优势、三训练种子独立观测验证与论文A–H仍未成立。
+
+## 真正K条件强基线完成，下一轮实际进行 — 2026-10-03 06:15 UTC
+
+443ea31普通K条件baseline从pause2真实恢复至3000，45实际测试0skip。K1/2/4/8的Valid为99.21875/100/100/99.70703125%，Unique为0.9921875/1.9375/3.3984375/4.9765625。best=last3000，K2/K4达到本受控已知类型预算容量，K8为637/639，只差两个父各一类；三个K8无效槽与唯一K1无效都是碰撞。384有效重复主要来自R<K，不能作为去重机制空间。完整24原池11520候选按原checker复核，全部750参考通过，0新forward/修复。root实际看全部128容量图和三个残差池全部17候选，长有效绕行和失败均保留。[完整证据](reports/budget_conditioned_regression_v1/BUDGET_RESULTS.md)。
+
+MAIN已289→293：旧289 JSON对象和CSV原单元格逐项不变；四K共享同一个seed0/模型，训练属性每行192000 draws/720000路径槽为非加性字段，GPU/time仅首K1记费，不虚称与旧single-K同曝光。六次联合选择11520槽、独立计时180槽、总731700。pause2+resume外层137.067188秒/0.03807421889GPUh，inner135.601426/训练选择128.622198秒均嵌套不加。SelectedValid为空。
+
+HAMSTER full1 source04ed74f实际442文件部署一致，48服务器测试0skip于06:01:08.351190UTC完成，外层4.371071秒。root于06:01:45.446344UTC单独启动唯一TRAIN0请求，PID810845/810850、SSH82249、CPU0/GPU1/35%。06:09:19只读进度138issued forwards/137streamed tokens，前8logits exact/finite；仍running，不当完整/质量。预定900秒请求/1024token，不自动六请求或重试。严格完整JSON与官方fallback提取分开，主要阶段1800秒为剩余预算，收尾另计完整outer wall。[准备证据](reports/hamster3d_full1_preparation_v1/PREPARATION_RESULTS.md)。
+
+可变布局原eba首4已封存质量后，余8独立pilot12已05:58:14.664028启动，PID808457/808492、SSH46926、CPU1/CUDA隐藏；06:07闭合4..7，尚不能据闭合称有效。原累计45分钟worker边界软预算扣去666.657404秒，不重置。新增216槽，原4不重跑、无自动certify。原TRAIN256仍5c8/SSH26105/CPU2、3，06:07到240，待完整闭合后才原1a3全256质量核验；新DEV32仍封存。
+
+Min-SNR source75586c5的431文件已部署核hash，实际16测试与CPU parent inspection暂等HAMSTER退出后独立执行，不与其计时竞争；两臂500步和TRAIN-only诊断计划不变。下一唯一方法候选是完整正参考内有序局部观测关系参与训练匹配，先核成熟Soft-DTW divergence/DILATE等强先例、落地数值与预算检查，再决定同源三臂实训。它目前不是已证明新颖核心；MTR局部attention/DTW本身不当贡献，原segment v1 underpowered保留，不改判据补过线。
+
+JOBS只读冻结af333c9快照2026-10-03T05:59:59.921173UTC为812条，registry新增63，保留历史状态。论文核心、多种子独立观测优势和A–H仍未成立；继续数据、强基线修复与单机制验证。

@@ -1,0 +1,76 @@
+{
+  "code_commit": "04ed74fbc2912af58d65c487ce9947ea5cc71dc1",
+  "source_files": 442,
+  "local_only": true,
+  "ssh_or_scp_calls": 0,
+  "server_execution": false,
+  "model_calls": 0,
+  "old_b127_actual_source_sha256": "63a561d8c12fafe2fbe07eafbf3d72bf69db6d507203f14fa316ae10f60fc76d",
+  "archive_paths": [
+    ".gitattributes",
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "RESOURCE_ENVELOPE.md",
+    "requirements.txt",
+    "configs",
+    "routeset",
+    "scripts",
+    "tests",
+    "reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md",
+    "reports/HAMSTER3D_TRANSPORT_EXACT8_PROTOCOL.md",
+    "reports/HAMSTER3D_PINNED_FULL1_PROTOCOL.md",
+    "reports/HAMSTER3D_PREPARATION_PROTOCOL.md"
+  ],
+  "artifacts": {
+    "hamster_full1_code_04ed74f.tar": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_full1_code_04ed74f.tar",
+      "sha256": "fad564affbe3e299aac1d9efadcacbdc579920bed3ede0685206b799f5a075d7",
+      "bytes": 6021120
+    },
+    "hamster_full1_sources_04ed74f.json": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_full1_sources_04ed74f.json",
+      "sha256": "401b6a3528fe3eb7b5b490b47bb1becea0792177f030d0e5df4129643654a676",
+      "bytes": 76787
+    },
+    "hamster_full1_runner_04ed74f.py": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_full1_runner_04ed74f.py",
+      "sha256": "d13c0b4f35a7d8d07be8ee780ae52bfe04cb4bd4474210e0f6f24cab1d38ee2e",
+      "bytes": 15542
+    },
+    "hamster_full1_tests_04ed74f.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_full1_tests_04ed74f.sh",
+      "sha256": "76893c60d0c60097b5983d4054769786bff6dc791620958f5d6b35c64ba73318",
+      "bytes": 1254
+    },
+    "hamster_full1_probe_04ed74f.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\hamster_full1_probe_04ed74f.sh",
+      "sha256": "e2bcac05b07468c55f7dbbf7ec1d4a008e841ba137a5e745bfdca90aa6e77b01",
+      "bytes": 1310
+    }
+  },
+  "independent_commands": {
+    "tests": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/hamster_full1_tests_04ed74f.sh"
+    ],
+    "probe": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/hamster_full1_probe_04ed74f.sh"
+    ]
+  },
+  "local_checks": {
+    "collected_exact_tests": 48,
+    "generated_runner_AST": true,
+    "synthetic_JUnit_checks": 8,
+    "bash_n": 2,
+    "server_tests_executed": false
+  },
+  "order": "Root deploy/hash then actual48 tests first. Only after root reads completed receipt may separately launch one full1 request; no auto chain/retry."
+}
