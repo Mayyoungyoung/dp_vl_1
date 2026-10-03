@@ -1,0 +1,84 @@
+"""Read-only evidence transfer; never load tensor payloads or call models."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tarfile
+
+REV='4371e5b98a8bbab91d2107ed79de7d9e107b9bea'
+ROOT=Path(r'F:\dpvlm')
+OUT=ROOT/'reports/observed_qwen_prefix_corpus_v1'
+REMOTE=r'''
+import hashlib,io,json,tarfile
+from pathlib import Path
+P=Path('/home/wzy/dpvlm/route_set_v1')
+REV='4371e5b98a8bbab91d2107ed79de7d9e107b9bea'
+C=P/'data/observation_two_row_composite108_v1/qwen_prefix_corpus'
+S=P/'research_v2/releases'/REV
+A=Path('/tmp/qwen_prefix_corpus_4371_controlled_data.tar.gz')
+def sha(p):
+ h=hashlib.sha256()
+ with p.open('rb') as f:
+  for b in iter(lambda:f.read(1024*1024),b''):h.update(b)
+ return h.hexdigest()
+assert not A.exists(), 'Fresh archive path required'
+m=json.loads((C/'manifest.json').read_text())
+assert sha(C/'manifest.json')=='4a3152db319e67c158f692a4b88e8575fd5e00b7ebe483ebfe4fafec1552bf15'
+st=json.loads((C/'status.json').read_text());assert st['status']=='completed' and st['gate_passed']
+files={}
+for p in sorted(C.iterdir()):
+ if p.is_file():
+  assert p.suffix=='.json';files['corpus_metadata/'+p.name]=p
+for p in sorted((P/'runs/observed_qwen_prefix_corpus_v1').iterdir()):
+ if p.is_file():files['run/'+p.name]=p
+V=P/'runs/observed_qwen_prefix_corpus_validation_v1'/REV
+for p in sorted(V.iterdir()):
+ if p.is_file():files['validation/'+p.name]=p
+names=set(m['source_sha256'])|{'tests/test_qwen_prefix_corpus.py','tests/test_qwen_prefix_replay.py','configs/two_row_qwen_prefix_corpus_v1.json','scripts/record_job.py'}
+for name in sorted(names):
+ p=S/name
+ if name in m['source_sha256']:assert sha(p)==m['source_sha256'][name],name
+ dest='source/'+name+('.txt' if p.suffix=='.py' else '')
+ files[dest]=p
+files['source/qwen_prefix_corpus_4371e5b.sh']=P/'research_v2/incoming/qwen_prefix_corpus_4371e5b.sh'
+assert sha(files['source/qwen_prefix_corpus_4371e5b.sh'])=='e1ffda5c756a4b52d9cc3ba7ac9f340c8afa64c8c2bb738f24916da967518ae8'
+remote_index=[]
+artifact=json.loads((C/'artifact_index.json').read_text())
+for folder,suffix in [('payloads','.pt'),('audit_features','.npz')]:
+ ps=sorted((C/folder).iterdir());assert len(ps)==321
+ for p in ps:
+  assert p.is_file() and p.suffix==suffix
+  value=sha(p);relative=str(p.relative_to(C))
+  remote_index.append(dict(path=str(p),relative=relative,sha256=value,bytes=p.stat().st_size,downloaded=False))
+for r in m['rows']:
+ matching=[x for x in remote_index if x['relative']==r['file']]
+ assert len(matching)==1 and matching[0]['sha256']==r['sha256'] and matching[0]['bytes']==r['bytes']
+server_index=[dict(local_path=n,server_path=str(p),sha256=sha(p),bytes=p.stat().st_size) for n,p in files.items()]
+def add_json(tar,name,value):
+ b=(json.dumps(value,indent=2)+'\n').encode();info=tarfile.TarInfo(name);info.size=len(b);tar.addfile(info,io.BytesIO(b))
+with tarfile.open(A,'w:gz') as tar:
+ for name,p in files.items():tar.add(p,arcname=name,recursive=False)
+ add_json(tar,'REMOTE_TENSOR_INDEX.json',dict(protocol='remote_hash_only_no_tensor_download_v1',model_calls=0,payloads=321,audit_features=321,total_bytes=sum(x['bytes'] for x in remote_index),entries=remote_index))
+ add_json(tar,'SERVER_ORIGINALS_INDEX.json',dict(source_commit=REV,entries=server_index))
+print(json.dumps(dict(archive=str(A),archive_sha256=sha(A),bytes=A.stat().st_size,original_files=len(files),remote_binary_files=len(remote_index),remote_binary_bytes=sum(x['bytes'] for x in remote_index))))
+'''
+
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+assert not OUT.exists(), 'Fresh report family required'
+r=subprocess.run(['ssh','wzy3090','/home/wzy/dpvlm/route_set_v1/.venv-qwen/bin/python','-'],input=REMOTE,text=True,capture_output=True,check=True)
+receipt=json.loads(r.stdout)
+download=ROOT/'.bootstrap/qwen_prefix_corpus_4371_evidence.tar.gz'
+subprocess.run(['scp','wzy3090:'+receipt['archive'],str(download)],check=True)
+assert sha(download)==receipt['archive_sha256']
+OUT.mkdir(parents=True)
+with tarfile.open(download) as t:
+ for member in t.getmembers():
+  if not member.isfile() or '..' in Path(member.name).parts or Path(member.name).is_absolute():raise ValueError('Archive path')
+  dest=OUT/member.name;dest.parent.mkdir(parents=True,exist_ok=True)
+  dest.write_bytes(t.extractfile(member).read())
+index=json.loads((OUT/'SERVER_ORIGINALS_INDEX.json').read_text())
+for row in index['entries']:
+ p=OUT/row['local_path'];assert p.stat().st_size==row['bytes'] and sha(p)==row['sha256']
+receipt.update(no_model_calls=True,no_tensor_payload_download=True,source_commit=REV,verified_original_files=len(index['entries']))
+(OUT/'TRANSFER_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n')
+print(json.dumps(receipt,indent=2))

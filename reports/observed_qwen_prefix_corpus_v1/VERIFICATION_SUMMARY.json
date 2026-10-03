@@ -1,0 +1,66 @@
+{
+  "protocol": "prefix_corpus_completed_evidence_v1",
+  "code_commit": "4371e5b98a8bbab91d2107ed79de7d9e107b9bea",
+  "manifest_sha256": "4a3152db319e67c158f692a4b88e8575fd5e00b7ebe483ebfe4fafec1552bf15",
+  "counts": {
+    "TRAIN": 285,
+    "DEV_MODEL": 36,
+    "total": 321
+  },
+  "actual_parents": 107,
+  "all_historical_features_exact": true,
+  "all_replay_features_exact": true,
+  "frozen_parameter_hashes_unchanged": true,
+  "frozen_parameter_tensors": 625,
+  "issued_budget": {
+    "full_features": 321,
+    "replay_features": 321,
+    "head_calls": 0,
+    "candidate_path_states": 0,
+    "optimizer_steps": 0
+  },
+  "sequence_length_counts": {
+    "89": 291,
+    "90": 30
+  },
+  "total_elapsed_seconds": 80.6000731709646,
+  "outer_elapsed_seconds": 81.866961,
+  "gpu_hours_reserved": 0.022388909214156837,
+  "peak_cuda_allocated_bytes": 4278929920,
+  "peak_cuda_reserved_bytes": 4297064448,
+  "call_timing": {
+    "full": {
+      "calls": 321,
+      "elapsed_seconds": 19.43864591687452,
+      "median_seconds": 0.05871407699305564,
+      "maximum_seconds": 0.4767242999514565
+    },
+    "replay": {
+      "calls": 321,
+      "elapsed_seconds": 1.185454291291535,
+      "median_seconds": 0.003698514890857041,
+      "maximum_seconds": 0.007636934984475374
+    }
+  },
+  "payload_bytes": 133613250,
+  "audit_feature_bytes": 11905146,
+  "remote_tensor_files": 642,
+  "downloaded_tensor_files": 0,
+  "remote_hashes_match_original_artifact_index": true,
+  "validation": {
+    "passed": 53,
+    "skipped": 0,
+    "pytest_seconds": 4.63,
+    "outer_seconds": 6.045657,
+    "exit_code": 0
+  },
+  "archive_model_calls": 0,
+  "archive_raw_supervision_reads": 0,
+  "archive_reserved_raw_reads": 0,
+  "caveats": [
+    "Serial B1 original token lengths only; padded batching unvalidated",
+    "No route head/optimizer call and no task-quality or LoRA benefit result",
+    "Historical cache has token count but not historical token sequence; no such equality claim",
+    "Cache preparation and tail replay timing are not online end-to-end latency"
+  ]
+}

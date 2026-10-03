@@ -1,0 +1,89 @@
+import collections
+import datetime
+import hashlib
+import json
+from pathlib import Path
+import statistics
+import subprocess
+
+P=Path(r'F:\dpvlm');O=P/'reports/observed_qwen_prefix_corpus_v1'
+REV='4371e5b98a8bbab91d2107ed79de7d9e107b9bea'
+def read(name):return json.loads((O/name).read_text())
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def write(name,value):(O/name).write_text(json.dumps(value,indent=2)+'\n',encoding='utf8')
+m=read('corpus_metadata/manifest.json');s=read('corpus_metadata/status.json')
+a=read('corpus_metadata/artifact_index.json');r=read('REMOTE_TENSOR_INDEX.json')
+ledger=read('corpus_metadata/call_ledger.json');run=read('run/cache.status.json');validation=read('validation/tests.status.json')
+assert s['manifest_sha256']==sha(O/'corpus_metadata/manifest.json')=='4a3152db319e67c158f692a4b88e8575fd5e00b7ebe483ebfe4fafec1552bf15'
+assert s['actual_issued_budget']==dict(full_features=321,replay_features=321,head_calls=0,candidate_path_states=0,optimizer_steps=0)
+assert len(ledger)==642 and all(x['state']=='completed' for x in ledger)
+assert all(a[x['relative']]==dict(sha256=x['sha256'],bytes=x['bytes']) for x in r['entries'])
+assert all(x['comparisons']==dict(historical_exact=True,replay_exact=True) for x in m['rows'])
+assert read('corpus_metadata/frozen_before_sha256.json')==read('corpus_metadata/frozen_after_sha256.json')
+ids=[x['id'] for x in m['rows']]
+assert [(x['kind'],x['id']) for x in ledger]==[(k,i) for i in ids for k in ('full','replay')]
+stats={}
+for kind in ('full','replay'):
+ values=[x['elapsed_seconds'] for x in ledger if x['kind']==kind]
+ stats[kind]=dict(calls=len(values),elapsed_seconds=sum(values),median_seconds=statistics.median(values),maximum_seconds=max(values))
+dt=lambda v:datetime.datetime.fromisoformat(v)
+summary=dict(protocol='prefix_corpus_completed_evidence_v1',code_commit=REV,
+ manifest_sha256=s['manifest_sha256'],counts=m['counts'],actual_parents=len(set(x['parent_id'] for x in m['rows'])),
+ all_historical_features_exact=True,all_replay_features_exact=True,frozen_parameter_hashes_unchanged=True,
+ frozen_parameter_tensors=len(read('corpus_metadata/frozen_before_sha256.json')),
+ issued_budget=s['actual_issued_budget'],sequence_length_counts=dict(collections.Counter(x['sequence_length'] for x in m['rows'])),
+ total_elapsed_seconds=s['elapsed_seconds'],outer_elapsed_seconds=(dt(run['end_utc'])-dt(run['start_utc'])).total_seconds(),
+ gpu_hours_reserved=s['gpu_hours_reserved'],peak_cuda_allocated_bytes=s['peak_cuda_memory_allocated_bytes'],
+ peak_cuda_reserved_bytes=s['peak_cuda_memory_reserved_bytes'],call_timing=stats,
+ payload_bytes=m['payload_bytes'],audit_feature_bytes=sum(x['bytes'] for x in r['entries'] if x['relative'].startswith('audit_features/')),
+ remote_tensor_files=642,downloaded_tensor_files=0,remote_hashes_match_original_artifact_index=True,
+ validation=dict(passed=53,skipped=0,pytest_seconds=4.63,outer_seconds=(dt(validation['end_utc'])-dt(validation['start_utc'])).total_seconds(),exit_code=validation['exit_code']),
+ archive_model_calls=0,archive_raw_supervision_reads=0,archive_reserved_raw_reads=0,
+ caveats=['Serial B1 original token lengths only; padded batching unvalidated',
+ 'No route head/optimizer call and no task-quality or LoRA benefit result',
+ 'Historical cache has token count but not historical token sequence; no such equality claim',
+ 'Cache preparation and tail replay timing are not online end-to-end latency'])
+write('VERIFICATION_SUMMARY.json',summary)
+(O/'source/prefix_corpus_freeze.json').write_bytes((P/'.bootstrap/prefix_corpus_freeze.json').read_bytes())
+protocol=subprocess.run(['git','show',REV+':reports/TWO_ROW_QWEN_PREFIX_CORPUS_PROTOCOL.md'],cwd=P,capture_output=True,check=True).stdout
+(O/'source/TWO_ROW_QWEN_PREFIX_CORPUS_PROTOCOL.md').write_bytes(protocol)
+(O/'source/archive_evidence.py.txt').write_bytes((P/'.bootstrap/archive_qwen_prefix_corpus_4371.py').read_bytes())
+(O/'source/finalize_evidence.py.txt').write_bytes(Path(__file__).read_bytes())
+report=f'''# 正式冻结 Qwen 前缀缓存：完成记录
+
+固定 321 条输入全部通过：官方完整前向特征与原封存 mean/last 特征逐值一致，保存到 CPU 后重新加载的第 26 层输入，经原最后两层和 final norm 重算也逐值一致。285 条 TRAIN 与原 36 条 DEV_MODEL 共 107 个实际父场景；没有读取新 DEV、reserved raw 或路线监督，没有训练。
+
+这是一项普通 partial-LoRA 基线的效率准备及数值等价证据，不是路线质量结果或方法贡献。模型与 processor 均为 `Qwen/Qwen3-VL-2B-Instruct@89644892e4d85e24eaac8bacfd4f463576704203`，实际运行 Torch 2.4.1+cu121、Transformers 4.57.1、BF16/SDPA。
+
+| 实际项目 | 结果 |
+|---|---:|
+| 完整 Qwen 前向 / 原尾部重放 | 321 / 321 |
+| head 调用 / 候选路径 / optimizer 更新 | 0 / 0 / 0 |
+| 历史特征 / 重放精确相等 | 321 / 321 |
+| token 长度 | 291 条为 89，30 条为 90 |
+| 主体耗时 | {s['elapsed_seconds']:.9f} s |
+| 外层作业耗时 | {summary['outer_elapsed_seconds']:.6f} s |
+| 保守 GPU 占用小时（整个主体耗时） | {s['gpu_hours_reserved']:.10f} |
+| CUDA 峰值 allocated / reserved | {s['peak_cuda_memory_allocated_bytes']} / {s['peak_cuda_memory_reserved_bytes']} B |
+| 原始 CPU 前缀文件 | 321 个，{m['payload_bytes']} B |
+| 数值审计 NPZ | 321 个，{summary['audit_feature_bytes']} B |
+| 实际 Linux/Torch 测试 | 53 passed，0 skipped，4.63 s |
+
+全部 {summary['frozen_parameter_tensors']} 个冻结参数张量的前后哈希一致。缓存保留实际 B1 token 长度、BF16 中间状态、真实位置编码、attention mask、cache position、pooling mask 和原 decoder kwargs；训练读取器只提供此前缀，不提供最终 hidden feature 或任何标签。适配器每次更新后，必须重新执行最后两层和 norm/pooling，旧最终特征不得充当更新后的模型条件。本轮不验证可变长度 padding/batched replay。
+
+逐调用同步计时累计 full {stats['full']['elapsed_seconds']:.6f} s、replay {stats['replay']['elapsed_seconds']:.6f} s；其余主体成本包括加载、校验、CPU 复制、序列化与哈希。这些是缓存准备成本，不能替代端到端单请求时延。历史 NPZ 只保存 token 数量而非 token ID 序列；本轮保存新 token 元数据，不声称与不存在的历史 token 序列逐值比较。
+
+实际源 commit 为 `{REV}`。缓存作业 PID {run['pid']} / child {run['child_pid']}，`{run['start_utc']}` 至 `{run['end_utc']}`，退出 0。测试 PID {validation['pid']} / child {validation['child_pid']}，退出 0。配置为 fresh-only、失败即停、每个 issued 调用计入预算；没有重试或恢复。
+
+固定 manifest SHA256：`{s['manifest_sha256']}`。原 export SHA、全部模型资产/source/probe receipt SHA、每输入来源与等价标记保留于 [原 manifest](corpus_metadata/manifest.json)。同一普通 head 来源为 `ce0b186b1f73beab2bd09b0582622e1d1b012fc88b892ab909479dd7deb250b3`；本轮没有加载或调用它。
+
+实际冻结 wrapper 位于 [source/qwen_prefix_corpus_4371e5b.sh](source/qwen_prefix_corpus_4371e5b.sh)，其 `tests` 与 `cache` 阶段由 root 分别启动，命令、cwd、版本和退出码保留于 [run status](run/cache.status.json) 与 [validation status](validation/tests.status.json)。既有输出已完成且不支持重跑到同目录。
+
+归档保存 28 份服务器原始文本字节（元数据、日志、测试、源与 wrapper）；全部逐项哈希核验。[REMOTE_TENSOR_INDEX.json](REMOTE_TENSOR_INDEX.json) 索引 321 PT + 321 NPZ 的真实远端路径、字节数、SHA，642 项均与原 artifact index 一致，未下载任何张量文件。归档本身没有新增模型调用。PT/NPZ 总量 {r['total_bytes']} B。核验摘要见 [VERIFICATION_SUMMARY.json](VERIFICATION_SUMMARY.json)，本地完整清单见 [ARTIFACT_INDEX.json](ARTIFACT_INDEX.json)。
+
+下一步仅是已另行预登记的 frozen-vs-LoRA 普通续训比较；本缓存成功不预判 LoRA 有效性，不代表任务成功率提升。
+'''
+(O/'CACHE_RESULTS.md').write_text(report,encoding='utf8')
+entries=[dict(path=str(p.relative_to(O)).replace('\\','/'),sha256=sha(p),bytes=p.stat().st_size) for p in sorted(O.rglob('*')) if p.is_file() and p.name!='ARTIFACT_INDEX.json']
+write('ARTIFACT_INDEX.json',dict(protocol='complete_local_evidence_index_v1',source_commit=REV,entries=entries,total_files=len(entries),total_bytes=sum(x['bytes'] for x in entries),remote_tensor_files=642,downloaded_tensor_files=0))
+print(json.dumps(dict(files=len(entries),bytes=sum(x['bytes'] for x in entries),index_sha256=sha(O/'ARTIFACT_INDEX.json'),summary=summary),indent=2))

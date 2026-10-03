@@ -1,0 +1,266 @@
+"""Fresh-only capture of the fixed321 authorized frozen Qwen prefixes.
+
+At most one official full capture and one serial original-tail replay per ID.
+No route labels, optimization, head calls, new DEV, or implicit retry/resume.
+"""
+import argparse
+import inspect
+import json
+import os
+from pathlib import Path
+import time
+import traceback
+
+from routeset import qwen_prefix_corpus as corpus
+from routeset.qwen_prefix_replay import BUDGET as PROBE_BUDGET
+from scripts.audit_two_row_qwen_prefix_replay import OFFICIAL_SHA, write
+
+PROJECT=Path(__file__).resolve().parents[1]
+DEPENDENCIES=('routeset/qwen_prefix_corpus.py','routeset/qwen_prefix_replay.py',
+              'scripts/cache_observed_qwen_prefix.py','scripts/audit_two_row_qwen_prefix_replay.py',
+              'scripts/export_two_row_composite_observations.py','scripts/observation_cache_qwen.py')
+
+
+def verify_probe(root):
+    root=Path(root)
+    names={'status_sha256':'status.json','preflight_sha256':'preflight.json',
+           'artifact_index_sha256':'artifact_index.json','final_audit_sha256':'final_audit.json'}
+    for key,name in names.items():
+        if corpus.sha(root/name)!=corpus.PROBE[key]:raise ValueError('Successful probe receipt changed: '+name)
+    status=json.loads((root/'status.json').read_text());preflight=json.loads((root/'preflight.json').read_text())
+    index=json.loads((root/'artifact_index.json').read_text())
+    if (status.get('status')!='completed' or not status.get('gate_passed') or status.get('exit_code')!=0
+            or status.get('actual_issued_budget')!=PROBE_BUDGET or status.get('batched_replay_verified') is not False
+            or preflight.get('code_commit')!=corpus.PROBE['source_commit']
+            or preflight.get('export_sha256')!=corpus.EXPORT_SHA):
+        raise ValueError('A successful exact serial probe is required')
+    for name,value in preflight['source_sha256'].items():
+        if corpus.sha(PROJECT/name)!=value:raise ValueError('Successful probe implementation dependency changed: '+name)
+    assets_path=root/'model_assets.json'
+    if corpus.sha(assets_path)!=index['model_assets.json']['sha256']:
+        raise ValueError('Successful probe model asset receipt changed')
+    assets=json.loads(assets_path.read_text())
+    if any(Path(name).name!=name or not isinstance(value,str) or len(value)!=64 for name,value in assets.items()):
+        raise ValueError('Unsafe model asset receipt')
+    return preflight,assets
+
+
+def checked_image(row,manifest):
+    name='extension' if row['parent_id'].startswith('two_row_reach_400') else 'old'
+    base=Path(manifest['sources'][name]['source_dataset'])/'parents'/row['split']/row['parent_id']
+    root=base.resolve(strict=True);path=Path(row['image']);resolved=path.resolve(strict=True)
+    try:resolved.relative_to(root)
+    except ValueError as exc:raise ValueError('Image outside the fixed authorized parent') from exc
+    if base.absolute()!=root or resolved!=path.absolute() or not resolved.is_file():
+        raise ValueError('Image or parent symlink rejected')
+    value=corpus.sha(path)
+    if manifest['source_files_sha256'].get(str(path))!=value:raise ValueError('Sealed observation image changed')
+    return value
+
+
+def inspect_frozen_cache(data,manifest):
+    import numpy as np
+    data=Path(data);cache=data/'qwen_cache'
+    if corpus.sha(data/'observations.jsonl')!=manifest['output_files_sha256']['observations.jsonl']:
+        raise ValueError('Fixed observation manifest bytes changed')
+    rows=corpus.validate_observations([json.loads(line) for line in (data/'observations.jsonl').read_text().splitlines() if line])
+    if corpus.sha(cache/'composite_cache_receipt.json')!=corpus.CACHE_RECEIPT_SHA:
+        raise ValueError('Common-head historical cache receipt changed')
+    receipt=json.loads((cache/'composite_cache_receipt.json').read_text())
+    if receipt['source_export_manifest_sha256']!=corpus.EXPORT_SHA or receipt['old_reused_count']!=225 or receipt['new_encoding_count']!=96:
+        raise ValueError('Historical cache composition changed')
+    for name in ('cache_config.json','samples.jsonl','status.json'):
+        if corpus.sha(cache/name)!=receipt['artifact_sha256'][name]:raise ValueError('Cache metadata changed: '+name)
+    config=json.loads((cache/'cache_config.json').read_text());status=json.loads((cache/'status.json').read_text())
+    expected=dict(model='Qwen/Qwen3-VL-2B-Instruct',revision=corpus.REVISION,processor=corpus.REVISION,
+        manifest_sha256=corpus.sha(data/'observations.jsonl'),max_pixels=262144,dtype='torch.bfloat16',
+        model_trainable_parameter_count=0,transformers='4.57.1')
+    if (any(config.get(k)!=v for k,v in expected.items()) or set(config.get('input_contract',[]))!=corpus.OBSERVATION_KEYS
+            or status.get('samples')!=321 or status.get('status')!='frozen_rgb_language_feature_extraction_complete'):
+        raise ValueError('Historical frozen encoder contract/status differs')
+    records=[json.loads(line) for line in (cache/'samples.jsonl').read_text().splitlines() if line]
+    if tuple(r.get('id') for r in records)!=corpus.IDS:raise ValueError('Cache identities/order changed')
+    import hashlib
+    selected=[]
+    fields={'mean_hidden','last_hidden','id','parent_id','split','image_sha256','input_tokens'}
+    for row,record in zip(rows,records):
+        filename=hashlib.sha256(json.dumps(row,sort_keys=True).encode()).hexdigest()[:20]+'.npz'
+        path=cache/filename
+        if (record['file']!=filename or path.absolute()!=path.resolve(strict=True)
+                or not corpus.sha(path)==record['sha256']==receipt['artifact_sha256'][filename]):
+            raise ValueError('Historical feature bytes/input row changed')
+        image_sha=checked_image(row,manifest)
+        with np.load(path,allow_pickle=False) as archive:
+            if (set(archive.files)!=fields or any(str(archive[k].item())!=row[k] for k in ('id','parent_id','split'))
+                    or str(archive['image_sha256'].item())!=image_sha or record['image_sha256']!=image_sha
+                    or int(archive['input_tokens'])!=record['input_tokens']
+                    or any(archive[k].shape!=(2048,) or archive[k].dtype!=np.float32 or not np.isfinite(archive[k]).all()
+                           for k in ('mean_hidden','last_hidden'))):
+                raise ValueError('Historical feature schema/observation provenance mismatch')
+            selected.append(dict(row=row,image_sha256=image_sha,historical_npz_sha256=record['sha256'],
+                                 input_tokens=int(archive['input_tokens']),
+                                 feature=np.concatenate([archive['mean_hidden'],archive['last_hidden']])[None]))
+    return selected,config
+
+
+class CaptureLedger:
+    def __init__(self,root):self.root=Path(root);self.records=[]
+
+    def call(self,kind,identity,function):
+        if kind not in ('full','replay'):raise ValueError('Only feature capture/replay calls are authorized')
+        prior=[r for r in self.records if r['kind']==kind]
+        if len(prior)>=321 or identity!=corpus.IDS[len(prior)]:raise ValueError('No retry/reordering or budget extension')
+        if kind=='replay' and not any(r['kind']=='full' and r['id']==identity and r['state']=='completed' for r in self.records):
+            raise ValueError('Replay must follow its single completed official capture')
+        record=dict(kind=kind,id=identity,state='issued');self.records.append(record)
+        write(self.root/'call_ledger.json',self.records)
+        started=time.perf_counter()
+        try:
+            value=function();record['state']='completed';return value
+        except BaseException as exc:
+            record.update(state='failed',exception=repr(exc));raise
+        finally:
+            record['elapsed_seconds']=time.perf_counter()-started
+            write(self.root/'call_ledger.json',self.records)
+
+    def counts(self):
+        return dict(full_features=sum(r['kind']=='full' for r in self.records),
+                    replay_features=sum(r['kind']=='replay' for r in self.records),
+                    head_calls=0,candidate_path_states=0,optimizer_steps=0)
+
+
+def run(args):
+    output=Path(args.output);output.mkdir(parents=True,exist_ok=False)
+    started=time.perf_counter();gpu_requested=False;ledger=CaptureLedger(output);completed=[]
+    state=dict(protocol=corpus.PROTOCOL,status='running',gate_passed=False,planned_budget=corpus.BUDGET,
+               raw_supervision_opened=False,new_dev_raw_opened=False,reserved_raw_opened=False)
+    write(output/'status.json',state)
+    try:
+        import numpy as np
+        import torch
+        import transformers
+        from transformers import AutoProcessor,Qwen3VLForConditionalGeneration
+        from PIL import Image
+        from routeset import qwen_prefix_replay as replay
+        from routeset.common import seed_all
+        from scripts.export_two_row_composite_observations import _ready
+        policy=corpus.validate_policy(json.loads(Path(args.config).read_text()))
+        write(output/'policy.json',policy)
+        if (os.environ.get('CUDA_VISIBLE_DEVICES')!='1' or not torch.cuda.is_available()
+                or torch.__version__.split('+')[0]!='2.4.1' or transformers.__version__!='4.57.1'
+                or not hasattr(os,'sched_getaffinity') or len(os.sched_getaffinity(0))!=1):
+            raise ValueError('Pinned runtime, GPU1/35% and single CPU affinity required')
+        torch.set_num_threads(1);torch.cuda.set_per_process_memory_fraction(.35,0)
+        torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+        preflight,model_assets=verify_probe(args.probe)
+        installed=Path(inspect.getfile(transformers)).parent
+        if preflight['official_source_sha256']!=OFFICIAL_SHA:raise ValueError('Probe official dependency contract changed')
+        for name,value in OFFICIAL_SHA.items():
+            if corpus.sha(installed/name)!=value:raise ValueError('Installed official source changed: '+name)
+        model_path,data=Path(args.model),Path(args.data)
+        actual_assets={p.name:corpus.sha(p) for p in model_path.iterdir() if p.is_file()}
+        if actual_assets!=model_assets:raise ValueError('Base weights/processor files differ from successful probe')
+        if corpus.sha(model_path/'provenance.json')!=preflight['model_provenance_sha256']:
+            raise ValueError('Model provenance changed')
+        if corpus.sha(data/'export_manifest.json')!=corpus.EXPORT_SHA:raise ValueError('Fixed composite export changed')
+        export=json.loads((data/'export_manifest.json').read_text())
+        _,gate=_ready(export['sources']['old']['source_dataset'],export['sources']['extension']['source_dataset'],export['selection'])
+        selected,cache_config=inspect_frozen_cache(data,export)
+        source_hashes={name:corpus.sha(PROJECT/name) for name in DEPENDENCIES}
+        write(output/'preflight.json',dict(probe=corpus.PROBE,source_sha256=source_hashes,
+            model_assets_sha256=model_assets,model_provenance_sha256=preflight['model_provenance_sha256'],
+            official_source_sha256=OFFICIAL_SHA,policy_sha256=corpus.sha(args.config),
+            observations_sha256=corpus.sha(data/'observations.jsonl'),mechanical_gate=gate,
+            code_commit=os.environ.get('CODE_COMMIT'),pid=os.getpid(),cpu_affinity=sorted(os.sched_getaffinity(0))))
+        seed_all(policy['seed'])
+        model=Qwen3VLForConditionalGeneration.from_pretrained(model_path,local_files_only=True,
+            torch_dtype=torch.bfloat16,attn_implementation='sdpa')
+        gpu_requested=True;model=model.to('cuda').eval().requires_grad_(False)
+        language=model.model.language_model
+        if len(language.layers)!=28 or language.config.hidden_size!=2048 or language.config.attention_dropout!=0:
+            raise ValueError('Pinned language architecture/dropout changed')
+        processor=AutoProcessor.from_pretrained(model_path,local_files_only=True,min_pixels=65536,max_pixels=262144)
+        frozen_before=replay.parameter_hashes(model)
+        write(output/'frozen_before_sha256.json',frozen_before)
+        (output/'payloads').mkdir();(output/'audit_features').mkdir()
+        prompt_records=[]
+        for item in selected:
+            row=item['row'];identity=row['id']
+            with Image.open(row['image']) as image:rgb=image.convert('RGB')
+            messages=[{'role':'user','content':[{'type':'image'},{'type':'text','text':row['instruction']}]}]
+            prompt=processor.apply_chat_template(messages,tokenize=False,add_generation_prompt=True)
+            inputs=processor(text=[prompt],images=[rgb],return_tensors='pt').to('cuda')
+            if 'labels' in inputs:raise ValueError('No answer/teacher tokens allowed')
+            tokens=int(inputs['attention_mask'].sum())
+            if tokens!=item['input_tokens']:raise ValueError('Historical token count changed before capture')
+            def capture():
+                result=replay.capture_prefix(model,inputs);torch.cuda.synchronize();return result
+            payload,feature=ledger.call('full',identity,capture)
+            file=corpus.payload_filename(identity);path=output/file
+            torch.save(payload,path)
+            # Safe CPU reload is exactly what the continuation reader will use.
+            reloaded=torch.load(path,map_location='cpu',weights_only=True)
+            length=int(payload['hidden'].shape[1])
+            metadata=corpus.validate_payload(reloaded,length,tokens)
+            historical=bool(np.array_equal(feature.numpy(),item['feature']))
+            np.savez_compressed(output/'audit_features'/(identity+'.npz'),official_feature=feature.numpy(),
+                                historical_feature=item['feature'])
+            if not historical:raise ValueError('Official feature differs from sealed original cache: '+identity)
+            def serial_replay():
+                with torch.no_grad():value=replay.replay_feature(model,reloaded)
+                torch.cuda.synchronize();return value
+            replayed=ledger.call('replay',identity,serial_replay)
+            comparison=replay.tensor_difference(feature,replayed.cpu())
+            np.savez_compressed(output/'audit_features'/(identity+'.npz'),official_feature=feature.numpy(),
+                                historical_feature=item['feature'],replayed_feature=replayed.cpu().numpy())
+            if not comparison['exact']:raise ValueError('Official/serialized replay feature mismatch: '+identity)
+            completed.append(dict(id=identity,parent_id=row['parent_id'],split=row['split'],file=file,
+                sha256=corpus.sha(path),bytes=path.stat().st_size,sequence_length=length,input_tokens=tokens,
+                source=dict(observation_row=row,image_sha256=item['image_sha256'],historical_npz_sha256=item['historical_npz_sha256']),
+                tensor_metadata=metadata,comparisons=dict(historical_exact=True,replay_exact=True)))
+            prompt_records.append(dict(id=identity,prompt=prompt,input_ids=inputs['input_ids'].cpu().tolist(),
+                input_tokens=tokens,historical_token_sequence_available=False,
+                image_grid_thw=inputs['image_grid_thw'].cpu().tolist()))
+            write(output/'completed_rows.json',completed);write(output/'input_audit.json',prompt_records)
+            print(json.dumps(dict(completed=len(completed),total=321,full_calls=ledger.counts()['full_features'],
+                                  replay_calls=ledger.counts()['replay_features'])),flush=True)
+        frozen_after=replay.parameter_hashes(model);write(output/'frozen_after_sha256.json',frozen_after)
+        if frozen_before!=frozen_after or any(p.requires_grad for p in model.parameters()):
+            raise ValueError('The frozen original backbone changed')
+        if ledger.counts()!=corpus.BUDGET:raise ValueError('Actual capture budget differs')
+        _,final_gate=_ready(export['sources']['old']['source_dataset'],export['sources']['extension']['source_dataset'],export['selection'])
+        if any(corpus.sha(PROJECT/name)!=value for name,value in source_hashes.items()):raise ValueError('Runtime source changed')
+        manifest=dict(protocol=corpus.PROTOCOL,payload_protocol=corpus.PAYLOAD_PROTOCOL,
+            export_sha256=corpus.EXPORT_SHA,observations_sha256=corpus.sha(data/'observations.jsonl'),
+            historical_cache_receipt_sha256=corpus.CACHE_RECEIPT_SHA,model_revision=corpus.REVISION,
+            processor_revision=corpus.REVISION,model_provenance_sha256=preflight['model_provenance_sha256'],
+            model_assets_sha256=model_assets,replay_source_sha256=source_hashes['routeset/qwen_prefix_replay.py'],
+            source_sha256=source_hashes,probe=corpus.PROBE,counts=corpus.COUNTS,rows=completed,
+            payload_bytes=sum(row['bytes'] for row in completed),serial_only=True,
+            raw_supervision_opened=False,new_dev_raw_opened=False,optimizer_steps=0,head_calls=0,
+            frozen_weights_unchanged=True,adapter_state='absent; equivalent to zero adapters under successful probe',
+            input_contract=sorted(corpus.OBSERVATION_KEYS),historical_encoder_config=cache_config,
+            head_checkpoint_sha256=policy['head_checkpoint_sha256'],policy_sha256=corpus.sha(args.config),
+            final_mechanical_gate=final_gate,code_commit=os.environ.get('CODE_COMMIT'))
+        corpus.validate_manifest(manifest);write(output/'manifest.json',manifest)
+        state.update(status='completed',gate_passed=True,exit_code=0,manifest_sha256=corpus.sha(output/'manifest.json'))
+    except BaseException as exc:
+        state.update(status='failed',gate_passed=False,exit_code=1,exception=repr(exc))
+        (output/'exception.txt').write_text(traceback.format_exc(),encoding='utf-8');raise
+    finally:
+        elapsed=time.perf_counter()-started
+        state.update(actual_issued_budget=ledger.counts(),completed_rows=len(completed),elapsed_seconds=elapsed,
+            gpu_model_transfer_requested=gpu_requested,gpu_hours_reserved=elapsed/3600 if gpu_requested else 0.,
+            peak_cuda_memory_allocated_bytes=int(torch.cuda.max_memory_allocated()) if gpu_requested else None,
+            peak_cuda_memory_reserved_bytes=int(torch.cuda.max_memory_reserved()) if gpu_requested else None,
+            wall_time_scope='Whole job including CPU validation/hash/serialization; not an online request latency',
+            retry_policy='fresh-only, no automatic retry/resume; every issued failed call consumes budget')
+        write(output/'status.json',state)
+        write(output/'artifact_index.json',{str(p.relative_to(output)):dict(sha256=corpus.sha(p),bytes=p.stat().st_size)
+            for p in sorted(output.rglob('*')) if p.is_file() and p.name!='artifact_index.json'})
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    for name in ('config','data','model','probe','output'):parser.add_argument('--'+name,required=True)
+    run(parser.parse_args())
