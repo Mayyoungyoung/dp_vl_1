@@ -1,0 +1,236 @@
+"""Driver call accounting, source policy, and actual Torch continuation tests."""
+import copy
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+from scripts import train_observed_two_row_diffusion as driver
+
+
+def test_policy_and_fixed_separate_budgets():
+    p=driver.read('configs/observed_two_row_diffusion_v1.json')
+    assert driver.validate_policy(p)==p
+    assert p['steps']*p['batch_size']*p['candidates']==1536000
+    assert driver.expected_train_calls()==dict(train_geometry=12000,train_denoise=12000,
+        optimizer=12000,eval_geometry=1728,eval_denoise=69120)
+    assert 285*40==11400 and 36*2*40==2880
+
+
+@pytest.mark.parametrize('field,value',[('steps',12001),('sampling_steps',41),
+    ('batch_size',16),('eval_noise_seeds',[1,2,3]),('extension_dev_raw_allowed',True)])
+def test_policy_rejects_budget_or_input_changes(field,value):
+    p=driver.read('configs/observed_two_row_diffusion_v1.json');p[field]=value
+    with pytest.raises(ValueError):driver.validate_policy(p)
+
+
+def test_noise_repeat_not_pooled_or_training_rng():
+    a,ma=driver.evaluation_noise(['a','b'],300000)
+    np.random.seed(445);np.random.randn(100)
+    b,mb=driver.evaluation_noise(['a','b'],300000)
+    c,mc=driver.evaluation_noise(['a','b'],300001)
+    assert np.array_equal(a,b) and ma==mb and a.shape==(2,4,23,4)
+    assert not np.array_equal(a,c) and mc['sha256']!=ma['sha256']
+    with pytest.raises(ValueError):driver.evaluation_noise(['a','a'],1)
+
+
+def test_failed_denoise_remains_charged_and_replay_is_refused(tmp_path):
+    j=driver.RequestJournal(tmp_path/'journal.jsonl');before=j.snapshot()
+    j.issue('eval_geometry','dev:250:r0:a')
+    j.issue('eval_denoise','dev:250:r0:a:0')
+    j.issue('eval_denoise','dev:250:r0:a:1')
+    recovered=driver.RequestJournal(j.path)
+    assert recovered.counts==dict(eval_geometry=1,eval_denoise=2)
+    with pytest.raises(ValueError):recovered.require_boundary(before)
+    with pytest.raises(ValueError):recovered.issue('eval_denoise','dev:250:r0:a:1')
+
+
+def test_sealed_pool_reconciliation_requires_all40_calls_in_order(tmp_path):
+    j=driver.RequestJournal(tmp_path/'journal');before=j.snapshot()
+    identity=dict(kind='dev',step=250,repeat=0,ids=['a','b'])
+    for kind,key in driver.evaluation_keys(identity):j.issue(kind,key)
+    receipt=dict(identity=identity,journal_before=before,journal_after=j.snapshot())
+    driver.reconcile_pool(j,before,receipt)
+    assert j.counts==dict(eval_geometry=2,eval_denoise=80)
+    wrong=dict(receipt,identity=dict(identity,repeat=1))
+    with pytest.raises(ValueError):driver.reconcile_pool(j,before,wrong)
+    j.issue('train_denoise','251')
+    with pytest.raises(ValueError):driver.reconcile_pool(j,before,receipt)
+
+
+def test_selection_ties_keep_earlier_and_repeats_do_not_reselect():
+    trainer=SimpleNamespace(history=[],best=None)
+    def row(step,score):return dict(identity=dict(step=step),metrics=dict(selection_score=score))
+    assert driver.accept_selection(trainer,row(250,.5),'dev/a','a')
+    assert not driver.accept_selection(trainer,row(500,.5),'dev/b','b')
+    assert trainer.best['step']==250
+    with pytest.raises(ValueError):driver.accept_selection(trainer,row(500,.9),'dev/c','c')
+
+
+def test_pool_hashes_include_noise_and_generation_receipt(tmp_path):
+    identity=dict(kind='dev',step=250,repeat=0,ids=['a']);folder=tmp_path/'pool';folder.mkdir()
+    for name in driver.POOL_FILES:(folder/name).write_bytes(b'fixture')
+    driver.write_json(folder/'metrics.json',dict(selection_score=0.))
+    receipt=dict(identity=identity,metrics=dict(selection_score=0.),
+        artifacts={p.name:driver.digest(p) for p in folder.iterdir()})
+    driver.write_json(folder/'pool_receipt.json',receipt)
+    assert driver.verify_pool(folder,identity)==receipt
+    (folder/'initial_noise.npz').write_bytes(b'changed')
+    with pytest.raises(ValueError):driver.verify_pool(folder,identity)
+
+
+def fixture_data(n=4):
+    rng=np.random.default_rng(991)
+    templates=np.asarray([[True]*6,[True]*3+[False]*3,[True]*4+[False]*2,[True]*5+[False]])
+    mask=templates[np.arange(n)%4]
+    current=np.tile(np.asarray([0.,0.,.1,0.,0.,0.,1.,1.],np.float32),(n,1))
+    paths=np.zeros((n,6,24,3),np.float32)
+    for i in range(n):
+        for r in range(6):
+            paths[i,r]=np.linspace(current[i,:3],np.asarray([.1+.02*r,.05,.15]),24)
+    events=np.ones((n,6,24),np.float32);events[:,:,12:]=0
+    return dict(features=rng.normal(size=(n,4096)).astype(np.float32),current=current,
+        paths=paths,events=events,path_mask=mask,scene_ids=np.asarray(['a'+str(i) for i in range(n)]),
+        parent_ids=np.asarray(['p'+str(i) for i in range(n)]),splits=np.asarray(['TRAIN']*n),fingerprint='fixture')
+
+
+def make_trainer(tmp_path,name,arm='set'):
+    torch=pytest.importorskip('torch')
+    from routeset.observed_route_diffusion import ObservedRouteDiffusion,ObservedX0Schedule
+    from routeset.observed_diffusion_stream import PairedPositiveStream
+    from routeset.common import seed_all
+    seed_all(0);torch.set_num_threads(1)
+    data=fixture_data();model=ObservedRouteDiffusion(set_attention=arm=='set')
+    stream=PairedPositiveStream(data,np.arange(4,dtype=np.int64))
+    config=dict(seed=0,arm=arm,steps=4,batch_size=32,candidates=4,lr=.0003,weight_decay=.0001,
+        gradient_clip=1.,checkpoint_every=1,grounding_sigma=.025,grounding_weight=.02,
+        cache='fixed',data='fixed',source='fixed',sampling_steps=40)
+    trainer=driver.DiffusionTrainer(model,ObservedX0Schedule(),stream,config)
+    journal=driver.RequestJournal(tmp_path/(name+'.jsonl'))
+    return trainer,journal,data
+
+
+def inputs_for(data,ids,device='cpu'):
+    import torch
+    n=len(ids);cloud=torch.tensor([[.10,.05,.15],[.20,.05,.15],[.15,.15,.20],[.10,-.05,.15]],device=device)
+    return dict(features=torch.as_tensor(data['features'][ids],device=device),
+        current=torch.as_tensor(data['current'][ids],device=device),world_xyz=cloud[None].repeat(n,1,1),
+        rgb=torch.full((n,4,3),.4,device=device),uv=torch.zeros((n,4,2),device=device),
+        depth=torch.full((n,4),.2,device=device),valid_mask=torch.ones((n,4),dtype=torch.bool,device=device))
+
+
+def torch_loss(trainer,data):
+    import torch
+    from routeset.observed_route_diffusion import targets_to_state
+    def loss(draw,step,journal):
+        ids,refs=draw['indices'],draw['reference_indices'];inputs=inputs_for(data,ids)
+        target=targets_to_state(torch.from_numpy(data['paths'][ids[:,None],refs]),
+            torch.from_numpy(data['events'][ids[:,None],refs]),inputs['current'])
+        journal.issue('train_geometry',step);encoded=trainer.model.encode_observation(inputs)
+        noisy=trainer.schedule.q_sample(target,draw['timesteps'],draw['epsilon'])
+        journal.issue('train_denoise',step)
+        out=trainer.model.forward_x0(noisy,draw['timesteps'],encoded)
+        return (out-target).square().mean(),dict(route_x0_mse=float((out-target).square().mean().detach()))
+    return loss
+
+
+def assert_nested_equal(a,b):
+    import torch
+    if isinstance(a,torch.Tensor):assert torch.equal(a,b)
+    elif isinstance(a,np.ndarray):assert np.array_equal(a,b)
+    elif isinstance(a,dict):
+        assert set(a)==set(b)
+        for key in a:assert_nested_equal(a[key],b[key])
+    elif isinstance(a,(tuple,list)):
+        assert len(a)==len(b)
+        for x,y in zip(a,b):assert_nested_equal(x,y)
+    else:assert a==b
+
+
+def test_real_torch_four_vs_two_pause_resume_full_state_and_stream(tmp_path):
+    torch=pytest.importorskip('torch')
+    full,j1,data=make_trainer(tmp_path,'full')
+    for _ in range(4):full.train_step(torch_loss(full,data),j1)
+    expected=full.state_dict(j1,0.)
+    split,j2,data=make_trainer(tmp_path,'split')
+    for _ in range(2):split.train_step(torch_loss(split,data),j2)
+    state=split.state_dict(j2,0.);driver.atomic_torch_save(tmp_path/'last.pt',state)
+    recovered,j3,data=make_trainer(tmp_path,'split')
+    recovered.load_state_dict(torch.load(tmp_path/'last.pt',weights_only=False),j3)
+    for _ in range(2):recovered.train_step(torch_loss(recovered,data),j3)
+    assert_nested_equal(expected,recovered.state_dict(j3,0.))
+    assert j1.counts==dict(train_geometry=4,train_denoise=4,optimizer=4)
+    assert recovered.stream.audit()['target_path_states']==4*32*4
+    assert any(r['nonzero'] for r in recovered.gradient_audit.values())
+
+
+def test_real_torch_resume_rejects_arm_schedule_data_and_issued_work(tmp_path):
+    pytest.importorskip('torch')
+    trainer,j,data=make_trainer(tmp_path,'a');trainer.train_step(torch_loss(trainer,data),j)
+    state=trainer.state_dict(j,0.)
+    for field,value in [('arm','independent'),('cache','stale'),('sampling_steps',41),('source','changed')]:
+        changed=copy.deepcopy(state);changed['config'][field]=value
+        with pytest.raises(ValueError):trainer.load_state_dict(changed,j)
+    changed=copy.deepcopy(state);changed['schedule']['ddim_steps']=41
+    with pytest.raises(ValueError):trainer.load_state_dict(changed,j)
+    j.issue('train_geometry','2')
+    with pytest.raises(ValueError):trainer.load_state_dict(state,j)
+
+
+def test_real_torch_pool40_and_geometry_once_sealed_before_labels(tmp_path,monkeypatch):
+    pytest.importorskip('torch')
+    from scripts import train_observed_geometry as base
+    from scripts import train_observed_two_row as ordinary
+    trainer,j,data=make_trainer(tmp_path,'eval');trainer.step=250
+    folder=tmp_path/'pool';staging=tmp_path/'pool.staging'
+    def labels(*args):
+        assert (staging/'predictions.npz').exists() and (staging/'generation.json').exists()
+        return dict(semantic_goal_accuracy=0.),[dict(id='a0')]
+    def add(metrics,*args):
+        assert (staging/'generation.json').exists()
+        metrics.update(UniqueClassifiedTipValidAtK=0.,TipValidAtK=0.)
+    monkeypatch.setattr(base,'batch_inputs',lambda d,g,ids,device:inputs_for(d,ids,device))
+    monkeypatch.setattr(ordinary,'observation_metrics',labels)
+    monkeypatch.setattr(ordinary,'reused_language_control',lambda *args:(None,None))
+    monkeypatch.setattr(ordinary,'add_two_row_metrics',add)
+    before=trainer.state_dict(j,0.)['rng']
+    receipt=driver.evaluate_pool(trainer,data,{},np.asarray([0]),tmp_path,folder,'dev',0,300000,j,'cpu')
+    assert j.counts==dict(eval_geometry=1,eval_denoise=40)
+    assert receipt['identity']['final_path_states']==4 and receipt['identity']['intermediate_path_states_including_final']==160
+    assert_nested_equal(before,trainer.state_dict(j,0.)['rng'])
+    assert driver.evaluate_pool(trainer,data,{},np.asarray([0]),tmp_path,folder,'dev',0,300000,j,'cpu')==receipt
+    assert j.counts==dict(eval_geometry=1,eval_denoise=40)
+
+
+def test_real_torch_pool_failure_preserves_nan_slots_and_actual_calls(tmp_path,monkeypatch):
+    pytest.importorskip('torch')
+    from scripts import train_observed_geometry as base
+    trainer,j,data=make_trainer(tmp_path,'failure');trainer.step=250
+    monkeypatch.setattr(base,'batch_inputs',lambda d,g,ids,device:inputs_for(d,ids,device))
+    original=trainer.model.forward_x0;calls=[0]
+    def fail(*args):
+        calls[0]+=1
+        if calls[0]==3:raise RuntimeError('injected')
+        return original(*args)
+    monkeypatch.setattr(trainer.model,'forward_x0',fail)
+    folder=tmp_path/'pool'
+    with pytest.raises(RuntimeError):driver.evaluate_pool(trainer,data,{},np.asarray([0,1]),tmp_path,folder,'dev',0,300000,j,'cpu')
+    assert j.counts==dict(eval_geometry=1,eval_denoise=3)
+    failure=driver.read(tmp_path/'pool.staging/failure.json')
+    assert failure['requested_candidates']==8 and failure['completed_requests']==0
+    with np.load(tmp_path/'pool.staging/predictions.npz') as a:assert np.isnan(a['paths']).all()
+    with pytest.raises(ValueError):driver.evaluate_pool(trainer,data,{},np.asarray([0,1]),tmp_path,folder,'dev',0,300000,j,'cpu')
+
+
+def test_real_torch_teacher_diagnostic_has_independent_exact_budget(tmp_path,monkeypatch):
+    pytest.importorskip('torch')
+    from scripts import train_observed_geometry as base
+    trainer,j,_=make_trainer(tmp_path,'teacher');data=fixture_data(6)
+    monkeypatch.setattr(base,'batch_inputs',lambda d,g,ids,device:inputs_for(d,ids,device))
+    result=driver.denoising_diagnostic(trainer,data,{},np.arange(6),tmp_path,j,'cpu')
+    assert result['geometry_calls']==6 and result['denoiser_calls']==30
+    assert result['intermediate_path_states']==120 and result['optimizer_steps']==0
+    assert len(result['rows'])==30 and {r['t'] for r in result['rows']}=={0,25,50,75,99}
+    assert j.counts==dict(diagnostic_geometry=6,diagnostic_denoise=30)

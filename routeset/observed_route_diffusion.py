@@ -1,0 +1,226 @@
+"""Ordinary observation-only x0 diffusion; no oracle endpoints or route repair.
+
+This baseline is deliberately separate from controlled true-goal diffusion.
+The only independent/set difference is candidate communication. Geometry is
+encoded once per request, and sampling makes exactly forty denoiser calls.
+"""
+import hashlib
+import math
+
+import torch
+from torch import nn
+
+from .models import FourierTimeEmbedding, _RouteBlock
+from .observed_geometry import ObservedGeometryRouteHead
+from .observed_training_audit import tensor_state_digest
+
+
+PROTOCOL = 'observed_route_x0_diffusion_v1'
+OBSERVATION_KEYS = frozenset(('features', 'current', 'world_xyz', 'rgb', 'uv', 'depth', 'valid_mask'))
+ENCODED_KEYS = frozenset(('context', 'anchor_xyz', 'attention', 'current'))
+EVENT_SCALE = .2
+ORDINARY_INITIAL_SHA = '7f81eba70dfcef2a3df19ebd5661ace3881abd552a1f2d4614cf490bf153bc13'
+ORDINARY_RNG_SHA = 'c35b449a11db8b8af5620fb2377adf1709091f5d451783a0894523b68370a154'
+
+
+def tensor_digest(tensor):
+    return tensor_state_digest({'tensor': tensor})
+
+
+def targets_to_state(paths, events, current):
+    """Training-only label conversion. Never used by encode_observation/sample."""
+    if paths.ndim != 4 or paths.shape[-2:] != (24, 3) or events.shape != paths.shape[:-1]:
+        raise ValueError('targets require [B,K,24,3] paths and [B,K,24] events')
+    if current.shape != (len(paths), 8):
+        raise ValueError('observed current must be [B,8]')
+    if not torch.isfinite(paths).all() or not torch.isfinite(events).all():
+        raise ValueError('finite positive references required')
+    if bool(((events < 0) | (events > 1)).any()):
+        raise ValueError('events outside [0,1]')
+    return torch.cat((paths[:, :, 1:] - current[:, None, None, :3],
+                      EVENT_SCALE * events[:, :, 1:, None]), dim=-1)
+
+
+def decode_state(clean, current):
+    if clean.ndim != 4 or clean.shape[-2:] != (23, 4) or current.shape != (len(clean), 8):
+        raise ValueError('clean [B,K,23,4], current [B,8] required')
+    first = current[:, None, None, :3].expand(-1, clean.shape[1], 1, -1)
+    paths = torch.cat((first, clean[..., :3] + current[:, None, None, :3]), dim=2)
+    first_open = current[:, None, None, 7].expand(-1, clean.shape[1], 1).clamp(0, 1)
+    opened = torch.cat((first_open, clean[..., 3] / EVENT_SCALE), dim=2)
+    return paths, opened
+
+
+class ObservedRouteDiffusion(nn.Module):
+    def __init__(self, set_attention, seed=0, feature_dim=4096, horizon=24,
+                 width=128, depth=2, point_width=64, k=4):
+        super().__init__()
+        # This production baseline has one preregistered shape/initialization.
+        if type(set_attention) is not bool or (seed, feature_dim, horizon, width, depth, point_width, k) != (0,4096,24,128,2,64,4):
+            raise ValueError('fixed seed0/4096/H24/128/2/point64/K4 production policy required')
+        self.horizon, self.max_candidates, self.k = horizon, k, k
+        self.set_attention = set_attention
+        self.feature_dim, self.width = feature_dim, width
+        # Rebuild, never load, the full ordinary initial model. Preserve caller
+        # CPU RNG and do not seed or otherwise touch any CUDA generator.
+        with torch.random.fork_rng(devices=[]):
+            torch.random.default_generator.manual_seed(seed)
+            ordinary = ObservedGeometryRouteHead(feature_dim, horizon, k, width, depth,
+                point_width, .05, anchor_mode='straight_through_peak', endpoint_mode='surface_anchor')
+            original_sha = tensor_state_digest(ordinary.state_dict())
+            original_rng = hashlib.sha256(torch.get_rng_state().numpy().tobytes()).hexdigest()
+            if original_sha != ORDINARY_INITIAL_SHA or original_rng != ORDINARY_RNG_SHA:
+                raise ValueError('reconstructed ordinary seed0 initialization does not match historical audit')
+            shared = {name: value for name, value in ordinary.state_dict().items()
+                      if name.startswith(('geometry.', 'head.feature_encoder.', 'head.state_encoder.'))}
+            original_shared = {name: tensor_digest(value) for name, value in shared.items()}
+            self.geometry = ordinary.geometry
+            self.feature_encoder = ordinary.head.feature_encoder
+            self.state_encoder = ordinary.head.state_encoder
+            del ordinary
+            # New active modules use an independent, fixed initialization stream.
+            torch.random.default_generator.manual_seed(seed + 1000000)
+            self.route_input = nn.Linear((horizon-1)*4, width)
+            self.time_encoder = FourierTimeEmbedding(width)
+            self.blocks = nn.ModuleList([_RouteBlock(width, 4, set_attention) for _ in range(depth)])
+            self.route_output = nn.Sequential(nn.LayerNorm(width), nn.Linear(width, (horizon-1)*4))
+            nn.init.normal_(self.route_output[-1].weight, std=.01)
+            nn.init.zeros_(self.route_output[-1].bias)
+        actual_shared = {}
+        for name, value in self.state_dict().items():
+            canonical = 'head.'+name if name.startswith(('feature_encoder.', 'state_encoder.')) else name
+            if canonical in original_shared:
+                actual_shared[canonical] = tensor_digest(value)
+        if actual_shared != original_shared:
+            raise ValueError('shared tensor initialization mismatch')
+        # Explicitly inactive attention is allocated identically but excluded
+        # from the independent optimizer's trainable parameter population.
+        self.inactive_parameter_names = []
+        if not set_attention:
+            for name, parameter in self.named_parameters():
+                if name.startswith('blocks.') and ('.attention.' in name or '.attention_norm.' in name):
+                    parameter.requires_grad_(False)
+                    self.inactive_parameter_names.append(name)
+        self.initialization_audit = dict(protocol=PROTOCOL, seed=seed,
+            ordinary_initial_model_sha256=original_sha, ordinary_initial_torch_cpu_rng_sha256=original_rng,
+            shared_tensor_sha256=actual_shared, shared_tensor_count=len(actual_shared),
+            initial_model_sha256=tensor_state_digest(self.state_dict()),
+            inactive_parameter_names=self.inactive_parameter_names,
+            allocated_parameters=sum(p.numel() for p in self.parameters()),
+            active_parameters=self.active_parameter_count(),
+            inactive_parameters=sum(p.numel() for p in self.parameters() if not p.requires_grad),
+            pretrained_checkpoint_loaded=False)
+
+    def active_parameter_count(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def encode_observation(self, inputs):
+        if not isinstance(inputs, dict) or set(inputs) != OBSERVATION_KEYS:
+            raise ValueError('strict observation tensor whitelist required')
+        details = self.geometry(**inputs)
+        context = self.feature_encoder(inputs['features']) + self.state_encoder(inputs['current']) + details['context']
+        return dict(context=context, anchor_xyz=details['anchor_xyz'], attention=details['attention'], current=inputs['current'])
+
+    def forward_x0(self, noisy, timesteps, encoded):
+        if set(encoded) != ENCODED_KEYS:
+            raise ValueError('encoded observation fields differ')
+        if noisy.ndim != 4 or noisy.shape[1:] != (self.k, self.horizon-1, 4):
+            raise ValueError('noisy state must be [B,4,23,4]')
+        if timesteps.shape != (len(noisy),) or timesteps.dtype not in (torch.int32, torch.int64):
+            raise ValueError('one integer timestep per input required')
+        if bool(((timesteps < 0) | (timesteps >= 100)).any()):
+            raise ValueError('timestep outside [0,99]')
+        current, anchor = encoded['current'], encoded['anchor_xyz']
+        if current.shape != (len(noisy),8) or anchor.shape != (len(noisy),3) or encoded['context'].shape != (len(noisy),self.width):
+            raise ValueError('encoded observation batch mismatch')
+        context = encoded['context'] + self.time_encoder(timesteps.to(noisy.device).float()/99.)
+        tokens = self.route_input(noisy.flatten(2)) + context[:, None]
+        for block in self.blocks:
+            tokens = block(tokens, context)
+        raw = self.route_output(tokens).reshape_as(noisy)
+        fractions = torch.linspace(0,1,self.horizon,device=noisy.device,dtype=noisy.dtype)[1:]
+        line = fractions[None,None,:,None] * (anchor-current[:,:3])[:,None,None]
+        intermediate = line[:,:,:-1] + raw[:,:,:-1,:3]
+        endpoint = (anchor-current[:,:3])[:,None,None] + .05 * raw[:,:,-1:,:3].tanh()
+        return torch.cat((torch.cat((intermediate,endpoint),dim=2), EVENT_SCALE*raw[...,3:].sigmoid()), dim=-1)
+
+    forward = forward_x0
+
+
+class ObservedX0Schedule(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.num_steps = 100
+        times = torch.linspace(0,1,101,dtype=torch.float64)
+        abar = torch.cos(((times+.008)/1.008)*math.pi/2).square()
+        abar = abar/abar[0]
+        betas = (1-abar[1:]/abar[:-1]).clamp(1e-5,.999).float()
+        self.register_buffer('betas',betas)
+        self.register_buffer('alpha_bars',(1-betas).cumprod(0))
+        self.register_buffer('sampling_indices',torch.linspace(99,0,40).round().long())
+        if len(set(self.sampling_indices.tolist())) != 40:
+            raise ValueError('DDIM schedule must have forty unique indices')
+
+    def audit(self):
+        return dict(protocol=PROTOCOL,parameterization='x0',training_steps=100,ddim_steps=40,eta=0,
+            generic_x0_clip=None,betas_sha256=tensor_digest(self.betas),
+            alpha_bars_sha256=tensor_digest(self.alpha_bars),sampling_indices=self.sampling_indices.cpu().tolist(),
+            sampling_indices_sha256=tensor_digest(self.sampling_indices))
+
+    def _alpha(self,timesteps,target):
+        if timesteps.shape != (len(target),) or timesteps.dtype not in (torch.int32,torch.int64):
+            raise ValueError('integer timesteps [B] required')
+        if bool(((timesteps<0)|(timesteps>=100)).any()):
+            raise ValueError('invalid diffusion time')
+        return self.alpha_bars.to(target.device)[timesteps.to(target.device)].to(target.dtype).reshape(-1,1,1,1)
+
+    def q_sample(self,x0,timesteps,epsilon):
+        if x0.shape != epsilon.shape or x0.ndim != 4 or x0.shape[1:] != (4,23,4):
+            raise ValueError('x0 and explicit epsilon must both be [B,4,23,4]')
+        alpha = self._alpha(timesteps,x0)
+        return alpha.sqrt()*x0 + (1-alpha).sqrt()*epsilon
+
+    def ddim_step(self,noisy,x0,timesteps,previous_timesteps):
+        if noisy.shape != x0.shape:
+            raise ValueError('x0/noisy shape mismatch')
+        if previous_timesteps.shape != timesteps.shape or previous_timesteps.dtype not in (torch.int32,torch.int64):
+            raise ValueError('previous integer timesteps [B] required')
+        if bool(((previous_timesteps < -1)|(previous_timesteps >= timesteps)).any()):
+            raise ValueError('DDIM must advance toward clean state')
+        alpha = self._alpha(timesteps,noisy)
+        previous = self._alpha(previous_timesteps.clamp_min(0),noisy)
+        previous = torch.where((previous_timesteps.to(noisy.device)<0).reshape(-1,1,1,1),torch.ones_like(previous),previous)
+        epsilon = (noisy-alpha.sqrt()*x0)/(1-alpha).sqrt()
+        return previous.sqrt()*x0 + (1-previous).sqrt()*epsilon
+
+    @torch.no_grad()
+    def sample(self,model,encoded,initial_noise,before_denoise=None):
+        if initial_noise.ndim != 4 or initial_noise.shape[1:] != (4,23,4) or not torch.isfinite(initial_noise).all():
+            raise ValueError('explicit finite K4 initial noise required')
+        if set(encoded) != ENCODED_KEYS or encoded['current'].shape != (len(initial_noise),8):
+            raise ValueError('encoded observation batch required')
+        noisy = initial_noise.clone()
+        indices = self.sampling_indices.cpu().tolist()
+        was_training = model.training
+        calls = 0
+        try:
+            model.eval()
+            for index, time in enumerate(indices):
+                times = torch.full((len(noisy),),time,device=noisy.device,dtype=torch.long)
+                if before_denoise is not None:
+                    before_denoise(index,time)
+                x0 = model.forward_x0(noisy,times,encoded)
+                calls += 1
+                if index == 39:
+                    # Exactly the fortieth clean prediction, no extra cleanup.
+                    noisy = x0
+                else:
+                    previous = torch.full_like(times,indices[index+1])
+                    noisy = self.ddim_step(noisy,x0,times,previous)
+        finally:
+            model.train(was_training)
+        paths,opened = decode_state(noisy,encoded['current'])
+        return paths,opened,dict(protocol=PROTOCOL,batch_size=len(noisy),candidates_per_input=4,
+            requested_candidates=len(noisy)*4,denoiser_calls=calls,
+            denoised_path_states=len(noisy)*4*calls,observation_encodes_inside_sampler=0,
+            initial_noise_sha256=tensor_digest(initial_noise),schedule=self.audit(),repair_calls=0,hidden_candidates=0)
