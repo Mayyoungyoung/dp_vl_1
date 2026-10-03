@@ -1,0 +1,21 @@
+{
+  "protocol": "ordered_3d_portal_word_v1",
+  "frozen_before_new_dev_payload_access": true,
+  "source_baseline_commit": "0a2aa72",
+  "run_family": "geometric_modes_v1",
+  "new_dev_role": "DEV_MODEL",
+  "new_dev_parent_indices_half_open": [256, 288],
+  "new_dev_parent_ids": "two_row_reach_400256 through two_row_reach_400287",
+  "collection": "Explicit user authorization to complete only preregistered DEV32 using unchanged 5c8f8e4f5cd478c793a0e0d9640005deaf700973 collector; preserve failures",
+  "ordinary_planner_sha256": "574e89ceb1358af474036575a7183edb67c1ee2427a90bb7254135fb6493d96a",
+  "balanced_planner_sha256": "a5ad07fc309469e3c775ebf7a320b33fe93816d1e46961f9f977b2f58160d3d1",
+  "checkpoint_policy": "Existing expanded191 generator seed0 fixed-last3000 and already packaged q seed0/calibration; no reselection, retraining or tuning on DEV32",
+  "metric": "Ordered directed crossings of each of the two physical row centre planes by the complete piecewise-linear 3D route. Each crossing is negative_y/middle/positive_y if laterally outside expanded posts; otherwise above/below the intersected post. Adjacent inverse crossings of the same portal cancel recursively, removing small backtracking. Same reduced word is one mode, regardless of manual labels or geometric jitter. Half-open crossing convention prevents duplicate vertices. Physical boxes and original 2cm clearance are evaluation only.",
+  "shape_scope": "Full 3D polyline and ordered obstacle-passage relations, not endpoint distance. Finite portal modes, not a proof of homotopy classes; misses excursions that never cross a row plane. No distance threshold or data-fitted clustering parameters.",
+  "reference": "Check original H24 reference validity with unchanged checker; group all accepted references including unknown with the same rule. Coverage is fraction of discovered reference words hit, macro averaged only over conditions with >=2 reference modes; not full real distribution.",
+  "selection": "Unchanged deployed q-first selector, q>=0.5 and mean vertex distance>=0.04, then fill by q; no oracle portal word enters deployed selection",
+  "collapse_gate": "On old DEV balanced seed0, at least half of conditions with >=2 reference modes have exactly one valid full-pool mode, and at least six such conditions. Zero-valid pools reported separately, not called collapse. Gate is descriptive on reused DEV.",
+  "uncertainty": "10000 paired parent bootstrap draws, seed 20261004; same-parent conditions kept together",
+  "budget": "No new search. Evaluation/code tests capped at 3600 cumulative seconds; optional one relation generator seed0 capped at 3000 updates, then replication only for positive gate. Collection original 32-parent/864-slot budget and 8GiB corpus cap unchanged.",
+  "TEST_LOCKED_access": false
+}
