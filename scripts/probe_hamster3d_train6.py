@@ -1,0 +1,394 @@
+"""Draft bounded official 3D HAMSTER TRAIN6 integration probe; never a quality run.
+
+Only the CLI invokes Torch/model code. Pure contract helpers have no Torch import.
+No download, installation, training, label evaluation, fallback or resume is provided.
+"""
+import argparse
+from contextlib import contextmanager
+import datetime
+import hashlib
+import importlib.metadata
+import json
+import os
+from pathlib import Path
+import signal
+import socket
+import sys
+import time
+
+ROOT = Path('/home/wzy/dpvlm/route_set_v1')
+REPO = Path(__file__).resolve().parents[1]
+PROTOCOL = 'hamster3d_official_offload_train6_technical_v1'
+ASSET_SHA = '53c93bdebfa519391173d0a0987b994de4793b84b05554051d63cc5618b24032'
+EXPORT_SHA = '04ba27290e382787d5f1764fc2645d4219b09457ea972d15f7d1f3baeac74fdc'
+GPU_UUID = 'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+PARENTS = ('two_row_reach_283200', 'two_row_reach_283201')
+IDS = tuple(p + '_target' + str(t) for p in PARENTS for t in range(3))
+RESIDENT = ('model.visual', 'model.geometry_encoder', 'model.geometry_merger',
+            'model.feature_fusion', 'model.language_model.embed_tokens',
+            'model.language_model.norm', 'model.language_model.rotary_emb', 'lm_head')
+EXPECTED = dict(protocol=PROTOCOL, parents=list(PARENTS), ids=list(IDS), split='TRAIN',
+    model_revision='ddc5987a56cdcb14e5e2297817612532e46e912b',
+    code_revision='97216a8493f46301bf569d398462b8bb21c458c5',
+    candidates_per_input=1, maximum_generate_calls=6, maximum_new_tokens_per_call=1024,
+    maximum_new_tokens_total=6144, do_sample=False, prompt_style='v5', dtype='bfloat16',
+    resize_longest=640, seed=0, decoder_layers=36, gpu_memory_fraction=.35,
+    gpu_absolute_cap_GiB=8.4, cpu_affinity=[0], cpu_threads=1,
+    model_load_timeout_seconds=600, request_timeout_seconds=300,
+    total_body_timeout_seconds=2400, retry=False, resume=False, warmup_calls=0,
+    read_supervision=False, use_ground_truth_goal=False, use_ground_truth_obstacles=False,
+    quality_evaluation=False, world_conversion='official_uvd_original_size_signed_invK_c2w')
+
+
+def sha(path):
+    h = hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda: f.read(2**20), b''): h.update(chunk)
+    return h.hexdigest()
+
+
+def write(path, obj):
+    path = Path(path); temp = path.with_suffix(path.suffix + '.writing')
+    temp.write_text(json.dumps(obj, indent=2, ensure_ascii=False, allow_nan=False) + '\n', encoding='utf-8')
+    temp.replace(path)
+
+
+def validate_policy(policy):
+    if policy != EXPECTED: raise ValueError('Fixed TRAIN6 probe policy changed')
+    return policy
+
+
+def exact_rows(path):
+    # Read six lines only, without parsing subsequent TRAIN/DEV instructions.
+    with Path(path).open(encoding='utf-8-sig') as f: rows = [json.loads(next(f)) for _ in IDS]
+    if tuple(r.get('id') for r in rows) != IDS: raise ValueError('Fixed six IDs changed')
+    for i, row in enumerate(rows):
+        if (set(row) != {'id','parent_id','split','image','instruction'}
+                or row['parent_id'] != PARENTS[i//3] or row['split'] != 'TRAIN'
+                or not isinstance(row['instruction'], str) or not row['instruction'].strip()):
+            raise ValueError('Only observation-white-list TRAIN rows allowed')
+    return rows
+
+
+def confined(path, root):
+    path, root = Path(path), Path(root)
+    if path.absolute() != path.resolve(strict=True) or root.absolute() != root.resolve(strict=True):
+        raise ValueError('Symlink/reparse raw source rejected')
+    path.resolve().relative_to(root.resolve())
+    return path
+
+
+def load_train6(data):
+    import numpy as np
+    from PIL import Image
+    manifest_path = data/'export_manifest.json'
+    if sha(manifest_path) != EXPORT_SHA: raise ValueError('Fixed original composite export changed')
+    manifest = json.loads(manifest_path.read_text())
+    if sha(data/'observations.jsonl') != manifest['output_files_sha256']['observations.jsonl']:
+        raise ValueError('Sealed observation rows changed')
+    rows = exact_rows(data/'observations.jsonl'); loaded = []; hashes = {}
+    for row in rows:
+        parent = row['parent_id']
+        parent_root = Path(manifest['sources']['old']['source_dataset'])/'parents'/'TRAIN'/parent
+        image = confined(row['image'], parent_root)
+        observation = confined(image.parent/'observation.npz', parent_root)
+        for path in (image, observation):
+            value = sha(path)
+            if value != manifest['source_files_sha256'][str(path)]: raise ValueError('TRAIN source bytes changed')
+            hashes[str(path)] = value
+        with np.load(observation, allow_pickle=False) as a:
+            if set(a.files) != {'depth','gripper_pose','gripper_open','camera_intrinsics','camera_extrinsics'}:
+                raise ValueError('Observed NPZ white-list changed')
+            observed = {k:a[k].copy() for k in a.files}
+        rgb = Image.open(image).convert('RGB')
+        if np.asarray(rgb).shape != (224,224,3) or observed['depth'].shape != (224,224):
+            raise ValueError('Aligned RGB-D dimensions changed')
+        if (observed['camera_intrinsics'].shape != (3,3) or observed['camera_extrinsics'].shape != (4,4)
+                or any(not np.isfinite(v).all() for v in observed.values())):
+            raise ValueError('Invalid current observation')
+        # The official model consumes RGB/depth/language only. K/c2w are output adapters.
+        loaded.append(dict(row=row, rgb=rgb, observed=observed))
+    return loaded, hashes
+
+
+def uvd_to_world(waypoints, intrinsics, camera_to_world, width, height):
+    """Official demo's un-clipped inverse-K formula; preserves signed focal values."""
+    import numpy as np
+    points = np.asarray(waypoints, dtype=np.float64)
+    if points.size == 0: return np.empty((0,3)), np.empty((0,3))
+    k, extr = np.asarray(intrinsics, dtype=np.float64), np.asarray(camera_to_world, dtype=np.float64)
+    if (points.ndim != 2 or points.shape[1] != 3 or not np.isfinite(points).all()
+            or k.shape != (3,3) or extr.shape != (4,4) or not np.isfinite(k).all()
+            or not np.isfinite(extr).all() or width <= 0 or height <= 0):
+        raise ValueError('Nonfinite/malformed prediction or calibration')
+    pixels = np.column_stack((points[:,0]*width/1000., points[:,1]*height/1000., np.ones(len(points))))
+    camera = points[:,2:3] * (pixels @ np.linalg.inv(k).T)
+    world = camera @ extr[:3,:3].T + extr[:3,3]
+    return camera, world
+
+
+class TokenAudit:
+    """Observe generate's existing streamer output; never performs a model call."""
+    def __init__(self, prompt_ids):
+        self.prompt_ids = list(prompt_ids)
+        self.prompt_seen = False
+        self.generated_ids = []
+
+    def put(self, value):
+        data = value.detach().cpu().tolist()
+        if data and isinstance(data[0], list):
+            if len(data) != 1: raise ValueError('Only batch-one generation allowed')
+            data = data[0]
+        if not self.prompt_seen:
+            if data != self.prompt_ids: raise ValueError('Streamer prompt identity changed')
+            self.prompt_seen = True
+        else:
+            self.generated_ids.extend(data)
+            if len(self.generated_ids) > 1024: raise ValueError('Token budget exceeded')
+
+    def end(self): pass
+
+
+def stage_receipt(stage, identity):
+    root = ROOT/'runs/hamster3d_preparation_v1'
+    marker = root/(stage+'.completed.json')
+    item = json.loads(marker.read_text())
+    receipt = confined(Path(item['session'])/'receipt.json', root)
+    if item['identity'] != identity or sha(receipt) != item['receipt_sha256']:
+        raise ValueError('Preparation completion receipt changed')
+    status = json.loads((receipt.parent/'status.json').read_text())
+    if status.get('status') != 'completed' or status.get('exit_code') != 0:
+        raise ValueError('Preparation stage not complete')
+    return dict(marker_sha256=sha(marker), receipt_sha256=sha(receipt), status_sha256=sha(receipt.parent/'status.json'))
+
+
+def verify_prepared_assets():
+    manifest_path = ROOT/'research_v2/releases/1b0348ef48393a2d98113956575e99388c40d4a6/configs/hamster3d_assets_v1.json'
+    if sha(manifest_path) != ASSET_SHA: raise ValueError('Fixed public asset manifest differs')
+    m = json.loads(manifest_path.read_text())
+    identity = json.loads((ROOT/'runs/hamster3d_preparation_v1/preparation_identity.json').read_text())
+    if identity['manifest_sha256'] != ASSET_SHA: raise ValueError('Preparation manifest identity differs')
+    receipts = {stage:stage_receipt(stage, identity) for stage in ('assets','environment')}
+    for group, destination in (('model_files',m['model_relative']),('code_files',m['code_relative'])):
+        for row in m[group]:
+            path = confined(ROOT/destination/row['path'], ROOT/destination)
+            if path.stat().st_size != row['bytes'] or sha(path) != row['expected_sha256']:
+                raise ValueError('Fixed official asset size/hash differs')
+    if Path(sys.prefix).resolve() != (ROOT/m['environment_relative']).resolve():
+        raise ValueError('Private HAMSTER environment is required')
+    for pin in m['environment']['core_pins']:
+        name, version = pin.split('==')
+        if importlib.metadata.version(name) != version: raise ValueError('Pinned dependency changed: '+name)
+    return m, receipts
+
+
+@contextmanager
+def offline_network():
+    old = socket.socket.connect
+    def refuse(*args, **kwargs): raise RuntimeError('Probe is offline; network connections forbidden')
+    socket.socket.connect = refuse
+    try: yield
+    finally: socket.socket.connect = old
+
+
+@contextmanager
+def deadline(seconds):
+    def expired(signum, frame): raise TimeoutError('Predeclared technical-probe wall limit reached')
+    old = signal.signal(signal.SIGALRM, expired)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try: yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, old)
+
+
+def load_offloaded(model_dir, code_dir, output, cap_bytes):
+    import torch
+    from accelerate import cpu_offload
+    from transformers import AutoModelForImageTextToText, AutoProcessor
+    sys.path.insert(0, str(code_dir))
+    from hamster3d.model import register_qwen3_vl_geometry
+    register_qwen3_vl_geometry()
+    processor = AutoProcessor.from_pretrained(str(model_dir), local_files_only=True, token=False, trust_remote_code=True)
+    # Load real CPU weights first; no all-GPU transient or auto device-map search.
+    model = AutoModelForImageTextToText.from_pretrained(str(model_dir), local_files_only=True,
+        token=False, trust_remote_code=True, torch_dtype=torch.bfloat16,
+        device_map={'':'cpu'}, low_cpu_mem_usage=True).eval()
+    if any(p.device.type != 'cpu' for p in model.parameters()): raise ValueError('CPU load left meta/CUDA parameters')
+    if len(model.model.language_model.layers) != 36: raise ValueError('Official decoder count changed')
+    if model.model.geometry_encoder.encoder is None: raise ValueError('Self-contained LingBot was not loaded')
+    resident = {name:model.get_submodule(name) for name in RESIDENT}
+    selected = {id(p) for module in resident.values() for p in module.parameters()}
+    decoder = {id(p) for layer in model.model.language_model.layers for p in layer.parameters()}
+    if selected & decoder or selected | decoder != {id(p) for p in model.parameters()}:
+        raise ValueError('Unaccounted or overlapping model placement')
+    resident_bytes = sum(p.numel()*p.element_size() for p in model.parameters() if id(p) in selected)
+    if resident_bytes + 2*2**30 > cap_bytes: raise ValueError('Resident weights leave less than fixed 2GiB workspace')
+    for module in resident.values(): module.to('cuda:0')
+    for layer in model.model.language_model.layers:
+        # Apply to actual called layers, never to ModuleList or geometry.encode.
+        cpu_offload(layer, execution_device=torch.device('cuda:0'), offload_buffers=True)
+    placement = [{'name':n,'device':str(p.device),'dtype':str(p.dtype),'numel':p.numel()} for n,p in model.named_parameters()]
+    for row in placement:
+        if row['device'] != ('meta' if row['name'].startswith('model.language_model.layers.') else 'cuda:0'):
+            raise ValueError('Unexpected post-offload parameter placement')
+    if any(p.is_meta for p in model.model.geometry_encoder.parameters()): raise ValueError('encode() would encounter meta')
+    write(output/'model_loaded.json', dict(parameter_placement=placement,
+        resident_weight_bytes=resident_bytes, generation_config=model.generation_config.to_dict(),
+        attention_implementation=str(model.config._attn_implementation),
+        offload='Accelerate 1.10.1 cpu_offload separately on each of 36 decoder layers',
+        full_gpu_equivalence_tested=False, cuda_cap_bytes=cap_bytes))
+    return model, processor
+
+
+def generate_one(model, processor, sample, folder, ledger_row, persist, seconds):
+    import numpy as np
+    import torch
+    from PIL import Image
+    from transformers import StoppingCriteria, StoppingCriteriaList
+    from hamster3d.inference.preprocessing import prepare_inputs, build_geometry_inputs, build_v5_messages
+    from hamster3d.inference.postprocessing import parse_trajectory
+    folder.mkdir(); t0 = time.monotonic()
+    prepared = prepare_inputs(sample['rgb'], sample['observed']['depth'], tmp_dir=str(folder))
+    geometry = build_geometry_inputs(prepared['rgb_resized'], prepared['depth_resized'], device='cuda:0')
+    messages = build_v5_messages(sample['row']['instruction'])
+    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    inputs = processor(text=[text], images=[Image.fromarray(prepared['rgb_resized'])],
+                       padding=True, return_tensors='pt').to('cuda:0')
+    dtype = next(model.parameters()).dtype
+    for key, value in list(inputs.items()):
+        if torch.is_tensor(value) and torch.is_floating_point(value): inputs[key] = value.to(dtype)
+    inputs['geometry_encoder_inputs'] = [v.to(dtype) for v in geometry['geometry_encoder_inputs']]
+    inputs['depth_maps'] = [v.to(dtype) for v in geometry['depth_maps']]
+    prompt_len = int(inputs['input_ids'].shape[1]); prompt_ids = inputs['input_ids'].detach().cpu().numpy()
+    np.save(folder/'prompt_token_ids.npy', prompt_ids, allow_pickle=False)
+    write(folder/'input.json', dict(id=sample['row']['id'], row=sample['row'], prompt=text,
+        input_tokens=prompt_len, model_keys=sorted(inputs), resized_shape=list(prepared['rgb_resized'].shape),
+        depth_fp16_roundtrip=True, intrinsic_model_input=False, calibration_only_for_output=True))
+    class TimeLimit(StoppingCriteria):
+        timed_out = False
+        def __call__(self, input_ids, scores, **kwargs):
+            self.timed_out = time.monotonic()-t0 >= seconds
+            return self.timed_out
+    limit = TimeLimit(); token_steps = []; started = time.monotonic()
+    streamed = TokenAudit(prompt_ids[0].tolist())
+    def counted(module, args, kwargs): token_steps.append(int(kwargs.get('input_ids').shape[1]))
+    hook = model.register_forward_pre_hook(counted, with_kwargs=True)
+    torch.cuda.synchronize()
+    ledger_row.update(state='generate_issued', prompt_tokens=prompt_len, generate_calls=1)
+    persist()
+    try:
+        with torch.inference_mode():
+            outputs = model.generate(**inputs, max_new_tokens=1024, do_sample=False,
+                temperature=None, top_p=None, stopping_criteria=StoppingCriteriaList([limit]), streamer=streamed)
+            torch.cuda.synchronize()
+    finally:
+        hook.remove()
+        ledger_row.update(forward_calls=len(token_steps), forward_input_token_lengths=token_steps,
+            generate_elapsed_seconds=time.monotonic()-started, generated_tokens=len(streamed.generated_ids))
+        np.save(folder/'streamed_generated_token_ids.npy', np.asarray(streamed.generated_ids,dtype=np.int64),allow_pickle=False)
+        (folder/'streamed_raw_output.txt').write_text(processor.decode(streamed.generated_ids,skip_special_tokens=True),encoding='utf-8')
+        persist()
+    generated = outputs[:, prompt_len:]; token_ids = generated.detach().cpu().numpy()
+    np.save(folder/'generated_token_ids.npy', token_ids, allow_pickle=False)
+    if token_ids[0].tolist() != streamed.generated_ids: raise ValueError('Streamer/final output mismatch')
+    raw = processor.batch_decode(generated, skip_special_tokens=True)[0]
+    (folder/'raw_output.txt').write_text(raw, encoding='utf-8')
+    result = dict(raw_output_sha256=sha(folder/'raw_output.txt'), generated_tokens=int(generated.shape[1]),
+        time_limit_reached=limit.timed_out, token_limit_reached=int(generated.shape[1])>=1024)
+    try:
+        wp, actions = parse_trajectory(raw, 'v5')
+        result.update(official_waypoints=wp, official_actions=actions, parse_nonempty=bool(wp))
+        camera, world = uvd_to_world(wp, sample['observed']['camera_intrinsics'],
+            sample['observed']['camera_extrinsics'], *sample['rgb'].size)
+        np.savez_compressed(folder/'predicted_coordinates.npz', uvd=np.asarray(wp),camera_xyz=camera,
+            world_xyz=world, camera_intrinsics=sample['observed']['camera_intrinsics'],
+            camera_extrinsics=sample['observed']['camera_extrinsics'])
+        result['coordinate_projection_completed'] = True
+    except Exception as error:
+        # Raw text/tokens are authoritative if a nonfinite numeric parse cannot be JSON-encoded.
+        result.pop('official_waypoints',None); result.pop('official_actions',None)
+        result.update(parse_or_projection_exception=type(error).__name__, coordinate_projection_completed=False)
+    result.update(quality_metrics=None, task_success=None, full_request_seconds=time.monotonic()-t0)
+    # Raw output is always retained even if official parsing is incomplete or throws.
+    write(folder/'result.json', result)
+    return result
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config', default=str(REPO/'configs/hamster3d_train6_probe_v1.json'))
+    parser.add_argument('--output', required=True)
+    args = parser.parse_args(argv)
+    policy = validate_policy(json.loads(Path(args.config).read_text()))
+    output = Path(args.output); output.mkdir(parents=True, exist_ok=False)
+    started = time.monotonic(); ledger = []; torch = None
+    status = dict(protocol=PROTOCOL, status='running', pid=os.getpid(), candidates_requested=6,
+        code_commit=os.environ.get('CODE_COMMIT'), source_sha256=sha(__file__), config_sha256=sha(args.config),
+        start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), optimizer_steps=0,
+        data_role='TRAIN', quality_metrics=None, retry=False)
+    def persist(): write(output/'call_ledger.json', ledger)
+    write(output/'status.json', status); persist()
+    try:
+        if (sys.platform != 'linux' or os.sched_getaffinity(0) != {0}
+                or os.environ.get('CUDA_VISIBLE_DEVICES') != GPU_UUID):
+            raise ValueError('Require Linux CPU0 and the single authorized GPU UUID')
+        for key in ('HF_HUB_OFFLINE','TRANSFORMERS_OFFLINE','HF_HUB_DISABLE_IMPLICIT_TOKEN','XFORMERS_DISABLED'):
+            os.environ[key] = '1'
+        with offline_network():
+            assets, receipts = verify_prepared_assets()
+            samples, source_hashes = load_train6(ROOT/'data/observation_two_row_composite108_v1')
+            write(output/'preflight.json', dict(preparation_receipts=receipts, input_source_sha256=source_hashes,
+                export_manifest_sha256=EXPORT_SHA, asset_manifest_sha256=ASSET_SHA, policy=policy,
+                read_supervision=False, input_ids=list(IDS), official_parameter_source='all fixed 18 files rehashed'))
+            available_kib = next(int(line.split()[1]) for line in Path('/proc/meminfo').read_text().splitlines()
+                                 if line.startswith('MemAvailable:'))
+            if available_kib*1024 < 32*2**30: raise RuntimeError('Less than 32GiB available CPU RAM; no load attempted')
+            status['cpu_available_before_load_bytes'] = available_kib*1024
+            import torch as torch_module
+            torch = torch_module
+            torch.set_num_threads(1); torch.set_num_interop_threads(1)
+            torch.manual_seed(0); torch.cuda.set_device(0)
+            cap = min(int(torch.cuda.get_device_properties(0).total_memory*.35), int(8.4*2**30))
+            torch.cuda.set_per_process_memory_fraction(cap/torch.cuda.get_device_properties(0).total_memory, 0)
+            torch.cuda.reset_peak_memory_stats()
+            status['cuda_cap_bytes'] = cap
+            with deadline(min(600, max(.01,2400-(time.monotonic()-started)))):
+                model, processor = load_offloaded(ROOT/assets['model_relative'], ROOT/assets['code_relative'],output,cap)
+            status['load_completed_seconds_from_start'] = time.monotonic()-started
+            write(output/'status.json', status)
+            for sample in samples:
+                remaining = 2400-(time.monotonic()-started)
+                if remaining <= 0: raise TimeoutError('Total probe time budget exhausted')
+                row = dict(id=sample['row']['id'], state='request_issued', candidates=1,generate_calls=0)
+                ledger.append(row); persist()
+                try:
+                    with deadline(min(300,remaining)):
+                        result = generate_one(model, processor, sample, output/sample['row']['id'],row,persist,min(300,remaining))
+                    row.update(state='completed', result=result)
+                except Exception as error:
+                    row.update(state='failed', exception_type=type(error).__name__); persist(); raise
+                persist()
+                if result['time_limit_reached']: raise TimeoutError('One candidate reached time limit; no later calls')
+                if torch.cuda.max_memory_reserved() > cap: raise RuntimeError('Observed memory reserved above declared cap')
+            status.update(status='completed', exit_code=0)
+    except BaseException as error:
+        status.update(status='failed', exit_code=1, exception_type=type(error).__name__)
+    finally:
+        status.update(end_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            elapsed_seconds=time.monotonic()-started, candidates_issued=len(ledger),
+            candidates_unattempted=6-len(ledger), generate_calls=sum(r['generate_calls'] for r in ledger),
+            forward_calls=sum(r.get('forward_calls',0) for r in ledger),
+            generated_tokens=sum(r.get('generated_tokens',0) for r in ledger),
+            gpu_reservation_hours=(time.monotonic()-started)/3600 if torch is not None else 0,
+            max_memory_allocated_bytes=torch.cuda.max_memory_allocated() if torch is not None and torch.cuda.is_initialized() else None,
+            max_memory_reserved_bytes=torch.cuda.max_memory_reserved() if torch is not None and torch.cuda.is_initialized() else None)
+        if sys.platform == 'linux':
+            import resource
+            status['process_peak_rss_bytes'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+        write(output/'status.json', status); persist()
+    print(json.dumps({k:status[k] for k in ('status','exit_code','generate_calls','candidates_issued','elapsed_seconds')}))
+    return status['exit_code']
+
+
+if __name__ == '__main__': raise SystemExit(main())

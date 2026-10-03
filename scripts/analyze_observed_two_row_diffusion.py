@@ -1,0 +1,419 @@
+"""Analyze sealed observed diffusion pools, never models/raw data/new predictions."""
+import argparse
+from collections import Counter
+from datetime import datetime
+import json
+from pathlib import Path
+import time
+
+import numpy as np
+
+from routeset.observed_qwen_continuation import RequestJournal, digest
+from scripts.analyze_observed_qwen_continuation import (
+    Evidence, DEV_IDS, TRAIN_IDS, METRICS, aggregate, compare_metrics, load_pool,
+    mean, paired, read, safe_child, same_number, split_train, write)
+from scripts.train_observed_two_row_diffusion import (
+    PROTOCOL as DRIVER_PROTOCOL, POOL_FILES, array_digest, evaluation_keys,
+    evaluation_noise, expected_train_calls)
+
+PROTOCOL = 'sealed_observed_diffusion_pair_v1'
+ARMS = ('independent', 'set')
+STAGES = ('train', 'repeat1', 'repeat2', 'fixed-last-train', 'denoising-diagnostic')
+SOURCE = '6e0203ba1335f9fa9975c523c657959f8bc9ab60'
+PROJECT = Path(__file__).resolve().parents[1]
+
+
+def stage_root(root, arm, stage):
+    return Path(root)/(arm if stage == 'train' else arm+'_'+stage)
+
+
+def require_completed(root, evidence):
+    """All ten stage statuses precede any quality-pool read."""
+    for arm in ARMS:
+        for stage in STAGES:
+            folder = stage_root(root, arm, stage)
+            status = evidence.json(folder/'status.json')
+            if (status.get('status') != 'completed' or status.get('arm') != arm or
+                    status.get('stage') != stage or not (folder/'summary.json').is_file()):
+                raise ValueError('Both arms and all independent stages must complete first')
+
+
+def original_best(history):
+    if [r['step'] for r in history] != list(range(250, 12001, 250)):
+        raise ValueError('Exactly the original 48 DEV selections are required')
+    for row in history:
+        score = row['metrics']['UniqueClassifiedTipValidAtK']+.05*row['metrics']['TipValidAtK']
+        if not np.isfinite(score) or not same_number(score, row['score']) or not same_number(score, row['metrics']['selection_score']):
+            raise ValueError('Original selection score differs')
+    # max keeps the first tie; this verifies the saved choice, never reselects.
+    return max(history, key=lambda r:r['score'])
+
+
+def train_keys():
+    for step in range(1, 12001):
+        for kind in ('train_geometry', 'train_denoise', 'optimizer'):
+            yield kind, str(step)
+        if step % 250 == 0:
+            yield from evaluation_keys(dict(kind='dev', step=step, repeat=0, ids=DEV_IDS))
+
+
+def check_journal(folder, summary, expected, evidence):
+    evidence.bind(Path(folder)/'requests.jsonl')
+    journal = RequestJournal(Path(folder)/'requests.jsonl')
+    if journal.snapshot() != summary['actual_calls']:
+        raise ValueError('Actual issued ledger differs from completed summary')
+    actual = [(r['kind'], r['key']) for r in journal.records]
+    if actual != list(expected):
+        raise ValueError('Issued calls/order/budget differ; no hidden retries allowed')
+    return journal
+
+
+def snapshot_at(journal, n):
+    if type(n) is not int or not 0 <= n <= len(journal.records):
+        raise ValueError('Invalid pool ledger boundary')
+    return dict(records=n, sha256=journal.records[n-1]['sha256'] if n else '0'*64,
+                counts=dict(Counter(r['kind'] for r in journal.records[:n])))
+
+
+def verify_pool(folder, config, ids, step, kind, repeat, schedule, journal, evidence,
+                receipt_hash=None, model_hash=None):
+    folder = Path(folder)
+    receipt = evidence.json(folder/'pool_receipt.json', receipt_hash)
+    identity = receipt['identity']
+    noise, noise_id = evaluation_noise(ids, config['eval_noise_seeds'][repeat])
+    expected = dict(protocol=DRIVER_PROTOCOL, config=config, step=step, kind=kind,
+        repeat=repeat, ids=list(ids), requests=len(ids), candidates=4,
+        final_path_states=4*len(ids), denoiser_calls=40*len(ids),
+        intermediate_path_states_including_final=160*len(ids),
+        model_sha256=identity['model_sha256'], schedule=schedule, noise=noise_id)
+    if identity != expected or model_hash is not None and identity['model_sha256'] != model_hash:
+        raise ValueError('Pool identity/model/sampling budget differs')
+    names = set(receipt['artifacts'])
+    if not POOL_FILES.issubset(names) or names-POOL_FILES-{'paired_language_predictions.npz'}:
+        raise ValueError('Incomplete sealed pool artifacts')
+    for name, value in receipt['artifacts'].items():
+        evidence.bind(safe_child(folder, name), value)
+    before, after = receipt['journal_before'], receipt['journal_after']
+    if before != snapshot_at(journal, before['records']) or after != snapshot_at(journal, after['records']):
+        raise ValueError('Pool hash-chain boundary mismatch')
+    segment = journal.records[before['records']:after['records']]
+    if [(r['kind'], r['key']) for r in segment] != list(evaluation_keys(identity)):
+        raise ValueError('Pool must use one geometry and exactly40 denoise calls per input')
+    with np.load(folder/'initial_noise.npz', allow_pickle=False) as a:
+        if tuple(map(str, a['ids'])) != tuple(ids) or not np.array_equal(a['initial_noise'], noise):
+            raise ValueError('Actual saved initial noise differs from fixed repeat stream')
+    generation = evidence.json(folder/'generation.json')
+    if (generation['identity'] != identity or generation['noise'] != noise_id or
+            generation.get('all_predictions_sealed_before_labels') is not True or
+            generation['predictions_sha256'] != receipt['artifacts']['predictions.npz'] or
+            [r['id'] for r in generation['requests']] != list(ids)):
+        raise ValueError('Original prediction sealing/generation receipt differs')
+    for position, row in enumerate(generation['requests']):
+        if (row['noise_sha256'] != array_digest(noise[position]) or
+                row['actual_calls'] != [[i,t] for i,t in enumerate(schedule['sampling_indices'])]):
+            raise ValueError('Actual per-request noise/40 timestep sequence differs')
+        for key in ('geometry_and_input_seconds', 'denoising_seconds', 'cached_sampler_seconds'):
+            if not np.isfinite(row[key]) or row[key] < 0:
+                raise ValueError('Invalid sampler time')
+        if not same_number(row['cached_sampler_seconds'], row['geometry_and_input_seconds']+row['denoising_seconds']):
+            raise ValueError('Sampler timing components do not partition request time')
+    rows, arrays = load_pool(folder, ids, evidence)
+    metrics = evidence.json(folder/'metrics.json')
+    if metrics != receipt['metrics']:
+        raise ValueError('Sealed pool metrics changed')
+    compare_metrics(rows, metrics)
+    for pos, row in enumerate(generation['requests']):
+        if row['finite_candidates'] != np.isfinite(arrays['paths'][pos]).all((1,2)).tolist():
+            raise ValueError('Finite failure-slot receipt differs')
+    return dict(receipt=receipt, rows=rows, arrays=arrays, generation=generation)
+
+
+def verify_stream(stream, policy, ordinary):
+    if (stream['batches'],stream['observation_draws'],stream['target_path_states']) != (12000,384000,1536000):
+        raise ValueError('Actual training exposure differs')
+    if (tuple(stream['scene_ids']) != TRAIN_IDS or stream['identity']['population'] != 285 or
+            stream['identity']['seed_offsets'] != policy['seed_offsets'] or
+            stream['initial_sampler_state_sha256'] != policy['ordinary_initial_sampler_state_sha256'] or
+            stream['ordinary_index_chain_sha256'] != ordinary['budget']['actual_index_chain_sha256']):
+        raise ValueError('Input sampling population or actual ordinary draw chain differs')
+    counts, frequencies = stream['positive_reference_counts'], stream['reference_frequencies']
+    if len(counts) != 285 or sum(counts) != 1663 or min(counts) < 1 or len(frequencies) != 285:
+        raise ValueError('Unfiltered all-positive reference population differs')
+    if any(type(x) is not int or x < 0 for row in frequencies for x in row) or sum(map(sum, frequencies)) != 1536000:
+        raise ValueError('Sampled reference frequency budget differs')
+    if len(stream['actual_stream_sha256']) != 64:
+        raise ValueError('Missing actual reference/permutation/t/epsilon stream digest')
+
+
+def verify_training(root, arm, policy, ordinary, source, evidence):
+    folder = stage_root(root, arm, 'train')
+    summary = evidence.json(folder/'summary.json')
+    config = evidence.json(folder/'config.json', summary['config_sha256'])
+    if (summary['protocol'] != DRIVER_PROTOCOL or summary['status'] != 'completed' or summary['arm'] != arm or
+            config['arm'] != arm or any(config.get(k) != v for k,v in policy.items()) or config['code_commit'] != SOURCE):
+        raise ValueError('Frozen policy/source/arm differs')
+    if Path(source).name != SOURCE:
+        raise ValueError('Use the exact actual6e training source')
+    for name, value in config['source_sha256'].items():
+        evidence.bind(safe_child(source,name), value)
+    if config['ordinary_receipt_sha256'] != evidence.hashes[str((Path(ordinary['_root'])/'composite_training_receipt.json').resolve()).replace('\\','/')]:
+        raise ValueError('Actual original ordinary receipt differs')
+    if (summary['last_step'],summary['observation_draws'],summary['gradient_path_slots'],summary['selection_opportunities']) != (12000,384000,1536000,48):
+        raise ValueError('Completed12000 exposure required')
+    init = evidence.json(folder/'initialization.json', summary['initialization_sha256'])
+    audit = init['audit']
+    if (audit['ordinary_initial_model_sha256'] != policy['ordinary_initial_model_sha256'] or
+            audit['ordinary_initial_torch_cpu_rng_sha256'] != policy['ordinary_initial_torch_cpu_rng_sha256'] or
+            audit['pretrained_checkpoint_loaded'] is not False or
+            audit['shared_tensor_count'] != len(audit['shared_tensor_sha256']) or not audit['shared_tensor_sha256']):
+        raise ValueError('Actual shared fresh initialization audit differs')
+    verify_stream(summary['stream'], policy, ordinary)
+    journal = check_journal(folder, summary, train_keys(), evidence)
+    if journal.counts != expected_train_calls():
+        raise ValueError('Training +48 DEV actual call counts differ')
+    history = evidence.json(folder/'history.json')
+    if history != summary['history']:
+        raise ValueError('History differs from completion')
+    best = original_best(history)
+    if summary['best'] != {k:best[k] for k in ('step','score','pool')}:
+        raise ValueError('Saved best was reselected')
+    pools = {}
+    for row in history:
+        if row['pool'] != 'dev/step%05d'%row['step']:
+            raise ValueError('Original selection pool path changed')
+        p = verify_pool(safe_child(folder,row['pool']),config,DEV_IDS,row['step'],'dev',0,
+                        init['schedule'],journal,evidence,row['pool_receipt_sha256'])
+        if p['receipt']['metrics'] != row['metrics']:
+            raise ValueError('Historical metrics differ')
+        if row['step'] == best['step']:pools['best0'] = p
+        if row['step'] == 12000:pools['last0'] = p
+    for name in ('best','last'):
+        evidence.bind(folder/(name+'.pt'), summary[name+'_checkpoint_sha256'])
+        if summary[name+'_metrics'] != pools[name+'0']['receipt']['metrics']:
+            raise ValueError('Summary selected metric mismatch')
+    loss_rows = []
+    evidence.bind(folder/'training_history.jsonl')
+    with (folder/'training_history.jsonl').open(encoding='utf-8') as f:
+        for line in f:loss_rows.append(json.loads(line))
+    if [r['step'] for r in loss_rows] != [1,2]+list(range(25,12001,25)) or loss_rows[-1]['stream'] != summary['stream']:
+        raise ValueError('Completed loss/actual stream history differs')
+    return dict(summary=summary,config=config,initialization=init,history=history,pools=pools,loss_rows=loss_rows)
+
+
+def verify_extra(root, arm, stage, training, evidence):
+    folder = stage_root(root,arm,stage)
+    summary = evidence.json(folder/'summary.json')
+    if (summary['protocol'] != DRIVER_PROTOCOL or summary['status'] != 'completed' or summary['arm'] != arm or
+            summary['stage'] != stage or summary['selection_changed'] or summary['pools_merged'] or
+            summary['source_training_summary_sha256'] != digest(stage_root(root,arm,'train')/'summary.json')):
+        raise ValueError('Independent stage source/scope differs')
+    config, schedule = training['config'],training['initialization']['schedule']
+    if stage == 'denoising-diagnostic':
+        result = evidence.json(folder/'teacher_diagnostic.json')
+        if summary['results'] != {'last':result}:
+            raise ValueError('Teacher summary changed')
+        expected = []
+        for identifier in TRAIN_IDS[:6]:
+            expected.append(('diagnostic_geometry',identifier))
+            expected.extend(('diagnostic_denoise',identifier+':'+str(t)) for t in (0,25,50,75,99))
+        check_journal(folder,summary,expected,evidence)
+        if (result['first_train_ids'] != list(TRAIN_IDS[:6]) or
+                (result['geometry_calls'],result['denoiser_calls'],result['intermediate_path_states'],result['optimizer_steps'],result['dev_inputs']) != (6,30,120,0,0) or
+                result['actual_calls'] != summary['actual_calls']):
+            raise ValueError('Teacher diagnostic is exactly6 TRAIN/30 intermediate batches')
+        rows = result['rows']
+        if [(r['id'],r['t']) for r in rows] != [(i,t) for i in TRAIN_IDS[:6] for t in (0,25,50,75,99)]:
+            raise ValueError('Teacher rows differ from fixed TRAIN/t order')
+        evidence.bind(folder/'teacher_x0_predictions.npz',result['predictions_sha256'])
+        with np.load(folder/'teacher_x0_predictions.npz',allow_pickle=False) as a:
+            if (a['predictions'].shape != (30,4,23,4) or not np.isfinite(a['predictions']).all() or
+                    a['ids'].tolist() != [r['id'] for r in rows] or a['timesteps'].tolist() != [r['t'] for r in rows]):
+                raise ValueError('Saved teacher tensors disagree with rows')
+        return dict(summary=summary,teacher=result,by_t={str(t):{k:mean(r[k] for r in rows if r['t']==t)
+            for k in ('x0_mse','xyz_rmse_m','endpoint_error_m','event_mae')} for t in (0,25,50,75,99)})
+    names = ('last',) if stage == 'fixed-last-train' else ('best','last')
+    repeat = 0 if stage == 'fixed-last-train' else int(stage[-1])
+    ids = TRAIN_IDS if stage == 'fixed-last-train' else DEV_IDS
+    kind = 'train_diag' if stage == 'fixed-last-train' else 'dev_repeat'
+    expected = []
+    for name in names:
+        item = summary['results'][name]
+        if 'reused_checkpoint_pool' in item:
+            if (name != 'last' or item != dict(reused_checkpoint_pool='best',new_requests=0) or
+                    training['pools']['best0']['receipt']['identity']['model_sha256'] != training['pools']['last0']['receipt']['identity']['model_sha256'] or
+                    training['summary']['best']['step'] != 12000):
+                raise ValueError('Unjustified checkpoint pool reuse')
+            continue
+        step = training['summary']['best']['step'] if name=='best' else 12000
+        expected.extend(evaluation_keys(dict(kind=kind,step=step,repeat=repeat,ids=ids)))
+    journal = check_journal(folder,summary,expected,evidence)
+    pools = {}
+    for name in names:
+        item = summary['results'][name]
+        if 'reused_checkpoint_pool' in item:pools[name]=pools['best'];continue
+        if item['pool'] != name:raise ValueError('Unexpected stage pool path')
+        original = training['pools'][name+'0']['receipt']['identity']
+        pool = verify_pool(folder/name,config,ids,original['step'],kind,repeat,schedule,journal,evidence,
+                           item['receipt_sha256'],original['model_sha256'])
+        if item['receipt'] != pool['receipt']:raise ValueError('Stage receipt differs')
+        pools[name] = pool
+    return dict(summary=summary,pools=pools)
+
+
+def repeated_summary(pools):
+    """Metric means over three separate K4 trials; never union candidate sets."""
+    if set(pools) != {0,1,2}:raise ValueError('Exactly three separate repeats required')
+    stats = {str(r):aggregate(pools[r]['rows']) for r in range(3)}
+    if any(s['conditions'] != 36 or s['candidate_slots'] != 144 for s in stats.values()):
+        raise ValueError('Each repeat has36 inputs/K4, not one432-candidate pool')
+    return dict(per_repeat=stats,mean={k:mean(s[k] for s in stats.values()) for k in METRICS},
+        population_std={k:float(np.std([s[k] for s in stats.values()])) if all(s[k] is not None for s in stats.values()) else None for k in METRICS},
+        repeats=3,candidates_per_request=4,pools_merged=False,training_seeds=1)
+
+
+def sampler_timing(pool):
+    requests=pool['generation']['requests']
+    values={key:dict(count=len(requests),mean=mean(r[key] for r in requests),
+        median=float(np.median([r[key] for r in requests])),p95=float(np.percentile([r[key] for r in requests],95)),
+        total=sum(r[key] for r in requests)) for key in ('geometry_and_input_seconds','denoising_seconds','cached_sampler_seconds')}
+    return dict(seconds=values,pool_elapsed_seconds=pool['receipt']['elapsed_seconds'],
+        checking_and_serialization_seconds=pool['receipt']['checking_and_serialization_seconds'],
+        nested_in_stage_cost=True,online_qwen_e2e=False,candidates_per_request=4,denoise_calls_per_request=40)
+
+
+def parent_metrics(rows):
+    return {p:aggregate([r for r in rows if r['parent_id']==p]) for p in sorted({r['parent_id'] for r in rows})}
+
+
+def ordinary_control(root, policy, evidence):
+    root = Path(root);run=root/'peak_seed0'
+    receipt = evidence.json(run/'composite_training_receipt.json')
+    if (receipt['protocol'] != 'ordinary_two_row_composite108_constant12000_v1' or
+            receipt['export_sha256'] != policy['export_manifest_sha256'] or receipt['quality_sha256'] != policy['quality_sha256'] or
+            receipt['cache_receipt_sha256'] != policy['cache_receipt_sha256'] or
+            (receipt['budget']['observation_draws'],receipt['budget']['training_candidate_path_states'],receipt['budget']['dev_selection_opportunities']) != (384000,1536000,48)):
+        raise ValueError('Ordinary control is not same-data/same-path-exposure12000')
+    summary=evidence.json(run/'summary.json',receipt['summary_sha256'])
+    pools={}
+    for name,relative in (('best','dev_model'),('last','last_dev_model')):
+        for artifact,entry in receipt['prediction_artifacts'].items():
+            if artifact.startswith(relative+'/'):evidence.bind(safe_child(run,artifact),entry['sha256'])
+        evidence.bind(run/(name+'.pt'),receipt['checkpoint_sha256'][name+'.pt'])
+        rows,arrays=load_pool(run/relative,DEV_IDS,evidence)
+        compare_metrics(rows,evidence.json(run/relative/'metrics.json'))
+        pools[name]=dict(rows=rows,arrays=arrays)
+    droot=root/'fixed_last_train';d=evidence.json(droot/'diagnostic_receipt.json')
+    if d['checkpoint_sha256']!=receipt['checkpoint_sha256']['last.pt'] or (d['fixed_last_step'],d['actual_train_inputs'])!=(12000,285):
+        raise ValueError('Ordinary fixed-last285 differs')
+    for name,value in d['artifact_sha256'].items():evidence.bind(safe_child(droot,name),value)
+    rows,arrays=load_pool(droot,TRAIN_IDS,evidence);compare_metrics(rows,d['metrics'])
+    pools['train']=dict(rows=rows,arrays=arrays)
+    receipt['_root']=str(run)
+    return dict(receipt=receipt,summary=summary,pools=pools,diagnostic=d)
+
+
+def costs(root,arms,evidence):
+    result={a:[] for a in ARMS}
+    for path in sorted((Path(root)/'job_records').glob('*.status.json')):
+        row=evidence.json(path);cmd=row.get('command',[])
+        if '--arm' not in cmd or '--stage' not in cmd:continue
+        arm=cmd[cmd.index('--arm')+1];stage=cmd[cmd.index('--stage')+1]
+        if arm not in ARMS or stage not in STAGES:continue
+        target=Path(cmd[cmd.index('--output')+1]).resolve()
+        if target!=stage_root(root,arm,stage).resolve():raise ValueError('Unexpected job output')
+        if row.get('status') not in ('completed','failed') or not row.get('end_utc') or row.get('code_commit')!=SOURCE:
+            raise ValueError('Incomplete or changed-source outer cost record')
+        seconds=(datetime.fromisoformat(row['end_utc'])-datetime.fromisoformat(row['start_utc'])).total_seconds()
+        if seconds<0:raise ValueError('Negative job time')
+        result[arm].append(dict(path=str(path),sha256=digest(path),stage=stage,seconds=seconds,
+            exit_code=row['exit_code'],run_id=row['run_id'],start_utc=row['start_utc'],end_utc=row['end_utc']))
+    for arm,records in result.items():
+        if {r['stage'] for r in records if r['exit_code']==0} != set(STAGES):
+            raise ValueError('Actual outer cost for every independently completed stage required')
+        result[arm]=dict(records=records,outer_seconds_by_stage={s:sum(r['seconds'] for r in records if r['stage']==s) for s in STAGES},
+            outer_gpu_hours_reserved=sum(r['seconds'] for r in records)/3600,
+            training_body_seconds=arms[arm]['summary']['elapsed_seconds'],
+            separate_stage_body_seconds={s:arms[arm]['extras'][s]['summary']['elapsed_seconds'] for s in STAGES[1:]},
+            body_nested_in_outer=True,selected_repeat0_sampling_already_in_train=True,
+            historical_qwen_cache_charged_as_new=False,online_latency=None)
+    return result
+
+
+def plots(output,arms):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    fig,axes=plt.subplots(1,4,figsize=(16,3.5))
+    for arm in ARMS:
+        h=arms[arm]['history'];loss=arms[arm]['loss_rows']
+        axes[0].plot([r['step'] for r in loss],[r['route_x0_mse'] for r in loss],label=arm)
+        for ax,key in zip(axes[1:],('TipValidAtK','UniqueClassifiedTipValidAtK','semantic_goal_accuracy')):
+            ax.plot([r['step'] for r in h],[r['metrics'][key] for r in h],label=arm);ax.set_title(key)
+    axes[0].set_title('TRAIN sampled x0 MSE');axes[0].set_yscale('log');axes[0].legend()
+    for ax in axes:ax.set_xlabel('Step');ax.grid(alpha=.2)
+    fig.tight_layout();fig.savefig(output/'convergence.png',dpi=150);plt.close(fig)
+
+
+def analyze(args):
+    out=Path(args.output)
+    if out.exists():raise FileExistsError('Fresh read-only analysis output required')
+    started=time.perf_counter();e=Evidence();root=Path(args.runs)
+    require_completed(root,e)
+    for name in ('scripts/analyze_observed_qwen_continuation.py','scripts/train_observed_two_row_diffusion.py',
+                 'routeset/observed_qwen_continuation.py','routeset/qwen_prefix_corpus.py'):
+        e.bind(PROJECT/name)
+    policy=e.json(Path(args.training_source)/'configs/observed_two_row_diffusion_v1.json')
+    ordinary=ordinary_control(args.ordinary_run,policy,e)
+    arms={a:verify_training(root,a,policy,ordinary['receipt'],args.training_source,e) for a in ARMS}
+    left,right=(arms[a] for a in ARMS)
+    if {k:v for k,v in left['config'].items() if k!='arm'}!={k:v for k,v in right['config'].items() if k!='arm'}:
+        raise ValueError('Arms differ beyond candidate communication')
+    if left['summary']['stream']!=right['summary']['stream']:
+        raise ValueError('Actual parent/reference/permutation/t/epsilon stream differs')
+    for key in ('model_sha256','schedule','stream'):
+        if left['initialization'][key]!=right['initialization'][key]:raise ValueError('Initial state differs: '+key)
+    if left['initialization']['audit']['shared_tensor_sha256']!=right['initialization']['audit']['shared_tensor_sha256']:
+        raise ValueError('Shared geometry/feature/state initial tensors differ')
+    for arm in ARMS:
+        arms[arm]['extras']={s:verify_extra(root,arm,s,arms[arm],e) for s in STAGES[1:]}
+    teacher={a:arms[a]['extras']['denoising-diagnostic'] for a in ARMS}
+    if [(r['id'],r['t'],r['reference_indices'],r['noise_sha256']) for r in teacher['independent']['teacher']['rows']] != [(r['id'],r['t'],r['reference_indices'],r['noise_sha256']) for r in teacher['set']['teacher']['rows']]:
+        raise ValueError('Teacher references/time/noise differ across arms')
+    selected={a:{name:{r:(arms[a]['pools'][name+'0'] if r==0 else arms[a]['extras']['repeat'+str(r)]['pools'][name])
+        for r in range(3)} for name in ('best','last')} for a in ARMS}
+    pair={name:{str(r):paired(selected['independent'][name][r]['rows'],selected['set'][name][r]['rows']) for r in range(3)} for name in ('best','last')}
+    baseline={a:{name:{str(r):paired(ordinary['pools'][name]['rows'],selected[a][name][r]['rows']) for r in range(3)} for name in ('best','last')} for a in ARMS}
+    train={a:split_train(arms[a]['extras']['fixed-last-train']['pools']['last']['rows']) for a in ARMS}
+    train_pair={k:paired(train['independent'][k],train['set'][k]) for k in train['independent']}
+    train_control={a:{k:paired(split_train(ordinary['pools']['train']['rows'])[k],train[a][k]) for k in train[a]} for a in ARMS}
+    result=dict(protocol=PROTOCOL,training_source=SOURCE,paired_dev=pair,ordinary_control_dev=baseline,
+        repeated_metrics={a:{n:repeated_summary(selected[a][n]) for n in ('best','last')} for a in ARMS},
+        paired_fixed_last_train=train_pair,ordinary_control_fixed_last_train=train_control,
+        teacher_diagnostic={a:dict(by_t=teacher[a]['by_t'],raw=teacher[a]['teacher']) for a in ARMS},
+        costs=costs(root,arms,e),ordinary_control_cost=dict(summary=ordinary['summary'],receipt=ordinary['receipt'],fixed_last=ordinary['diagnostic'],
+            historical_control_not_added_to_new_pair_total=True),
+        initialization={a:arms[a]['initialization'] for a in ARMS},stream=left['summary']['stream'],
+        final_gradient_audits={a:arms[a]['summary']['gradient_audit'] for a in ARMS},
+        selected_per_parent={a:{n:{str(r):parent_metrics(selected[a][n][r]['rows']) for r in range(3)} for n in ('best','last')} for a in ARMS},
+        cached_sampler_timing={a:{n:{str(r):sampler_timing(selected[a][n][r]) for r in range(3)} for n in ('best','last')} for a in ARMS},
+        selected_steps={a:arms[a]['summary']['best']['step'] for a in ARMS},
+        verification=dict(all_ten_stages_completed=True,same_actual_training_stream=True,same_initial_shared_tensors=True,
+            selection_opportunities=48,train_inputs=285,train_references=1663,dev_inputs=36,repeats_evaluated_separately=True),
+        source_sha256=digest(__file__),new_forward_calls=0,raw_or_reserved_reads=0,new_searches=0,
+        interpretation='Single training seed, reused DEV, ordinary strong baselines. Equal1536000 target slots is not equal full-positive supervision access, FLOPs, or time. Teacher x0 errors are not free generation or evidence that MSE averaging causes collision. Cached40-step sampler timing is not online Qwen E2E. Unknown positives are retained; no reference absence negatives.')
+    out.mkdir(parents=True);plots(out,arms)
+    write(out/'histories.json',{a:dict(selection=arms[a]['history'],training=[{k:v for k,v in r.items() if k!='stream'} for r in arms[a]['loss_rows']]) for a in ARMS})
+    write(out/'selected_per_scene.json',{a:{n:{str(r):selected[a][n][r]['rows'] for r in range(3)} for n in ('best','last')} for a in ARMS})
+    e.unchanged();result['source_files_sha256']=e.hashes;result['analysis_elapsed_seconds']=time.perf_counter()-started
+    write(out/'analysis.json',result)
+    write(out/'artifact_index.json',{p.name:dict(sha256=digest(p),bytes=p.stat().st_size) for p in sorted(out.iterdir()) if p.is_file()})
+    print(json.dumps(dict(output=str(out),new_forward_calls=0,analysis_elapsed_seconds=result['analysis_elapsed_seconds'])))
+
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    for key in ('runs','ordinary-run','training-source','output'):p.add_argument('--'+key,required=True)
+    analyze(p.parse_args())
+
+
+if __name__=='__main__':main()
