@@ -1,0 +1,279 @@
+"""LOCAL ONLY frozen archive/recipes. Never SSH, deploy, or run a server stage."""
+import argparse
+import ast
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tarfile
+import tempfile
+import xml.etree.ElementTree as ET
+
+ROOT = Path(__file__).resolve().parents[1]
+COMMIT = 'b127ce8514a63917cc3f1b7278db8f65289ba985'
+SHORT = COMMIT[:7]
+TEST_FILES = ['tests/test_observed_diffusion_analysis.py', 'tests/test_hamster3d_train6_probe.py']
+ARCHIVE_PATHS = ['.gitattributes', '.gitignore', 'AGENTS.md', 'README.md', 'RESOURCE_ENVELOPE.md',
+    'requirements.txt', 'configs', 'routeset', 'scripts', 'tests',
+    'reports/TWO_ROW_OBSERVED_DIFFUSION_DESIGN.md',
+    'reports/TWO_ROW_OBSERVED_DIFFUSION_TRAINING_PROTOCOL.md',
+    'reports/TWO_ROW_OBSERVED_DIFFUSION_ANALYSIS_PROTOCOL.md',
+    'reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md', 'reports/HAMSTER3D_PREPARATION_PROTOCOL.md']
+
+RUNNER = r'''"""One frozen stage only: CPU tests, saved-pool analysis, or authorized TRAIN6 probe."""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT = __COMMIT__
+P = Path('/home/wzy/dpvlm/route_set_v1')
+SOURCE = P/'research_v2/releases'/COMMIT
+GPU_UUID = 'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+SOURCE_MANIFEST_SHA = __MANIFEST_SHA__
+EXPECTED_CASES = __CASES__
+TEST_FILES = __TEST_FILES__
+VALIDATION = P/'runs/diffusion_analysis_hamster_validation_v1'/COMMIT
+OUTPUTS = dict(tests=VALIDATION, analysis=P/'runs/observed_two_row_diffusion_analysis_v1',
+               probe=P/'runs/hamster3d_train6_probe_v1')
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(2**20),b''):h.update(chunk)
+    return h.hexdigest()
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+def write(path,value):
+    path=Path(path);temp=path.with_suffix(path.suffix+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+def validate_junit(path):
+    xml=ET.parse(path).getroot();suites=list(xml.iter('testsuite'))
+    if not suites or any(int(s.get(k,'0')) for s in suites for k in ('errors','failures','skipped')):
+        raise ValueError('Require zero actual errors/failures/skips')
+    cases=[]
+    for case in xml.iter('testcase'):
+        if any(case.find(k) is not None for k in ('error','failure','skipped')):
+            raise ValueError('Every exact testcase must pass')
+        cases.append((case.get('classname'),case.get('name')))
+    if len(cases)!=32 or len(set(cases))!=32 or sorted(cases)!=sorted(EXPECTED_CASES):
+        raise ValueError('Require exact 13 diffusion-analysis and 19 probe tests; no substitution')
+    return dict(tests=32,passed=32,skipped=0,errors=0,failures=0,pure_tests=32,
+                diffusion_analysis=13,hamster_probe=19,actual_testcases=cases)
+
+def verify_source():
+    manifest_path=P/'research_v2/incoming'/('research_validation_sources_'+COMMIT[:7]+'.json')
+    if sha(manifest_path)!=SOURCE_MANIFEST_SHA:raise ValueError('Frozen code archive manifest changed')
+    value=read(manifest_path)
+    if value['code_commit']!=COMMIT:raise ValueError('Source manifest commit differs')
+    for name,item in value['files'].items():
+        file=SOURCE/name
+        if file.is_symlink() or not file.is_file() or file.stat().st_size!=item['bytes'] or sha(file)!=item['sha256']:
+            raise ValueError('Immutable source bytes changed: '+name)
+    return dict(path=str(manifest_path),sha256=SOURCE_MANIFEST_SHA,files=len(value['files']),
+                archive_sha256=value['archive_sha256'])
+
+def validate_prior_tests():
+    state=read(VALIDATION/'tests.status.json');receipt=read(VALIDATION/'validation_receipt.json')
+    identity=read(VALIDATION/'validation_identity.json')
+    if (state.get('status')!='completed' or state.get('exit_code')!=0 or state.get('code_commit')!=COMMIT
+            or receipt.get('status')!='passed' or receipt.get('code_commit')!=COMMIT
+            or receipt.get('identity_sha256')!=sha(VALIDATION/'validation_identity.json')
+            or receipt.get('pytest_xml_sha256')!=sha(VALIDATION/'pytest.xml')
+            or identity.get('source_manifest',{}).get('sha256')!=SOURCE_MANIFEST_SHA
+            or identity.get('runner',{}).get('sha256')!=sha(__file__)):
+        raise ValueError('This exact source/runner must first pass actual recorded 32 tests')
+    validate_junit(VALIDATION/'pytest.xml')
+    return {name:sha(VALIDATION/name) for name in ('tests.status.json','validation_receipt.json',
+                                                'validation_identity.json','pytest.xml')}
+
+def prepared_assets_gate():
+    root=P/'runs/hamster3d_preparation_v1';identity=read(root/'preparation_identity.json')
+    result={}
+    for stage in ('assets','environment'):
+        marker=root/(stage+'.completed.json');value=read(marker);folder=Path(value['session'])
+        folder.resolve().relative_to(root.resolve())
+        state=read(folder/'status.json')
+        if (value['identity']!=identity or sha(folder/'receipt.json')!=value['receipt_sha256']
+                or state.get('status')!='completed' or state.get('exit_code')!=0):
+            raise ValueError('Required actual HAMSTER preparation stage is not complete: '+stage)
+        result[stage]=dict(marker_sha256=sha(marker),receipt_sha256=sha(folder/'receipt.json'),
+                           status_sha256=sha(folder/'status.json'))
+    return result
+
+def main():
+    p=argparse.ArgumentParser();p.add_argument('--stage',choices=tuple(OUTPUTS),required=True);args=p.parse_args()
+    stage=args.stage;out=OUTPUTS[stage];started=time.perf_counter()
+    env=P/('.venv-hamster3d' if stage=='probe' else '.venv-qwen')
+    expected_cuda=GPU_UUID if stage=='probe' else ''
+    wrapper=Path(os.environ['FROZEN_RESEARCH_WRAPPER'])
+    if (sys.platform!='linux' or sys.version_info[:2]!=(3,11) or Path(sys.prefix).resolve()!=env.resolve()
+            or Path.cwd().resolve()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT
+            or sorted(os.sched_getaffinity(0))!=[0] or os.environ.get('CUDA_VISIBLE_DEVICES')!=expected_cuda
+            or wrapper.resolve().parent!=P/'research_v2/incoming'
+            or wrapper.name!=f'research_{stage}_{COMMIT[:7]}.sh'):
+        raise ValueError('Fixed source/private Python3.11/CPU0/CUDA/wrapper identity mismatch')
+    source=verify_source()
+    identity=dict(protocol='diffusion_analysis_hamster_frozen_recipe_v1',stage=stage,code_commit=COMMIT,
+        source_manifest=source,runner=dict(path=str(Path(__file__).resolve()),sha256=sha(__file__)),
+        wrapper=dict(path=str(wrapper),sha256=sha(wrapper)),
+        runtime=dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,
+                     cpu_affinity=sorted(os.sched_getaffinity(0)),cuda_visible_devices=expected_cuda,
+                     omp_threads=os.environ.get('OMP_NUM_THREADS')),
+        start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),fresh_only=True,
+        automatic_following_stage=False)
+    if stage!='tests':identity['actual_validation']=validate_prior_tests()
+    if stage=='tests':
+        command=[sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+                 '--junitxml='+str(out/'pytest.xml')]+TEST_FILES
+        identity.update(requested_tests=32,model_calls=0,real_dataset_arrays_opened=False)
+        identity_path=out/'validation_identity.json';receipt_path=out/'validation_receipt.json'
+    elif stage=='analysis':
+        if (out/'analysis').exists():raise FileExistsError('Fresh saved-pool analysis only')
+        command=[sys.executable,'-m','scripts.analyze_observed_two_row_diffusion',
+            '--runs',str(P/'runs/observed_two_row_diffusion_v1_fixed_receipt'),
+            '--ordinary-run',str(P/'runs/observed_two_row_composite108_v1'),
+            '--training-source',str(P/'research_v2/releases/6e0203ba1335f9fa9975c523c657959f8bc9ab60'),
+            '--output',str(out/'analysis')]
+        identity.update(new_model_calls=0,new_searches=0,requires_all_ten_stages_completed=True)
+        identity_path=out/'analysis_recipe_identity.json';receipt_path=out/'analysis_recipe_receipt.json'
+    else:
+        if (out/'probe').exists():raise FileExistsError('Fresh bounded HAMSTER probe only')
+        identity['preparation_gate']=prepared_assets_gate()
+        command=[sys.executable,'-m','scripts.probe_hamster3d_train6',
+                 '--config',str(SOURCE/'configs/hamster3d_train6_probe_v1.json'),'--output',str(out/'probe')]
+        identity.update(maximum_generate_calls=6,candidates_per_request=1,maximum_tokens_total=6144,
+            maximum_gpu_fraction=.35,maximum_gpu_GiB=8.4,maximum_request_seconds=300,
+            maximum_load_seconds=600,maximum_body_seconds=2400,model_calls_actual='read child issued ledger')
+        identity_path=out/'probe_recipe_identity.json';receipt_path=out/'probe_recipe_receipt.json'
+    identity['command']=command;write(identity_path,identity)
+    child=subprocess.run(command,cwd=SOURCE)
+    result=dict(stage=stage,code_commit=COMMIT,status='failed',child_exit_code=child.returncode,
+                elapsed_seconds=time.perf_counter()-started,identity_sha256=sha(identity_path))
+    try:
+        if child.returncode!=0:raise RuntimeError('Frozen child stage failed; preserve, no retry or next stage')
+        if stage=='tests':
+            result['junit']=validate_junit(out/'pytest.xml');result['pytest_xml_sha256']=sha(out/'pytest.xml')
+        result['source_postcheck']=verify_source();result['source_unchanged']=True
+        result['status']='passed' if stage=='tests' else 'completed'
+    except BaseException as error:
+        result['exception']=repr(error);write(receipt_path,result);raise
+    write(receipt_path,result);print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()
+'''
+
+WRAPPER = r'''#!/usr/bin/env bash
+set -euo pipefail
+[[ $# -eq 0 ]] || exit 2
+P=/home/wzy/dpvlm/route_set_v1
+REV=__COMMIT__
+STAGE=__STAGE__
+SRC="$P/research_v2/releases/$REV"
+OUT="__OUTPUT__"
+PY="$P/__VENV__/bin/python"
+RUNNER="$P/research_v2/incoming/research_stage_runner___SHORT__.py"
+export FROZEN_RESEARCH_WRAPPER="$(readlink -f "${BASH_SOURCE[0]}")"
+[[ "$FROZEN_RESEARCH_WRAPPER" == "$P/research_v2/incoming/research_${STAGE}_${REV:0:7}.sh" ]] || exit 2
+[[ "$(sha256sum "$RUNNER" | awk '{print $1}')" == __RUNNER_SHA__ ]] || exit 2
+[[ ! -e "$OUT/$STAGE.status.json" && ! -e "$OUT/$STAGE.lock" ]] || exit 2
+cd "$SRC"
+export CODE_COMMIT="$REV" PYTHONPATH="$SRC:$SRC/tests" PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export CUDA_VISIBLE_DEVICES=__CUDA__
+__GPU_ENV__
+exec taskset -c 0 "$PY" -m scripts.record_job --output "$OUT" --run-id "$STAGE" --resume-strategy none -- \
+  "$PY" "$RUNNER" --stage "$STAGE"
+'''
+
+def digest(value):return hashlib.sha256(value).hexdigest()
+def frozen(path,value):
+    if path.exists():
+        if path.read_bytes()!=value:raise FileExistsError('Never overwrite different frozen bytes: '+str(path))
+    else:
+        with path.open('xb') as f:f.write(value)
+
+def prepare():
+    actual=subprocess.check_output(['git','rev-parse',COMMIT+'^{commit}'],cwd=ROOT,text=True).strip()
+    if actual!=COMMIT:raise ValueError('Commit identity mismatch')
+    directory=ROOT/'.bootstrap';archive=directory/('research_code_'+SHORT+'.tar')
+    if archive.exists():raise FileExistsError('Use existing frozen preparation, do not overwrite')
+    for name in TEST_FILES:
+        source=subprocess.check_output(['git','show',COMMIT+':'+name],cwd=ROOT)
+        if source.replace(b'\r\n',b'\n')!=(ROOT/name).read_bytes().replace(b'\r\n',b'\n'):
+            raise ValueError('Local testcase identities must match frozen source')
+    collected=subprocess.check_output(['python','-m','pytest','--collect-only','-q',*TEST_FILES],cwd=ROOT,text=True)
+    cases=[]
+    for line in collected.splitlines():
+        if '::' in line and line.startswith('tests/'):
+            file,name=line.split('::',1);cases.append((file[:-3].replace('/','.'),name))
+    if len(cases)!=32 or len(set(cases))!=32:raise ValueError('Exact frozen test collection differs')
+    subprocess.run(['git','archive','--format=tar','--output='+str(archive),COMMIT,*ARCHIVE_PATHS],cwd=ROOT,check=True)
+    files={}
+    with tarfile.open(archive) as tar:
+        for member in tar.getmembers():
+            if member.isfile():
+                raw=tar.extractfile(member).read();files[member.name]=dict(sha256=digest(raw),bytes=len(raw))
+            elif not member.isdir():raise ValueError('No symlink or special member in source archive')
+    manifest=dict(code_commit=COMMIT,archive_sha256=digest(archive.read_bytes()),files=files)
+    manifest_bytes=(json.dumps(manifest,indent=2)+'\n').encode()
+    manifest_path=directory/('research_validation_sources_'+SHORT+'.json');frozen(manifest_path,manifest_bytes)
+    runner=RUNNER.replace('__COMMIT__',repr(COMMIT)).replace('__MANIFEST_SHA__',repr(digest(manifest_bytes)))
+    runner=runner.replace('__CASES__',repr(cases)).replace('__TEST_FILES__',repr(TEST_FILES))
+    ast.parse(runner);runner_bytes=runner.encode();runner_path=directory/('research_stage_runner_'+SHORT+'.py')
+    frozen(runner_path,runner_bytes)
+    outputs=dict(tests=f'$P/runs/diffusion_analysis_hamster_validation_v1/$REV',
+                 analysis='$P/runs/observed_two_row_diffusion_analysis_v1',probe='$P/runs/hamster3d_train6_probe_v1')
+    wrappers={}
+    for stage,out in outputs.items():
+        value=WRAPPER.replace('__COMMIT__',COMMIT).replace('__STAGE__',stage).replace('__OUTPUT__',out)
+        value=value.replace('__VENV__','.venv-hamster3d' if stage=='probe' else '.venv-qwen')
+        value=value.replace('__SHORT__',SHORT).replace('__RUNNER_SHA__',digest(runner_bytes))
+        value=value.replace('__CUDA__',"'GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'" if stage=='probe' else "''")
+        value=value.replace('__GPU_ENV__','export RESEARCH_GPU_UUID="$CUDA_VISIBLE_DEVICES"' if stage=='probe' else 'unset RESEARCH_GPU_UUID')
+        path=directory/f'research_{stage}_{SHORT}.sh';frozen(path,value.encode());wrappers[stage]=path
+    self_test(runner)
+    result=dict(code_commit=COMMIT,local_preparation_only=True,ssh_or_scp_calls=0,server_executed=False,
+        model_calls=0,archive_paths=ARCHIVE_PATHS,source_files=len(files),
+        artifacts={p.name:dict(path=str(p),sha256=digest(p.read_bytes()),bytes=p.stat().st_size)
+                   for p in [archive,manifest_path,runner_path,*wrappers.values()]},
+        independent_commands={stage:['taskset','-c','0','bash','/home/wzy/dpvlm/route_set_v1/research_v2/incoming/'+p.name]
+                              for stage,p in wrappers.items()},
+        order_note='Root deploys and hashes archive/recipes, runs only tests first. Analysis waits all10 completed stages. Probe separately waits actual assets/environment and free GPU. No wrapper chains stages.',
+        local_checks='32 exact testcases collected without running tests; generated Python AST; 6 synthetic JUnit acceptance/refusal checks; all prepared files LF; no server calls')
+    receipt=directory/('research_freeze_'+SHORT+'.json');frozen(receipt,(json.dumps(result,indent=2)+'\n').encode())
+    print(json.dumps(result,indent=2))
+
+def self_test(runner):
+    namespace={'__name__':'recipe_fixture'};exec(compile(runner,'<recipe>','exec'),namespace)
+    def xml(kind):
+        root=ET.Element('testsuites');suite=ET.SubElement(root,'testsuite',tests='32',errors='0',failures='0',skipped='0')
+        for i,(group,name) in enumerate(namespace['EXPECTED_CASES']):
+            if kind=='missing' and i==0:continue
+            case=ET.SubElement(suite,'testcase',classname=group,name=name)
+            if i==0:
+                if kind in ('failure','skipped'):ET.SubElement(case,kind)
+                if kind=='renamed':case.set('name','substituted')
+        if kind=='duplicate':ET.SubElement(suite,'testcase',classname=group,name=name)
+        return ET.tostring(root)
+    with tempfile.TemporaryDirectory() as folder:
+        path=Path(folder)/'pytest.xml';path.write_bytes(xml('valid'))
+        assert namespace['validate_junit'](path)['tests']==32
+        for kind in ('missing','failure','skipped','renamed','duplicate'):
+            path.write_bytes(xml(kind))
+            try:namespace['validate_junit'](path)
+            except ValueError:pass
+            else:raise AssertionError('Accepted '+kind)
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prepare',action='store_true')
+    args=parser.parse_args()
+    if not args.prepare:parser.error('Explicit --prepare required; this is local preparation only')
+    prepare()

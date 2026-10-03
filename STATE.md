@@ -1,5 +1,33 @@
 # State — 2026-10-02
 
+## 十阶段扩散完成；只读分析环境修复 — 2026-10-03 04:17 UTC
+
+6e固定独立/集合两臂12000步、各teacher、fixed-last285、repeat1/2均已实际exit0，原训练与所有候选池不重跑。集合臂主体累计1054.517074秒、peak985154560B，384000 draws/1536000状态/48次DEV；完整issued 106848条，与独立臂相同的实际parent/reference/t/epsilon链。原best6000的repeat0 Tip43/144、Any25/36、known34/36；last49/144、Any27/36、known22/36。最终跨重复配对结果等待原池只读分析，MAIN仍277。
+
+新b127代码包420文件实际校验，CPU0/.venv-qwen32纯测试全部通过/0skip，04:08:17.438325–04:08:19.193841UTC，body1.659495/outer1.755516秒，PID757336/757341。归档 reports/diffusion_analysis_hamster_validation_b127ce8_v1。其分析入口于04:13:10.610071–04:13:23.700527UTC（PID760258/760263）exit1：全部十阶段核验通过后，绘图import缺matplotlib；0新forward/候选/搜索。原failed目录与日志保留。root随后实际CPU0导入验证现有.venv Python3.8.10+matplotlib3.7.5及同分析模块可用；正冻结新运行配方，科学b127源、数据、阈值均不改，输出使用全新analysis_v2目录，不覆盖失败。
+
+HAMSTER上传18/18实际完成并最终服务器SHA一致，18次SCP、0GPU/模型；完整74文件索引见 reports/hamster3d_upload_v1/UPLOAD_RESULTS.md。body1842.703秒；已记录外层起点到inner结束1908.576658秒，不含末尾release/退出开销，未虚称完整进程时间。原1b assets --resume独立执行于04:09:19UTC session20261003T040919Z_assets_758043，child758050 exit0，body78.638638秒；68资产全复用校验。assets receipt SHA55c95b97dcd941a3960e4fa4ac9f0e8e6539bcdf36d8a1fc843238c310a4d1d4。私有environment于04:11:50UTC session20261003T041150Z_environment_759295/child759303开始，SSH64350，CPU0/CUDAhidden，正在官方pip下载；尚未模型加载或probe。不要重复启动或改变共享环境。
+
+TRAIN256原5c8/SSH26105继续CPU2/3，04:14日志已闭合到index159；旧128不重采，DEV32仍封存、训练人口仍285。新的两条工作已决定并开始编码：固定首16实际TRAIN父仅用ordinary last保存候选与正参考，48次CPU geometry-only重放、0Qwen/路线head，按父12/4划分的同容量global/local/shuffled探针，验证局部对应是否可识别碰撞；另独立最多12个可变1/2/4/6柱布局技术协议，首4通过后再决定余8，严格canonical/恢复与全分母不放松。两者当前均未服务器运行，不是新方法正结果。依据见 reports/POST_DIFFUSION_CANDIDATES_DRAFT.md 与 reports/OBSERVED_LAYOUT_VARIATION_DRAFT.md。
+
+下一实际动作：保留分析失败并用现有正确环境完成原池配对、归档/推送；检查HAMSTER环境完成收据后独立六TRAIN技术探针；审查并冻结空间诊断和变布局小批。无新DEV/锁定集读取，无新核心成立或论文A–H达成声明。
+
+## 独立扩散完整阶段完成、集合臂运行 — 2026-10-03 03:53 UTC
+
+下方旧independent运行/权重下载状态已过期。6e独立臂12000步于03:40:11.236900UTC exit0（resume child735691，主体累计853.301893秒、peak983557120B），全部48原DEV池与106848 issued记录保存；12000geometry/denoiser/optimizer、1728eval geometry、69120eval denoiser。实际ordinary draw链为6d5dbac9cf3b435bcab1cb240d4c9c7e1162eb303d9d01db01b66c3097b23134，与普通基线相同。
+
+原best6000：Tip54/144、Any28/36、known Unique33/36；last12000：36/144、Any24/36、known21/36。repeat1/2各best和last72请求/2880denoiser独立完成；best重复0/1/2有效数54/46/42，last36/46/47，均K4且不合池、不重选。固定last285于03:43:10.981562UTC exit0，outer66.330421秒：Tip392/1140=34.39%、Any224/285、known193/285、语义1121/1140=98.33%、matchedADE9.8939cm。说明当前自由生成拟合不足，不能解释成仅DEV泛化或宣称扩散类别无效。
+
+独立teacher于03:41:10.844293UTC exit0，6geometry/30denoiser/120中间状态、无optimizer/DEV；t0/25/50/75/99平均xyzRMSE为3.5118/6.9684/12.6472/12.6753/13.0175cm。它是给正参考加噪后的恢复诊断，不能当正常生成质量。完整原件在runs/observed_two_row_diffusion_v1_fixed_receipt，最终配对分析尚未运行、MAIN仍277，没有提前增加质量行。
+
+集合臂同source6e/wrapper v2实际pause2 exit0，child746641、2geometry+2denoise+2optimizer/256状态、body13.655336秒；已保存.bootstrap/diffusion_set_pause2_inner_status.json。03:46:53UTC单独resume，run_id set_train_resume_20261003T034653Z_747005、SSH92161，CPU1/GPU1/35%。03:52实读3700/12000，loss.08570、route_x0_mse.01000；不改变固定预算或中途选择。完成后root逐个启动set的denoising-diagnostic、fixed-last-train、repeat1、repeat2（每个fresh仅一次），读完退出再进入下一阶段。准确入口：`taskset -c 1 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/observed_diffusion_train_6e0203b_v2.sh <stage> set fresh`。不要重复启动independent任何已完成阶段。
+
+新只读配对分析及官方HAMSTER TRAIN6技术探针已source b127ce8514a63917cc3f1b7278db8f65289ba985提交并核验远端，root本地32纯测试/0skip通过，两份独立review无阻断。正在准备服务器冻结CPU验证；尚未实际运行最终分析或HAMSTER模型。分析须全10stage完成，且从原池核同初始化/完整stream/40calls/48选择，3repeat只各自评价后平均；probe须原资产与独立环境均完成，固定前6旧TRAIN、最多6×K1/1024token，无GT和隐藏补采。
+
+HAMSTER本地资产阶段已全部完成exit0：18文件18295875781B独立全SHA一致，4权重每个仅1次worker，无残留.part。主体2178.094秒，报告及26文件索引见reports/hamster3d_local_download_v1/DOWNLOAD_RESULTS.md；模型调用/GPU为0。上传source062e876 frozen helper SHA6673c2adc9745c2bef37886d7d919ec84a7e981e134869e70e458488aaa27479已实际运行（SSH72695，local PID48300，run20261003T033557Z_48300），outer起点03:34:51.914572UTC包含约65秒本地预哈希，上传主体03:35:57.763083UTC。03:52已2分片远端完整SHA发布，第3传输中；上传未完成，不得重启同stage。日志在.bootstrap/hamster3d_upload_v1，后续独立原1b assets --resume，再environment，再有资源时probe，均未自动启动。
+
+TRAIN256原5c8 session20261003T032840Z_train256_736656/SSH26105继续CPU2/3；旧128质量归档已提交，新的DEV仍封存，训练人口仍285。JOBS快照 2026-10-03T03:54:43.996499+00:00 693条，registry更新。新近邻Mode Guidance/TFDP/TMPD已补查原文并更新RELATED_WORK_MATRIX；未复现或确认的代码/发表状态明确标注。新核心优势与论文A–H仍未成立，继续根据配对结果推进，不能把后台作业说成会话外自主研究。
+
 ## LoRA配对完成与下一真实实验 — 2026-10-03 03:32 UTC
 
 本段覆盖下方旧running状态。f41的frozen/LoRA两臂3000步与两份fixed-last285诊断均已exit0，a3配对分析03:00:29.309822–03:01:29.694951UTC exit0；全部12旧DEV池、逐父图和实际调用账本核验。MAIN已273→277，原273对象及CSV已有单元格保持。完整报告与权重索引见 reports/observed_two_row_lora_continuation_v1/CONTINUATION_RESULTS.md；171本地索引文件，250服务器原件，78NPZ忽略目录保留、4PT和4调用账本留远端hash。不能重跑已完成臂或诊断。

@@ -1,0 +1,222 @@
+"""Read-only completed metadata archive; no model assets are opened or rehashed."""
+import collections
+import datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tarfile
+import xml.etree.ElementTree as ET
+
+ROOT=Path(__file__).resolve().parents[1]
+COMMIT='b127ce8514a63917cc3f1b7278db8f65289ba985'
+UPLOAD='20261003T033557Z_48300'
+V=ROOT/'reports/diffusion_analysis_hamster_validation_b127ce8_v1'
+U=ROOT/'reports/hamster3d_upload_v1'
+REMOTE=r'''
+from pathlib import Path
+import hashlib,io,json,sys,tarfile
+P=Path('/home/wzy/dpvlm/route_set_v1');rev='b127ce8514a63917cc3f1b7278db8f65289ba985'
+src=P/'research_v2/releases'/rev;run=P/'runs/diffusion_analysis_hamster_validation_v1'/rev
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+state=json.loads((run/'tests.status.json').read_text());receipt=json.loads((run/'validation_receipt.json').read_text())
+identity=json.loads((run/'validation_identity.json').read_text())
+assert state['status']=='completed' and state['exit_code']==0 and state['code_commit']==rev
+assert receipt['status']=='passed' and receipt['child_exit_code']==0 and receipt['junit']['tests']==32 and receipt['junit']['skipped']==0
+assert identity['runtime']['cpu_affinity']==[0] and identity['runtime']['cuda_visible_devices']==''
+assert receipt['identity_sha256']==sha(run/'validation_identity.json') and receipt['pytest_xml_sha256']==sha(run/'pytest.xml')
+manifest_path=P/'research_v2/incoming/research_validation_sources_b127ce8.json'
+assert sha(manifest_path)==identity['source_manifest']['sha256']
+manifest=json.loads(manifest_path.read_text());assert len(manifest['files'])==420
+# All420 are small frozen code/config/test/protocol bytes, never training inputs or model assets.
+for name,item in manifest['files'].items():assert sha(src/name)==item['sha256'] and (src/name).stat().st_size==item['bytes'],name
+names=['scripts/analyze_observed_two_row_diffusion.py','scripts/probe_hamster3d_train6.py','scripts/record_job.py',
+ 'tests/test_observed_diffusion_analysis.py','tests/test_hamster3d_train6_probe.py','configs/hamster3d_train6_probe_v1.json',
+ 'reports/TWO_ROW_OBSERVED_DIFFUSION_ANALYSIS_PROTOCOL.md','reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md']
+files=[('validation/'+p.name,p) for p in sorted(run.iterdir()) if p.is_file()]
+files += [('source/'+n+('.txt' if n.endswith('.py') else ''),src/n) for n in names]
+for name in ('research_stage_runner_b127ce8.py','research_tests_b127ce8.sh','research_analysis_b127ce8.sh','research_probe_b127ce8.sh','research_validation_sources_b127ce8.json'):
+ p=P/'research_v2/incoming'/name;files.append(('incoming/'+name+('.txt' if name.endswith('.py') else ''),p))
+for key in ('runner','wrapper'):assert sha(Path(identity[key]['path']))==identity[key]['sha256']
+archive=P/'research_v2/incoming/research_code_b127ce8.tar'
+assert sha(archive)==manifest['archive_sha256']
+upload=P/'runs/hamster3d_upload_v1/20261003T033557Z_48300/status.json'
+released=json.loads(upload.read_text());assert released['result']['status']=='completed' and released['result']['exit_code']==0
+files.append(('upload_remote/status.json',upload))
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as tar:
+ for name,p in files:
+  assert p.is_file() and not p.is_symlink() and p.stat().st_size<10*2**20
+  index.append(dict(local_path=name,remote_path=str(p),bytes=p.stat().st_size,sha256=sha(p)))
+  tar.add(p,arcname=name,recursive=False)
+ for name,obj in [('REMOTE_ARTIFACT_INDEX.json',dict(code_commit=rev,files=index)),
+   ('FREEZE_METADATA.json',dict(code_commit=rev,source_directory=str(src),verified_source_files=420,
+       archive=dict(path=str(archive),bytes=archive.stat().st_size,sha256=sha(archive)),
+       model_asset_files_read=0,training_results_read=False,server_model_calls=0))]:
+  raw=(json.dumps(obj,indent=2)+'\n').encode();info=tarfile.TarInfo(name);info.size=len(raw);tar.addfile(info,io.BytesIO(raw))
+'''
+
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def read(path):return json.loads(Path(path).read_text(encoding='utf8'))
+def write(path,value):
+    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_text(json.dumps(value,indent=2,ensure_ascii=False,allow_nan=False)+'\n',encoding='utf8')
+def copy(source,dest):
+    dest=Path(dest);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(Path(source).read_bytes())
+    assert sha(source)==sha(dest)
+def index(folder,**metadata):
+    files=[dict(path=p.relative_to(folder).as_posix(),bytes=p.stat().st_size,sha256=sha(p))
+           for p in sorted(folder.rglob('*')) if p.is_file() and p.name!='LOCAL_ARTIFACT_INDEX.json']
+    write(folder/'LOCAL_ARTIFACT_INDEX.json',dict(files=files,local_file_count=len(files),**metadata))
+    for item in files:assert sha(folder/item['path'])==item['sha256']
+    return dict(folder=folder.as_posix(),files=len(files),index_sha256=sha(folder/'LOCAL_ARTIFACT_INDEX.json'))
+
+def main():
+    assert not V.exists() and not U.exists(),'Fresh separate report families required'
+    compile(REMOTE,'read_only_remote_archive','exec')
+    download=ROOT/'.bootstrap/b127_validation_upload_originals.tar'
+    with download.open('xb') as f:
+        result=subprocess.run(['ssh','wzy3090','taskset','-c','0','python3','-'],input=REMOTE.encode(),stdout=f,stderr=subprocess.PIPE)
+    if result.returncode:raise RuntimeError(result.stderr.decode())
+    V.mkdir(parents=True);U.mkdir(parents=True)
+    with tarfile.open(download) as tar:
+        for item in tar.getmembers():
+            assert item.isfile() and not Path(item.name).is_absolute() and '..' not in Path(item.name).parts
+            target=(U/'remote/status.json') if item.name=='upload_remote/status.json' else V/item.name
+            target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(tar.extractfile(item).read())
+    original=read(V/'REMOTE_ARTIFACT_INDEX.json');upload_remote=[]
+    for item in original['files']:
+        p=U/'remote/status.json' if item['local_path'].startswith('upload_remote/') else V/item['local_path']
+        assert p.stat().st_size==item['bytes'] and sha(p)==item['sha256']
+        if item['local_path'].startswith('upload_remote/'):
+            upload_remote.append(dict(item,local_path='remote/status.json'))
+    write(U/'REMOTE_ARTIFACT_INDEX.json',dict(files=upload_remote,model_asset_files_read_for_archive=0))
+    # Keep the validation index scoped to its own actual originals.
+    write(V/'REMOTE_ARTIFACT_INDEX.json',dict(code_commit=COMMIT,
+        files=[r for r in original['files'] if not r['local_path'].startswith('upload_remote/')]))
+    freeze=read(ROOT/'.bootstrap/research_freeze_b127ce8.json')
+    for name,item in freeze['artifacts'].items():
+        local=ROOT/'.bootstrap'/name;assert sha(local)==item['sha256']
+        if name.endswith('.tar'):continue # Code archive remains local/incoming, not duplicated in ordinary Git.
+        target=V/'incoming'/(name+'.txt' if name.endswith('.py') else name)
+        assert target.exists() and sha(target)==item['sha256']
+    deployment=read(ROOT/'.bootstrap/research_deployment_b127ce8.json')
+    assert deployment['code_commit']==COMMIT and deployment['verified_files']==420 and deployment['all_incoming_hashes_verified']
+    with tarfile.open(ROOT/'.bootstrap/research_code_b127ce8.tar') as tar:
+        for row in original['files']:
+            if not row['local_path'].startswith('source/'):continue
+            name=row['local_path'][len('source/'):]
+            if name.endswith('.py.txt'):name=name[:-4]
+            assert hashlib.sha256(tar.extractfile(name).read()).hexdigest()==row['sha256']
+    for name in ('research_freeze_b127ce8.json','research_deployment_b127ce8.json','research_local_qa_b127ce8.json',
+                 'research_b127ce8_DEPLOY.md','freeze_diffusion_analysis_hamster_b127ce8.py'):
+        copy(ROOT/'.bootstrap'/name,V/'local_freeze'/(name+'.txt' if name.endswith('.py') else name))
+    identity=read(V/'validation/validation_identity.json');receipt=read(V/'validation/validation_receipt.json')
+    state=read(V/'validation/tests.status.json');cases=list(ET.parse(V/'validation/pytest.xml').iter('testcase'))
+    assert len(cases)==32 and len({(x.get('classname'),x.get('name')) for x in cases})==32
+    assert not any(c.find(k) is not None for c in cases for k in ('failure','error','skipped'))
+    groups=dict(collections.Counter(c.get('classname') for c in cases))
+    assert groups=={'tests.test_observed_diffusion_analysis':13,'tests.test_hamster3d_train6_probe':19}
+    seconds=(datetime.datetime.fromisoformat(state['end_utc'])-datetime.datetime.fromisoformat(state['start_utc'])).total_seconds()
+    qa=dict(source_commit=COMMIT,tests=32,passed=32,skipped=0,pure=True,groups=groups,runtime=identity['runtime'],
+            body_seconds=receipt['elapsed_seconds'],outer_seconds=seconds,nested_costs_not_additive=True,gpu_hours=0,
+            model_calls=0,actual_dataset_arrays_opened=False,source_files_verified=420)
+    write(V/'VALIDATION_QA.json',qa)
+    write(V/'SYNC_RECEIPT.json',dict(server_original_files=len(original['files'])-1,all_original_sha256_verified=True,
+        local_deploy_source_files=420,source_copies_match_actual_archive=True,incoming_files_match_local_freeze=True,
+        code_archive_retained_without_git_copy=freeze['artifacts']['research_code_b127ce8.tar'],
+        download=dict(path=download.as_posix(),bytes=download.stat().st_size,sha256=sha(download)),
+        server_model_calls=0,model_weights_downloaded=0,training_results_read=False))
+    (V/'VALIDATION_RESULTS.md').write_text(f'''# b127 扩散分析与 HAMSTER 探针工程验证
+
+冻结源码 `{COMMIT}` 的服务器私有 `.venv-qwen` / Python3.11 实际 **32 passed、0 skipped、0 failed**：扩散保存池分析13项、HAMSTER探针纯契约19项。全部为纯测试，没有载入模型或真实数据数组；不是模型技术探针或质量结果。
+
+CPU0单核、单线程、`CUDA_VISIBLE_DEVICES=''`，GPU小时0。record_job PID{state['pid']}/child{state['child_pid']}，`{state['start_utc']}` → `{state['end_utc']}`，exit0。验证recipe主体{receipt['elapsed_seconds']:.9f}秒，外层{seconds:.6f}秒，两者嵌套不相加。JUnit精确32个用例身份与13/19分组已重新核查，没有执行测试重跑。
+
+实际420份源文件逐SHA与代码包一致，部署收据也明确420/全部incoming匹配。代码包5,683,200字节，SHA `{freeze['artifacts']['research_code_b127ce8.tar']['sha256']}`；原包保留 `.bootstrap` 与服务器incoming，索引其位置和hash，不重复进入普通Git。这里归档实际测试stdout/status/registry/JUnit/identity/receipt、八份关键source原字节、runner与三个独立wrapper、完整420文件manifest和本地冻结/部署收据。`.py`副本追加`.txt`以防pytest收集。
+
+本次只读归档未运行分析、HAMSTER模型、资产或环境阶段，未读取运行中的训练结果。analysis与probe wrapper分别要求实际32项验证完成；analysis仍须两臂全部10阶段封存，probe仍须资产与私有环境两完成收据及GPU排队。三个入口不自动串行触发。
+''',encoding='utf8')
+
+    local=ROOT/'.bootstrap/hamster3d_upload_v1'/UPLOAD
+    status=read(local/'status.json');outer=read(ROOT/'.bootstrap/hamster_upload_outer_start_062e876.json')
+    assert status['run_id']==UPLOAD and status['status']=='completed' and status['exit_code']==0
+    assert status['scp_calls']==18 and status['model_calls']==0 and len(status['files'])==18
+    local_originals=[]
+    for p in sorted(local.iterdir()):
+        assert p.is_file() and p.stat().st_size<1024**2
+        target=U/'original'/UPLOAD/p.name;copy(p,target)
+        local_originals.append(dict(path=p.as_posix(),archived_path=target.relative_to(U).as_posix(),bytes=p.stat().st_size,sha256=sha(p)))
+    manifest_path=ROOT/'reports/hamster3d_preparation_validation_v1/source/configs/hamster3d_assets_v1.json.source.txt'
+    assert sha(manifest_path)==status['manifest_sha256']
+    copy(manifest_path,U/'source/hamster3d_assets_v1.json')
+    m=read(manifest_path);rows={r['path']:r for r in m['model_files']}
+    source=ROOT/'.bootstrap/upload_hamster3d_assets_062e876.py'
+    assert sha(source)==status['source_sha256'];copy(source,U/'source/upload_hamster3d_assets_062e876.py.txt')
+    historical_source=read(ROOT/'.bootstrap/hamster_upload_source_index.json')
+    for item in historical_source['files']:
+        p=ROOT/item['path'];assert sha(p)==item['sha256']
+        copy(p,U/'source'/(p.name+'.txt' if p.suffix=='.py' else p.name))
+    for name in ('hamster_upload_freeze_062e876.json','hamster_upload_outer_start_062e876.json','hamster_upload_source_index.json'):
+        copy(ROOT/'.bootstrap'/name,U/'local_receipts'/name)
+    verification=status['final_verification'];assert verification['status']=='all_18_verified' and len(verification['files'])==18
+    model_index=[]
+    for row in status['files']:
+        expected=rows[row['path']];published=row['publication']
+        assert row['status']=='published_verified' and row['exit_code']==0
+        assert row['expected_bytes']==published['bytes']==expected['bytes']
+        assert row['expected_sha256']==published['sha256']==expected['expected_sha256']
+        final=next(x for x in verification['files'] if x['path']==row['path'])
+        assert final['bytes']==expected['bytes'] and final['sha256']==expected['expected_sha256']
+        model_index.append(dict(path='/home/wzy/dpvlm/route_set_v1/'+m['model_relative']+'/'+row['path'],
+            bytes=expected['bytes'],sha256=expected['expected_sha256'],verification='actual upload final18 receipt; not rehashed during archive'))
+    remote=read(U/'remote/status.json')
+    assert remote['run_id']==UPLOAD and remote['source_sha256']==status['source_sha256']
+    assert remote['result']['files']==status['files'] and remote['result']['scp_calls']==18
+    receipts=[read(p) for p in sorted(local.glob('remote_*.json'))]
+    assert len(receipts)==39 and all(r['exit_code']==0 for r in receipts)
+    assert [r['request']['action'] for r in receipts]==['begin']+['inspect','publish']*18+['verify_all','release']
+    assert receipts[-1]['response']['status']=='released' and receipts[-2]['response']==verification
+    start=datetime.datetime.fromisoformat(outer['start_utc']);end=datetime.datetime.fromisoformat(status['end_utc'])
+    initial=datetime.datetime.fromisoformat(status['start_utc'])
+    cost=dict(source_commit=outer['source'],local_pid=status['local_pid'],body_seconds=status['elapsed_seconds'],
+        body_clock_start_utc=status['start_utc'],body_clock_end_utc=status['end_utc'],
+        recorded_outer_start_utc=outer['start_utc'],recorded_start_to_inner_end_seconds=(end-start).total_seconds(),
+        outer_before_body_seconds=(initial-start).total_seconds(),
+        outer_interval_includes_local_all18_prehash=True,full_process_exit_utc_not_recorded=True,
+        excluded_tail='remote release, final status write and process-exit overhead after captured inner end',
+        remote_release_call_seconds=receipts[-1]['elapsed_seconds'],
+        scp_process_wall_seconds_sum=sum(r['elapsed_seconds'] for r in status['files']),
+        remote_python_action_wall_seconds_sum=sum(r['elapsed_seconds'] for r in receipts),
+        final18_remote_hash_body_seconds=verification['elapsed_seconds'],
+        remote_python_cpu_affinity=[0],scp_ssh_transport_cpu_affinity_not_asserted=True,
+        gpu_hours=0,model_calls=0,model_assets_uploaded_bytes=sum(x['bytes'] for x in model_index),
+        nested_components_not_additive_to_body=True,prior_download_cost_charged_again=False,
+        prior_download_report='reports/hamster3d_local_download_v1/DOWNLOAD_RESULTS.md')
+    write(U/'COST_ATTRIBUTION.json',cost)
+    write(U/'MODEL_REMOTE_INDEX.json',dict(model_revision=m['model_revision'],files=model_index,local_weight_downloaded=0,
+        model_file_reads_for_archive=0,final_receipt_sha256=sha(local/'remote_038.json')))
+    write(U/'LOCAL_ORIGINALS_INDEX.json',dict(files=local_originals,all_original_sha256_verified=True))
+    write(U/'UPLOAD_QA.json',dict(status='completed',source_commit=outer['source'],run_id=UPLOAD,local_pid=status['local_pid'],
+        scp_calls=18,files_published=18,files_final_hash_verified=18,remote_actions=39,remote_release_completed=True,
+        candidate_or_model_calls=0,gpu_hours=0,no_weights_opened_during_archive=True,
+        actual_manifest_sha256=sha(manifest_path),actual_source_sha256=sha(source),all_remote_result_matches_local=True))
+    (U/'UPLOAD_RESULTS.md').write_text(f'''# 3D HAMSTER 固定资产上传实际完成
+
+冻结上传源码 `{outer['source']}`，run `{UPLOAD}`，本地PID{status['local_pid']}实际完成exit0。固定官方模型revision `{m['model_revision']}` 的18文件全部经一次SCP发出、staging校验及不覆盖发布，并在服务器执行最终18项size/SHA复核；18/18通过。总字节{sum(x['bytes'] for x in model_index):,}，其中4份safetensors权重。完整manifest SHA `{sha(manifest_path)}`，实际运行脚本SHA `{sha(source)}`。
+
+本地58个会话原件含原status、18条SCP日志、39次remote动作receipt均保留；最后release实际成功，服务器release原status也只读下载/核对。18个最终服务器文件位置与hash在 `MODEL_REMOTE_INDEX.json`。本次归档没有拉取权重或重新hash约18GB模型，只验证封存收据/manifest/source一致性。
+
+上传内部记录：`{status['start_utc']}` → `{status['end_utc']}`，body {status['elapsed_seconds']:.6f}秒。root在全部本地预哈希之前另记外层起点 `{outer['start_utc']}`；到上述内部结束时刻的已记录窗口为{cost['recorded_start_to_inner_end_seconds']:.6f}秒（约{cost['recorded_start_to_inner_end_seconds']/60:.3f}分钟），含预哈希/启动前段{cost['outer_before_body_seconds']:.6f}秒。**这不是完整进程退出耗时**：内部end写在release之前，末次release调用{cost['remote_release_call_seconds']:.6f}秒及最后写收据/退出开销未包含，实际退出UTC未封存，不补造。body、SCP、remotehash均为嵌套组件，不能重复相加；此前下载成本只引用原 `reports/hamster3d_local_download_v1/DOWNLOAD_RESULTS.md`，不再次计入上传。
+
+SCP进程wall之和{cost['scp_process_wall_seconds_sum']:.6f}秒，最终18文件服务器复核主体{cost['final18_remote_hash_body_seconds']:.6f}秒。远端Python校验/发布均taskset CPU0，不能把SSH/SFTP传输本身冒称全进程单核；GPU小时0、模型调用0。本轮未执行assets复核阶段、环境安装或TRAIN6探针，上传完成不能称机器人系统已复现或生成质量有效。
+
+源文件与协议/测试副本保持实际字节，`.py`附`.txt`后缀；准备时的`actual_upload_started=false`与draft记录保留为历史收据，不能覆盖本节的实际完成结论。所有失败历史下载/服务器准备记录继续保留在原family，未被本轮成功替换。
+''',encoding='utf8')
+    for folder in (V,U):copy(__file__,folder/'archive_recipe.py.txt')
+    outputs=[index(V,source_commit=COMMIT,server_original_files=len(original['files'])-1,all_original_sha256_verified=True),
+             index(U,source_commit=outer['source'],server_original_files=1,local_session_originals=58,all_original_sha256_verified=True)]
+    print(json.dumps(dict(archives=outputs,validation_body=qa['body_seconds'],validation_outer=seconds,
+                         upload_body=cost['body_seconds'],upload_captured_window=cost['recorded_start_to_inner_end_seconds']),indent=2))
+
+if __name__=='__main__':main()

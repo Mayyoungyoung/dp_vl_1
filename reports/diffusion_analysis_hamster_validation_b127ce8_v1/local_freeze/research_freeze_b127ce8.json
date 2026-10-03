@@ -1,0 +1,82 @@
+{
+  "code_commit": "b127ce8514a63917cc3f1b7278db8f65289ba985",
+  "local_preparation_only": true,
+  "ssh_or_scp_calls": 0,
+  "server_executed": false,
+  "model_calls": 0,
+  "archive_paths": [
+    ".gitattributes",
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "RESOURCE_ENVELOPE.md",
+    "requirements.txt",
+    "configs",
+    "routeset",
+    "scripts",
+    "tests",
+    "reports/TWO_ROW_OBSERVED_DIFFUSION_DESIGN.md",
+    "reports/TWO_ROW_OBSERVED_DIFFUSION_TRAINING_PROTOCOL.md",
+    "reports/TWO_ROW_OBSERVED_DIFFUSION_ANALYSIS_PROTOCOL.md",
+    "reports/HAMSTER3D_TRAIN6_PROBE_PROTOCOL.md",
+    "reports/HAMSTER3D_PREPARATION_PROTOCOL.md"
+  ],
+  "source_files": 420,
+  "artifacts": {
+    "research_code_b127ce8.tar": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_code_b127ce8.tar",
+      "sha256": "555bce082b7ea0799acbbeb59f5609c7c840b8e1665ff3ef6d44679693ea9ec9",
+      "bytes": 5683200
+    },
+    "research_validation_sources_b127ce8.json": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_validation_sources_b127ce8.json",
+      "sha256": "00eda8858af348992cd81cd37fd7c0aa4843240c125bda7741af0ffb450ec830",
+      "bytes": 66956
+    },
+    "research_stage_runner_b127ce8.py": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_stage_runner_b127ce8.py",
+      "sha256": "5c2c70afd03c0831fd7965ef77d6534bb92e5b94689a322e098fad3c78538fb6",
+      "bytes": 12137
+    },
+    "research_tests_b127ce8.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_tests_b127ce8.sh",
+      "sha256": "ddee71d3cacf6b2ec6902778087cc2302a816191302d6a5e788d01214f683839",
+      "bytes": 1112
+    },
+    "research_analysis_b127ce8.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_analysis_b127ce8.sh",
+      "sha256": "de45bc455efc8f3b3150acffd666ec003b67037e409dd56bc6290e91aa60a4cc",
+      "bytes": 1108
+    },
+    "research_probe_b127ce8.sh": {
+      "path": "F:\\dpvlm\\.bootstrap\\research_probe_b127ce8.sh",
+      "sha256": "bbd7ae7f03e1f6045650cd49801779403ad853e83ee86f3669230dd150e1b1c2",
+      "bytes": 1162
+    }
+  },
+  "independent_commands": {
+    "tests": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_tests_b127ce8.sh"
+    ],
+    "analysis": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_analysis_b127ce8.sh"
+    ],
+    "probe": [
+      "taskset",
+      "-c",
+      "0",
+      "bash",
+      "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/research_probe_b127ce8.sh"
+    ]
+  },
+  "order_note": "Root deploys and hashes archive/recipes, runs only tests first. Analysis waits all10 completed stages. Probe separately waits actual assets/environment and free GPU. No wrapper chains stages.",
+  "local_checks": "32 exact testcases collected without running tests; generated Python AST; 6 synthetic JUnit acceptance/refusal checks; all prepared files LF; no server calls"
+}
