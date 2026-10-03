@@ -10,6 +10,23 @@ import pytest
 from scripts import train_observed_two_row_diffusion as driver
 
 
+def test_real_completed_composite_receipt_nested_draw_chain():
+    # Exact existing completed-run receipt, with its real nested budget schema.
+    receipt=driver.read(Path(__file__).parent/'fixtures/composite108_training_receipt.json')
+    assert 'actual_index_chain_sha256' not in receipt
+    assert driver.ordinary_draw_chain(receipt)=='6d5dbac9cf3b435bcab1cb240d4c9c7e1162eb303d9d01db01b66c3097b23134'
+
+
+def test_original_draw_chain_rejects_missing_or_incomplete_budget():
+    receipt=driver.read(Path(__file__).parent/'fixtures/composite108_training_receipt.json')
+    del receipt['budget']['actual_index_chain_sha256']
+    receipt['actual_index_chain_sha256']='0'*64
+    with pytest.raises(ValueError):driver.ordinary_draw_chain(receipt)
+    receipt['budget']['actual_index_chain_sha256']='0'*64
+    receipt['budget']['observation_draws']=1
+    with pytest.raises(ValueError):driver.ordinary_draw_chain(receipt)
+
+
 def test_policy_and_fixed_separate_budgets():
     p=driver.read('configs/observed_two_row_diffusion_v1.json')
     assert driver.validate_policy(p)==p

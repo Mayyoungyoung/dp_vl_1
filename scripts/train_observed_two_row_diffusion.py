@@ -404,6 +404,20 @@ def expected_train_calls(steps=12000, dev_count=36, eval_every=250):
                 eval_geometry=(steps//eval_every)*dev_count,eval_denoise=(steps//eval_every)*dev_count*40)
 
 
+def ordinary_draw_chain(receipt):
+    """The completed composite receipt stores exposure and its chain in budget."""
+    budget = receipt.get('budget', {})
+    if (receipt.get('protocol') != 'ordinary_two_row_composite108_constant12000_v1' or
+            budget.get('observation_draws') != 384000 or
+            budget.get('training_candidate_path_states') != 1536000 or
+            budget.get('dev_selection_opportunities') != 48):
+        raise ValueError('Completed original composite training budget required')
+    chain = budget.get('actual_index_chain_sha256')
+    if not isinstance(chain, str) or len(chain) != 64 or any(c not in '0123456789abcdef' for c in chain):
+        raise ValueError('Original actual draw-chain hash missing from budget')
+    return chain
+
+
 def run(args):
     import torch
     from routeset.common import seed_all
@@ -425,7 +439,7 @@ def run(args):
             preparation_seconds=synchronize()-preparation_start
             config=dict(policy,arm=args.arm,dataset_fingerprint=data['fingerprint'],geometry_fingerprint=geometry['fingerprint'],
                 ordinary_receipt_sha256=digest(Path(args.ordinary_run)/'composite_training_receipt.json'),
-                ordinary_actual_index_chain_sha256=original['actual_index_chain_sha256'],
+                ordinary_actual_index_chain_sha256=ordinary_draw_chain(original),
                 source_sha256={p:digest(PROJECT/p) for p in SOURCE_FILES},runtime=runtime,
                 code_commit=os.environ.get('CODE_COMMIT','unrecorded'))
             if config['code_commit']!=PROJECT.name:

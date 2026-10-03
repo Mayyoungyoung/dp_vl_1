@@ -1,5 +1,9 @@
 # 观测扩散独立入口与实际计费协议
 
+## 首次真实入口失败及修复
+
+原0f1d5bf在35项服务器测试通过后，首次真实启动因收据嵌套字段读取错误退出，尚未构造模型或发出训练调用。普通control真实链在budget.actual_index_chain_sha256；最小修复改读该位置并验证原384000抽样/1536000状态/48选择，增加原收据fixture与两项回归测试。原运行目录与失败成本完整保留于[失败证据](observed_diffusion_startup_failure_v1/FAILURE.md)。科学policy不变；新source实际测试后，两个臂统一在新的observed_two_row_diffusion_v1_fixed_receipt family启动，不能覆盖旧失败或把它当可resume训练。
+
 2026-10-03。实现准备；尚未进行服务器测试、训练或采样。它补充普通强基线，不是新核心机制。科学设定以 [TWO_ROW_OBSERVED_DIFFUSION_DESIGN.md](TWO_ROW_OBSERVED_DIFFUSION_DESIGN.md) 和 `configs/observed_two_row_diffusion_v1.json` 为准。
 
 ## 数据、条件和初始化

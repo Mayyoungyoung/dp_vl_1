@@ -1,0 +1,30 @@
+{
+  "launcher": {
+    "path": "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/observed_diffusion_train_0f1d5bf.sh",
+    "sha256": "d7489bf106dd613cb3f1e127c886d033441b0108098953709a8ab4e2499105fb",
+    "source_commit": "0f1d5bfbd4ff788a6ea311339adfe77449db9634"
+  },
+  "stage": "train",
+  "arm": "independent",
+  "mode": "pause2",
+  "output": "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_diffusion_v1/independent",
+  "run_id": "independent_train_pause2",
+  "cpu_affinity": [
+    1
+  ],
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "gpu_memory_fraction": 0.35,
+  "validation_receipt_sha256": "016493e78ff5b8a129616189ed4e933dd0dfcf4cd1023fe3990fea8342177dde",
+  "automatic_stage_chaining": false,
+  "resume_command": [
+    "taskset",
+    "-c",
+    "1",
+    "bash",
+    "/home/wzy/dpvlm/route_set_v1/research_v2/incoming/observed_diffusion_train_0f1d5bf.sh",
+    "train",
+    "independent",
+    "resume"
+  ],
+  "recovery_note": "Administrative pause2 resumes without --stop-after. Hard-crash issued work must match checkpoint or complete sealed DEV pool; no automatic replay/retry."
+}
