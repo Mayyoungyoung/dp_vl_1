@@ -158,7 +158,7 @@ def main():
                 with np.load(checked(folder/'predictions.npz')) as z:pool={k:z[k] for k in z.files}
                 scenes=read(checked(folder/'per_scene.json'))
                 # Generation evaluation embeds candidates in each per-scene row.
-                candidates=[r['candidate_metrics'] if 'candidate_metrics' in r else r['candidates'] for r in scenes]
+                candidates=[r['tip_candidates'] for r in scenes]
                 valid=np.array([[c['TipValid'] for c in row] for row in candidates])
                 summary,rows=evaluate_pool(pool['paths'],valid,pool['scene_ids'],pool['parent_ids'],candidates,refs)
                 name='%s_seed%d'%(arm,seed);results[name]=summary;write(a.output/(name+'_rows.json'),rows)
