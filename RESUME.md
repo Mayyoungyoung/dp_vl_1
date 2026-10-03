@@ -1,5 +1,23 @@
 # Resume
 
+## LoRA配对完成与下一真实实验 — 2026-10-03 03:32 UTC
+
+本段覆盖下方旧running状态。f41的frozen/LoRA两臂3000步与两份fixed-last285诊断均已exit0，a3配对分析03:00:29.309822–03:01:29.694951UTC exit0；全部12旧DEV池、逐父图和实际调用账本核验。MAIN已273→277，原273对象及CSV已有单元格保持。完整报告与权重索引见 reports/observed_two_row_lora_continuation_v1/CONTINUATION_RESULTS.md；171本地索引文件，250服务器原件，78NPZ忽略目录保留、4PT和4调用账本留远端hash。不能重跑已完成臂或诊断。
+
+假设是末两层Qwen LoRA能改善同初始头的观测条件表征。结果：原规则best frozen1000/LoRA2000的TipValid 62→58/144、Any均30/36、已分类Unique均28/36；固定last3000为53→62/144、TRAIN为983→1036/1140。625基础张量不变、60头和8LoRA真实更新、两臂draw/issued链一致。两臂+fixed285+共享prefix外层合计1.229347043GPUh，历史12k预训练不重复计费。判断：LoRA改善拟合和末轮，但未建立稳定best优势。best语义正确候选仍有62/66个碰撞，已知有效重复仅0/1；保留普通强基线，不靠继续LoRA搜索宣称核心贡献。
+
+据此实际执行既定独立/集合观测x0扩散对照。0f首次因错误读取历史receipt顶层字段在模型构造前失败，0模型/optimizer调用，原件保留于reports/observed_diffusion_startup_failure_v1。最小修复6e0203ba1335f9fa9975c523c657959f8bc9ab60从budget读真实draw链，新增原receipt fixture；服务器37pass/0skip，CPUbody5.545868秒、outer7.800122秒。科学policy未改。incoming训练wrapper v2 SHA f44019ff27212b00cf6665c80290873b8a54ee4a822697ec45731c597a9fe552；未发出的v1中config路径替换错误在启动前修正，未产生模型调用。
+
+独立臂正式pause2于03:24:53.313741–03:25:05.967551UTC exit0，child734837，2geometry+2denoise+2optimizer、256路径状态，body10.908655秒。03:26:06UTC单独恢复，child735691、SSH14368，CPU1/GPU1/35%，输出runs/observed_two_row_diffusion_v1_fixed_receipt/independent；03:30实读3025/12000，loss.08539、route_x0_mse.00945。不中途按分数延长；每臂12k×32/K4、1.536M状态、48旧DEV选择和40去噪不变。集合臂尚未启动。恢复命令为`taskset -c 1 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/observed_diffusion_train_6e0203b_v2.sh train independent resume`；先查PID/状态/封存边界，严禁重复启动。完成后root独立调度set和预定repeat1/repeat2/fixed-last285/teacher诊断，所有开销分别计入，不自动链式开启。此时没有扩散完成质量结果或新核心。
+
+TRAIN128采集已02:45:10UTC全部闭合，CPU0质量分析03:02:14.984262UTC exit0。128父384条件3456槽中2248接受、1208失败，938有效unknown、1310已知、1同类型重复、86条件已知R>K4，3456严格恢复全通过。新64接受率64.64%，最长6.622m、19条>4m，全部保留。新增64父全192目标九槽图及64front由三名agent实际逐页目视，未改checker；原2242文件139441807B全部hash核验，大31.23MB槽JSON精确ignore且服务器/本地原件保留。报告见reports/observed_two_row_extension128_quality_v1/TRAIN128_RESULTS.md。现训练人口285不变。
+
+基于完整质量与QA，root已03:28:40UTC实际启动原5c8 collector train256 resume，仅追加indices128..255；session20261003T032840Z_train256_736656、SSH26105、shard shell736666/736667，CPU2/3、CUDA隐藏。原128不重采，所有新DEV继续封存。启动前旧PID均退出、无旧collector，corpus+run约1.028GB/8GiB上限、磁盘1.2TiB余量；quota命令未安装，不推断更高共享授权。全256闭合后单独质量分析，未自动dev32。
+
+3D HAMSTER原服务器资产失败完整保留，原50代码已核；本地冻结d0bdc9e downloader实际小文件14/14通过，weights session20261003T025803Z_weights_79384仍运行（SSH33259）。03:30已3shard完整SHA、正在4；未完成前不上传/装环境/模型。新上传脚本12本地测试通过并经独立review，18全hash前置、单次SCP/staging/原子不覆盖；尚未实际执行。上传status耗时不含本地预哈希，需另记外层墙钟。后续分别原1b assets --resume、私有environment和有限TRAIN探针，不据准备工作宣称系统复现。
+
+JOBS快照 2026-10-03T03:29:35.551508+00:00 共669条，registry同步。论文A–H/新机制优势仍未成立；持续活跃会话内执行实验与证据判断，不存在会话结束后自主思考服务。
+
 ## 冻结臂完成、LoRA续训与外部资产失败 — 2026-10-03 02:42 UTC
 
 本段覆盖下方旧running状态。固定source f41be1ff1a35b0eab3d36edf4ca23197359f4731 的frozen臂3000步已于02:14:37.278678UTC exit0，resume process主体1791.460559秒；原step2 pause仍计入同一训练。随后独立fixed-last285于02:15:31.095887–02:16:45.119068UTC exit0，child703799、外层74.023181秒。全部12旧DEV池保留；最终配对分析尚未执行，MAIN仍273。

@@ -1,5 +1,13 @@
 # 主张—证据对应表
 
+## 2026-10-03 03:32 UTC 实测更新
+
+Qwen冻结/LoRA普通集合回归配对已完整完成：best TipValid62→58/144（原规则选点），last53→62/144，TRAIN983→1036/1140；同draw/曝光，真实adapter更新。保留两臂，未证实稳定best优势；主要剩余失败是语义正确但路径碰撞。完整结果见[CONTINUATION_RESULTS](observed_two_row_lora_continuation_v1/CONTINUATION_RESULTS.md)，MAIN277保留旧273行。两臂与诊断/共享prefix外层成本1.229347GPUh，新增训练不是新机制。
+
+TRAIN128全部3456槽质量与全新增图复核完成：2248接受/1208失败，938unknown有效参考、1已知类型重复均保留；[TRAIN128_RESULTS](observed_two_row_extension128_quality_v1/TRAIN128_RESULTS.md)。按原注册启动TRAIN256追加采集，新DEV仍封存，不改变当前285训练人口。
+
+下一真实实验为观测独立/集合扩散普通强基线。历史receipt读取故障已保存并最小修复，6e实际37服务器测试通过；独立臂已pause2恢复至固定12k训练。尚无完成质量结果，随后按同数据/抽样/候选曝光执行集合臂与分别固定诊断，不以扩散或普通候选attention作为创新。HAMSTER官方固定权重正在本地校验下载，尚未加载。论文核心方法与独立设置、多种子、SelectedValid/校准和系统对照证据仍不足。
+
 ## 2026-10-03：extension TRAIN64 完整质量核验
 
 前64父/192条件/1728请求槽全部保留：1131接受、597失败、465有效unknown、0已知重复，50条件已知R>K4；严格恢复1728/1728。新增32父576接受/288失败、20种颜色；长弧最长6.569m，未过滤。新96路线图及32front全目视，旧32图逐字节一致。仍为窄几何范围的RLBench-derived reach，不是OOD或新任务，不是全部解集或连续全臂安全证书。[完整数据报告与成本](observed_two_row_extension64_quality_v1/TRAIN64_RESULTS.md)。

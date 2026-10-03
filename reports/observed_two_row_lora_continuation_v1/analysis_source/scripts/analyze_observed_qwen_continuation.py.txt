@@ -1,0 +1,538 @@
+"""Zero-forward comparison of two completely sealed common-head continuations.
+
+Only saved pools, checkpoints (bytes/hash only), receipts, and call/job ledgers
+are opened. No model, raw observation, reference trajectory, or checker call.
+"""
+import argparse
+from collections import Counter
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import time
+
+import numpy as np
+from routeset.observed_qwen_continuation import (POLICY, PROTOCOL as TRAIN_PROTOCOL,
+    HEAD_SHA, RequestJournal, canonical, digest, draw_plan, verify_pool)
+from routeset.qwen_prefix_corpus import EXPECTED_ROWS
+
+PROTOCOL = 'sealed_common_head_continuation_pair_v1'
+ARMS = ('frozen', 'lora')
+DEV_IDS = tuple(i for i, _, role in EXPECTED_ROWS if role == 'DEV_MODEL')
+TRAIN_IDS = tuple(i for i, _, role in EXPECTED_ROWS if role == 'TRAIN')
+METRICS = ('TipValidAtK', 'AnyTipValidAtK', 'UniqueClassifiedTipValidAtK',
+    'UnknownTypeTipValidCount', 'DuplicateClassifiedTipValidCount',
+    'KnownReferenceTypeCoverageAtK', 'semantic_goal_accuracy', 'TipClearAtK',
+    'EventSequenceCorrectAtK')
+VALID_FLAGS = ('finite_xyz', 'finite_event_values', 'semantic_goal_correct',
+    'starts_at_current_state', 'tip_segments_clear', 'event_state_sequence_correct')
+PAIR_KEYS = METRICS[:3] + ('semantic_goal_accuracy', 'TipClearAtK', 'KnownReferenceTypeCoverageAtK')
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def write(path, value):
+    Path(path).write_text(json.dumps(value, indent=2, allow_nan=False)+'\n', encoding='utf-8')
+
+
+def mean(values):
+    values = [float(v) for v in values if v is not None]
+    return float(np.mean(values)) if values else None
+
+
+def same_number(a, b):
+    return a is None and b is None or a is not None and b is not None and bool(np.isclose(a, b, rtol=1e-9, atol=1e-9))
+
+
+def safe_child(root, relative):
+    root = Path(root).resolve(strict=True)
+    p = root/relative
+    if Path(relative).is_absolute() or '..' in Path(relative).parts or p.resolve(strict=True) != p.absolute():
+        raise ValueError('Unsafe/noncanonical saved artifact path')
+    return p
+
+
+class Evidence:
+    def __init__(self):
+        self.hashes = {}
+
+    def bind(self, path, expected=None):
+        p = Path(path)
+        actual = digest(p)
+        if expected is not None and actual != expected:
+            raise ValueError('Saved evidence hash differs: '+str(p))
+        self.hashes[p.resolve().as_posix()] = actual
+        return actual
+
+    def json(self, path, expected=None):
+        self.bind(path, expected)
+        return read(path)
+
+    def unchanged(self):
+        if any(digest(p) != h for p, h in self.hashes.items()):
+            raise ValueError('An analyzed source changed during analysis')
+
+
+def load_pool(folder, expected_ids, evidence):
+    folder = Path(folder)
+    rows = evidence.json(folder/'per_scene.json')
+    evidence.bind(folder/'predictions.npz')
+    by_id = {r['scene_id']:r for r in rows}
+    with np.load(folder/'predictions.npz', allow_pickle=False) as a:
+        arrays = {k:a[k].copy() for k in ('paths','gripper_open','scene_ids','parent_ids')}
+    ids = tuple(map(str, arrays['scene_ids']))
+    if (ids != tuple(expected_ids) or len(by_id) != len(rows) or set(ids) != set(by_id)
+            or arrays['paths'].shape != (len(ids),4,24,3)
+            or arrays['gripper_open'].shape != (len(ids),4,24)
+            or arrays['parent_ids'].shape != (len(ids),)):
+        raise ValueError('Exact registered IDs/order and all K4/H24 slots required')
+    rows = [by_id[i] for i in ids]
+    for pos, row in enumerate(rows):
+        parent = ids[pos].rsplit('_target',1)[0]
+        if row['parent_id'] != parent or str(arrays['parent_ids'][pos]) != parent:
+            raise ValueError('Saved parent mismatch')
+        cs, metrics = row['tip_candidates'], row['tip_evaluation']
+        if len(cs) != 4 or [c['candidate'] for c in cs] != list(range(4)):
+            raise ValueError('Candidate budget/order changed')
+        if metrics['evaluation_protocol'] != 'observed_two_row_tip_eval_v1':
+            raise ValueError('Original two-row metric protocol required')
+        for k, c in enumerate(cs):
+            if (bool(np.isfinite(arrays['paths'][pos,k]).all()) != c['finite_xyz'] or
+                    bool(np.isfinite(arrays['gripper_open'][pos,k]).all()) != c['finite_event_values'] or
+                    bool(all(c[f] for f in VALID_FLAGS)) != c['TipValid'] or
+                    bool(c['TipValid'] and c['declared_passage_type'] is not None) != c['classified_tip_valid']):
+                raise ValueError('Saved finite/valid/known candidate decisions differ')
+        valid = [c for c in cs if c['TipValid']]
+        known = [tuple(c['declared_passage_type']) for c in valid if c['declared_passage_type'] is not None]
+        computed = dict(TipValidAtK=len(valid)/4, AnyTipValidAtK=float(bool(valid)),
+            UniqueClassifiedTipValidAtK=len(set(known)),
+            DuplicateClassifiedTipValidCount=len(known)-len(set(known)),
+            UnknownTypeTipValidCount=len(valid)-len(known),
+            semantic_goal_accuracy=sum(c['semantic_goal_correct'] for c in cs)/4,
+            TipClearAtK=sum(c['tip_segments_clear'] for c in cs)/4,
+            EventSequenceCorrectAtK=sum(c['event_state_sequence_correct'] for c in cs)/4)
+        if any(not same_number(metrics[k], v) for k,v in computed.items()):
+            raise ValueError('Saved per-input metric arithmetic differs')
+        if row['reference_count'] < 0:
+            raise ValueError('Invalid reference denominator')
+    return rows, arrays
+
+
+def aggregate(rows):
+    if not rows:
+        raise ValueError('An empty population is not a completed comparison')
+    cs = [c for r in rows for c in r['tip_candidates']]
+    cells = {s+'__'+g:0 for s in ('semantic_correct','wrong_goal')
+             for g in ('tip_clear','collision_or_invalid')}
+    cells.update(Counter(('semantic_correct' if c['semantic_goal_correct'] else 'wrong_goal')+'__'+
+                         ('tip_clear' if c['tip_segments_clear'] else 'collision_or_invalid') for c in cs))
+    result = {k:mean(r['tip_evaluation'].get(k) for r in rows) for k in METRICS}
+    result.update(conditions=len(rows), parents=len({r['parent_id'] for r in rows}), candidate_slots=len(cs),
+        tip_valid_candidates=sum(c['TipValid'] for c in cs),
+        semantic_correct_candidates=sum(c['semantic_goal_correct'] for c in cs),
+        tip_clear_candidates=sum(c['tip_segments_clear'] for c in cs),
+        any_tip_valid_conditions=sum(r['tip_evaluation']['AnyTipValidAtK'] for r in rows),
+        classified_unique_total=sum(r['tip_evaluation']['UniqueClassifiedTipValidAtK'] for r in rows),
+        valid_unknown_total=sum(r['tip_evaluation']['UnknownTypeTipValidCount'] for r in rows),
+        classified_duplicate_total=sum(r['tip_evaluation']['DuplicateClassifiedTipValidCount'] for r in rows),
+        KnownReferenceTypeCoverage_denominator=sum(r['tip_evaluation']['KnownReferenceTypeCoverageAtK'] is not None for r in rows),
+        candidate_matched_ADE_m=mean(r['candidate_matched_ADE_m'] for r in rows),
+        reference_matched_ADE_m=mean(r['reference_matched_ADE_m'] for r in rows),
+        matched_ADE_conditions=sum(r['candidate_matched_ADE_m'] is not None for r in rows),
+        saved_positive_reference_count=sum(r['reference_count'] for r in rows),
+        no_positive_reference_conditions=sum(r['reference_count']==0 for r in rows),
+        semantic_collision_four_cells=cells,
+        nonexclusive_failure_counts={k:sum(not c[k] for c in cs) for k in VALID_FLAGS},
+        classified_valid_type_counts=dict(Counter('/'.join(c['declared_passage_type']) for c in cs
+            if c['TipValid'] and c['declared_passage_type'] is not None)))
+    return result
+
+
+def compare_metrics(rows, metrics):
+    actual = aggregate(rows)
+    for k in METRICS + ('candidate_matched_ADE_m','reference_matched_ADE_m'):
+        if not same_number(actual[k], metrics[k]):
+            raise ValueError('Pool aggregate differs from sealed metrics: '+k)
+    if metrics['examples'] != len(rows) or metrics['candidates'] != 4:
+        raise ValueError('Sealed metric denominator differs')
+    return actual
+
+
+def best_from_history(history):
+    if [r['step'] for r in history] != list(range(250,3001,250)):
+        raise ValueError('Exactly 12 predetermined DEV opportunities required')
+    best = None
+    for row in history:
+        score = row['metrics']['UniqueClassifiedTipValidAtK'] + .05*row['metrics']['TipValidAtK']
+        if not np.isfinite(score) or not same_number(score,row['score']) or not same_number(score,row['metrics']['selection_score']):
+            raise ValueError('Original selection score differs')
+        if best is None or row['score'] > best['score']:
+            best = row
+    return best
+
+
+def expected_calls(plan):
+    for step, indices in enumerate(plan['indices'],1):
+        for micro, slot in enumerate(indices):
+            key=f"{step}:{micro}:{plan['ids'][slot]}"
+            yield ('train_tail', key)
+            yield ('train_head', key)
+        yield ('optimizer',str(step))
+        if step % 250 == 0:
+            for kind in ('dev_tail','dev_head'):
+                for i in DEV_IDS:
+                    yield (kind,f'{step}:{i}')
+
+
+def verify_calls(journal, plan):
+    n = 0
+    for n, (record, expected) in enumerate(zip(journal.records, expected_calls(plan)),1):
+        if (record['kind'], record['key']) != expected:
+            raise ValueError('Actual issued draw/order differs from shared sealed plan')
+    expected_n = 3000*(32*2+1)+12*36*2
+    if len(journal.records) != expected_n or n != expected_n:
+        raise ValueError('Actual call ledger missing or exceeded budget')
+
+
+def checked_pool(folder, config, ids, step, kind, evidence, expected_receipt=None):
+    receipt = evidence.json(Path(folder)/'pool_receipt.json', expected_receipt)
+    identity = receipt['identity']
+    if (identity['config'] != config or tuple(identity['ids']) != tuple(ids) or identity['step'] != step
+            or identity['kind'] != kind or identity['requests'] != len(ids)
+            or identity['candidate_path_states'] != 4*len(ids)):
+        raise ValueError('Sealed pool identity/role/step differs')
+    verify_pool(folder, identity)
+    for name, h in receipt['artifacts'].items():
+        evidence.bind(safe_child(folder,name),h)
+    rows, arrays = load_pool(folder, ids, evidence)
+    compare_metrics(rows, receipt['metrics'])
+    with np.load(Path(folder)/'tail_features.npz',allow_pickle=False) as a:
+        if tuple(map(str,a['ids'])) != tuple(ids) or a['features'].shape != (len(ids),4096) or not np.isfinite(a['features']).all():
+            raise ValueError('Sealed current-adapter feature pool differs')
+    return dict(rows=rows, arrays=arrays, receipt=receipt)
+
+
+def require_completed_pair(root, evidence):
+    # Check only process state before opening either arm's quality pools.
+    for arm in ARMS:
+        for folder in (Path(root)/arm, Path(root)/(arm+'_fixed_last_train')):
+            status=evidence.json(folder/'status.json')
+            if status.get('status')!='completed' or not (folder/'summary.json').is_file():
+                raise ValueError('Both3000 arms and both fixed-last285 stages must complete first')
+
+
+def verify_arm(root, arm, diagnostic, plan, evidence, source):
+    root, diagnostic, source = map(Path,(root,diagnostic,source))
+    summary = evidence.json(root/'summary.json')
+    if summary.get('status') != 'completed' or summary.get('protocol') != TRAIN_PROTOCOL or summary.get('arm') != arm:
+        raise ValueError('Both arms must actually complete before analysis')
+    status = evidence.json(root/'status.json')
+    if status.get('status') != 'completed':
+        raise ValueError('A paused or failed arm is not a completed result')
+    config = evidence.json(root/'config.json', summary['config_sha256'])
+    if any(config.get(k) != v for k,v in POLICY.items()) or config['arm'] != arm:
+        raise ValueError('Predeclared continuation settings changed')
+    if config['code_commit'] != source.name:
+        raise ValueError('Explicit immutable training source required')
+    for name,h in config['source_sha256'].items():
+        evidence.bind(safe_child(source,name),h)
+    init = evidence.json(root/'initialization.json')
+    if (init['common_checkpoint_sha256'] != HEAD_SHA or init['head_parameters'] != 1231965
+            or init['adapter_parameters'] != (114688 if arm=='lora' else 0)
+            or not init['fresh_adam_states'] or init['draw_fingerprint'] != plan['fingerprint']
+            or init['actual_head_sha256'] != summary['initial_head_sha256']):
+        raise ValueError('Common initialization or adapter population differs')
+    for key, expected in dict(common_head_sha256=HEAD_SHA,last_step=3000,observation_draws=96000,
+        training_path_states=384000,shared_pretraining_path_states=1536000,
+        per_arm_logical_cumulative_path_states=1920000,optimizer_steps=3000,
+        dev_selection_opportunities=12,new_qwen_full_calls=0,train_tail_replays=96000,dev_tail_replays=432).items():
+        if summary.get(key) != expected:
+            raise ValueError('Completed actual budget differs: '+key)
+    if not summary['frozen_base_unchanged'] or not all(summary['head_parameter_changed'].values()):
+        raise ValueError('Required freeze/head update evidence failed')
+    evidence.bind(root/'best.pt',summary['best_checkpoint_sha256'])
+    evidence.bind(root/'last.pt',summary['last_checkpoint_sha256'])
+    evidence.bind(root/'requests.jsonl')
+    journal = RequestJournal(root/'requests.jsonl')
+    if journal.snapshot() != summary['actual_calls']:
+        raise ValueError('Actual call ledger differs from completion receipt')
+    verify_calls(journal,plan)
+    history = evidence.json(root/'history.json')
+    if history != summary['history']:
+        raise ValueError('Selection history differs from completion')
+    best = best_from_history(history)
+    if summary['best_step'] != best['step'] or summary['best_pool'] != best['pool'] or summary['last_pool'] != 'dev/step3000':
+        raise ValueError('Original best/last selection differs; no reselection allowed')
+    pools = {}
+    for row in history:
+        if row['pool'] != f"dev/step{row['step']:04d}":
+            raise ValueError('Unexpected selection-pool location')
+        p = checked_pool(safe_child(root,row['pool']),config,DEV_IDS,row['step'],'dev',evidence,row['pool_receipt_sha256'])
+        if p['receipt']['metrics'] != row['metrics']:
+            raise ValueError('History and sealed pool metrics differ')
+        if row['step'] == best['step']:pools['best_dev'] = p
+        if row['step'] == 3000:pools['last_dev'] = p
+    if summary['best_metrics'] != best['metrics'] or summary['last_metrics'] != history[-1]['metrics']:
+        raise ValueError('Summary selected metrics differ')
+    if pools['last_dev']['receipt']['identity']['head_sha256'] != summary['final_head_sha256']:
+        raise ValueError('Last pool uses another head')
+    ds = evidence.json(diagnostic/'summary.json')
+    if (ds.get('status') != 'completed' or ds.get('protocol') != TRAIN_PROTOCOL or ds.get('arm') != arm
+            or ds['source_last_sha256'] != summary['last_checkpoint_sha256']
+            or (ds['actual_requests'],ds['requested_requests'],ds['missing_requests'],ds['tail_calls'],ds['head_calls'],ds['candidate_path_states'],ds['optimizer_updates']) != (285,288,3,285,285,1140,0)):
+        raise ValueError('Completed fixed-last285 diagnostic required')
+    if evidence.json(diagnostic/'status.json').get('status') != 'completed':
+        raise ValueError('Fixed-last diagnostic still incomplete')
+    evidence.bind(diagnostic/'requests.jsonl');dj = RequestJournal(diagnostic/'requests.jsonl')
+    expected = [(k,f'3000:{i}') for k in ('train_diag_tail','train_diag_head') for i in TRAIN_IDS]
+    if [(r['kind'],r['key']) for r in dj.records] != expected:
+        raise ValueError('Fixed-last diagnostic requests differ')
+    pools['last_train'] = checked_pool(diagnostic/'pool',config,TRAIN_IDS,3000,'train',evidence)
+    if (pools['last_train']['receipt'] != ds['receipt'] or dj.snapshot()!=ds['receipt']['journal_after']
+            or ds['receipt']['identity']['head_sha256'] != summary['final_head_sha256']
+            or ds['receipt']['identity']['adapter_sha256'] != pools['last_dev']['receipt']['identity']['adapter_sha256']):
+        raise ValueError('Diagnostic/current adapter/checkpoint identity differs')
+    return dict(summary=summary,config=config,initialization=init,history=history,pools=pools,diagnostic_summary=ds)
+
+
+def paired(a, b):
+    a,b = ({r['scene_id']:r for r in rows} for rows in (a,b))
+    if set(a) != set(b):raise ValueError('Paired input population differs')
+    values = []
+    for identifier in sorted(a):
+        if a[identifier]['reference_count'] != b[identifier]['reference_count'] or a[identifier]['parent_id'] != b[identifier]['parent_id']:
+            raise ValueError('Paired reference/parent denominator differs')
+        delta = {k:None if a[identifier]['tip_evaluation'].get(k) is None or b[identifier]['tip_evaluation'].get(k) is None else
+            b[identifier]['tip_evaluation'][k]-a[identifier]['tip_evaluation'][k] for k in PAIR_KEYS}
+        values.append(dict(scene_id=identifier,parent_id=a[identifier]['parent_id'],delta=delta))
+    parents = [dict(parent_id=p,conditions=sum(r['parent_id']==p for r in values),
+        mean_delta={k:mean(r['delta'][k] for r in values if r['parent_id']==p) for k in PAIR_KEYS})
+        for p in sorted({r['parent_id'] for r in values})]
+    def outcomes(rows, field):
+        return {k:dict(wins=sum(r[field][k] is not None and r[field][k]>1e-12 for r in rows),
+            ties=sum(r[field][k] is not None and abs(r[field][k])<=1e-12 for r in rows),
+            losses=sum(r[field][k] is not None and r[field][k]<-1e-12 for r in rows),
+            unavailable=sum(r[field][k] is None for r in rows)) for k in PAIR_KEYS}
+    return dict(left=aggregate(list(a.values())),right=aggregate(list(b.values())),per_condition=values,per_parent=parents,
+        condition_wins_ties_losses=outcomes(values,'delta'),parent_wins_ties_losses=outcomes(parents,'mean_delta'))
+
+
+def split_train(rows):
+    old=[r for r in rows if r['parent_id'].startswith('two_row_reach_283')]
+    new=[r for r in rows if r['parent_id'].startswith('two_row_reach_400')]
+    if len(old)!=189 or len(new)!=96 or len(rows)!=285:raise ValueError('Fixed old189/new96 population differs')
+    return dict(old189=old,new96=new,all285=rows)
+
+
+def initial_context(root, evidence):
+    root=Path(root);run=root/'peak_seed0';receipt=evidence.json(run/'composite_training_receipt.json')
+    summary=evidence.json(run/'summary.json',receipt['summary_sha256'])
+    if receipt['checkpoint_sha256']['last.pt']!=HEAD_SHA or summary['last_checkpoint_sha256']!=HEAD_SHA or summary['last_step']!=12000:
+        raise ValueError('Shared initial last12000 context differs')
+    evidence.bind(run/'last.pt',HEAD_SHA)
+    for relative,entry in receipt['prediction_artifacts'].items():
+        if relative.startswith('last_dev_model/'):
+            evidence.bind(safe_child(run,relative),entry['sha256'])
+    dev=load_pool(run/'last_dev_model',DEV_IDS,evidence)
+    compare_metrics(dev[0],evidence.json(run/'last_dev_model/metrics.json'))
+    droot=root/'fixed_last_train';d=evidence.json(droot/'diagnostic_receipt.json')
+    if d['checkpoint_sha256']!=HEAD_SHA or (d['fixed_last_step'],d['actual_train_inputs'])!=(12000,285):
+        raise ValueError('Shared initial fixed-last TRAIN differs')
+    for name,h in d['artifact_sha256'].items():evidence.bind(safe_child(droot,name),h)
+    train=load_pool(droot,TRAIN_IDS,evidence)
+    compare_metrics(train[0],d['metrics'])
+    return dict(dev=dev,train=train,summary=summary,
+        caveat='Initial last12000 is shared pretrained context, not a same-additional-update-budget control.')
+
+
+def job_costs(folder, roots, source, evidence):
+    records={a:[] for a in ARMS}
+    for path in sorted(Path(folder).glob('*.status.json')):
+        row=read(path);cmd=row.get('command',[])
+        if '--arm' not in cmd or '--output' not in cmd:continue
+        arm=cmd[cmd.index('--arm')+1];target=Path(cmd[cmd.index('--output')+1]).resolve()
+        if arm not in ARMS or target not in {p.resolve() for p in roots[arm]}:continue
+        evidence.bind(path)
+        if row.get('status') not in ('completed','failed') or not row.get('end_utc') or row.get('code_commit')!=Path(source).name:
+            raise ValueError('Unfinished or changed-source cost job')
+        elapsed=(datetime.fromisoformat(row['end_utc'])-datetime.fromisoformat(row['start_utc'])).total_seconds()
+        if elapsed<0:raise ValueError('Negative external job duration')
+        stage=cmd[cmd.index('--stage')+1]
+        records[arm].append(dict(path=path.resolve().as_posix(),sha256=digest(path),stage=stage,
+            run_id=row['run_id'],pid=row['pid'],child_pid=row.get('child_pid'),exit_code=row['exit_code'],
+            start_utc=row['start_utc'],end_utc=row['end_utc'],elapsed_seconds=elapsed,
+            stop_after=cmd[cmd.index('--stop-after')+1] if '--stop-after' in cmd else None,
+            resume='--resume' in cmd))
+    for arm,rows in records.items():
+        if not any(r['stage']=='train' and r['exit_code']==0 for r in rows) or not any(r['stage']=='fixed-last-train' and r['exit_code']==0 for r in rows):
+            raise ValueError('Complete actual outer train and diagnostic job costs required')
+    return records
+
+
+def shared_prefix_cost(root, outer_path, evidence):
+    root=Path(root);evidence.bind(root/'manifest.json',POLICY['prefix_manifest_sha256'])
+    status=evidence.json(root/'status.json');index=evidence.json(root/'artifact_index.json');manifest=evidence.json(root/'manifest.json')
+    if status.get('status')!='completed' or not status.get('gate_passed') or status.get('completed_rows')!=321:
+        raise ValueError('Actual shared prefix corpus incomplete')
+    for name in ('status.json','manifest.json'):evidence.bind(root/name,index[name]['sha256'])
+    if status['actual_issued_budget'] != dict(full_features=321,replay_features=321,head_calls=0,candidate_path_states=0,optimizer_steps=0):
+        raise ValueError('Shared capture budget differs')
+    outer=evidence.json(outer_path)
+    cmd=outer.get('command',[])
+    if (outer.get('status')!='completed' or outer.get('exit_code')!=0 or '--output' not in cmd
+            or Path(cmd[cmd.index('--output')+1]).resolve()!=root.resolve()
+            or outer.get('code_commit')!=manifest['code_commit']):
+        raise ValueError('Completed original shared prefix job receipt required')
+    seconds=(datetime.fromisoformat(outer['end_utc'])-datetime.fromisoformat(outer['start_utc'])).total_seconds()
+    return dict(body=status,outer_status=outer,outer_elapsed_seconds=seconds,outer_gpu_hours_reserved=seconds/3600,
+        charged_once_for_pair=True,body_nested_in_outer=True,online_latency=None)
+
+
+def plots(output, arms):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    colors={'frozen':'#58798f','lora':'#b33a31'}
+    fig,axes=plt.subplots(1,3,figsize=(13,3.5))
+    for ax,k in zip(axes,('TipValidAtK','UniqueClassifiedTipValidAtK','semantic_goal_accuracy')):
+        for arm in ARMS:
+            h=arms[arm]['history'];ax.plot([r['step'] for r in h],[r['metrics'][k] for r in h],label=arm,color=colors[arm])
+        ax.set(title=k,xlabel='Additional logical step');ax.grid(alpha=.2)
+    axes[0].legend();fig.suptitle('All 12 predeclared old DEV selections; no reselection')
+    fig.tight_layout();fig.savefig(output/'history.png',dpi=160);plt.close(fig)
+    for parent in sorted({i.rsplit('_target',1)[0] for i in DEV_IDS}):
+        fig,axes=plt.subplots(6,2,figsize=(11,18))
+        for stage_index,stage in enumerate(('best_dev','last_dev')):
+            for arm,style in [('frozen','--'),('lora','-')]:
+                pool=arms[arm]['pools'][stage];rows={r['scene_id']:r for r in pool['rows']};a=pool['arrays'];positions={str(i):n for n,i in enumerate(a['scene_ids'])}
+                for target in range(3):
+                    identifier=f'{parent}_target{target}';pos=positions[identifier]
+                    for column,coord in enumerate((1,2)):
+                        ax=axes[stage_index*3+target,column];bad=[]
+                        for k,path in enumerate(a['paths'][pos]):
+                            if not np.isfinite(path).all():bad.append(k);continue
+                            ax.plot(path[:,0],path[:,coord],style,color=colors[arm],alpha=.65,lw=1.1,label=arm if k==0 else None)
+                            ax.scatter(path[-1,0],path[-1,coord],s=18,marker='o' if rows[identifier]['tip_candidates'][k]['TipValid'] else 'x',color=colors[arm])
+                        if bad:ax.text(.01,.03+(arm=='lora')*.07,f'{arm} nonfinite slots: {bad}',transform=ax.transAxes,fontsize=7)
+                        ax.set(title=f'{stage} target{target} '+('XY' if coord==1 else 'XZ'),xlabel='X (m)',ylabel=('Y' if coord==1 else 'Z')+' (m)');ax.grid(alpha=.2)
+                        if stage_index==target==column==0:ax.legend(fontsize=8)
+        fig.suptitle(parent+' | both arms, all targets, all K4 slots\nCircle=original tip-valid; cross=failed. No raw geometry/reference overlay.')
+        fig.tight_layout(rect=(0,0,1,.96));fig.savefig(output/(parent+'.png'),dpi=125);plt.close(fig)
+
+
+def analyze(args):
+    out=Path(args.output)
+    if out.exists():raise FileExistsError('Fresh zero-forward analysis output required')
+    started=time.perf_counter();e=Evidence();root=Path(args.runs)
+    require_completed_pair(root,e)
+    plan=e.json(args.draw_plan);expected=draw_plan(TRAIN_IDS)
+    if plan!=expected:raise ValueError('One actual fixed ordered shared TRAIN plan required')
+    plan_sha=digest(args.draw_plan)
+    arms={a:verify_arm(root/a,a,root/(a+'_fixed_last_train'),plan,e,args.training_source) for a in ARMS}
+    left,right=arms['frozen'],arms['lora']
+    configs=[{k:v for k,v in a['config'].items() if k!='arm'} for a in (left,right)]
+    if configs[0]!=configs[1] or configs[0]['draw_plan_sha256']!=plan_sha:
+        raise ValueError('Arms differ beyond the declared adapter branch')
+    for key in ('actual_head_sha256','initial_head_parameter_sha256','draw_fingerprint','head_parameters','prefix_bytes'):
+        if left['initialization'][key]!=right['initialization'][key]:raise ValueError('Shared initial state differs: '+key)
+    def base_hashes(a):return {k.replace('.q_proj.base.','.q_proj.').replace('.v_proj.base.','.v_proj.'):v for k,v in a['initialization']['frozen_base_sha256'].items()}
+    if base_hashes(left)!=base_hashes(right):raise ValueError('Frozen shared base tensor bytes differ')
+    initial=initial_context(args.initial_run,e)
+    dev={stage:paired(left['pools'][stage]['rows'],right['pools'][stage]['rows']) for stage in ('best_dev','last_dev')}
+    train={};splits={a:split_train(arms[a]['pools']['last_train']['rows']) for a in ARMS}
+    for group in ('old189','new96','all285'):train[group]=paired(splits['frozen'][group],splits['lora'][group])
+    context={a:dict(best_dev=paired(initial['dev'][0],arms[a]['pools']['best_dev']['rows']),
+        last_dev=paired(initial['dev'][0],arms[a]['pools']['last_dev']['rows']),
+        last_train={k:paired(split_train(initial['train'][0])[k],splits[a][k]) for k in ('old189','new96','all285')}) for a in ARMS}
+    jobs=job_costs(args.job_records,{a:(root/a,root/(a+'_fixed_last_train')) for a in ARMS},args.training_source,e)
+    costs={a:dict(outer_records=jobs[a],outer_training_seconds=sum(r['elapsed_seconds'] for r in jobs[a] if r['stage']=='train'),
+        outer_diagnostic_seconds=sum(r['elapsed_seconds'] for r in jobs[a] if r['stage']=='fixed-last-train'),
+        outer_all_gpu_hours_reserved=sum(r['elapsed_seconds'] for r in jobs[a])/3600,
+        training_summary_seconds=arms[a]['summary']['elapsed_seconds'],
+        recovered_sealed_evaluation_seconds=arms[a]['summary']['recovered_sealed_evaluation_seconds'],
+        diagnostic_summary_seconds=arms[a]['diagnostic_summary']['elapsed_seconds'],
+        peak_allocated_bytes=arms[a]['summary']['peak_cuda_allocated_bytes'],
+        body_nested_in_outer=True,online_latency=None) for a in ARMS}
+    result=dict(protocol=PROTOCOL,paired_dev=dev,paired_fixed_last_train=train,initial_last12000_context=context,
+        context_caveat=initial['caveat'],costs=costs,shared_prefix_cost=shared_prefix_cost(args.prefix_corpus,args.prefix_job_status,e),
+        common_pretraining=dict(checkpoint_sha256=HEAD_SHA,path_states=1536000,charged_once=True,
+            gpu_hours_reserved=initial['summary']['gpu_hours_reserved']),
+        verification=dict(same_draws_and_actual_call_order=True,same_initial_head_and_frozen_base=True,same_data_and_source=True,
+            per_arm_additional_draws=96000,per_arm_training_path_states=384000,per_arm_dev_path_states=1728,
+            per_arm_fixed_last_train_path_states=1140,selected_best_steps={a:arms[a]['summary']['best_step'] for a in ARMS},
+            old_train_inputs=189,new_train_inputs=96,requested_train_inputs=288,actual_train_inputs=285,missing_train_inputs=3,dev_inputs=36),
+        raw_label_reads=0,new_forward_calls=0,new_route_searches=0,source_sha256=digest(__file__),
+        interpretation='Single-seed ordinary frozen versus partial-LoRA continuation on reused DEV; no core-method, execution, OOD, or online-latency claim.')
+    out.mkdir(parents=True)
+    plots(out,arms)
+    write(out/'histories.json',{a:arms[a]['history'] for a in ARMS})
+    write(out/'all_selected_per_scene.json',{a:{k:p['rows'] for k,p in arms[a]['pools'].items()} for a in ARMS})
+    e.unchanged();result['source_files_sha256']=e.hashes;result['analysis_elapsed_seconds']=time.perf_counter()-started
+    write(out/'analysis.json',result)
+    write(out/'artifact_index.json',{p.relative_to(out).as_posix():dict(sha256=digest(p),bytes=p.stat().st_size) for p in sorted(out.rglob('*')) if p.is_file()})
+    print(json.dumps(dict(output=str(out),new_forward_calls=0,dev_parents=12,analysis_elapsed_seconds=result['analysis_elapsed_seconds'])))
+
+
+def self_test():
+    """Pure parsing/arithmetic checks; no completed or partial actual run opened."""
+    import tempfile
+    tests=0
+    h=[dict(step=s,score=.55,metrics=dict(UniqueClassifiedTipValidAtK=.5,TipValidAtK=1.,selection_score=.55)) for s in range(250,3001,250)]
+    assert best_from_history(h)['step']==250;tests+=1
+    changed=json.loads(json.dumps(h));changed[3]['score']=.56
+    try:best_from_history(changed);raise AssertionError('altered criterion accepted')
+    except ValueError:tests+=1
+    try:best_from_history(h[:-1]);raise AssertionError('partial run accepted')
+    except ValueError:tests+=1
+    assert split_train([dict(parent_id=i.rsplit('_target',1)[0]) for i in TRAIN_IDS])['all285'];tests+=1
+    with tempfile.TemporaryDirectory() as tmp:
+        p=Path(tmp);(p/'child').write_text('x')
+        assert safe_child(p,'child')==p.resolve()/'child'
+        try:safe_child(p,'../child');raise AssertionError('traversal accepted')
+        except ValueError:tests+=1
+    def row(i,v):
+        c=dict(candidate=0,TipValid=bool(v),semantic_goal_correct=bool(v),tip_segments_clear=True,declared_passage_type=None)
+        c.update({k:True for k in VALID_FLAGS if k not in c})
+        m={k:float(v) for k in METRICS};m.update(UnknownTypeTipValidCount=4*v,DuplicateClassifiedTipValidCount=0,UniqueClassifiedTipValidAtK=0)
+        return dict(scene_id=i,parent_id=i.rsplit('_target',1)[0],tip_candidates=[dict(c,candidate=k) for k in range(4)],tip_evaluation=m,reference_count=2,candidate_matched_ADE_m=.1,reference_matched_ADE_m=.2)
+    ids=DEV_IDS[:3];a=[row(i,0) for i in ids];b=[row(i,1) for i in ids]
+    assert paired(a,b)==paired(a[::-1],b[::-1]);tests+=1
+    assert paired(a,b)['parent_wins_ties_losses']['TipValidAtK']==dict(wins=1,ties=0,losses=0,unavailable=0);tests+=1
+    assert aggregate(b)['valid_unknown_total']==12 and aggregate(b)['classified_unique_total']==0;tests+=1
+    assert sum(aggregate(a)['semantic_collision_four_cells'].values())==12;tests+=1
+    with tempfile.TemporaryDirectory() as tmp:
+        root=Path(tmp)
+        for arm in ARMS:
+            for suffix in ('','_fixed_last_train'):
+                d=root/(arm+suffix);d.mkdir();write(d/'status.json',dict(status='completed'));write(d/'summary.json',{})
+        require_completed_pair(root,Evidence());tests+=1
+        write(root/'lora/status.json',dict(status='paused'))
+        try:require_completed_pair(root,Evidence());raise AssertionError('Partial arm accepted')
+        except ValueError:tests+=1
+    with tempfile.TemporaryDirectory() as tmp:
+        root=Path(tmp);identifier=DEV_IDS[0];r=row(identifier,1)
+        r['tip_evaluation'].update(evaluation_protocol='observed_two_row_tip_eval_v1')
+        for c in r['tip_candidates']:c.update(classified_tip_valid=False)
+        arrays=dict(paths=np.ones((1,4,24,3)),gripper_open=np.ones((1,4,24)),
+            scene_ids=np.asarray([identifier]),parent_ids=np.asarray([r['parent_id']]))
+        np.savez(root/'predictions.npz',**arrays);write(root/'per_scene.json',[r])
+        assert load_pool(root,[identifier],Evidence())[0][0]['reference_count']==2;tests+=1
+        arrays['paths'][0,0,0,0]=np.nan;np.savez(root/'predictions.npz',**arrays)
+        try:load_pool(root,[identifier],Evidence());raise AssertionError('NaN uncharged')
+        except ValueError:tests+=1
+    print(json.dumps(dict(pure_checks_passed=tests,actual_run_files_read=0,new_forward_calls=0)))
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--self-test',action='store_true')
+    for name in ('runs','initial-run','job-records','draw-plan','training-source','prefix-corpus','prefix-job-status','output'):
+        parser.add_argument('--'+name)
+    args=parser.parse_args()
+    if args.self_test:self_test()
+    else:
+        if any(getattr(args,n.replace('-','_')) is None for n in ('runs','initial-run','job-records','draw-plan','training-source','prefix-corpus','prefix-job-status','output')):
+            parser.error('All artifact paths are required for completed-run analysis')
+        analyze(args)
