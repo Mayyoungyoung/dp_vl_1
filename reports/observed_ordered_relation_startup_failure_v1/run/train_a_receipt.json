@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "source_commit": "ece16ba41daab9cfcb9422f0014e640a1c934c7b",
+  "stage": "train_a",
+  "identity_sha256": "525c2d7b685d827ebe73c7c81ced5248a6b4d880505f674be98efe7e35cd476c",
+  "artifacts": {},
+  "cost_scope": "record_job outer includes runner, runner includes child. Cache/DEV/process costs are nested. Historical Qwen/12000 cost shared and not recharged.",
+  "command": [
+    "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+    "-m",
+    "scripts.train_observed_ordered_relation",
+    "--parent-run",
+    "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_v1/peak_seed0",
+    "--output",
+    "/home/wzy/dpvlm/route_set_v1/runs/observed_ordered_relation_continuation_v1/original_saturation",
+    "--stage",
+    "train",
+    "--arm",
+    "original_saturation",
+    "--parent-inspection",
+    "/home/wzy/dpvlm/route_set_v1/runs/observed_ordered_relation_continuation_v1/parent_inspection.json",
+    "--math-gate",
+    "/home/wzy/dpvlm/route_set_v1/runs/observed_ordered_relation_microbenchmark_v1",
+    "--data",
+    "/home/wzy/dpvlm/route_set_v1/data/observation_two_row_composite108_v1",
+    "--quality-audit",
+    "/home/wzy/dpvlm/route_set_v1/runs/observed_two_row_composite108_preparation_v1/train_quality.json"
+  ],
+  "child_exit_code": 1,
+  "child_seconds": 19.10502831300255,
+  "exception": "RuntimeError('Stage child failed; no retry or next stage')",
+  "runner_elapsed_seconds": 20.453931441996247
+}

@@ -1,0 +1,49 @@
+"""CPU2 read-only historical fingerprint diagnosis; zero model/checker calls."""
+import hashlib,json,os,sys,time
+from pathlib import Path
+from types import SimpleNamespace
+START=time.perf_counter()
+P=Path('/home/wzy/dpvlm/route_set_v1');COMMIT='ece16ba41daab9cfcb9422f0014e640a1c934c7b'
+SOURCE=P/'research_v2/releases'/COMMIT
+assert sorted(os.sched_getaffinity(0))==[2] and os.environ.get('CUDA_VISIBLE_DEVICES')==''
+sys.path[:0]=[str(SOURCE),str(SOURCE/'scripts')]
+from scripts import train_observed_ordered_relation as ordered
+from scripts import train_observed_two_row_diffusion as shared
+import torch
+assert not torch.cuda.is_available();torch.set_num_threads(1)
+policy=ordered.policy();parent=P/'runs/observed_two_row_composite108_v1/peak_seed0'
+cfg,summary=ordered.parent_metadata(parent,policy)
+args=SimpleNamespace(data=str(P/'data/observation_two_row_composite108_v1'),
+    quality_audit=str(P/'runs/observed_two_row_composite108_preparation_v1/train_quality.json'),ordinary_run=str(parent))
+data,geometry,train,dev,receipt=shared.read_inputs(args,policy)
+original_sources=ordered.read(parent/'source_hashes.json')
+loaded_sources=dict(data['source_hashes'],**geometry['metadata']['source_hashes'])
+assert loaded_sources==original_sources
+assert geometry['fingerprint']==cfg['dataset_fingerprint']
+assert all(ordered.digest(Path(name))==value for name,value in original_sources.items())
+config_sources=cfg['composite_source_sha256']
+assert all(ordered.digest(SOURCE/name)==value for name,value in config_sources.items())
+report=dict(protocol='ordered_parent_fingerprint_scope_diagnosis_v1',status='completed',source_commit=COMMIT,
+    cpu_affinity=sorted(os.sched_getaffinity(0)),torch_version=torch.__version__,gpu_visible=False,
+    loader_dataset_fingerprint=data['fingerprint'],observed_geometry_fingerprint=geometry['fingerprint'],
+    original_parent_config_dataset_fingerprint=cfg['dataset_fingerprint'],
+    wrong_raw_loader_comparison_equal=data['fingerprint']==cfg['dataset_fingerprint'],
+    correct_geometry_comparison_equal=geometry['fingerprint']==cfg['dataset_fingerprint'],
+    actual_source_union_exact=True,original_source_files=len(original_sources),
+    original_source_index_sha256=ordered.digest(parent/'source_hashes.json'),
+    all_original_input_reference_cache_geometry_files_sha256_unchanged=True,
+    actual_model_loader_checker_source_sha256={name:ordered.digest(SOURCE/name) for name in config_sources},
+    parent_config_sha256=ordered.digest(parent/'config.json'),
+    export_sha256=ordered.digest(Path(args.data)/'export_manifest.json'),
+    quality_sha256=ordered.digest(args.quality_audit),
+    cache_receipt_sha256=ordered.digest(Path(args.data)/'qwen_cache/composite_cache_receipt.json'),
+    inputs=len(data['scene_ids']),train_inputs=len(train),dev_inputs=len(dev),
+    train_positive_references=int(data['path_mask'][train].sum()),
+    actual_array_sha256={key:shared.array_digest(data[key]) for key in
+        ('scene_ids','parent_ids','splits','features','current','paths','events','path_mask')},
+    original_array_comparison_scope='Original saved source SHA map is exactly equal; deterministic original loader/geometry sources unchanged. Historical decoded arrays were not saved, so their SHA is not invented.',
+    geometry_index_sha256=shared.array_digest(geometry['index']),
+    original_fingerprint_assignment='train_observed_geometry.py config dataset_fingerprint is geometry fingerprint wrapping dataset + RGBD sources + stride',
+    checkpoint_reads=0,model_initializations=0,model_calls=0,checker_calls=0,new_dev_or_reserved_reads=0,
+    process_seconds=time.perf_counter()-START)
+print(json.dumps(report,indent=2,allow_nan=False))

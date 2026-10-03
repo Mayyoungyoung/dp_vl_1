@@ -1,0 +1,193 @@
+"""One frozen explicit stage, never auto-chaining or reissuing a failed stage."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+COMMIT='ece16ba41daab9cfcb9422f0014e640a1c934c7b';TAG='ece16ba';MANIFEST_SHA='e2a9111ae91e4e55b88ff92b8b1a7955be5accdbd4493ad94cf8f5be7e76580c'
+P=Path('/home/wzy/dpvlm/route_set_v1');INCOMING=P/'research_v2/incoming'
+SOURCE=P/'research_v2/releases'/COMMIT;MANIFEST=INCOMING/('ordered_training_sources_'+TAG+'.json')
+RUN=P/'runs/observed_ordered_relation_continuation_v1';JOBS=RUN/'job_records'
+PARENT=P/'runs/observed_two_row_composite108_v1/peak_seed0'
+DATA=P/'data/observation_two_row_composite108_v1'
+QUALITY=P/'runs/observed_two_row_composite108_preparation_v1/train_quality.json'
+MATH=P/'runs/observed_ordered_relation_microbenchmark_v1'
+UUID='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
+ARMS={'a':'original_saturation','b':'xyz_divergence','c':'observed_divergence'}
+STAGES=('tests','inspect-parent','train_a','fixed_a','train_b','fixed_b','train_c','fixed_c')
+THREADS=('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS','LP_NUM_THREADS')
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(2**20),b''):h.update(block)
+    return h.hexdigest()
+
+
+def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def write(path,value):
+    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True);temp=path.with_name(path.name+'.writing')
+    temp.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8');temp.replace(path)
+
+
+def verify_source():
+    if len(COMMIT)!=40 or sha(MANIFEST)!=MANIFEST_SHA:raise ValueError('Frozen source manifest changed')
+    manifest=read(MANIFEST)
+    if manifest['code_commit']!=COMMIT or manifest['expected_tests']!=45:raise ValueError('Wrong source/test identity')
+    for name,item in manifest['files'].items():
+        path=SOURCE/name;path.resolve().relative_to(SOURCE.resolve())
+        if path.is_symlink() or path.stat().st_size!=item['bytes'] or sha(path)!=item['sha256']:
+            raise ValueError('Frozen actual source bytes changed: '+name)
+    return manifest
+
+
+def validate_junit(path,manifest):
+    root=ET.parse(path).getroot();suites=list(root.iter('testsuite'));cases=list(root.iter('testcase'))
+    identities=[[c.get('classname'),c.get('name')] for c in cases]
+    if (not suites or len(cases)!=45 or len(set(map(tuple,identities)))!=45 or
+            sum(int(s.get('tests','0')) for s in suites)!=45 or
+            any(int(s.get(k,'0')) for s in suites for k in ('skipped','failures','errors')) or
+            any(c.find(k) is not None for c in cases for k in ('skipped','failure','error')) or
+            sorted(identities)!=sorted(manifest['expected_pytest_cases'])):
+        raise ValueError('All exact45 cases including31 real Torch cases must pass, no skips')
+    return dict(passed=45,skipped=0,errors=0,failed=0,testcases=identities)
+
+
+def dependencies(stage):
+    if stage=='tests':return []
+    if stage=='inspect-parent':return ['tests']
+    common=['tests','inspect-parent']
+    if stage=='train_a':return common
+    if stage=='fixed_a':return common+['train_a']
+    if stage=='train_b':return common+['train_a','fixed_a']
+    if stage=='fixed_b':return common+['train_b']
+    if stage=='train_c':return common+['train_a','fixed_a','train_b','fixed_b']
+    if stage=='fixed_c':return common+['train_c']
+    raise ValueError('Unknown explicit stage')
+
+
+def output(stage):
+    if stage=='tests':return RUN/'validation'
+    if stage=='inspect-parent':return RUN/'parent_inspection.json'
+    arm=ARMS[stage[-1]]
+    return RUN/(arm+('_fixed_last_train' if stage.startswith('fixed_') else ''))
+
+
+def command(stage):
+    if stage=='tests':return [sys.executable,'-m','pytest','-q','-p','no:cacheprovider',
+        '--junitxml='+str(RUN/'validation/pytest.xml'),'tests/test_observed_ordered_relation_loss.py',
+        'tests/test_observed_ordered_relation_training.py']
+    result=[sys.executable,'-m','scripts.train_observed_ordered_relation','--parent-run',str(PARENT),'--output',str(output(stage))]
+    if stage=='inspect-parent':return result+['--stage','inspect-parent']
+    result+=['--stage','train' if stage.startswith('train_') else 'fixed-last-train',
+        '--arm',ARMS[stage[-1]],'--parent-inspection',str(RUN/'parent_inspection.json'),
+        '--math-gate',str(MATH),'--data',str(DATA),'--quality-audit',str(QUALITY)]
+    if stage.startswith('fixed_'):result+=['--train-run',str(RUN/ARMS[stage[-1]])]
+    return result
+
+
+def previous(stage,manifest):
+    status=read(JOBS/(stage+'.status.json'));receipt=read(RUN/(stage+'_receipt.json'))
+    identity_path=RUN/(stage+'_identity.json');identity=read(identity_path)
+    if (status.get('status')!='completed' or status.get('exit_code')!=0 or status.get('code_commit')!=COMMIT or
+            receipt.get('status')!='completed' or receipt.get('child_exit_code')!=0 or
+            receipt.get('identity_sha256')!=sha(identity_path) or identity.get('stage')!=stage or
+            identity.get('source_commit')!=COMMIT or identity.get('source_manifest_sha256')!=MANIFEST_SHA or
+            identity.get('runner_sha256')!=sha(__file__) or not receipt['artifacts']):
+        raise ValueError('Exact prior stage must actually finish: '+stage)
+    for name,value in receipt['artifacts'].items():
+        path=RUN/name;path.resolve().relative_to(RUN.resolve())
+        if path.is_symlink() or sha(path)!=value:raise ValueError('Sealed prior artifact changed: '+name)
+    if stage=='tests':validate_junit(RUN/'validation/pytest.xml',manifest)
+    return dict(status_sha256=sha(JOBS/(stage+'.status.json')),receipt_sha256=sha(RUN/(stage+'_receipt.json')))
+
+
+def validate_success(stage,manifest):
+    if stage=='tests':return validate_junit(RUN/'validation/pytest.xml',manifest),['validation/pytest.xml','tests_runtime.json']
+    if stage=='inspect-parent':
+        q=read(output(stage))
+        if (q['status']!='completed' or q['protocol']!='observed_ordered_relation_continuation_v1' or
+                q['model_calls']!=0 or q['dataset_reads']!=0 or q['scheduler_last_epoch']!=12000 or
+                set(q['components_sha256'])!={'model','optimizer','scheduler','rng','sampler_state','sample_stream_audit'}):
+            raise ValueError('Actual CPU parent-state inspection did not pass')
+        return dict(model_calls=0,data_reads=0),['parent_inspection.json']
+    out=output(stage);q=read(out/'summary.json');state=read(out/'status.json');arm=ARMS[stage[-1]]
+    if q['status']!='completed' or state['status']!='completed' or q['arm']!=arm:raise ValueError('Arm did not complete')
+    if stage.startswith('train_'):
+        counts=dict(train_model=3000,optimizer=3000,dev_model=432)
+        if arm=='observed_divergence':counts['reference_descriptor']=285
+        if (q['global_last_step']!=15000 or q['additional_steps']!=3000 or q['additional_input_draws']!=96000 or
+                q['additional_path_states']!=384000 or q['selection_opportunities']!=12 or
+                [r['step'] for r in q['history']]!=list(range(250,3001,250)) or q['actual_calls']['counts']!=counts or
+                sha(out/'last.pt')!=q['last_checkpoint_sha256'] or sha(out/'best.pt')!=q['best_checkpoint_sha256'] or
+                sha(out/'config.json')!=q['config_sha256']):raise ValueError('Exact3000/12pool budget or weights differ')
+        if stage!='train_a':
+            control=read(output('train_a')/'summary.json')
+            for field in ('plan','sample_stream_audit','positive_reference_chain_sha256','parent_components'):
+                if q[field]!=control[field]:raise ValueError('Actual paired draw/reference/parent chain differs: '+field)
+        values=dict(additional_input_draws=96000,additional_path_states=384000,selection_model_calls=432,optimizer_calls=3000,
+            process_seconds=state['process_seconds'],cumulative_arm_seconds=q['cumulative_arm_seconds'])
+    else:
+        if (q['model_calls']!=285 or q['path_states']!=1140 or q['new_qwen_calls']!=0 or
+                q['actual_calls']['counts']!={'train_diag_model':285} or
+                q['training_summary_sha256']!=sha(RUN/arm/'summary.json') or
+                q['source_last_checkpoint_sha256']!=sha(RUN/arm/'last.pt')):
+            raise ValueError('Exact fixed-last285 existing-model budget differs')
+        values=dict(model_calls=285,path_states=1140,process_seconds=state['process_seconds'],cumulative_arm_seconds=q['cumulative_arm_seconds'])
+    files=sorted(p for p in out.rglob('*') if p.is_file())
+    if any(p.is_symlink() for p in files) or (out/'active.lock').exists():raise ValueError('Unsafe/unclosed arm')
+    return values,[p.relative_to(RUN).as_posix() for p in files]
+
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in STAGES:raise ValueError('Exactly one explicit stage required')
+    stage=sys.argv[1];started=time.perf_counter();cpu=stage in ('tests','inspect-parent')
+    if (Path.cwd()!=SOURCE or os.environ.get('CODE_COMMIT')!=COMMIT or sorted(os.sched_getaffinity(0))!=[0] or
+            Path(sys.prefix)!=P/'.venv' or sys.version_info[:2]!=(3,8) or
+            any(os.environ.get(k)!='1' for k in THREADS) or os.environ.get('CUDA_VISIBLE_DEVICES')!=('' if cpu else '1')):
+        raise ValueError('Fixed immutable release/.venv3.8/CPU0/thread1 and stage GPU visibility required')
+    import torch
+    if torch.__version__.split('+')[0]!='2.4.1':raise ValueError('Actual Torch2.4.1 required')
+    if cpu:
+        if torch.cuda.is_available() or os.environ.get('RESEARCH_GPU_UUID'):raise ValueError('CPU stage must hide GPU')
+    else:
+        actual=subprocess.check_output(['nvidia-smi','--id=1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
+        if actual!=UUID or os.environ.get('RESEARCH_GPU_UUID')!=UUID:raise ValueError('Physical GPU1 UUID differs')
+    manifest=verify_source();RUN.mkdir(parents=True,exist_ok=True)
+    identity_path=RUN/(stage+'_identity.json');receipt_path=RUN/(stage+'_receipt.json')
+    if identity_path.exists() or receipt_path.exists() or output(stage).exists():raise FileExistsError('Fresh-only recipe preserves all prior attempts')
+    prior={key:previous(key,manifest) for key in dependencies(stage)}
+    wrapper=Path(os.environ['ORDERED_TRAINING_WRAPPER']).resolve()
+    if wrapper!=INCOMING/('ordered_training_'+TAG+'.sh'):raise ValueError('Unexpected frozen wrapper')
+    lock=RUN/'recipe.lock';fd=os.open(str(lock),os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
+    identity=dict(source_commit=COMMIT,stage=stage,source_manifest_sha256=MANIFEST_SHA,runner_sha256=sha(__file__),
+        wrapper_path=str(wrapper),wrapper_sha256=sha(wrapper),prior_stages=prior,cpu_affinity=[0],threads=1,
+        gpu_uuid=None if cpu else UUID,gpu_memory_fraction=None if cpu else .35,automatic_stage_chaining=False,
+        recovery='Fresh-only recipe. Resume requires a separately frozen invocation of the same driver after checkpoint/ledger and cumulative4500s checks. No replay or next stage here.')
+    write(identity_path,identity)
+    result=dict(status='failed',source_commit=COMMIT,stage=stage,identity_sha256=sha(identity_path),artifacts={},
+        cost_scope='record_job outer includes runner, runner includes child. Cache/DEV/process costs are nested. Historical Qwen/12000 cost shared and not recharged.')
+    try:
+        if stage=='tests':
+            output(stage).mkdir();write(RUN/'tests_runtime.json',dict(torch_version=torch.__version__,python=sys.version,
+                cpu_affinity=sorted(os.sched_getaffinity(0)),cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES']))
+        cmd=command(stage);result['command']=cmd;begin=time.perf_counter()
+        child=subprocess.run(cmd,cwd=SOURCE);result.update(child_exit_code=child.returncode,child_seconds=time.perf_counter()-begin)
+        if child.returncode!=0:raise RuntimeError('Stage child failed; no retry or next stage')
+        values,names=validate_success(stage,manifest);verify_source()
+        result.update(values,status='completed',artifacts={name:sha(RUN/name) for name in names})
+    except BaseException as exc:result['exception']=repr(exc);raise
+    finally:
+        result['runner_elapsed_seconds']=time.perf_counter()-started;write(receipt_path,result);lock.unlink()
+    print(json.dumps(dict(status=result['status'],stage=stage,runner_elapsed_seconds=result['runner_elapsed_seconds'],
+        artifact_count=len(result['artifacts']))),flush=True)
+
+
+if __name__=='__main__':main()

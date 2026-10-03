@@ -1,0 +1,81 @@
+"""Read-only evidence of ece tests/inspection and zero-forward startup failure."""
+from pathlib import Path
+import datetime,hashlib,json,subprocess,tarfile
+ROOT=Path(__file__).resolve().parents[1];BOOT=ROOT/'.bootstrap'
+DEST=ROOT/'reports/observed_ordered_relation_startup_failure_v1'
+REMOTE=r'''
+from pathlib import Path
+import datetime,hashlib,io,json,os,sys,tarfile
+p=Path('/home/wzy/dpvlm/route_set_v1');rev='ece16ba41daab9cfcb9422f0014e640a1c934c7b'
+run=p/'runs/observed_ordered_relation_continuation_v1';source=p/'research_v2/releases'/rev
+assert sorted(os.sched_getaffinity(0))==[2]
+def read(path):return json.loads(path.read_text())
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+for stage in ('tests','inspect-parent','train_a'):
+ q=read(run/'job_records'/(stage+'.status.json'))
+ assert q['code_commit']==rev
+ assert q['status']==('failed' if stage=='train_a' else 'completed')
+ assert q['exit_code']==(1 if stage=='train_a' else 0)
+assert read(run/'tests_receipt.json')['passed']==45
+assert read(run/'tests_receipt.json')['skipped']==0
+inspection=read(run/'parent_inspection.json');assert inspection['model_calls']==inspection['dataset_reads']==0
+assert inspection['optimizer_entries']==60 and inspection['scheduler_last_epoch']==12000
+failed=run/'original_saturation'
+assert not (failed/'requests.jsonl').exists() and not (failed/'last.pt').exists()
+inner=read(failed/'status.json');assert inner['status']=='failed' and not inner.get('issued_calls')
+assert 'Historical all-positive dataset changed' in inner['exception']
+paths={}
+def add(path,name):
+ assert path.is_file() and not path.is_symlink() and path.suffix!='.pt'
+ paths[name]=path
+for stage in ('tests','inspect-parent','train_a'):
+ for suffix in ('_identity.json','_receipt.json'):add(run/(stage+suffix),'run/'+stage+suffix)
+ for suffix in ('.status.json','.log'):add(run/'job_records'/(stage+suffix),'run/job_records/'+stage+suffix)
+for name in ('tests_runtime.json','parent_inspection.json','validation/pytest.xml','original_saturation/status.json',
+ 'original_saturation/attempts/0000.json','job_records/registry.jsonl'):add(run/name,'run/'+name)
+for name in ('scripts/train_observed_ordered_relation.py','tests/test_observed_ordered_relation_training.py',
+ 'scripts/train_observed_geometry.py','routeset/observed_route_head.py','configs/observed_ordered_relation_training_v1.json',
+ 'reports/OBSERVED_ORDERED_RELATION_TRAINING_PROTOCOL.md'):
+ add(source/name,'source/ece/'+name+('.txt' if name.endswith('.py') else ''))
+for name in ('ordered_training_ece16ba.sh','ordered_training_runner_ece16ba.py','ordered_training_sources_ece16ba.json'):
+ add(p/'research_v2/incoming'/name,'source/'+name+('.txt' if name.endswith('.py') else ''))
+index=[]
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tar:
+ for name,path in sorted(paths.items()):
+  value=path.read_bytes();index.append(dict(path=name,server_path=str(path),sha256=hashlib.sha256(value).hexdigest(),bytes=len(value)))
+  entry=tarfile.TarInfo(name);entry.size=len(value);tar.addfile(entry,io.BytesIO(value))
+ value=(json.dumps(dict(protocol='ordered_pre_model_failure_archive_v1',source_commit=rev,
+  files=index,captured_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),cpu_affinity=[2],
+  model_calls=0,checker_calls=0,raw_data_reads=0,checkpoint_reads=0,checkpoint_downloads=0),indent=2)+'\n').encode()
+ entry=tarfile.TarInfo('SERVER_ARCHIVE_INDEX.json');entry.size=len(value);tar.addfile(entry,io.BytesIO(value))
+'''
+
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def main():
+    if DEST.exists():raise FileExistsError('Fresh failure archive only')
+    stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ');archive=BOOT/('ordered_startup_failure_'+stamp+'.tar.gz')
+    command=['ssh','wzy3090',"CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 LP_NUM_THREADS=1 taskset -c 2 /home/wzy/dpvlm/route_set_v1/.venv/bin/python -"]
+    with archive.open('xb') as out:r=subprocess.run(command,input=REMOTE.encode(),stdout=out,stderr=subprocess.PIPE)
+    if r.returncode:
+        archive.with_suffix('.failure.json').write_text(json.dumps(dict(exit_code=r.returncode,stderr=r.stderr.decode(errors='replace')),indent=2)+'\n')
+        raise RuntimeError('Failure evidence transport failed; partial preserved')
+    DEST.mkdir(parents=True);seen=set()
+    with tarfile.open(archive,'r:gz') as tar:
+        for member in tar:
+            target=DEST/member.name;target.resolve().relative_to(DEST.resolve())
+            if not member.isfile() or member.name in seen:raise ValueError('Unsafe member')
+            seen.add(member.name);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(tar.extractfile(member).read())
+    index=json.loads((DEST/'SERVER_ARCHIVE_INDEX.json').read_text())
+    for row in index['files']:assert sha(DEST/row['path'])==row['sha256'] and (DEST/row['path']).stat().st_size==row['bytes']
+    for name in ('inspect_ordered_parent_fingerprint_ece16ba.py','inspect_ordered_parent_fingerprint_ece16ba.json',
+                 'inspect_ordered_parent_fingerprint_ece16ba.execution.json'):
+        target=DEST/'cpu_diagnosis'/(name+('.txt' if name.endswith('.py') else ''));target.parent.mkdir(exist_ok=True)
+        target.write_bytes((BOOT/name).read_bytes())
+    target=DEST/'source/archive_ordered_ece_startup_failure.py.txt';target.write_bytes(Path(__file__).read_bytes())
+    receipt=dict(status='archived',source_commit='ece16ba41daab9cfcb9422f0014e640a1c934c7b',
+        archive_sha256=sha(archive),server_index_sha256=sha(DEST/'SERVER_ARCHIVE_INDEX.json'),
+        actual_tests_passed=45,actual_tests_skipped=0,checkpoint_downloads=0,model_calls=0,raw_data_reads=0)
+    (DEST/'TRANSFER_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
+
+if __name__=='__main__':main()

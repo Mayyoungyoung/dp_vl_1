@@ -1,0 +1,287 @@
+"""Continuation gates and real tiny Torch state tests; no actual data/models."""
+import copy
+import hashlib
+import random
+from types import SimpleNamespace
+import numpy as np
+import pytest
+from scripts import train_observed_ordered_relation as run
+
+
+def test_fixed_policy_and_exact_additional_budget():
+    p=run.policy()
+    assert p['steps']*p['batch_size']==96000
+    assert p['additional_path_states']==384000
+    assert run.expected_counts('original_saturation')==dict(train_model=3000,optimizer=3000,dev_model=432)
+    assert run.expected_counts('observed_divergence')==dict(train_model=3000,optimizer=3000,dev_model=432,reference_descriptor=285)
+    assert 384000+432*4+285*4==386868
+    assert not p['reset_optimizer'] and not p['automatic_stage_chaining']
+    assert p['parent_checkpoint_sha256']=='ce0b186b1f73beab2bd09b0582622e1d1b012fc88b892ab909479dd7deb250b3'
+
+
+def sampler_parent():
+    rng=np.random.default_rng(11)
+    rng.choice([1,3,8],2,replace=True)
+    return dict(sampler_state=rng.bit_generator.state,sample_stream_audit=dict(
+        batches=1,observation_draws=2,index_chain_sha256='0'*64))
+
+
+def test_plan_clones_actual_sampler_without_consuming_parent_or_global_rng():
+    parent=sampler_parent();before=run.nested_digest(parent);global_before=run.nested_digest(np.random.get_state())
+    draws,plan=run.draw_plan(parent,[1,3,8],4,2)
+    assert run.nested_digest(parent)==before and run.nested_digest(np.random.get_state())==global_before
+    rng=np.random.default_rng(0);rng.bit_generator.state=copy.deepcopy(parent['sampler_state'])
+    assert np.array_equal(draws,np.stack([rng.choice([1,3,8],2,replace=True) for _ in range(4)]))
+    assert plan['final_sampler_sha256']==run.nested_digest(rng.bit_generator.state)
+    changed=copy.deepcopy(parent);changed['sampler_state']=np.random.default_rng(22).bit_generator.state
+    assert run.draw_plan(changed,[1,3,8],4,2)[1]!=plan
+
+
+def test_cumulative_clock_charges_old_attempts_and_denies_next_issue(tmp_path):
+    now=[0.];clock=run.Clock(4499.,now=lambda:now[0]);journal=run.BoundedJournal(tmp_path/'issued',clock)
+    journal.issue('train_model',1);before=journal.snapshot();now[0]=1.
+    with pytest.raises(RuntimeError,match='4500'):journal.issue('optimizer',1)
+    assert journal.snapshot()==before
+    for value in (-1.,float('nan'),float('inf')):
+        with pytest.raises(ValueError):run.Clock(value)
+
+
+def test_unknown_crash_cost_is_not_zero_and_attempts_are_additive(tmp_path):
+    run.write_json(tmp_path/'attempts/0000.json',dict(status='paused',process_seconds=8.))
+    run.write_json(tmp_path/'attempts/0001.json',dict(status='failed',process_seconds=3.))
+    assert run.read_attempt_cost(tmp_path)==11.
+    run.write_json(tmp_path/'attempts/0002.json',dict(status='running'))
+    with pytest.raises(ValueError):run.read_attempt_cost(tmp_path)
+
+
+def sealed_fixture(folder,journal,step=250,ids=('x','y')):
+    before=journal.snapshot();identity=dict(step=step,ids=list(ids),kind='dev')
+    for scene in ids:journal.issue('dev_model',str(step)+':'+scene)
+    for name in ('predictions.npz','generation.json','per_scene.json'):(folder/name).write_bytes(b'fixture')
+    run.write_json(folder/'metrics.json',dict(selection_score=.5))
+    receipt=dict(identity=identity,journal_before=before,journal_after=journal.snapshot(),
+        metrics=run.read(folder/'metrics.json'),seconds=2.,
+        artifacts={name:run.digest(folder/name) for name in run.POOL_FILES})
+    run.write_json(folder/'pool_receipt.json',receipt)
+    return receipt
+
+
+def test_complete_pool_only_can_reconcile_exact_postcheckpoint_span(tmp_path):
+    folder=tmp_path/'pool';folder.mkdir();journal=run.RequestJournal(tmp_path/'issued')
+    receipt=sealed_fixture(folder,journal)
+    assert run.verify_pool(folder,receipt['identity'])==receipt
+    run.reconcile_pool(journal,receipt['journal_before'],receipt)
+    before=journal.snapshot();journal.issue('train_model',251)
+    with pytest.raises(ValueError):run.reconcile_pool(journal,receipt['journal_before'],receipt)
+    with pytest.raises(ValueError):journal.require_boundary(before)
+
+
+@pytest.mark.parametrize('mutation',['missing','changed','empty_artifacts','identity'])
+def test_pool_must_retain_full_original_bytes(tmp_path,mutation):
+    folder=tmp_path/'pool';folder.mkdir();journal=run.RequestJournal(tmp_path/'issued');receipt=sealed_fixture(folder,journal)
+    expected=copy.deepcopy(receipt['identity'])
+    if mutation=='missing':(folder/'generation.json').unlink()
+    elif mutation=='changed':(folder/'predictions.npz').write_bytes(b'changed')
+    elif mutation=='empty_artifacts':receipt['artifacts']={};run.write_json(folder/'pool_receipt.json',receipt)
+    else:expected['step']=500
+    with pytest.raises((ValueError,FileNotFoundError)):run.verify_pool(folder,expected)
+
+
+def test_selection_is_earliest_strict_best_without_new_pool_calls():
+    trainer=SimpleNamespace(history=[],best=None)
+    for step,score,expected in [(250,.4,True),(500,.4,False),(750,.6,True)]:
+        assert run.shared.accept_selection(trainer,dict(identity=dict(step=step),metrics=dict(selection_score=score)),str(step),'hash') is expected
+    assert trainer.best['step']==750
+    with pytest.raises(ValueError):run.shared.accept_selection(trainer,dict(identity=dict(step=750),metrics=dict(selection_score=.7)),'750','hash')
+
+
+def test_actual_inspection_cannot_accept_empty_component_or_source_map(tmp_path,monkeypatch):
+    parent={k:dict(a=1) for k in run.COMPONENT_FIELDS};p=run.policy()
+    monkeypatch.setattr(run,'SOURCES',())
+    receipt=dict(protocol=run.PROTOCOL,status='completed',parent_checkpoint_sha256=p['parent_checkpoint_sha256'],
+        model_calls=0,dataset_reads=0,components_sha256={k:run.nested_digest(parent[k]) for k in run.COMPONENT_FIELDS},source_sha256={})
+    path=tmp_path/'inspect.json';run.write_json(path,receipt)
+    assert run.check_inspection(path,parent,p)==receipt
+    receipt['components_sha256']={};run.write_json(path,receipt)
+    with pytest.raises(ValueError):run.check_inspection(path,parent,p)
+
+
+def tiny_parent():
+    torch=pytest.importorskip('torch');torch.set_num_threads(1)
+    from routeset.train_v2 import rng_state
+    from routeset.observed_training_audit import new_stream_audit
+    from routeset.qwen_prefix_replay import cpu_copy
+    torch.manual_seed(191);np.random.seed(21);random.seed(22)
+    def model_factory():
+        return torch.nn.Sequential(torch.nn.Linear(3,8),torch.nn.Dropout(.2),torch.nn.Tanh(),torch.nn.Linear(8,2))
+    model=model_factory();optimizer=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
+    scheduler=torch.optim.lr_scheduler.LambdaLR(optimizer,lambda _:1.)
+    rng=np.random.default_rng(41);sampler=np.random.default_rng(42);ids=np.arange(5)
+    audit=new_stream_audit(model,sampler.bit_generator.state,torch.get_rng_state())
+    for step in range(2):
+        batch=sampler.choice(ids,2,replace=True);audit=run.append_indices(audit,batch)
+        value=torch.as_tensor(np.stack([batch,batch+1,batch-1],1),dtype=torch.float32)*.1
+        loss=(model(value)-.1).square().mean();optimizer.zero_grad(set_to_none=True);loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(),1.);optimizer.step();scheduler.step()
+    parent=dict(model=cpu_copy(model.state_dict()),optimizer=cpu_copy(optimizer.state_dict()),scheduler=copy.deepcopy(scheduler.state_dict()),
+        rng=copy.deepcopy(rng_state(rng)),sampler_state=copy.deepcopy(sampler.bit_generator.state),sample_stream_audit=copy.deepcopy(audit))
+    cfg=dict(arm='original_saturation',parent_step=2,steps=4,batch_size=2,candidates=4,lr=.0003,weight_decay=.0001,
+        gradient_clip=1.,checkpoint_every=2,grounding_sigma=.025,grounding_weight=.02)
+    return model_factory,parent,cfg,ids
+
+
+def tiny_loss(trainer):
+    import torch
+    def loss(ids,step,journal,rng):
+        value=torch.as_tensor(np.stack([ids,ids+1,ids-1],1),dtype=torch.float32)*.1
+        # Exercise all four actual RNG domains, plus torch Dropout, in both paths.
+        offset=float(rng.random()+np.random.random()+random.random())*.01
+        journal.issue('train_model',step)
+        return (trainer.model(value)-offset).square().mean(),dict(path_loss=0.)
+    return loss
+
+
+def test_torch_full_parent_restore_and_no_optimizer_storage_alias(tmp_path):
+    factory,parent,cfg,ids=tiny_parent();before=run.nested_digest(parent)
+    t=run.OrderedTrainer(factory(),cfg,parent,ids)
+    assert t.components()==t.parent_components
+    t.train_step(tiny_loss(t),run.RequestJournal(tmp_path/'issued'),{int(i):str(i) for i in ids})
+    assert run.nested_digest(parent)==before
+    assert t.scheduler.last_epoch==3 and t.optimizer.param_groups[0]['lr']==cfg['lr']
+
+
+def test_torch_continuous4_equals_pause2_atomic_restore2_all_states(tmp_path):
+    torch=pytest.importorskip('torch');factory,parent,cfg,ids=tiny_parent();hashes={int(i):str(i) for i in ids}
+    full=run.OrderedTrainer(factory(),cfg,parent,ids);j1=run.RequestJournal(tmp_path/'full')
+    for _ in range(4):full.train_step(tiny_loss(full),j1,hashes)
+    expected=full.state_dict(j1,0.)
+    first=run.OrderedTrainer(factory(),cfg,parent,ids);j2=run.RequestJournal(tmp_path/'resumed')
+    for _ in range(2):first.train_step(tiny_loss(first),j2,hashes)
+    saved=first.state_dict(j2,0.);run.atomic_torch_save(tmp_path/'last.pt',saved)
+    resumed=run.OrderedTrainer(factory(),cfg,parent,ids)
+    resumed.load_state_dict(torch.load(tmp_path/'last.pt',map_location='cpu',weights_only=False),run.RequestJournal(j2.path))
+    for _ in range(2):resumed.train_step(tiny_loss(resumed),j2,hashes)
+    actual=resumed.state_dict(j2,0.)
+    assert run.nested_digest(actual)==run.nested_digest(expected)
+    resumed.validate_positive_prefix(hashes)
+
+
+def test_torch_original_update_order_and_loss_adapter_exact(tmp_path):
+    torch=pytest.importorskip('torch');factory,parent,cfg,ids=tiny_parent();hashes={int(i):str(i) for i in ids}
+    wrapped=run.OrderedTrainer(factory(),cfg,parent,ids);j1=run.RequestJournal(tmp_path/'wrapped')
+    wrapped.train_step(tiny_loss(wrapped),j1,hashes);actual=wrapped.components()
+    direct=run.OrderedTrainer(factory(),cfg,parent,ids);j2=run.RequestJournal(tmp_path/'direct')
+    # Literal old train_observed_geometry update ordering, independent of train_step.
+    direct.model.train();batch=direct.sampler.choice(ids,cfg['batch_size'],replace=True)
+    direct.audit=run.append_indices(direct.audit,batch)
+    loss,_=tiny_loss(direct)(batch,1,j2,direct.rng)
+    direct.optimizer.zero_grad(set_to_none=True);loss.backward()
+    torch.nn.utils.clip_grad_norm_(direct.model.parameters(),1.)
+    direct.optimizer.step();direct.scheduler.step()
+    assert direct.components()==actual
+
+
+@pytest.mark.parametrize('mutation',['arm','sampler','draw_chain','pending','positive'])
+def test_torch_resume_rejects_changed_arm_or_actual_stream(tmp_path,mutation):
+    factory,parent,cfg,ids=tiny_parent();t=run.OrderedTrainer(factory(),cfg,parent,ids);j=run.RequestJournal(tmp_path/'issued')
+    hashes={int(i):str(i) for i in ids};t.train_step(tiny_loss(t),j,hashes);state=t.state_dict(j,0.)
+    if mutation=='arm':state['config']=dict(cfg,arm='xyz_divergence')
+    elif mutation=='sampler':state['sampler_state']=np.random.default_rng(777).bit_generator.state
+    elif mutation=='draw_chain':state['sample_stream_audit']['index_chain_sha256']='0'*64
+    elif mutation=='pending':state['pending_gradients']=True
+    else:state['positive_chain_sha256']='0'*64
+    new=run.OrderedTrainer(factory(),cfg,parent,ids)
+    with pytest.raises(ValueError):
+        new.load_state_dict(state,j);new.validate_positive_prefix(hashes)
+
+
+@pytest.mark.parametrize('failure',['forward','optimizer','checkpoint_replace'])
+def test_torch_issued_failure_not_silently_replayed(tmp_path,monkeypatch,failure):
+    factory,parent,cfg,ids=tiny_parent();t=run.OrderedTrainer(factory(),cfg,parent,ids);j=run.RequestJournal(tmp_path/'issued')
+    before=t.state_dict(j,0.);hashes={int(i):str(i) for i in ids}
+    def failed(*args,**kwargs):raise RuntimeError('injected')
+    if failure=='forward':monkeypatch.setattr(t.model,'forward',failed)
+    elif failure=='optimizer':monkeypatch.setattr(t.optimizer,'step',failed)
+    try:
+        t.train_step(tiny_loss(t),j,hashes)
+        if failure=='checkpoint_replace':
+            import routeset.observed_qwen_continuation as core
+            monkeypatch.setattr(core.os,'replace',failed)
+            run.atomic_torch_save(tmp_path/'last.pt',t.state_dict(j,0.))
+    except RuntimeError as exc:assert str(exc)=='injected'
+    else:raise AssertionError('fault did not fire')
+    assert j.counts['train_model']==1
+    with pytest.raises(ValueError):run.OrderedTrainer(factory(),cfg,parent,ids).load_state_dict(before,j)
+
+
+def test_torch_sealed_eval_recovery_no_repeat_and_training_rng_isolated(tmp_path):
+    torch=pytest.importorskip('torch');factory,parent,cfg,ids=tiny_parent();t=run.OrderedTrainer(factory(),cfg,parent,ids)
+    j=run.RequestJournal(tmp_path/'issued');state=t.state_dict(j,0.);before=t.components()['rng']
+    with run.shared.isolated_evaluation_rng(t):
+        torch.rand(8);np.random.random();random.random();t.rng.random()
+    assert t.components()['rng']==before
+    folder=tmp_path/'pool';folder.mkdir();receipt=sealed_fixture(folder,j,step=0)
+    run.verify_pool(folder,receipt['identity']);run.reconcile_pool(j,state['journal'],receipt)
+    new=run.OrderedTrainer(factory(),cfg,parent,ids);new.load_state_dict(state,j,allow_sealed_evaluation=True)
+    assert j.snapshot()==receipt['journal_after']
+
+
+def test_torch_real_original_route_loss_is_unchanged_and_BC_share_gradients_inputs(tmp_path,monkeypatch):
+    torch=pytest.importorskip('torch')
+    from scripts import train_observed_geometry as base
+    from routeset.train_v2 import positive_assignment_loss
+    from routeset.observed_geometry import positive_endpoint_attention_loss
+    from routeset.observed_ordered_relation_loss import prepare_reference_descriptors
+    torch.manual_seed(109);generator=np.random.default_rng(39)
+    paths=generator.normal(0,.02,(2,3,24,3)).astype('float32');events=np.ones((2,3,24),np.float32)
+    mask=np.asarray([[1,1,1],[1,0,0]],bool);points=torch.randn(2,12,3)*.03;valid=torch.ones(2,12,dtype=torch.bool)
+    class Head(torch.nn.Module):
+        def __init__(self):
+            super().__init__();self.xyz=torch.nn.Parameter(torch.randn(2,4,24,3)*.02)
+            self.events=torch.nn.Parameter(torch.zeros(2,4,24));self.att=torch.nn.Parameter(torch.zeros(2,12))
+        def forward(self,**inputs):return self.xyz,torch.sigmoid(self.events),dict(attention=self.att.softmax(-1))
+    model=Head();inputs=dict(world_xyz=points,valid_mask=valid)
+    monkeypatch.setattr(base,'batch_inputs',lambda data,geometry,ids,device:inputs)
+    data=dict(paths=paths,events=events,path_mask=mask)
+    trainer=SimpleNamespace(model=model,config=dict(arm='original_saturation',grounding_weight=.02,grounding_sigma=.025))
+    rng=np.random.default_rng(3);ids=np.asarray([0,1]);journal=run.RequestJournal(tmp_path/'issued')
+    actual,_=run.training_loss(trainer,data,None,'cpu',{})(ids,1,journal,rng)
+    xyz,opened,details=model(**inputs);target=torch.from_numpy(paths);event=torch.from_numpy(events);m=torch.from_numpy(mask)
+    expected=positive_assignment_loss(torch.cat([xyz[:,:,1:],opened[:,:,1:,None]*.2],-1),
+        torch.cat([target[:,:,1:],event[:,:,1:,None]*.2],-1),mask,'saturation',rng)
+    expected=expected+.02*positive_endpoint_attention_loss(details['attention'],points,valid,target[:,:,-1],m,.025)
+    assert torch.equal(actual,expected)
+    a=torch.autograd.grad(actual,tuple(model.parameters()),retain_graph=True)
+    b=torch.autograd.grad(expected,tuple(model.parameters()))
+    assert all(torch.equal(x,y) for x,y in zip(a,b))
+    cache={i:prepare_reference_descriptors(target[i:i+1],m[i:i+1],{k:v[i:i+1] for k,v in inputs.items()}) for i in range(2)}
+    before=run.nested_digest(cache)
+    for step,arm in enumerate(('xyz_divergence','observed_divergence'),2):
+        trainer.config['arm']=arm
+        loss,details=run.training_loss(trainer,data,None,'cpu',cache)(ids,step,journal,rng)
+        gradients=torch.autograd.grad(loss,tuple(model.parameters()))
+        assert torch.isfinite(loss) and all(torch.isfinite(v).all() for v in gradients)
+        assert all(v.count_nonzero()>0 for v in gradients)
+        assert details['relation_statistics']['extra_generation_calls']==0
+    assert run.nested_digest(cache)==before and journal.counts=={'train_model':3}
+
+
+def test_torch_three_term_observer_exact_value_gradient_and_exception_restore():
+    torch=pytest.importorskip('torch')
+    from routeset import observed_ordered_relation_loss as relation
+    torch.manual_seed(211);x=(torch.randn(1,4,24,3)*.01).requires_grad_()
+    r=torch.randn(1,2,24,3)*.01;e=torch.rand(1,4,24,requires_grad=True)
+    ref_e=torch.ones(1,2,24);mask=torch.ones(1,2,dtype=torch.bool)
+    original=relation.soft_dtw
+    costs,_=relation.ordered_relation_costs(x,e,r,ref_e,mask,'xyz_divergence')
+    value=costs.sum();grad=torch.autograd.grad(value,(x,e))
+    observed={}
+    with run.observe_alignment_terms(mask,observed):
+        other,_=relation.ordered_relation_costs(x,e,r,ref_e,mask,'xyz_divergence')
+    other_grad=torch.autograd.grad(other.sum(),(x,e))
+    assert torch.equal(costs,other) and all(torch.equal(a,b) for a,b in zip(grad,other_grad))
+    assert observed['dp_calls_observed']==3 and observed['extra_dp_calls']==0
+    assert relation.soft_dtw is original
+    with pytest.raises(RuntimeError):
+        with run.observe_alignment_terms(mask,{}):raise RuntimeError('injected')
+    assert relation.soft_dtw is original

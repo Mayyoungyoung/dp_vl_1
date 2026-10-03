@@ -1,6 +1,18 @@
 # Research log
 
-## 真实配对筛选完成，下一机制与新数据检查 — 2026-10-03 07:24 UTC
+## 核心三臂进入真实训练；数据全量质量封存 — 2026-10-03 07:46 UTC
+
+ece首A在模型初始化/forward之前因指纹范围混用失败，原45实际tests当时未捕获。CPU2实际核2406输入/缓存/参考/几何源SHA完全未变；裸loader970f...与包含RGB-D的geometry df435...范围不同，后者精确等于父config。bcbc588只修正比较对象并加原source联合表门，追加两测试；新47实际服务器tests全通过/0skip，父真实60 Adam/LambdaLR12000与六component SHA仍相同。原失败外层20.755683秒保留并只在A累计4500秒中计一次，内18.677414嵌套不加。[失败与实际反证](reports/observed_ordered_relation_startup_failure_v1/FAILURE_RESULTS.md)。
+
+新immutable bcbc58848463cae42c84bdd9bada1956d73a4b43、独立family `runs/observed_ordered_relation_continuation_v2`。A train_a于07:39:47.541171UTC开始，record/runner PID856696/856701，已completed/exit0、真实3000更新到全局15000，原SSH42562关闭。60/60参数真实changed，96000 draws/384000训练路径状态/12原DEV机会均精确；累计225.613277秒含旧失败20.755683，peak allocated979449856B。固定last旧DEV Tip46/144、Any23/36、known21/36、semantic131/144，比原12000的Tip56/144更差；best step250，完整保留。独立`fixed_a`也已completed/exit0（SSH26624关闭），285TRAIN×K4的Tip616/1140、clear618、Any265/285、known285/285、semantic1137/1140、ADE.0569594m；累计241.817086秒。对比原12000 TRAIN Tip989/1140/ADE.0178m有明显退步，已追加只读池身份检查并准备受控CPU第一batch的旧loop等价诊断，尚未批准该模型诊断实际执行，不能只凭tiny测试排除封装问题。B标准Soft-DTW于07:46:38.104132UTC开始、PID859556/859561、SSH64185，CPU0/GPU1/35%，已实读825更新有限；不因A下降更改原判据或B预算。随后独立`fixed_b`、`train_c`、`fixed_c`仍须root读取前一阶段完成结果。wrapper为`/home/wzy/dpvlm/route_set_v1/research_v2/incoming/ordered_training_bcbc588.sh <stage>`，已发fresh不能重发；没有B/C或方法优势结果。断点恢复须同源driver与完整ledger检查、独立新run_id配方，不能重发fresh wrapper。
+
+TRAIN256全6912槽质量与新增128全部128RGB/384九槽图QA已完成并提交、push及ls-remote核验732800110fd74fc2af667bc27119e2c35b6277d5。4531接受、2381失败、1943接受unknown均保留；165条件参考已知类型>4，全部76条>4m长弧仍保留，最长7.255m。旧3456逐槽JSON完全相等、512旧图byte-equal。全4571产物索引SHA92a36b45...bed04e22，原大slot JSON留ignored本地，轨迹原件仍远端。新DEV32封存，当前模型训练仍95父/285条件。[质量与限制](reports/observed_two_row_extension256_quality_v1/TRAIN256_RESULTS.md)。
+
+hash恢复db2fa8d两父5/7已07:30:28.498222UTC completed/exit0，原SSH17833关闭。新54槽实际42，12是原登记registered_low_gap_closed（每父每target2槽），不是超时或漏记；初核19接受/23失败待原checker全量复算。worker累计2197.862545秒（含原1882.710264），恢复record outer316.329844秒；显示启动至cleanup317.012662秒包含前者，不相加。原10成功父不重采、原54未尝试不抹除；完整原件已139文件/18,469,897字节同步核SHA，质量/6target图分析进行中，不自动认证开闭对。
+
+Min-SNR完整两臂500步TRAIN筛选已推送，Tip470→494/1140但95父42改善43变差、unknown增加、高t退步保留。只允许原12500继续各+2500的强基线完善，代码准备中，当前无扩散后台训练；核心三臂优先。JOBS最新只读快照07:50:00.925974UTC865条，本次registry新增7条，晚于该时间的运行以以上精确作业元数据为准。MAIN仍293、核心多种子独立观测优势和论文A–H未成立，研究继续。
+
+## 真实配对筛选完成，下一机制与新数据检查 — 2026-10-03
 
 Min-SNR 两臂已从同一个真实12000父模型分别完成500步至12500；初始化和父/参考/t/epsilon四流严格一致。固定285 TRAIN×K4：Tip470→494/1140，Any237→253/285，known unique212→234；双方语义均正确的槽净增17，语义变化组净增7。95父42改善、43退步、10持平；已分类有效277→257，unknown193→237，不能宣称普遍覆盖改善。低t重建提高、高t75/99变差，均保留。原uniform后验编排错误exit1已只读封存，不重训或覆盖；两臂GPU outer合计150.260147秒/0.041738930小时。root实际查看全95父/teacher图与完整K4的最大改善、最大退步样例，长弧和回转可见。完整174文件逐SHA通过。报告：`reports/observed_diffusion_minsnr_probe_v2/MIN_SNR_RESULTS.md`。仅支持有限强基线修复；12500→15000续训是未实现提案，核心三臂优先。
 
