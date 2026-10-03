@@ -1,0 +1,215 @@
+"""New lineage/no-replay and actual state tests; no model downloads or real data."""
+import copy
+from types import SimpleNamespace
+import numpy as np
+import pytest
+from scripts import train_observed_diffusion_minsnr_probe as probe
+
+
+def test_fixed500_counts_and_single_setting():
+    p=probe.policy()
+    assert p['additional_steps']*p['batch_size']*4==64000
+    assert p['final_step']==p['parent_step']+500 and p['gamma']==5
+    assert probe.new_calls()==dict(train_geometry=500,train_denoise=500,optimizer=500)
+    assert 500+6+285==791 and 500+30+285*40==11930
+    assert p['dev_forward_calls']==p['dev_selection_opportunities']==0
+
+
+def test_nested_digest_preserves_type_shape_and_values():
+    a=dict(z=np.asarray([1,2],np.float32),a=(3,4))
+    assert probe.nested_digest(a)==probe.nested_digest(dict(a=(3,4),z=a['z'].copy()))
+    for changed in [dict(a=[3,4],z=a['z']),dict(a=(3,4),z=a['z'].reshape(1,2)),dict(a=(3,4),z=a['z'].astype('float64'))]:
+        assert probe.nested_digest(a)!=probe.nested_digest(changed)
+
+
+def test_clock_denies_issue_before_call_and_retains_previous_issued(tmp_path):
+    now=[0.];clock=probe.Clock(prior=359.,now=lambda:now[0])
+    journal=probe.BoundedJournal(tmp_path/'requests',clock)
+    journal.issue('geometry','a');saved=journal.snapshot();now[0]=1.
+    with pytest.raises(probe.WallCap):journal.issue('denoise','a:0')
+    assert journal.snapshot()==saved
+    assert probe.RequestJournal(journal.path).snapshot()==saved
+
+
+def test_prior_attempt_cost_cannot_reset_or_assume_killed_process_zero(tmp_path):
+    folder=tmp_path/'attempts';folder.mkdir()
+    probe.write_json(folder/'0000.json',dict(status='paused',process_seconds=18.))
+    probe.write_json(folder/'0001.json',dict(status='failed',process_seconds=7.))
+    assert probe.read_attempt_cost(tmp_path)==25.
+    probe.write_json(folder/'0002.json',dict(status='running'))
+    with pytest.raises(ValueError,match='unknown'):probe.read_attempt_cost(tmp_path)
+
+
+def test_increment_hash_covers_refs_permutation_time_and_actual_noise():
+    draw=dict(indices=np.asarray([1,3]),reference_indices=np.asarray([[1,2,3,4]]*2),
+        reference_permutations=np.asarray([[0,1,2,3]]*2),timesteps=np.asarray([0,99]),
+        epsilon=np.ones((2,4,23,4),np.float32))
+    before=probe.empty_additional_audit();first=probe.additional_audit(before,draw)
+    assert first['input_draws']==2 and first['target_states']==8
+    for key in draw:
+        changed=copy.deepcopy(draw);changed[key].flat[0]+=1
+        assert first['sha256']!=probe.additional_audit(before,changed)['sha256']
+    assert before['batches']==0
+
+
+def test_resume_command_drops_administrative_stop_after():
+    a=SimpleNamespace(arm='uniform',parent_run='parent',parent_inspection='inspection',
+        ordinary_source_hashes='sources',data='data',quality_audit='quality',output='out',stop_after=12002)
+    command=probe.resume_argv(a)
+    assert '--resume' in command and '--stop-after' not in command and '12002' not in command
+
+
+def test_selected_loader_context_never_returns_dev_rows_and_restores_on_error():
+    from pathlib import Path
+    old=lambda path:['unfiltered']
+    loader=SimpleNamespace(_jsonl=old)
+    with pytest.raises(RuntimeError):
+        with probe.selected_loader_rows(loader,Path('obs'),Path('sup'),[{'id':'train'}],[{'id':'train-label'}]):
+            assert loader._jsonl(Path('obs'))==[{'id':'train'}]
+            assert loader._jsonl(Path('sup'))==[{'id':'train-label'}]
+            with pytest.raises(ValueError):loader._jsonl(Path('DEV'))
+            raise RuntimeError('fault')
+    assert loader._jsonl is old
+
+
+def test_sealed_teacher_requires_exact_file_set_and_byte_hash(tmp_path):
+    j=probe.RequestJournal(tmp_path/'requests.jsonl');j.issue('diagnostic_geometry','a')
+    probe.write_json(tmp_path/'teacher.json',dict(rows=[]));(tmp_path/'predictions.npz').write_bytes(b'fixture')
+    names={'teacher.json','predictions.npz','requests.jsonl'};identity=dict(model='fixed')
+    receipt=dict(identity=identity,journal=j.snapshot(),artifacts={n:probe.digest(tmp_path/n) for n in names})
+    probe.write_json(tmp_path/'receipt.json',receipt)
+    assert probe.sealed_stage(tmp_path,identity,names)==receipt
+    with pytest.raises(ValueError):probe.sealed_stage(tmp_path,identity,names|{'missing'})
+    (tmp_path/'predictions.npz').write_bytes(b'changed')
+    with pytest.raises(ValueError):probe.sealed_stage(tmp_path,identity,names)
+
+
+def test_invalid_additional_budget_rejected():
+    state=dict(batches=2,input_draws=64,target_states=256,sha256='0'*64)
+    probe.validate_increment(state,12002)
+    for key in ('batches','input_draws','target_states'):
+        wrong=dict(state);wrong[key]+=1
+        with pytest.raises(ValueError):probe.validate_increment(wrong,12002)
+
+
+def test_old_checker_verifier_is_scoped_and_restored(tmp_path):
+    from scripts import export_two_row_composite_observations as exporter
+    old=exporter.verify_export
+    for name in ('observations.jsonl','supervision.jsonl'):(tmp_path/name).write_text('TRAIN fixture\n')
+    expected={name:probe.digest(tmp_path/name) for name in ('observations.jsonl','supervision.jsonl')}
+    with pytest.raises(RuntimeError):
+        with probe.train_view_verifier(tmp_path,{'source_files_sha256':{}},expected):
+            assert exporter.verify_export(tmp_path)[0]=={'source_files_sha256':{}}
+            with pytest.raises(ValueError):exporter.verify_export(tmp_path/'DEV')
+            (tmp_path/'supervision.jsonl').write_text('changed')
+            with pytest.raises(ValueError):exporter.verify_export(tmp_path)
+            raise RuntimeError('injected')
+    assert exporter.verify_export is old
+
+
+def test_expired_budget_cannot_issue_optimizer_after_gradient_work(tmp_path):
+    now=[0.];clock=probe.Clock(limit=1.,now=lambda:now[0]);j=probe.BoundedJournal(tmp_path/'issued',clock)
+    j.issue('train_geometry',12001);j.issue('train_denoise',12001);now[0]=1.1
+    with pytest.raises(probe.WallCap):j.issue('optimizer',12001)
+    assert j.counts==dict(train_geometry=1,train_denoise=1)
+    with pytest.raises(ValueError):j.require_boundary(dict(records=0,sha256='0'*64,counts={}))
+
+
+def tiny(tmp_path,name):
+    torch=pytest.importorskip('torch');torch.set_num_threads(1)
+    from routeset.observed_diffusion_stream import PairedPositiveStream
+    from routeset.observed_route_diffusion import ObservedX0Schedule
+    torch.manual_seed(77)
+    class Tiny(torch.nn.Module):
+        def __init__(self):
+            super().__init__();self.linear=torch.nn.Linear(92,92);self.dropout=torch.nn.Dropout(.1)
+        def forward(self,x):return self.linear(self.dropout(x.flatten(2))).reshape_as(x)
+    n=4;r=5;rng=np.random.default_rng(321)
+    data=dict(paths=rng.normal(size=(n,r,24,3)).astype('float32')*.1,
+        events=np.ones((n,r,24),np.float32),path_mask=np.ones((n,r),bool),
+        scene_ids=np.asarray(['a','b','c','d']),parent_ids=np.asarray(['p','q','r','s']),
+        splits=np.asarray(['TRAIN']*n),fingerprint='tiny-fixed')
+    cfg=dict(seed=0,arm='independent',steps=6,batch_size=2,candidates=4,lr=.0003,
+        weight_decay=.0001,gradient_clip=1.,checkpoint_every=1)
+    trainer=probe.old.DiffusionTrainer(Tiny(),ObservedX0Schedule(),PairedPositiveStream(data,np.arange(n)),cfg)
+    return trainer,probe.RequestJournal(tmp_path/name),data
+
+
+def tiny_loss(trainer,data,arm='uniform',increment=None):
+    import torch
+    weights=probe.min_snr_weights(trainer.schedule.alpha_bars)
+    def loss(draw,step,journal):
+        if increment is not None:
+            value=probe.additional_audit(increment,draw);increment.clear();increment.update(value)
+        ids,refs=draw['indices'],draw['reference_indices']
+        xyz=torch.from_numpy(data['paths'][ids[:,None],refs,1:])
+        events=torch.from_numpy(data['events'][ids[:,None],refs,1:,None])*.2
+        target=torch.cat([xyz,events],-1)
+        noisy=trainer.schedule.q_sample(target,draw['timesteps'],draw['epsilon'])
+        journal.issue('train_geometry',step);journal.issue('train_denoise',step)
+        pred=trainer.model(noisy)
+        return probe.weighted_x0_mse(pred,target,draw['timesteps'],weights,arm),{}
+    return loss
+
+
+def test_real_torch_x0_weights_and_exact_historical_uniform_reduction():
+    torch=pytest.importorskip('torch')
+    from routeset.observed_route_diffusion import ObservedX0Schedule
+    a=ObservedX0Schedule().alpha_bars;w=probe.min_snr_weights(a)
+    raw=(a/(1-a)).clamp(max=5)
+    assert torch.equal(w,raw/raw.mean()) and abs(float(w.mean())-1)<1e-6
+    x=torch.randn(3,4,23,4,requires_grad=True);y=torch.randn_like(x);t=torch.tensor([0,50,99])
+    actual=probe.weighted_x0_mse(x,y,t,w,'uniform');original=(x-y).square().mean()
+    assert torch.equal(actual,original)
+    g1=torch.autograd.grad(actual,x,retain_graph=True)[0];g2=torch.autograd.grad(original,x)[0]
+    assert torch.equal(g1,g2)
+    expected=((x-y).square().flatten(1).mean(1)*w[t]).mean()
+    assert torch.equal(probe.weighted_x0_mse(x,y,t,w,'min_snr_5'),expected)
+    assert float(w[0])>float(w[50])>float(w[99])>0
+    with pytest.raises(ValueError):probe.min_snr_weights(a,4.)
+
+
+@pytest.mark.parametrize('arm',['uniform','min_snr_5'])
+def test_real_torch_parent_fork_four_vs_two_plus_two_exact(tmp_path,arm):
+    torch=pytest.importorskip('torch')
+    parent,j,data=tiny(tmp_path,'parent')
+    for _ in range(2):parent.train_step(tiny_loss(parent,data),j)
+    saved=copy.deepcopy(parent.state_dict(j,0.))
+    full,jf,data=tiny(tmp_path,'full');probe.restore_components(full,saved)
+    incf=probe.empty_additional_audit()
+    for _ in range(4):full.train_step(tiny_loss(full,data,arm,incf),jf)
+    expected=full.state_dict(jf,0.)
+    split,js,data=tiny(tmp_path,'split');probe.restore_components(split,saved)
+    incs=probe.empty_additional_audit()
+    for _ in range(2):split.train_step(tiny_loss(split,data,arm,incs),js)
+    checkpoint=copy.deepcopy(split.state_dict(js,0.))
+    restored,jr,data=tiny(tmp_path,'split');restored.load_state_dict(checkpoint,jr)
+    for _ in range(2):restored.train_step(tiny_loss(restored,data,arm,incs),jr)
+    assert probe.nested_digest(expected)==probe.nested_digest(restored.state_dict(jr,0.))
+    assert incf==incs and jf.snapshot()==jr.snapshot()
+    assert jf.counts==probe.new_calls(4)
+
+
+def test_real_torch_parent_schema_rejects_missing_scheduler_optimizer_rng(tmp_path):
+    pytest.importorskip('torch')
+    trainer,j,data=tiny(tmp_path,'parent-schema')
+    for _ in range(2):trainer.train_step(tiny_loss(trainer,data),j)
+    state=trainer.state_dict(j,0.);summary=dict(stream=state['stream_audit'],actual_calls=state['journal'])
+    actual=probe.parent_state_guard(state,trainer.config,summary,expected_step=2)
+    assert set(actual)=={'model','optimizer','scheduler','rng','stream'}
+    for key in ('scheduler','optimizer','rng','stream'):
+        changed=copy.deepcopy(state);del changed[key]
+        with pytest.raises(ValueError):probe.parent_state_guard(changed,trainer.config,summary,expected_step=2)
+
+
+def test_real_torch_failed_forward_boundary_does_not_replay(tmp_path):
+    pytest.importorskip('torch')
+    trainer,j,data=tiny(tmp_path,'failed')
+    trainer.train_step(tiny_loss(trainer,data),j);saved=copy.deepcopy(trainer.state_dict(j,0.))
+    def fail(draw,step,journal):
+        journal.issue('train_geometry',step);journal.issue('train_denoise',step)
+        raise RuntimeError('injected denoise failure')
+    with pytest.raises(RuntimeError):trainer.train_step(fail,j)
+    recovered,j2,_=tiny(tmp_path,'failed')
+    with pytest.raises(ValueError,match='Uncheckpointed'):recovered.load_state_dict(saved,j2)
+    assert j2.counts==dict(train_geometry=2,train_denoise=2,optimizer=1)
