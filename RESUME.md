@@ -1,5 +1,21 @@
 # Resume
 
+## 冻结臂完成、LoRA续训与外部资产失败 — 2026-10-03 02:42 UTC
+
+本段覆盖下方旧running状态。固定source f41be1ff1a35b0eab3d36edf4ca23197359f4731 的frozen臂3000步已于02:14:37.278678UTC exit0，resume process主体1791.460559秒；原step2 pause仍计入同一训练。随后独立fixed-last285于02:15:31.095887–02:16:45.119068UTC exit0，child703799、外层74.023181秒。全部12旧DEV池保留；最终配对分析尚未执行，MAIN仍273。
+
+LoRA同预算臂已启动：原source的pause2于02:17:14.572016–02:17:56.457928UTC exit0，child704845；64tail+64head+2optimizer/256路径状态，其前130账本记录SHA与frozen相同。step2的8个adapter梯度均真实非零/finite；原pause状态和step2审计已分别保存在.bootstrap/lora_pause2_inner_status.json与lora_step0002_gradient_audit.json。02:19:28.269555UTC独立resume，child705966、SSH7279，CPU1/GPU1/35%；02:37快照1325/3000、42400draws、5/12旧DEV选择。当前仍运行，不改变总3000/96000/384000预算。完成后root须单独启动`qwen_continuation_f41be1f.sh fixed-last-train lora full`，再执行配对分析，禁止重启fresh或根据中间分数延长训练。
+
+配对分析固定source a3daf0da0c7a30279d38e9a4a18ee93b989911d4 已推送核验与部署，13项实际CPU自检查通过；尚未运行分析。只有两臂train和fixed-last四个completed均成立，才运行`taskset -c 0 bash /home/wzy/dpvlm/route_set_v1/research_v2/incoming/qwen_continuation_analysis_a3daf0d.sh analyze`。读取原封存best/last和285池、12次历史与调用账本，不新增forward、不开新DEV；权重留远端hash索引。
+
+TRAIN128原5c8 collector仍在CPU2/3，session20261003T011626Z_train128_675690、SSH89647。02:39:58UTC仅metadata快照124/128闭合、3348已发槽、0非零/缺初態/闭合未发；indices124/125运行，剩余108槽未知。全128闭合后才上传并独立启动.bootstrap/extension128_quality_1a3eef1.sh；不能把机械闭合算有效轨迹，不自动train256，新的DEV继续封存，当前285训练人口不变。
+
+3D HAMSTER准备source1b0348ef48393a2d98113956575e99388c40d4a6实际11测试0skip通过。assets于约02:24:10启动、02:31:23UTC exit1，parent707926/child707933，CPU0，无模型加载/数据读取/GPU。官方代码50/50文件验证通过；模型0/18，首个小文件网络调用432秒后LocalEntryNotFoundError。旧捕获ValueError误将该网络异常归入integrity_failure_preserved，尚无文件hash错误证据；失败原件保留。服务器相同公共端点inherited/direct各10秒ConnectTimeout，无HTTP响应。ROOT本地同固定revision的HEAD已200(19.984s)，将准备本地同manifest下载再校验传输；未启动环境或模型probe，不因下载脚本通过宣称系统复现。
+
+下一普通强基线实现已独立双人review、ROOT核验并推送0f1d5bfbd4ff788a6ea311339adfe77449db9634：观测独立/集合x0扩散，K4/40去噪/12k×32，同285输入和原初始化、共享实际抽样流，unknown保留。13本地pure通过、22Torch未运行，服务器验证待执行；尚无训练结果或新核心。两臂各独立启动，GPU等待当前LoRA配对完成及证据判断。原基线/评价源码未改，不把普通attention或扩散本身当创新。
+
+JOBS快照 2026-10-03T02:37:58.766050+00:00 共652条，registry同步。恢复以实际PID/status/冻结命令为准；已退出的SSH90025资产下载不能当活跃作业。论文A–H尚未成立；当前会话继续真实实验与研究决定，不存在会话结束后自行思考改码服务。
+
 ## 正式冻结臂已恢复续训 — 2026-10-03 01:47 UTC
 
 source f41be1ff1a35b0eab3d36edf4ca23197359f4731 已推送远端核验、冻结部署。实际服务器79项Torch测试全部通过/0skip（6.74s），包括B1×32累积、两臂暂停恢复参数/Adam/RNG/账本一致性。完整321缓存证据归档已核37项，见 reports/observed_qwen_prefix_corpus_v1/CACHE_RESULTS.md；缓存不是质量结果。

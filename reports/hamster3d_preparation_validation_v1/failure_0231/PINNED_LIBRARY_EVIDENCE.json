@@ -1,0 +1,71 @@
+[
+  {
+    "path": "/home/wzy/dpvlm/route_set_v1/.venv-qwen/lib/python3.11/site-packages/huggingface_hub/file_download.py",
+    "bytes": 78926,
+    "sha256": "a21680a7d591e0f82131ec362841659d1561aef0a2058c6ce48e7028e4b0d1ed",
+    "excerpts": [
+      {
+        "line": 934,
+        "text": "\n    \"\"\"\n    if constants.HF_HUB_ETAG_TIMEOUT != constants.DEFAULT_ETAG_TIMEOUT:\n        # Respect environment variable above user value\n        etag_timeout = constants.HF_HUB_ETAG_TIMEOUT\n\n    if force_filename is not None:\n        warnings.warn(\n            \"The `force_filename` parameter is deprecated as a new caching system, \""
+      },
+      {
+        "line": 936,
+        "text": "    if constants.HF_HUB_ETAG_TIMEOUT != constants.DEFAULT_ETAG_TIMEOUT:\n        # Respect environment variable above user value\n        etag_timeout = constants.HF_HUB_ETAG_TIMEOUT\n\n    if force_filename is not None:\n        warnings.warn(\n            \"The `force_filename` parameter is deprecated as a new caching system, \"\n            \"which keeps the filenames as they are on the Hub, is now in place.\",\n            FutureWarning,"
+      },
+      {
+        "line": 1000,
+        "text": "            # HTTP info\n            endpoint=endpoint,\n            etag_timeout=etag_timeout,\n            headers=hf_headers,\n            proxies=proxies,\n            token=token,\n            # Additional options\n            cache_dir=cache_dir,\n            force_download=force_download,"
+      },
+      {
+        "line": 1020,
+        "text": "            # HTTP info\n            endpoint=endpoint,\n            etag_timeout=etag_timeout,\n            headers=hf_headers,\n            proxies=proxies,\n            token=token,\n            # Additional options\n            local_files_only=local_files_only,\n            force_download=force_download,"
+      },
+      {
+        "line": 1080,
+        "text": "        endpoint=endpoint,\n        proxies=proxies,\n        etag_timeout=etag_timeout,\n        headers=headers,\n        token=token,\n        local_files_only=local_files_only,\n        storage_folder=storage_folder,\n        relative_filename=relative_filename,\n    )"
+      },
+      {
+        "line": 1239,
+        "text": "        endpoint=endpoint,\n        proxies=proxies,\n        etag_timeout=etag_timeout,\n        headers=headers,\n        token=token,\n        local_files_only=local_files_only,\n    )\n\n    if head_call_error is not None:"
+      },
+      {
+        "line": 1547,
+        "text": "            try:\n                metadata = get_hf_file_metadata(\n                    url=url, proxies=proxies, timeout=etag_timeout, headers=headers, token=token, endpoint=endpoint\n                )\n            except EntryNotFoundError as http_error:\n                if storage_folder is not None and relative_filename is not None:\n                    # Cache the non-existence of the file\n                    commit_hash = http_error.response.headers.get(constants.HUGGINGFACE_HEADER_X_REPO_COMMIT)\n                    if commit_hash is not None:"
+      }
+    ]
+  },
+  {
+    "path": "/home/wzy/dpvlm/route_set_v1/.venv-qwen/lib/python3.11/site-packages/huggingface_hub/utils/_http.py",
+    "bytes": 25476,
+    "sha256": "9cf80fcccd2e8ca8e5f6fde0f17674cc6302fc1f5ea96bdfd99b2bdeded7d630",
+    "excerpts": [
+      {
+        "line": 216,
+        "text": "    url: str,\n    *,\n    max_retries: int = 5,\n    base_wait_time: float = 1,\n    max_wait_time: float = 8,\n    retry_on_exceptions: Union[Type[Exception], Tuple[Type[Exception], ...]] = (\n        requests.Timeout,\n        requests.ConnectionError,\n    ),"
+      },
+      {
+        "line": 218,
+        "text": "    max_retries: int = 5,\n    base_wait_time: float = 1,\n    max_wait_time: float = 8,\n    retry_on_exceptions: Union[Type[Exception], Tuple[Type[Exception], ...]] = (\n        requests.Timeout,\n        requests.ConnectionError,\n    ),\n    retry_on_status_codes: Union[int, Tuple[int, ...]] = (500, 502, 503, 504),\n    **kwargs,"
+      },
+      {
+        "line": 314,
+        "text": "            # Wrong status code returned (HTTP 503 for instance)\n            logger.warning(f\"HTTP Error {response.status_code} thrown while requesting {method} {url}\")\n            if nb_tries > max_retries:\n                response.raise_for_status()  # Will raise uncaught exception\n                # We return response to avoid infinite loop in the corner case where the\n                # user ask for retry on a status code that doesn't raise_for_status.\n                return response\n\n        except retry_on_exceptions as err:"
+      },
+      {
+        "line": 326,
+        "text": "                reset_sessions()  # In case of SSLError it's best to reset the shared requests.Session objects\n\n            if nb_tries > max_retries:\n                raise err\n\n        # Sleep for X seconds\n        logger.warning(f\"Retrying in {sleep_time}s [Retry {nb_tries}/{max_retries}].\")\n        time.sleep(sleep_time)\n"
+      }
+    ]
+  },
+  {
+    "path": "/home/wzy/dpvlm/route_set_v1/.venv-qwen/lib/python3.11/site-packages/huggingface_hub/errors.py",
+    "bytes": 11201,
+    "sha256": "0fb2f0d098eb7fcbdf983d01dba2c4be0f895a453c66ad0a0cf24ecc563840bc",
+    "excerpts": [
+      {
+        "line": 275,
+        "text": "\n\nclass LocalEntryNotFoundError(EntryNotFoundError, FileNotFoundError, ValueError):\n    \"\"\"\n    Raised when trying to access a file or snapshot that is not on the disk when network is\n    disabled or unavailable (connection issue). The entry may exist on the Hub.\n\n    Note: `ValueError` type is to ensure backward compatibility.\n    Note: `LocalEntryNotFoundError` derives from `HTTPError` because of `EntryNotFoundError`"
+      }
+    ]
+  }
+]
