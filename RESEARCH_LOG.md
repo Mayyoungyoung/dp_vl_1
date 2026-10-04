@@ -750,3 +750,12 @@ R_full comparison is ordinary whole-path symmetric Chamfer consistency, same pai
 
 R0/R1/R2 all nine trainings completed; coordinator_replication closed exit0. R2-R1 mean candidate validity -3.805pp, distinct valid modes +.2222, shared reference relation recall +.0827pp; seed2 is a clear reversal. Do not present seed0 as stable success. Complete statistics in reports/paired_modes_v1/three_seed_extended. Finisher c25f18e remains active, completing q seeds1/2, public CLI and the unchanged prospective full-set control. A new TRAIN-only gradient/correspondence diagnostic is prepared to wait for its closure; no method revision trained yet. Preserve all results and locked roles.
 
+
+## One bounded revision queued after actual diagnosis — 2026-10-05
+
+Original scorer pipelines for seeds0/1/2 and public R2 seed0 CLI all completed. R2 calibrated selected-valid mean93.1713%, but seed2 Brier .21904/ECE .26242 and q>=.8 leaves only.993 routes/request; do not conceal this distribution-shift failure. Public CLI exactly matches packaged paths/events/q/indices,2.9376s including process/head load with cached genuine Qwen.
+
+Full-control test in c25f18e failed before training: list input used tensor tuple indexing. Failure preserved (12pass/1fail). New immutable d537ca512fae197b6b3531d352c30b2e0ffa7ae5 corrects equivalent indexing,13tests passed; TRAIN diagnosis completed36.0765s. Recovery coordinator SSH60215 is running R_full seed0, then applies the unchanged gate. No old run overwritten.
+
+TRAIN diagnosis: final R2 seeds0/1/2 represent shared relation in both predicted sets for59.46/47.75/35.59% of222 cases; nearest-class pairing previously applied anyway. Gradient conflict has mixed evidence, not a causal claim. First bounded revision R3 gates correspondence on both-side predicted relation presence; everything else unchanged. All three seeds will run once regardless of seed0 sign, per REVISION1_PROTOCOL.md. Immutable dd4bad0dd75c3c4f5f228380b1cb8f50f7b4e808 archive96eedaeaba8e86407da06ccd20bef555689870b4ea53db837f3c14b3d07e812e; SSH77619 coordinator_revision1 is ACTUALLY waiting for recovery queue exit0. Do not duplicate. dd4bad0 pushed. Original unused cb43feb export has no launched job.
+
