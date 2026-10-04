@@ -127,7 +127,7 @@ def train(arm,seed,expanded_data=True,probe=False):
         if step%100==0:print(json.dumps(dict(step=step,loss=float(loss),route_loss=float(route_loss),pi_loss=float(pi_loss),clearance_loss=float(clearance_loss),lambda_clearance=coefficient)),flush=True)
         if step%100==0:
             atomic_checkpoint(output/'recovery.pt',dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),
-                step=step,config=cfg,arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
+                step=step,config=cfg,clearance_config=clearance_cfg,arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
                 parent_sha256=sha(PARENT/'last.pt'),dataset_fingerprint=geometry['fingerprint'],elapsed_seconds=time.perf_counter()-started))
         if step%500==0:
             # Evaluate fixed development requests, preserving the training RNG.
@@ -136,7 +136,7 @@ def train(arm,seed,expanded_data=True,probe=False):
                 selection_metric='tip_unique_valid',evaluation_sources=(pcfg['observations'],pcfg['supervision']))
             torch.set_rng_state(saved_rng);torch.cuda.set_rng_state_all(saved_cuda)
             score=metrics['selection_score'];history.append(dict(step=step,metrics=metrics))
-            state=dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,config=cfg,
+            state=dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,config=cfg,clearance_config=clearance_cfg,
                 arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
                 parent_sha256=sha(PARENT/'last.pt'),dataset_fingerprint=geometry['fingerprint'],elapsed_seconds=time.perf_counter()-started)
             atomic_checkpoint(output/'last.pt',state)
@@ -148,7 +148,7 @@ def train(arm,seed,expanded_data=True,probe=False):
         last_checkpoint_sha256=sha(output/'last.pt'),best_checkpoint_sha256=sha(output/'best.pt'),
         elapsed_seconds=time.perf_counter()-started,peak_allocated_bytes=torch.cuda.max_memory_allocated(),
         train_parents=len(set(data['parent_ids'][train_ids])),train_inputs=len(train_ids),expanded_data=expanded_data,
-        scientific_scope='M8 paired same-data arms; pi+balanced-assignment bundle, not isolated pi causality; old DEV reused'))
+        clearance_lambda=coefficient,scientific_scope='Extra TRAIN physical-box loss only; original observation-only forward, Ordinary assignment and fixed q transfer'))
 
 
 if __name__=='__main__':
