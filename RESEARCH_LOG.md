@@ -698,3 +698,12 @@ Only the waiting project coordinator PID1589670 was stopped after verifying UID,
 
 New immutable source a45818f11dbf9012019bcc78042532094516f7a0, archive8f8703c387e203a7d5dc62fdb19758010a3b9bf95ccf6174c7452595a78686d2 verified remotely. Actual server12tests passed0skipped. Replacement coordinator ACTUALLY running/waiting: runs/paired_modes_v1/coordinator_seed0_v2, SSH24758. It will run the same frozen collection->summary/export->resource check->Qwen->probe->100-step recovery verification->three-arm training/evaluation pipeline. Latest expanded collection306completed2running0failed7497accepted, plus pilot6/147. Do not repeat fresh commands or modify this release/launcher. Formal models still NOT trained at this entry. TEST_LOCKED untouched.
 
+
+## Paired dataset complete; genuine Qwen extraction active — 2026-10-05
+
+All480 new scenes completed and initialization passed;128TRAIN/32DEV_MODEL independent families x3 variants x3 targets.12960 registered geometric slots yielded11760 accepted high-level teacher polylines (TRAIN9408,DEV2352); no robot rollout claim. All160 families passed exact equality of actual gripper pose/open, cameras, target positions and colors across variants. New raw data3,629,345,085bytes, within8GiB. Successful worker wall sum9180.747224s. Original6-worker technical pilot failure remains separate and preserved.
+
+Collector SSH57403 finished exit0, frozen d4d7567 untouched. Replacement coordinator a45818f remains live SSH24758. It completed summary/export and GPU/CPU/RAM/disk inspection before genuine Qwen extraction; GPU1 UUID confirmed580MiB prior use,23,575MiB free;65GiB RAM available and1.2TiB disk free. Qwen cache job has actually started in the pinned existing environment,4threads,35% GPU1 cap. Data/input manifest frozen at data/paired_modes_v1_v2/export. No completed new model training or newDEV model result yet. Inspect coordinator/jobs before resuming; never replay fresh completed stages.
+
+Local data summary, export manifest, expanded collection receipts and resource snapshot: reports/paired_modes_v1/data_evidence. Next: TRAIN-only gradient probe, continuous100 vs50+50 recovery verification, fixed seed0 R0/R1/R2, sealed-pool evaluation and evidence-driven continuation. All methods use the common workspace correction already documented. TEST_LOCKED untouched.
+
