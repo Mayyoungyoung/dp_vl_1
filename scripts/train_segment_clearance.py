@@ -55,7 +55,7 @@ def train(arm,seed,expanded_data=True,probe=False):
     from scripts.evaluate_observed_two_row_online import head_options
     from scripts.export_two_row_composite_observations import verify_export
     cfg=read(POLICY)['stage2']
-    output=ROOT/'runs/segment_clearance_v1'/('probe' if probe else 'B_seed%d'%seed);output.mkdir(parents=True,exist_ok=False)
+    output=ROOT/'runs/segment_clearance_v1'/('probe_v2' if probe else 'B_seed%d'%seed);output.mkdir(parents=True,exist_ok=False)
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     pcfg=read(PARENT/'config.json')
     verify_export(OLD)

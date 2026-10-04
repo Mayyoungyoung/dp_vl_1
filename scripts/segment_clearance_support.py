@@ -65,7 +65,8 @@ def probe_loss(model,data,geometry,train_ids,centers,halves,rng,output):
         assert all(np.isfinite(gradients)) and gradients[1]>0
         ratios.append(gradients[0]/gradients[1])
         points=xyz.detach().cpu().numpy();c=centers[ids].cpu().numpy();h=halves[ids].cpu().numpy()
-        checker=segment_aabb_intersection(points[:,:,:-1,None],points[:,:,1:,None],c[:,None,None]-h[:,None,None]-.02,c[:,None,None]+h[:,None,None]+.02).any(-1)
+        shape=points[:,:,:-1,None].shape[:-2]+(4,3)
+        checker=segment_aabb_intersection(np.broadcast_to(points[:,:,:-1,None],shape),np.broadcast_to(points[:,:,1:,None],shape),c[:,None,None]-h[:,None,None]-.02,c[:,None,None]+h[:,None,None]+.02).any(-1)
         exact=path_segment_clearances(xyz,centers[ids],halves[ids]).detach().cpu().numpy()<=.02
         vertex=np.max(np.abs(points[:,:,:,None]-c[:,None,None])-h[:,None,None],axis=-1).min(-1)<=.02
         missed=checker & ~vertex[:,:,:-1] & ~vertex[:,:,1:]
