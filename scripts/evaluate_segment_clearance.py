@@ -19,7 +19,8 @@ def infer(split, seed, arm):
     assert os.environ['CUDA_VISIBLE_DEVICES']=='1'
     torch.set_num_threads(2);torch.cuda.set_per_process_memory_fraction(.35)
     torch.manual_seed(0);np.random.seed(0);random.seed(0)
-    manifest=read(DATA/'manifest.json')
+    manifest_file=DATA/('export_manifest.json' if split=='old_dev' else 'manifest.json')
+    manifest=read(manifest_file)
     # Read only existing role-scoped exports, never raw collector roots.
     cache=DATA/'qwen_cache'; cc=read(cache/'cache_config.json')
     assert cc['manifest_sha256']==sha(DATA/'observations.jsonl') and cc['model_trainable_parameter_count']==0
@@ -63,7 +64,7 @@ def infer(split, seed, arm):
             summaries.append(dict(id=row['id'],metrics=metrics,candidates=candidates,prediction_sha256=sha(folder/(row['id']+'.npz'))))
         np.savez_compressed(folder/'pool.npz',**{k:np.array(v) for k,v in values.items()})
         write(folder/'per_scene.json',summaries)
-        write(folder/'receipt.json',dict(model=model,inputs_sha256=inputs_sha,manifest_sha256=sha(DATA/'manifest.json'),
+        write(folder/'receipt.json',dict(model=model,inputs_sha256=inputs_sha,manifest_sha256=sha(manifest_file),
             pool_sha256=sha(folder/'pool.npz'),requests=len(rows),complete_path_states=len(rows)*8,training_steps=0,new_qwen_requests=0,
             generator_checkpoint_sha256=sha(checkpoint),generator_seed=seed,scorer_seed=0,inference_seed=0,rng_before_sha256=sha(folder/'rng_before.pt'),M=8,H=24,
             peak_allocated_bytes=torch.cuda.max_memory_allocated(),configuration_tuning=False))
