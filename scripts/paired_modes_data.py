@@ -22,7 +22,7 @@ from scripts import collect_observed_layout_variation as physical
 from scripts.collect_observed_layout_hash_recovery import quantized_hash_v2, validate_initial_geometry
 from scripts.run_observed_probability import ROOT, SOURCE, read, write, sha, lines
 
-DATA = ROOT/'data/paired_modes_v1'
+DATA = ROOT/'data/paired_modes_v1_v2'
 RUN = ROOT/'runs/paired_modes_v1'
 POLICY = SOURCE/'configs/paired_modes_v1.json'
 
@@ -113,7 +113,7 @@ def geometric_references(task,posts,targets,saved,plan,output,phase,counts,*unus
                     name='target%d_route%d.npz'%(target,attempt)
                     poses=np.column_stack([xyz,np.tile(obs.gripper_pose[3:],(len(xyz),1))])
                     np.savez_compressed(folder/name,gripper_pose=poses,
-                        gripper_open=np.full(len(xyz),obs.gripper_open.item()),xyz_24=h24)
+                        gripper_open=np.full(len(xyz),float(np.asarray(obs.gripper_open))),xyz_24=h24)
                     routes.append(parent+'/'+name); types.append(fields['actual_route_type'])
                     witnesses.append(dict(input_id=identifier,slot=attempt,actual_route_type=fields['actual_route_type'],
                                           file=parent+'/'+name,sha256=sha(folder/name)))
@@ -154,12 +154,13 @@ def worker(index):
          role=plan['role'],family_id=plan['family_id'],canonical_robot_state=value['canonical_init']['canonical_arm_joints']))
     write(out/'artifact_hashes.json',{p.relative_to(out).as_posix():sha(p)
           for p in out.rglob('*') if p.is_file() and p.name!='artifact_hashes.json'})
+    if result['status']=='error':raise RuntimeError('Physical worker failed: '+str(result.get('fatal_error')))
     return result
 
 
 def collect(start,stop,resume=False):
     value=read(DATA/'registration.json'); plans=value['parent_plan'][start:stop]
-    work=RUN/('collection_%03d_%03d'%(start,stop))
+    work=RUN/('collection_v2_%03d_%03d'%(start,stop))
     work.mkdir(parents=True,exist_ok=resume)
     def one(plan):
         i=plan['index']; receipt=work/('%03d.json'%i)
