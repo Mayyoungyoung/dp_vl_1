@@ -20,12 +20,12 @@ def main(arms,seeds,output):
     fig,axes=plt.subplots(1,4,figsize=(14,3.6),layout='constrained')
     metrics=[('Candidate validity (%)',lambda r:r['CandidateValidRate']*100),
              ('Distinct valid modes @8',lambda r:r['K']['8']['GeometricModeCount']),
-             ('Shared-mode recall (%)',lambda r:r['paired']['metrics']['shared_recall']*100),
-             ('Opened-mode recall (%)',lambda r:r['paired']['metrics']['opened_recall']*100)]
+             ('Shared relation recall (%)',lambda r:r['paired']['metrics']['shared_recall']*100),
+             ('Opened relation recall (%)',lambda r:r['paired']['metrics']['opened_recall']*100)]
     for ax,(title,extract) in zip(axes,metrics):
         for i,arm in enumerate(arms):
             values=[extract(summaries[arm,s]) for s in seeds]
-            ax.bar(i,np.mean(values),color={'R0':'#8495a7','R1':'#66a9a1','R_full':'#9575a9','R2':'#e19c55'}.get(arm,'#8495a7'),width=.65)
+            ax.bar(i,np.mean(values),color={'R0':'#8495a7','R1':'#66a9a1','R_full':'#bdb0d9','R2':'#e19c55','R3':'#7463a8'}.get(arm,'#8495a7'),width=.65)
             ax.scatter(np.full(len(values),i)+np.linspace(-.08,.08,len(values)),values,color='#273746',s=20,zorder=4)
         ax.set_xticks(range(len(arms)),arms);ax.set_title(title);ax.grid(axis='y',alpha=.18);ax.set_axisbelow(True)
     fig.suptitle('Paired-scene development results — fixed last checkpoints; dots are generator seeds',fontsize=12)

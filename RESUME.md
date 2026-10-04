@@ -1,3 +1,15 @@
+## All full-set controls complete; R3 first seed active — 2026-10-05
+
+Recovery coordinator SSH60215 closed exit0 (1436s), full-set control all3seeds complete. R_full means: valid69.2274%, modes4.63079, shared relation34.4907%, closed adaptation-2.1701%. R2-R_full valid+4.5573pp/modes+.7431, but R2-R1 remains weak; do not substitute the easier control for R1. Full results/figures copied locally. R3 coordinator SSH77619 fromdd4bad0 has passed15server tests0skipped and is training seed0 (last inspected1200/3000). Score compare SSH24135 from5d3d734 waits for all3R3 models. No other active project GPU queue.
+
+Local selection_original analysis replays the fixed public q-first selector from sealed outputs and exactly matches all6 original deployment examples. R2 returnedK4 (internalM8) averaged3.39352 distinct valid modes and90.8565% selected-candidate validity across3seeds; q calibration still fails badly forseed2. Strong R1 selection/scoring comparison remains queued. No new generated candidates in this analysis.
+
+## Finite queue status — 2026-10-05
+
+R_full seed0 completed and passed the prospectively fixed R2-vs-full seed0 gate: full valid61.0243%,modes3.62153,shared23.9831%,closed adaptation -5.2083%; this is not evidence against the strong R1. R_full seed1 also completed (valid71.9618%,modes5.08681,shared38.1944%); seed2 currently running in recovery coordinator SSH60215 fromd537ca5. R3 all-seed revision coordinator SSH77619 fromdd4bad0 still waits unchanged for its exit0.
+
+Matched R1 scoring is now queued to complete the strongest original within-scene baseline fairly. New immutable5d3d734c1aa00690ab3b214458e88a62870f1352, archivea3f5e79b031605e980158903ac9cc72ff339dfe6d83ee4c4b7cb3a8a7c5cc72b, SSH24135 via scripts/run_paired_score_compare.sh. It waits for R3 closure, applies the frozen revision gate, runs R1 scoring/calibration/package all3seeds and public CLI seed0, then R3 scoring only if its gate passes, then complete q analysis. Do not duplicate any waiting coordinator. No new data or scoring settings changed. Current run family1.2GiB, raw paired data3.5GiB by du; source exports separate.
+
 ## One bounded revision queued after actual diagnosis — 2026-10-05
 
 Original scorer pipelines for seeds0/1/2 and public R2 seed0 CLI all completed. R2 calibrated selected-valid mean93.1713%, but seed2 Brier .21904/ECE .26242 and q>=.8 leaves only.993 routes/request; do not conceal this distribution-shift failure. Public CLI exactly matches packaged paths/events/q/indices,2.9376s including process/head load with cached genuine Qwen.
