@@ -11,9 +11,9 @@ def portal_word(path, config):
     if path.ndim != 2 or path.shape[1] != 3 or len(path) < 2 or not np.isfinite(path).all():
         raise ValueError('finite full 3D polyline required')
     margin = config['tip_clearance_m']
-    half = config['post_size_xyz'][1] / 2 + margin
+    half = config.get('post_size_xyz', [.035,.035,0])[1] / 2 + margin
     bottom = config['post_base_z'] - margin
-    top = config['post_base_z'] + config['post_size_xyz'][2] + margin
+    heights = config['post_heights'] if 'post_heights' in config else [config['post_size_xyz'][2]]*len(config['row_x'])
     word = []
     for a, b in zip(path[:-1], path[1:]):
         crossings = []
@@ -24,6 +24,7 @@ def portal_word(path, config):
             t = (x-a[0])/(b[0]-a[0])
             point = a+t*(b-a)
             low, high = config['post_y'][row]
+            top = config['post_base_z'] + heights[row] + margin
             y, z = point[1:]
             if y < low-half:
                 portal = 'negative_y'

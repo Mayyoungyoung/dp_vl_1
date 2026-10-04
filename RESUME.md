@@ -1,3 +1,11 @@
+## Paired-scene pilot complete; full collection active — 2026-10-04
+
+New family paired_modes_v1 implements the currently authorized R0/R1/R2 plan. Immutable initial collector18b11e0 failed all6 pilot workers on Python float .item(); summaries recorded error despite legacy subprocess exit0. These are technical failures, not six successful collections; all original data and logs retained. Fresh collector d4d756706ccbc5a37cc7ef612cb13da0183ff9c9 corrects scalar conversion and propagates worker errors. Fresh output data/paired_modes_v1_v2:6/6 initialization and collection passed,147 accepted geometric reference paths out of162 slots; these are NOT robot execution trajectories. Worker times16.937,21.413,21.483,16.921,21.328,17.173s.
+
+Downloaded and inspected family520000 open/closed/shifted RGB. Actual gripper pose/open and camera intrinsic/extrinsic arrays exactly equal; three scenes22,422,276bytes. Expanded collection uses same immutable d4d7567 source, command bash scripts/launch_paired_modes_collect.sh collect --start6 --stop480 (arguments actually include spaces), SSH57403. All480 scenes were prospectively registered128TRAIN/32DEV_MODEL families. No training yet. Resource snapshot GPU1 UUID verified580MiB/17% from unrelated process,1.2TiB disk free; other jobs untouched. CPU-only two single-thread collection workers; no GPU training concurrently. Do not relaunch or overwrite collector. Local loss tests:3 data tests pass; Torch loss suite skipped because local Torch absent; server validation still required.
+
+Packaging note: first git archive failed because local research_v2 directory did not exist; directory created, no server run was caused by that failed command. All future scientific claims depend on actual checkpoints/pools, not launch commands.
+
 ## Paired modes research started — 2026-10-04
 
 Latest authorized family is `paired_modes_v1`. Read its PROTOCOL and latest STATE first. First pilot is6 new scenes; no training launched at this entry. Check actual `runs/paired_modes_v1/collection_*/` receipts and PIDs before continuing. New reference kind is geometric upper-level teacher, not robot rollout. Do not restart any completed historical family or access reserved TEST. GPU1 UUID/35%,4CPU remain in force; existing nonproject GPU processes untouched.
