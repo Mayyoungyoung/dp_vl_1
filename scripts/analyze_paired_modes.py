@@ -24,9 +24,16 @@ def comparison(a,b):
         for k in next(iter(a.values())) for d in [np.array([b[p][k]-a[p][k] for p in parents])]}
 
 
+def paired_family_metrics(details):
+    keys=('shared_recall','opened_recall','shifted_shared_recall','closed_adaptation_gain','closed_low_center_attempt_rate')
+    groups={}
+    for row in details:groups.setdefault(row['family'],[]).append(row)
+    return {p:{k:float(np.mean([r[k] for r in rows if r[k] is not None])) for k in keys} for p,rows in groups.items()}
+
+
 def analyze(arms,seeds,output):
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
-    results={};families={};allrows={};paired={}
+    results={};families={};allrows={};paired={};paired_families={}
     for split in ('paired_dev','old_dev','dev32'):
         for seed in seeds:
             for arm in arms:
@@ -35,13 +42,17 @@ def analyze(arms,seeds,output):
                 key='%s/%s/seed%d'%(split,arm,seed);summary=read(folder/'RESULTS.json');rows=read(folder/'rows.json')
                 families[key]=family_metrics(rows);allrows[key]=rows
                 results[key]={k:float(np.mean([r[k] for r in families[key].values()])) for k in next(iter(families[key].values()))}
-                if split=='paired_dev':paired[key]=summary['paired']['metrics']
+                if split=='paired_dev':
+                    paired[key]=summary['paired']['metrics']
+                    paired_families[key]=paired_family_metrics(summary['paired']['details'])
     comparisons={}
     for split in ('paired_dev','old_dev','dev32'):
         for a,b in zip(arms[:-1],arms[1:]):
             for seed in seeds:
                 ka,kb=['%s/%s/seed%d'%(split,x,seed) for x in (a,b)]
                 if ka in families and kb in families:comparisons[kb+' minus '+ka]=comparison(families[ka],families[kb])
+                if ka in paired_families and kb in paired_families:
+                    comparisons[kb+' minus '+ka+'/paired_response']=comparison(paired_families[ka],paired_families[kb])
             # Average generator seeds within family, then family bootstrap.
             if all('%s/%s/seed%d'%(split,x,s) in families for x in (a,b) for s in seeds):
                 means=[]
@@ -49,6 +60,12 @@ def analyze(arms,seeds,output):
                     first=families['%s/%s/seed%d'%(split,arm,seeds[0])]
                     means.append({p:{k:float(np.mean([families['%s/%s/seed%d'%(split,arm,s)][p][k] for s in seeds])) for k in first[p]} for p in first})
                 comparisons[split+'/'+b+' minus '+a+'/mean_seeds']=comparison(*means)
+                if split=='paired_dev':
+                    means=[]
+                    for arm in (a,b):
+                        first=paired_families['%s/%s/seed%d'%(split,arm,seeds[0])]
+                        means.append({p:{k:float(np.mean([paired_families['%s/%s/seed%d'%(split,arm,s)][p][k] for s in seeds])) for k in first[p]} for p in first})
+                    comparisons[split+'/'+b+' minus '+a+'/mean_seeds/paired_response']=comparison(*means)
     gate=None
     if all('paired_dev/'+a+'/seed0' in results for a in ('R0','R1','R2')):
         a,b,c=[results['paired_dev/'+a+'/seed0'] for a in ('R0','R1','R2')]
