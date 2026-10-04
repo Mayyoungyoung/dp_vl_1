@@ -28,16 +28,36 @@ def dataset(split):
 def check_candidates(paths,events,label,current,truth,config):
     if 'post_heights' not in config:
         from scripts.evaluate_observed_two_row import scene_metrics
-        return scene_metrics(paths,events,current,truth,label['semantic_targets'],label['route_types'],config)
-    from scripts.evaluate_observed_obstacles import scene_metrics
-    from scripts.observed_layout_variation import geometry,crossing_signature
-    cs,hs=geometry(config)
-    for a,b in ((cs,truth['obstacle_centers']),(hs,truth['obstacle_halfsizes'])):
-        np.testing.assert_allclose(a,b,rtol=0,atol=1e-6)
-    np.testing.assert_allclose(config['goal_xyz'],label['semantic_targets']['centers'],rtol=0,atol=1e-6)
-    assert config['tip_clearance_m']==.02 and label['semantic_targets']['tolerance']==.03
-    return scene_metrics(paths,events,current,truth,label['semantic_targets'],label['route_types'],
-                         clearance=.02,type_classifier=lambda path:crossing_signature(path,config))
+        metrics,candidates=scene_metrics(paths,events,current,truth,label['semantic_targets'],label['route_types'],config)
+    else:
+        from scripts.evaluate_observed_obstacles import scene_metrics
+        from scripts.observed_layout_variation import geometry,crossing_signature
+        cs,hs=geometry(config)
+        for a,b in ((cs,truth['obstacle_centers']),(hs,truth['obstacle_halfsizes'])):
+            np.testing.assert_allclose(a,b,rtol=0,atol=1e-6)
+        np.testing.assert_allclose(config['goal_xyz'],label['semantic_targets']['centers'],rtol=0,atol=1e-6)
+        assert config['tip_clearance_m']==.02 and label['semantic_targets']['tolerance']==.03
+        metrics,candidates=scene_metrics(paths,events,current,truth,label['semantic_targets'],label['route_types'],
+                             clearance=.02,type_classifier=lambda path:crossing_signature(path,config))
+    # Prospective common task-workspace constraint. Historical artifacts stay intact.
+    floor=config['post_base_z']+.02
+    metrics['original_post_only_metrics']=dict(metrics)
+    for path,c in zip(paths,candidates):
+        c['post_only_tip_valid']=c['TipValid'];c['post_segments_clear']=c['tip_segments_clear']
+        c['minimum_z_m']=float(np.min(path[:,2])) if np.isfinite(path).all() else None
+        c['workspace_floor_correct']=bool(c['minimum_z_m'] is not None and c['minimum_z_m']>=floor)
+        c['tip_segments_clear']=c['tip_segments_clear'] and c['workspace_floor_correct']
+        c['TipValid']=c['TipValid'] and c['workspace_floor_correct']
+        c['classified_tip_valid']=c['TipValid'] and c['declared_passage_type'] is not None
+    valid=sum(c['TipValid'] for c in candidates);known=sum(c['classified_tip_valid'] for c in candidates)
+    types={tuple(c['declared_passage_type']) for c in candidates if c['classified_tip_valid']}
+    references={tuple(m) for m in label['route_types'] if m is not None}
+    metrics.update(TipValidAtK=valid/len(candidates),AnyTipValidAtK=float(valid>0),UniqueClassifiedTipValidAtK=len(types),
+        UnknownTypeTipValidCount=valid-known,DuplicateClassifiedTipValidCount=known-len(types),
+        KnownReferenceTypeCoverageAtK=len(types&references)/len(references) if references else None,
+        TipClearAtK=float(np.mean([c['tip_segments_clear'] for c in candidates])),workspace_minimum_z_m=floor,
+        validity_scope='Goal3cm, start5mm, reach events, continuous post2cm clearance AND registered minimum workspace height; no full-arm execution certificate')
+    return metrics,candidates
 
 
 def references(label):

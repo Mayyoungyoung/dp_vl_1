@@ -27,3 +27,14 @@ def test_reliability_counts_confident_failures_and_family_clustering():
     assert m['parent_count']==1 and m['selected_valid']==1/3
     assert m['confident_08']['candidates']==2 and m['confident_08']['observed_validity']==.5
     assert np.isfinite(m['nll']) and m['selected_reliability_bins_ece']>0
+
+
+def test_route_under_workspace_is_not_valid_diversity():
+    cfg=registration()['parent_plan'][0]['config'];cs,hs=geometry(cfg)
+    start=np.asarray(cfg['entry_xyz']);goal=np.asarray(cfg['goal_xyz'][1])
+    path=np.array([start,[0,-.4,.7],[.52,-.4,.7],[.52,goal[1],.84],goal])
+    label=dict(semantic_targets=dict(centers=cfg['goal_xyz'],target_index=1,tolerance=.03),route_types=[])
+    metrics,c=check_candidates(path[None],np.ones((1,len(path))),label,dict(gripper_pose=start,gripper_open=np.array(1.)),
+                             dict(obstacle_centers=cs,obstacle_halfsizes=hs),cfg)
+    assert c[0]['post_only_tip_valid'] and not c[0]['workspace_floor_correct'] and not c[0]['TipValid']
+    assert metrics['TipValidAtK']==0 and metrics['original_post_only_metrics']['TipValidAtK']==1

@@ -7,6 +7,11 @@ import numpy as np
 import torch
 
 
+def workspace_floor_loss(paths, floors):
+    """A linear path segment cannot dip below both of its endpoint heights."""
+    return (floors[:,None,None]-paths[...,2]).clamp_min(0).square().mean()
+
+
 def row_crossings(paths, row_x):
     """First forward crossing, piecewise differentiable in actual path points.
 

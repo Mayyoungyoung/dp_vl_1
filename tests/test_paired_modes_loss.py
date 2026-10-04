@@ -2,7 +2,7 @@ import copy
 import numpy as np
 import pytest
 torch=pytest.importorskip('torch')
-from routeset.paired_modes import row_crossings,relation_cost,within_scene_loss,partial_pair_loss,class_weights
+from routeset.paired_modes import row_crossings,relation_cost,within_scene_loss,partial_pair_loss,class_weights,workspace_floor_loss
 from scripts.paired_modes_data import registration
 from scripts.observed_layout_variation import crossing_signature
 from scripts.train_paired_modes import sample_batch
@@ -88,3 +88,9 @@ def test_variable_height_portal_and_subdivision():
         mid=(path[:-1]+path[1:])/2
         divided=np.empty((2*len(path)-1,3));divided[::2]=path;divided[1::2]=mid
         assert portal_word(path,c)==portal_word(divided,c)
+
+
+def test_common_workspace_penalty_moves_only_violating_heights_up():
+    x=torch.tensor([[[[0.,0.,.8],[.2,0.,.7],[.4,0.,.84]]]],requires_grad=True)
+    loss=workspace_floor_loss(x,torch.tensor([.775]));g=torch.autograd.grad(loss,x)[0]
+    assert g[0,0,1,2]<0 and torch.count_nonzero(g)==1

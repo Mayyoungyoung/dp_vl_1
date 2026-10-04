@@ -53,6 +53,14 @@ def load_data():
         with np.load(label['verification_only']) as z:
             centers.append(z['obstacle_centers']);halves.append(z['obstacle_halfsizes'])
     assert len({x.shape for x in centers})==1
+    floors=np.array([c['post_base_z']+.02 for c in configs])
+    bad=ds['path_mask']&(ds['paths'][...,2].min(-1)<floors[:,None])
+    training=np.isin(ds['splits'],['TRAIN','FUTURE_GENERATOR_TRAIN'])
+    filtered=bad&training[:,None]
+    ds['path_mask']=ds['path_mask']&~filtered
+    ds['workspace_reference_filter']=dict(excluded_training_references=int(filtered.sum()),
+        affected_training_requests=int(filtered.any(1).sum()),mask_sha256=hashlib.sha256(ds['path_mask'].tobytes()).hexdigest(),
+        original_files_preserved=True,criterion='H24 minimum z >= registered post base z + .02m')
     geo['fingerprint']=hashlib.sha256(json.dumps(dict(observed=geo['fingerprint'],supervision=truth_hashes),sort_keys=True).encode()).hexdigest()
     return ds,geo,configs,np.stack(centers),np.stack(halves),pcfg,labelmap
 
@@ -87,7 +95,7 @@ def source_identity():
 def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=None):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,balanced_assignment_loss
-    from routeset.paired_modes import class_weights,within_scene_loss,partial_pair_loss
+    from routeset.paired_modes import class_weights,within_scene_loss,partial_pair_loss,workspace_floor_loss
     from routeset.observed_geometry import positive_endpoint_attention_loss
     from routeset.segment_clearance import segment_clearance_loss
     from routeset.train_v2 import positive_assignment_loss,atomic_checkpoint,rng_state,restore_rng
@@ -119,7 +127,8 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
     settings=dict(arm=arm,seed=seed,steps=steps,policy=policy,parent_sha256=sha(initpath),lr=pc['lr'],
         data_fingerprint=geometry['fingerprint'],source_sha256=source_identity(),
         initial_sha256=initial,independent_input_sampler=True,old_per_step=16,new_per_step=16,
-        head_options=opts)
+        head_options=opts,workspace_reference_filter=data['workspace_reference_filter'],
+        validity_scope='Original post/tip conditions plus minimum workspace z=post_base_z+.02m')
     if resume:
         if read(out/'config.json')!=settings:raise ValueError('Saved run config differs')
     else:write(out/'config.json',settings)
@@ -131,6 +140,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
         model.load_state_dict(saved['model']);optimizer.load_state_dict(saved['optimizer']);scheduler.load_state_dict(saved['scheduler'])
         restore_rng(saved['rng'],rng);loss_rng.bit_generator.state=saved['loss_rng'];start_step=saved['step'];audit=saved['sampler'];history=saved['history']
     cs=torch.as_tensor(cs,dtype=torch.float32,device='cuda');hs=torch.as_tensor(hs,dtype=torch.float32,device='cuda')
+    floors=torch.tensor([c['post_base_z']+.02 for c in configs],dtype=torch.float32,device='cuda')
     tic=time.monotonic();ratios=[];cosines=[]
     def checkpoint(step):
         return dict(model=model.state_dict(),optimizer=optimizer.state_dict(),scheduler=scheduler.state_dict(),
@@ -146,7 +156,8 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
         base=positive_assignment_loss(pred,target,data['path_mask'][ids],'saturation',loss_rng)
         ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],
             torch.as_tensor(data['path_mask'][ids],device='cuda'),.025)
-        clear=segment_clearance_loss(xyz,cs[ids],hs[ids]);ordinary=base+.02*ground+160*clear
+        floor_loss=workspace_floor_loss(xyz,floors[ids])
+        clear=segment_clearance_loss(xyz,cs[ids],hs[ids])+floor_loss;ordinary=base+.02*ground+160*clear
         cfgs=[configs[i] for i in ids[:16]];types=[modes[i] for i in ids[:16]]
         rel=within_scene_loss(xyz[:16],cfgs,types)
         pair,matched=partial_pair_loss(xyz[:16],cfgs,types,pairs)
@@ -172,7 +183,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
         optimizer.step();scheduler.step()
         if step%100==0 or step==steps:
-            row=dict(step=step,loss=float(loss),clearance=float(clear),relation=float(rel),pair=float(pair),matched=matched)
+            row=dict(step=step,loss=float(loss),clearance=float(clear),floor_loss=float(floor_loss),relation=float(rel),pair=float(pair),matched=matched)
             history.append(row);print(json.dumps(row),flush=True)
         if step%policy['checkpoint_every']==0 or step==end_step:atomic_checkpoint(out/'recovery.pt',checkpoint(step))
     if probe:

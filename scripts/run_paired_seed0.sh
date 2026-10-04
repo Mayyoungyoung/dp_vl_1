@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 P=/home/wzy/dpvlm/route_set_v1
 R="$P/runs/paired_modes_v1"
-C="$R/coordinator_seed0"
+C="$R/coordinator_seed0_v2"
 mkdir "$C"
 exec > >(tee "$C/stdout.log") 2>&1
 printf '%s\n' "$$" > "$C/pid.txt"
