@@ -191,6 +191,7 @@ def export():
         folder=DATA/'parents'/p['role']/p['parent_id']
         if not (folder/'summary.json').exists():raise RuntimeError('Collection incomplete '+p['parent_id'])
         summary=read(folder/'summary.json')
+        if summary['status']=='error':raise RuntimeError('Unresolved technical failure '+p['parent_id'])
         if not summary['initialization']['passed']:
             failures.append(dict(parent=p['parent_id'],role=p['role'],reason=summary['initialization'].get('error')));continue
         for r in lines(folder/'observations.jsonl'):
@@ -202,6 +203,7 @@ def export():
     for name,rows in [('observations',obs),('supervision',labels),('metadata',meta)]:
         (out/(name+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
     write(out/'manifest.json',dict(registration_sha256=sha(DATA/'registration.json'),
+        exporter_source_commit=os.environ.get('CODE_COMMIT'),
         observations=len(obs),failed_parents=failures,requested_parents=len(value['parent_plan']),
         source_sha256={n:sha(out/n) for n in ('observations.jsonl','supervision.jsonl','metadata.jsonl')},
         reference_kind=value['reference_kind'],failure_denominator_policy='All requested DEV parents retained in final coverage denominator'))

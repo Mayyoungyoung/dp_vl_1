@@ -82,7 +82,7 @@ def source_identity():
             for p in (SOURCE/directory).rglob('*') if p.is_file() and p.suffix in ('.py','.json','.sh')}
 
 
-def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
+def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=None):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,balanced_assignment_loss
     from routeset.paired_modes import class_weights,within_scene_loss,partial_pair_loss
@@ -97,6 +97,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
     steps=steps or policy['steps'];name=run_name or ('probe' if probe else arm)+'_seed%d'%seed
     if Path(name).name!=name:raise ValueError('Run name must be a directory basename')
     out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
+    if (out/'last.pt').exists():raise FileExistsError('Completed run cannot be continued')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed)
     rng=np.random.default_rng(seed);loss_rng=np.random.default_rng(seed+9000)
     data,geometry,configs,cs,hs,pcfg,labelmap=load_data();groups,old=paired_population(data)
@@ -127,12 +128,14 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
         model.load_state_dict(saved['model']);optimizer.load_state_dict(saved['optimizer']);scheduler.load_state_dict(saved['scheduler'])
         restore_rng(saved['rng'],rng);loss_rng.bit_generator.state=saved['loss_rng'];start_step=saved['step'];audit=saved['sampler'];history=saved['history']
     cs=torch.as_tensor(cs,dtype=torch.float32,device='cuda');hs=torch.as_tensor(hs,dtype=torch.float32,device='cuda')
-    tic=time.monotonic();ratios=[]
+    tic=time.monotonic();ratios=[];cosines=[]
     def checkpoint(step):
         return dict(model=model.state_dict(),optimizer=optimizer.state_dict(),scheduler=scheduler.state_dict(),
             rng=rng_state(rng),loss_rng=loss_rng.bit_generator.state,sampler=audit,config=settings,
             step=step,history=history,coefficients=coefficients,source_commit=os.environ.get('CODE_COMMIT'))
-    for step in range(start_step+1,(4 if probe else steps)+1):
+    end_step=4 if probe else min(steps,stop_after or steps)
+    if start_step>=end_step:raise ValueError('No new steps requested')
+    for step in range(start_step+1,end_step+1):
         ids,pairs=sample_batch(rng,groups,old);audit=append_indices(audit,ids)
         model.train();inp=batch_inputs(data,geometry,ids,'cuda');xyz,events,details=model(**inp)
         tx=torch.as_tensor(data['paths'][ids],device='cuda');te=torch.as_tensor(data['events'][ids],device='cuda')
@@ -146,10 +149,13 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
         pair,matched=partial_pair_loss(xyz[:16],cfgs,types,pairs)
         if probe:
             params=[p for p in model.parameters() if p.requires_grad]
-            norms=[]
+            norms=[];grads=[]
             for term in (ordinary,rel,pair):
                 grad=torch.autograd.grad(term,params,retain_graph=True,allow_unused=True)
                 norms.append(float(torch.sqrt(sum(g.square().sum() for g in grad if g is not None))))
+                grads.append(grad)
+            cosines.append([float(sum((a*b).sum() for a,b in zip(grads[0],g) if a is not None and b is not None))/(norms[0]*n+1e-30)
+                            for g,n in zip(grads[1:],norms[1:])])
             ratios.append(norms);continue
         # Relation-balanced regression only on new paired scenes; same in R1/R2.
         if arm!='R0':
@@ -165,15 +171,19 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
         if step%100==0 or step==steps:
             row=dict(step=step,loss=float(loss),clearance=float(clear),relation=float(rel),pair=float(pair),matched=matched)
             history.append(row);print(json.dumps(row),flush=True)
-        if step%policy['checkpoint_every']==0 or step==steps:atomic_checkpoint(out/'recovery.pt',checkpoint(step))
+        if step%policy['checkpoint_every']==0 or step==end_step:atomic_checkpoint(out/'recovery.pt',checkpoint(step))
     if probe:
         a=np.asarray(ratios)
         if not np.isfinite(a).all() or np.any(a<=1e-10):raise ValueError('Degenerate TRAIN gradient probe')
         coefficients=dict(relation=float(np.median(.2*a[:,0]/np.maximum(a[:,1],1e-12))),
                           pair=float(np.median(.2*a[:,0]/np.maximum(a[:,2],1e-12))),
                           rule='0.2 * original total parameter-gradient norm / added-loss norm; four fixed TRAIN batches; no updates',
-                          gradient_norms=ratios)
+                          gradient_norms=ratios,cosine_with_ordinary=cosines)
         write(out/'coefficients.json',coefficients);return
+    if end_step<steps:
+        write(out/'interruption.json',dict(step=end_step,planned_steps=steps,reason='Controlled resume verification',
+            elapsed_seconds=time.monotonic()-tic,recovery_sha256=sha(out/'recovery.pt')))
+        return
     atomic_checkpoint(out/'last.pt',checkpoint(steps))
     final=tensor_state_digest(model.state_dict());assert initial!=final
     write(out/'summary.json',dict(arm=arm,seed=seed,steps=steps,elapsed_seconds=time.monotonic()-tic,
@@ -182,6 +192,6 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2'],default='R0');p.add_argument('--run-name')
+    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2'],default='R0');p.add_argument('--run-name');p.add_argument('--stop-after',type=int)
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int);p.add_argument('--resume',action='store_true');p.add_argument('--probe',action='store_true')
-    a=p.parse_args();train(a.arm,a.seed,a.steps,a.resume,a.probe,a.run_name)
+    a=p.parse_args();train(a.arm,a.seed,a.steps,a.resume,a.probe,a.run_name,a.stop_after)

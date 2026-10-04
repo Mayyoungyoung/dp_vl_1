@@ -137,7 +137,7 @@ def analyze(out,split,arrays=None,scenes=None,refs=None):
         summary['all_requested_modes']=summary['K']['8']['GeometricModeCount']*len(rows)/requested
     write(out/'RESULTS.json',summary);write(out/'rows.json',rows)
     write(out/'REFERENCE_GEOMETRY.json',{k:dict(paths=v['paths'].tolist(),truth={a:b.tolist() for a,b in v['truth'].items()},config=v['config']) for k,v in refs.items()})
-    print(json.dumps(dict(out=str(out),valid=summary['CandidateValidRate'],modes=summary['K']['8']['GeometricModeCount'],paired=summary.get('paired'))),flush=True)
+    print(json.dumps(dict(out=str(out),valid=summary['CandidateValidRate'],modes=summary['K']['8']['GeometricModeCount'],paired=summary.get('paired',{}).get('metrics'))),flush=True)
 
 
 def pair_metrics(rows,refs,arrays):
