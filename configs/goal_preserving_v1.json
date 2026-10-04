@@ -1,0 +1,17 @@
+{
+  "protocol": "goal_preserving_v1",
+  "gpu_wall_budget_seconds": 10800,
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "memory_fraction": 0.35,
+  "cpu_threads": 4,
+  "max_method_rounds": 3,
+  "steps": 3000,
+  "lambda": 160.0,
+  "goal_loss_weight": 1.0,
+  "goal_supervision": "mean squared xyz error against mean available TRAIN reference endpoints",
+  "gradient_routing": "route/set loss: full model; goal loss: goal head and shared observation encoders; clearance: route queries/blocks/output only, shared context and goal detached",
+  "initialization": "same original12000 parent and seeded M8 expansion as B; independent goal decoder cloned from it; interior output rows divided by phi for comparable initial offsets; fresh AdamW",
+  "selection": "fixed last3000; seed0 first then seed1/2 only with positive mechanism signal; no lambda sweep",
+  "q": "unchanged Ordinary seed0 scorer, normalization, temperature, selector",
+  "TEST_LOCKED_access": false
+}
