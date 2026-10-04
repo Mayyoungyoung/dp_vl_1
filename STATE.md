@@ -1,3 +1,11 @@
+## Common workspace correction; replacement seed0 queue waiting — 2026-10-05
+
+Supersedes coordinator9dbd261 entry below. Read-only inspection of existing reused DEV B pools found9/2122 post-valid candidates below.755m and16 below.775m (all3168 generated candidates,three seeds,two reusedDEV splits). The original four-post checker omitted a minimum workspace height. Before ANY new Qwen encoding, model training or newDEV model evaluation, all R0/R1/R2 now share z>=post_base_z+.02m, squared violation coefficient160, and H24 TRAIN-positive filtering with raw files/counts retained. Existing historical results are unchanged; new evaluator retains original_post_only_metrics alongside strengthened validity. Raw oldTRAIN references below.775m:16/1663; additional reserved generatorTRAIN:9/1705; zero requests empty. Exact H24 exclusions will be in each training config.
+
+Only the waiting project coordinator PID1589670 was stopped after verifying UID, command, immutable cwd and absence of resources_before_gpu/active.lock. Its withdrawal.json and closure are preserved; collector d4d7567 was untouched. This was a deliberate prospective feasibility correction, not a failed model experiment.
+
+New immutable source a45818f11dbf9012019bcc78042532094516f7a0, archive8f8703c387e203a7d5dc62fdb19758010a3b9bf95ccf6174c7452595a78686d2 verified remotely. Actual server12tests passed0skipped. Replacement coordinator ACTUALLY running/waiting: runs/paired_modes_v1/coordinator_seed0_v2, SSH24758. It will run the same frozen collection->summary/export->resource check->Qwen->probe->100-step recovery verification->three-arm training/evaluation pipeline. Latest expanded collection306completed2running0failed7497accepted, plus pilot6/147. Do not repeat fresh commands or modify this release/launcher. Formal models still NOT trained at this entry. TEST_LOCKED untouched.
+
 ## Paired-scene implementation frozen; sequential experiment waiting — 2026-10-05
 
 Collector d4d7567 remains running, SSH57403, with no launcher/source changes. Latest inspected expanded batch:242 completed,2 running,0 failed,5925 accepted geometric paths; plus pilot6 scenes/147 paths. All480 registered scenes must close before downstream work. Data currently within8GiB soft bound. No formal model training has started.
