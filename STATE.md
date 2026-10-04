@@ -1,3 +1,7 @@
+## Goal-preserving method iteration active — 2026-10-04
+
+Current user authorizes up to3 bounded sequential model mechanisms, overriding previous round stop recommendations. Round1 C implements independent observation goal branch, phi=4u(1-u) interior deformation, strict detached-context/goal clearance routing. Same common original12000 parent,191 TRAIN parents,3000 updates,M8/H24,lambda160, fixed Ordinary q; no new data/metrics/TEST_LOCKED. Immutable source5bd15cd8fa136a9567bf4803cf82c5d6d5516592. Actual server6tests passed/0skip. train_C_seed0 launched through scripts/launch_goal_preserving.sh; SSH90467. Check runs/goal_preserving_v1/jobs/train_C_seed0/receipt.json and output before resuming; do not repeat fresh command. No results yet. Budget10800 cumulative serial job seconds. Read reports/goal_preserving_v1/PROTOCOL.md. Evaluate C seed0 with scripts.evaluate_goal_preserving on old_dev/dev32, decide replication and Round2 from actual fixed-last results. Conditional Round3 only if coverage bottleneck and improved validity/target/collision.
+
 ## Segment clearance round completed — 2026-10-04
 
 This entry supersedes older running descriptions. Exactly3 new B runs completed from immutableacc6de5, each3000 updates/expanded191/M8/H24;3 historical Ordinary A reused after exact initial/parent/config/data/full96000-input-stream audits. TRAIN-only lambda160 frozen before training. No q, network, selector, endpoints or metric changes; physical four-box labels enter extra TRAIN loss only. TEST_LOCKED never read.
