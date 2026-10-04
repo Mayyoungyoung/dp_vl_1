@@ -94,3 +94,15 @@ def test_common_workspace_penalty_moves_only_violating_heights_up():
     x=torch.tensor([[[[0.,0.,.8],[.2,0.,.7],[.4,0.,.84]]]],requires_grad=True)
     loss=workspace_floor_loss(x,torch.tensor([.775]));g=torch.autograd.grad(loss,x)[0]
     assert g[0,0,1,2]<0 and torch.count_nonzero(g)==1
+
+
+def test_full_set_control_is_permutation_invariant_but_penalizes_deleted_modes():
+    from routeset.paired_modes import full_set_pair_loss
+    x=torch.tensor([[[0.,0.,0.],[1.,0.,0.]],[[0.,0.,0.],[1.,1.,0.]]])
+    loss,n=full_set_pair_loss([x,x.flip(0)],[(0,1)])
+    assert float(loss)==0 and n==1
+    y=x[:1].clone().requires_grad_(True)
+    loss,_=full_set_pair_loss([x,y],[(0,1)])
+    assert float(loss)>0
+    g=torch.autograd.grad(loss,y)[0]
+    assert torch.isfinite(g).all() and g.abs().sum()>0

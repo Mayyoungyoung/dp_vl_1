@@ -714,3 +714,25 @@ Frozen Qwen encoded all1440 new requests; status frozen_rgb_language_feature_ext
 
 H24 TRAIN floor filter excluded22 reference paths across20 requests; no raw files changed. Mask SHA071a97ceb689b6cc370086bf5ee8aa88afca8496cce8ae4fc449772912680895. Local evidence in reports/paired_modes_v1/data_evidence/{qwen_status,coefficients,resume_verification}.json. Read-only download initially used nonexistent cache_report.json, corrected to actual status.json; no experiment affected.
 
+
+## Seed0 paired comparison positive; q fitting active — 2026-10-05
+
+All R0/R1/R2 seed0 models completed3000 steps from a45818f, same initial weights and96000 actual input draws. Actual inner training seconds393.765930/518.948157/607.784882; peak allocated CUDA952.319/952.897/952.636MiB. Seed0 coordinator closed exit0; SSH24758 no longer represents running work.
+
+Paired DEV32 families/288requests: R0/R1/R2 candidatevalid69.0538/73.4809/74.4358%, distinctvalidmodes4.95833/5.21875/5.26389, sharedpositive recall14.6081/27.9266/43.2788%, openedpositive recall.3472/11.2847/26.5625%. Existing B transfer59.2014%/3.89931modes. R2 passes the prospectively fixed seed0 continuation gate; the small+.04514 mode gain is not established without replication. No final-test claim.
+
+Next two training seeds are authorized by this positive gate. Before their longer queue, independent q scoring for BOTH R0 and R2 seed0 is ACTUALLY running from7a47f96bbff5aa1f3ff7a648a5ca1f708346b3d1 via scripts/run_paired_followup.sh score 0 R0 R2; SSH5243, runs/paired_modes_v1/coordinator_score_seed0_R0_R2. SCORE_TRAIN/DEV_SCORE/CALIBRATION roles remain separate. Generator training code unchanged. Archive61f73ff759fa5adb121a2d7558b226953d252f454b516e83b29e2db8b278750b verified. Resources checked again:580MiB GPU1 prior use,65GiB availableRAM,1.2TiB disk, other processes untouched. Do not duplicate this fresh queue. Replication has NOT started at this entry.
+
+Reports/paired_modes_v1/seed0_analysis and seed0_figures retain the actual results; completed pools/checkpoints are being copied to local ignored runs. Updated analysis adds parent-level pair-response intervals and per-variant diagnostics; no training/evaluator/gate changes. TEST_LOCKED untouched.
+
+
+## Replication active; calibrated seed0 prototype packaged — 2026-10-05
+
+Both R0/R2 seed0 scorer pipelines completed all actual SCORE_TRAIN/DEV_SCORE/CALIBRATION generation,1200-step q fitting, independent temperature calibration and package/reload checks. Qwen remains genuine frozen cached input. R2 pairedDEV q-selected valid93.4028%; frozen/refit/calibrated Brier .144855/.111835/.107440 and calibrated selected ECE .020407. Calibrated oldDEV Brier .082321 versus uncalibrated .076488 (temperature is not uniformly beneficial); DEV32 .106263 versus .103667. Full outputs retained. R2 planner SHA98656854c0ebb15c171ac0ce9516922157a8d17c760620b2f0f2fe0289d96224, actual package reload and saved-pool comparison exact. Public standalone CLI smoke still pending; do not claim it done.
+
+Seeds1/2 R0/R1/R2 queue ACTUALLY running from unchanged7a47f96, SSH16494, runs/paired_modes_v1/coordinator_replication. Source command bash scripts/run_paired_followup.sh replicate. Seed1 R0 completed and R1 is running at this entry. Existing environments/resource caps unchanged, fresh resource check retained. Score coordinator SSH5243 has completed, not active. TEST_LOCKED untouched.
+
+Scientific qualification: seed0 R2-R1 candidate-valid and geometric-mode family CIs include zero; shared relation recall gain CI[.110113,.195685], adaptation gain CI[.020801,.135417]. New post-seed0 coarse shared-portal diagnostic R1 .569444 versus R2 .569097 is effectively flat. OldDEV32 R2 collision34.2448% versus R1 25.0%, despite fewer target failures. Failure family520140 target0 predicts nearest target2 in all24 routes across3variants; q can still be high. These are retained failures, not deleted ambiguous-color requests.
+
+Added prospective R_full ordinary full-set Chamfer consistency control to distinguish partial correspondence from generic smoothing. It has NOT run. Read PROTOCOL.md for fixed comparison and continuation conditions. Local changes only; active source7a47f96 is untouched. Local plot demo_seed0_v2 fixes initial figure title overlap; full actual median/fewest-mode cases visually inspected, all8 routes/q shown.
+

@@ -95,7 +95,7 @@ def source_identity():
 def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=None):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,balanced_assignment_loss
-    from routeset.paired_modes import class_weights,within_scene_loss,partial_pair_loss,workspace_floor_loss
+    from routeset.paired_modes import class_weights,within_scene_loss,partial_pair_loss,full_set_pair_loss,workspace_floor_loss
     from routeset.observed_geometry import positive_endpoint_attention_loss
     from routeset.segment_clearance import segment_clearance_loss
     from routeset.train_v2 import positive_assignment_loss,atomic_checkpoint,rng_state,restore_rng
@@ -104,7 +104,8 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
     from scripts.evaluate_observed_two_row_online import head_options
     from scripts.observed_layout_variation import crossing_signature
     policy=read(POLICY);pc=read(SOURCE/'configs/observed_probability_v1.json')['stage2']
-    steps=steps or policy['steps'];name=run_name or ('probe' if probe else arm)+'_seed%d'%seed
+    probe_name='probe_full' if arm=='R_full' else 'probe'
+    steps=steps or policy['steps'];name=run_name or (probe_name if probe else arm)+'_seed%d'%seed
     if Path(name).name!=name:raise ValueError('Run name must be a directory basename')
     out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed run cannot be continued')
@@ -134,6 +135,9 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
     else:write(out/'config.json',settings)
     audit=new_stream_audit(model,rng.bit_generator.state,torch.get_rng_state());start_step=0;history=[]
     coefficients=read(RUN/'probe_seed0/coefficients.json') if not probe else None
+    if not probe and arm=='R_full':
+        coefficients=dict(coefficients,pair=read(RUN/'probe_full_seed0/coefficients.json')['pair'],
+            pair_rule='Full-set Chamfer; same four TRAIN batches and 20% initial gradient-norm rule')
     if resume:
         saved=torch.load(out/'recovery.pt',map_location='cpu',weights_only=False)
         if saved['config']!=settings:raise ValueError('Resume config/source/data differs')
@@ -160,7 +164,8 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
         clear=segment_clearance_loss(xyz,cs[ids],hs[ids])+floor_loss;ordinary=base+.02*ground+160*clear
         cfgs=[configs[i] for i in ids[:16]];types=[modes[i] for i in ids[:16]]
         rel=within_scene_loss(xyz[:16],cfgs,types)
-        pair,matched=partial_pair_loss(xyz[:16],cfgs,types,pairs)
+        pair,matched=(full_set_pair_loss(xyz[:16],pairs) if arm=='R_full'
+                      else partial_pair_loss(xyz[:16],cfgs,types,pairs))
         if probe:
             params=[p for p in model.parameters() if p.requires_grad]
             norms=[];grads=[]
@@ -177,13 +182,14 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
             # The old half keeps exactly its original target objective.
             old_loss=positive_assignment_loss(pred[16:],target[16:],data['path_mask'][ids[16:]],'saturation',loss_rng)
             loss=.5*(balanced+old_loss)+.02*ground+160*clear+coefficients['relation']*rel
-            if arm=='R2':loss=loss+coefficients['pair']*pair
+            if arm in ('R2','R_full'):loss=loss+coefficients['pair']*pair
         else:loss=ordinary
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
         optimizer.step();scheduler.step()
         if step%100==0 or step==steps:
             row=dict(step=step,loss=float(loss),clearance=float(clear),floor_loss=float(floor_loss),relation=float(rel),pair=float(pair),matched=matched)
+            if arm=='R_full':row['matched_unit']='scene_pairs, not witnessed relation classes'
             history.append(row);print(json.dumps(row),flush=True)
         if step%policy['checkpoint_every']==0 or step==end_step:atomic_checkpoint(out/'recovery.pt',checkpoint(step))
     if probe:
@@ -206,6 +212,6 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2'],default='R0');p.add_argument('--run-name');p.add_argument('--stop-after',type=int)
+    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2','R_full'],default='R0');p.add_argument('--run-name');p.add_argument('--stop-after',type=int)
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int);p.add_argument('--resume',action='store_true');p.add_argument('--probe',action='store_true')
     a=p.parse_args();train(a.arm,a.seed,a.steps,a.resume,a.probe,a.run_name,a.stop_after)

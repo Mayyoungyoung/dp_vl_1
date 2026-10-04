@@ -113,6 +113,18 @@ def partial_pair_loss(paths, configs, modes, pairs):
     return (torch.stack(values).mean() if values else paths.sum()*0),matched
 
 
+def full_set_pair_loss(paths, pairs):
+    """Ordinary bidirectional Chamfer consistency of full predicted path sets.
+
+    No surviving-mode mask or boundary-relative frame: a comparison objective.
+    """
+    values=[]
+    for a,b in pairs:
+        distance=(paths[a,:,None]-paths[b,None,:]).square().mean((-1,-2))
+        values.append((distance.amin(0).mean()+distance.amin(1).mean())/2)
+    return (torch.stack(values).mean() if values else paths.sum()*0),len(values)
+
+
 def class_weights(paths, mask, configs, signature):
     weights=np.zeros(mask.shape,dtype=np.float32); modes=[]
     for i,(refs,valid,cfg) in enumerate(zip(paths,mask,configs)):

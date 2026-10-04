@@ -25,7 +25,7 @@ def main(arms,seeds,output):
     for ax,(title,extract) in zip(axes,metrics):
         for i,arm in enumerate(arms):
             values=[extract(summaries[arm,s]) for s in seeds]
-            ax.bar(i,np.mean(values),color=['#8495a7','#66a9a1','#e19c55'][i%3],width=.65)
+            ax.bar(i,np.mean(values),color={'R0':'#8495a7','R1':'#66a9a1','R_full':'#9575a9','R2':'#e19c55'}.get(arm,'#8495a7'),width=.65)
             ax.scatter(np.full(len(values),i)+np.linspace(-.08,.08,len(values)),values,color='#273746',s=20,zorder=4)
         ax.set_xticks(range(len(arms)),arms);ax.set_title(title);ax.grid(axis='y',alpha=.18);ax.set_axisbelow(True)
     fig.suptitle('Paired-scene development results — fixed last checkpoints; dots are generator seeds',fontsize=12)

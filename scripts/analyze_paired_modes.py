@@ -1,5 +1,6 @@
 """Compare sealed pools, with family-level uncertainty and explicit negatives."""
 import argparse
+from itertools import combinations
 from pathlib import Path
 import numpy as np
 from scripts.run_observed_probability import read,write
@@ -32,9 +33,25 @@ def paired_family_metrics(details):
     return {p:{k:float(np.mean([r[k] for r in rows if r[k] is not None])) for k in keys} for p,rows in groups.items()}
 
 
+def exploratory_portal_metrics(rows):
+    """Post-seed0 diagnostic; does not redefine the registered relation metric."""
+    groups={};families={}
+    for row in rows:
+        prefix,target=row['id'].rsplit('_target',1);family,variant=prefix.rsplit('_',1)
+        groups.setdefault((family,target),{})[variant]=row
+    for (family,_),variants in groups.items():
+        values={};a=variants['open']
+        for variant in ('closed','shifted'):
+            b=variants[variant];common=set(a['reference_words'])&set(b['reference_words'])
+            assert common
+            values[variant+'_shared_portal_recall']=len(common&set(a['words'])&set(b['words']))/len(common)
+        families.setdefault(family,[]).append(values)
+    return {p:{k:float(np.mean([r[k] for r in items])) for k in items[0]} for p,items in families.items()}
+
+
 def analyze(arms,seeds,output):
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
-    results={};families={};allrows={};paired={};paired_families={};variants={}
+    results={};families={};allrows={};paired={};paired_families={};variants={};portal={};portal_families={}
     for split in ('paired_dev','old_dev','dev32'):
         for seed in seeds:
             for arm in arms:
@@ -46,6 +63,8 @@ def analyze(arms,seeds,output):
                 if split=='paired_dev':
                     paired[key]=summary['paired']['metrics']
                     paired_families[key]=paired_family_metrics(summary['paired']['details'])
+                    portal_families[key]=exploratory_portal_metrics(rows)
+                    portal[key]={k:float(np.mean([r[k] for r in portal_families[key].values()])) for k in next(iter(portal_families[key].values()))}
                     variants[key]={}
                     for variant in ('open','closed','shifted'):
                         subset=[r for r in rows if r['id'].rsplit('_target',1)[0].endswith('_'+variant)]
@@ -53,12 +72,13 @@ def analyze(arms,seeds,output):
                         variants[key][variant]={k:float(np.mean([r[k] for r in fm.values()])) for k in next(iter(fm.values()))}
     comparisons={}
     for split in ('paired_dev','old_dev','dev32'):
-        for a,b in zip(arms[:-1],arms[1:]):
+        for a,b in combinations(arms,2):
             for seed in seeds:
                 ka,kb=['%s/%s/seed%d'%(split,x,seed) for x in (a,b)]
                 if ka in families and kb in families:comparisons[kb+' minus '+ka]=comparison(families[ka],families[kb])
                 if ka in paired_families and kb in paired_families:
                     comparisons[kb+' minus '+ka+'/paired_response']=comparison(paired_families[ka],paired_families[kb])
+                    comparisons[kb+' minus '+ka+'/exploratory_portal_response']=comparison(portal_families[ka],portal_families[kb])
             # Average generator seeds within family, then family bootstrap.
             if all('%s/%s/seed%d'%(split,x,s) in families for x in (a,b) for s in seeds):
                 means=[]
@@ -67,11 +87,12 @@ def analyze(arms,seeds,output):
                     means.append({p:{k:float(np.mean([families['%s/%s/seed%d'%(split,arm,s)][p][k] for s in seeds])) for k in first[p]} for p in first})
                 comparisons[split+'/'+b+' minus '+a+'/mean_seeds']=comparison(*means)
                 if split=='paired_dev':
-                    means=[]
-                    for arm in (a,b):
-                        first=paired_families['%s/%s/seed%d'%(split,arm,seeds[0])]
-                        means.append({p:{k:float(np.mean([paired_families['%s/%s/seed%d'%(split,arm,s)][p][k] for s in seeds])) for k in first[p]} for p in first})
-                    comparisons[split+'/'+b+' minus '+a+'/mean_seeds/paired_response']=comparison(*means)
+                    for source,label in ((paired_families,'paired_response'),(portal_families,'exploratory_portal_response')):
+                        means=[]
+                        for arm in (a,b):
+                            first=source['%s/%s/seed%d'%(split,arm,seeds[0])]
+                            means.append({p:{k:float(np.mean([source['%s/%s/seed%d'%(split,arm,s)][p][k] for s in seeds])) for k in first[p]} for p in first})
+                        comparisons[split+'/'+b+' minus '+a+'/mean_seeds/'+label]=comparison(*means)
     gate=None
     if all('paired_dev/'+a+'/seed0' in results for a in ('R0','R1','R2')):
         a,b,c=[results['paired_dev/'+a+'/seed0'] for a in ('R0','R1','R2')]
@@ -79,6 +100,14 @@ def analyze(arms,seeds,output):
         conditions=dict(modes_above_R0=c['modes']>a['modes'],modes_above_R1=c['modes']>b['modes'],
             shared_recall_above_R1=p2['shared_recall']>p1['shared_recall'],validity_loss_at_most_02=c['valid']>=b['valid']-.02)
         gate=dict(passed=all(conditions.values()),conditions=conditions)
+    full_gate=None
+    if all('paired_dev/'+a+'/seed0' in results for a in ('R_full','R2')):
+        f,r=[results['paired_dev/'+a+'/seed0'] for a in ('R_full','R2')]
+        pf,pr=[paired['paired_dev/'+a+'/seed0'] for a in ('R_full','R2')]
+        conditions=dict(shared_recall_above_full=pr['shared_recall']>pf['shared_recall'],
+            closed_adaptation_above_full=pr['closed_adaptation_gain']>pf['closed_adaptation_gain'],
+            validity_loss_at_most_02=r['valid']>=f['valid']-.02)
+        full_gate=dict(passed=all(conditions.values()),conditions=conditions)
     negatives={}
     for key,rows in allrows.items():
         negatives[key]=dict(zero_valid=[r['id'] for r in rows if r['K']['8']['ValidCount']==0],
@@ -92,7 +121,8 @@ def analyze(arms,seeds,output):
         streams={r['sampler']['index_chain_sha256'] for r in states.values()};initial={r['initial_sha256'] for r in states.values()}
         assert len(streams)==len(initial)==1,'Unequal training exposure/initialization'
         stream[str(seed)]=dict(arms=list(states),sampler_sha256=next(iter(streams)),initial_sha256=next(iter(initial)))
-    write(output/'RESULTS.json',dict(results=results,paired=paired,variants=variants,comparisons=comparisons,seed0_gate=gate,negatives=negatives,stream_identity=stream,
+    write(output/'RESULTS.json',dict(results=results,paired=paired,variants=variants,exploratory_portal_response=portal,
+        comparisons=comparisons,seed0_gate=gate,full_control_seed0_gate=full_gate,negatives=negatives,stream_identity=stream,
         uncertainty_scope='Family bootstrap conditional on the trained seeds; not a confidence interval over all random initializations.'))
     lines=['# Paired route-set comparison','','All numbers use sealed, unrepaired M8 outputs. DEV is development evidence.','',
            '| split / arm / seed | valid % | modes | reference coverage % | goal fail % | collision % | frozen q top1 % |',

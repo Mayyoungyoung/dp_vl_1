@@ -28,13 +28,14 @@ def main(arm,seed,output):
         examples={k:dict(family=v[0],target=v[1]) for k,v in examples.items()},
         scope='All M8 saved predictions; checker labels used for diagnostic line style only, never model inference or q.'))
     for name,(family,target) in examples.items():
-        fig=plt.figure(figsize=(13,8),layout='constrained');grid=fig.add_gridspec(2,3,height_ratios=[1,1.4])
+        fig=plt.figure(figsize=(15,9));grid=fig.add_gridspec(2,3,height_ratios=[1,1.25],
+            left=.025,right=.9,bottom=.065,top=.855,wspace=.28,hspace=.12)
         ids=[family+'_'+v+'_target'+target for v in ('open','closed','shifted')]
         allpoints=np.concatenate([paths[i].reshape(-1,3) for i in ids])
         lo=np.minimum(allpoints.min(0),[-.02,-.35,.74]);hi=np.maximum(allpoints.max(0),[.55,.35,1.05])
         for col,(variant,ident) in enumerate(zip(('open','closed','shifted'),ids)):
             top=fig.add_subplot(grid[0,col]);top.imshow(plt.imread(observations[ident]['image']));top.axis('off')
-            top.set_title(variant+' / '+observations[ident]['instruction'],fontsize=10)
+            top.set_title(variant,fontsize=12)
             ax=fig.add_subplot(grid[1,col],projection='3d');ref=refs[ident];row=rows[ident]
             for center,half in zip(ref['truth']['obstacle_centers'],ref['truth']['obstacle_halfsizes']):
                 c,h=np.array(center),np.array(half)
@@ -46,11 +47,12 @@ def main(arm,seed,output):
                 ax.text(*path[8+index%8],str(index),fontsize=7)
             goal=ref['config']['goal_xyz'][int(target)];ax.scatter(*goal,c='black',marker='*',s=80)
             ax.set(xlim=(lo[0],hi[0]),ylim=(lo[1],hi[1]),zlim=(lo[2],hi[2]),xlabel='x (m)',ylabel='y (m)',zlabel='z (m)')
+            ax.set_box_aspect(hi-lo)
             ax.view_init(elev=30,azim=-58)
-            qtext=' '.join('%d:%.2f'%(i,q) for i,q in enumerate(qs[ident]))
+            qtext='\n'.join(' '.join('%d:%.2f'%(i,qs[ident][i]) for i in range(start,start+4)) for start in (0,4))
             ax.set_title('Valid %d/8; distinct modes %d\nq = %s'%(row['K']['8']['ValidCount'],row['K']['8']['GeometricModeCount'],qtext),fontsize=8)
-        fig.suptitle('%s seed%d / %s / %s target%s\nSolid: checker-valid; dashed: checker-invalid. Color: model q, not checker output.'%(arm,seed,name,family,target),fontsize=11)
-        fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(0,1),cmap='viridis'),ax=fig.axes,label='Predicted path validity q',shrink=.5,pad=.025)
+        fig.suptitle('%s seed%d / %s / %s target%s\n%s\nSolid: checker-valid; dashed: checker-invalid. Color: model q, not checker output.'%(arm,seed,name,family,target,observations[ids[0]]['instruction']),fontsize=11,y=.97)
+        fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(0,1),cmap='viridis'),cax=fig.add_axes([.94,.22,.012,.48]),label='Predicted path validity q')
         fig.savefig(output/(name+'.png'),dpi=180);fig.savefig(output/(name+'.pdf'));plt.close(fig)
 
 
