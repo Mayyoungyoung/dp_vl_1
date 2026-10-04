@@ -736,3 +736,12 @@ Scientific qualification: seed0 R2-R1 candidate-valid and geometric-mode family 
 
 Added prospective R_full ordinary full-set Chamfer consistency control to distinguish partial correspondence from generic smoothing. It has NOT run. Read PROTOCOL.md for fixed comparison and continuation conditions. Local changes only; active source7a47f96 is untouched. Local plot demo_seed0_v2 fixes initial figure title overlap; full actual median/fewest-mode cases visually inspected, all8 routes/q shown.
 
+
+## Frozen finite completion queue is waiting — 2026-10-05
+
+Original three-arm replication remains active from7a47f96, SSH16494; seed1 R0/R1 have completed and R2 is running. A separate finite continuation was ACTUALLY launched from immutablec25f18ea192954c4eee1e45f9ce8de631f865c69, SSH70544, via bash scripts/run_paired_finish.sh; it only waits while replication runs. Archive SHA8000128f334b7034d30718f79aabeaeab94410397928777ee82fda5c154118de verified; both shell launchers pass bash-n. Do not duplicate or change either running source/launcher.
+
+Finisher at runs/paired_modes_v1/coordinator_finish_v1 waits for replication exit0, then fits/calibrates/packages matched R0/R2 scorers for generator seeds1/2, checks the public R2 seed0 CLI, summarizes scoring, runs the new R_full unit tests and TRAIN-only coefficient probe, trains/evaluates R_full seed0. Only if its fixed comparison gate passes does it replicate R_full seeds1/2. Otherwise it writes scientific_stop.json and stops for method diagnosis. New R_full server tests have NOT run yet. Keep reading actual receipts; launch is not success.
+
+R_full comparison is ordinary whole-path symmetric Chamfer consistency, same paired observations/3000 steps/initialization/M8. Original R0/R1/R2 computations are unchanged in their active release. New test covers query permutation, zero identical-set loss and nonzero penalty/gradient when a mode disappears. This is a strong conventional mechanism control, not an added claimed novelty. Main seed0 evidence and calibrated deployment manifests committed/pushed atc25f18e. Local RESULTS_REPORT.md is an explicitly marked interim snapshot awaiting final multi-seed/control outcomes.
+
