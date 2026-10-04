@@ -141,7 +141,7 @@ def analyze(out,split,arrays=None,scenes=None,refs=None):
 
 
 def pair_metrics(rows,refs,arrays):
-    grouped={};pathmap=dict(zip(arrays['ids'],arrays['paths']))
+    grouped={};pathmap=dict(zip(arrays['ids'],arrays['paths']));eventmap=dict(zip(arrays['ids'],arrays['events']))
     for row in rows:
         prefix,target=row['id'].rsplit('_target',1);family,variant=prefix.rsplit('_',1)
         grouped.setdefault((family,target),{})[variant]=row
@@ -158,6 +158,11 @@ def pair_metrics(rows,refs,arrays):
         closed=[c for c in gap_certificates(config) if c['closed_for_this_low_relation']]
         assert len(closed)==1
         changed=closed[0]['row'];opened={m for m in witness['open'] if m[changed]=='gap1'}
+        closedref=refs[variants['closed']['id']]
+        _,copied=check_candidates(pathmap[variants['open']['id']],eventmap[variants['open']['id']],
+            closedref['label'],closedref['current'],closedref['truth'],closedref['config'])
+        static_valid=float(np.mean([c['TipValid'] for c in copied]))
+        adapted_valid=variants['closed']['K']['8']['ValidCount']/8
         low_attempt=0
         for path in pathmap[variants['closed']['id']]:
             x=config['row_x'][changed];ys=config['post_y'][changed]
@@ -172,10 +177,12 @@ def pair_metrics(rows,refs,arrays):
             opened_witness_count=len(opened),opened_hit=len(opened&pred['open']),
             opened_recall=len(opened&pred['open'])/len(opened) if opened else None,
             closed_low_center_attempt_rate=low_attempt/8,
+            static_open_paths_in_closed_valid=static_valid,closed_adaptation_gain=adapted_valid-static_valid,
             shifted_shared_recall=len(witness['open']&witness['shifted']&pred['open']&pred['shifted'])/len(witness['open']&witness['shifted']) if witness['open']&witness['shifted'] else None))
     metrics={k:float(np.mean([r[k] for r in details if r[k] is not None])) if any(r[k] is not None for r in details) else None
-        for k in ('shared_recall','conditional_retention','opened_recall','closed_low_center_attempt_rate','shifted_shared_recall')}
+        for k in ('shared_recall','conditional_retention','opened_recall','closed_low_center_attempt_rate','shifted_shared_recall','closed_adaptation_gain','static_open_paths_in_closed_valid')}
     return dict(metrics=metrics,complete_family_targets=len(details),details=details,
+        copied_path_checker_calls=8*len(details),additional_model_generations=0,
         scope='Positive witnessed relation recall; opened modes require certified low-gap closure. Center-attempt diagnostic counts invalid candidates too; not exhaustive infeasible modes.')
 
 
