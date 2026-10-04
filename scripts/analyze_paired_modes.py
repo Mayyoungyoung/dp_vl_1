@@ -10,6 +10,7 @@ def family_metrics(rows):
     groups={}
     for r in rows:
         values=dict(valid=r['K']['8']['ValidCount']/8,modes=r['K']['8']['GeometricModeCount'],
+            any_valid=float(r['K']['8']['ValidCount']>0),classified_modes=r['unique_classified'],
             two_distinct=r['K']['8']['TwoDistinctValid'],coverage=r['K']['8']['ReferenceModeCoverage'],
             q_top1=r['K']['1']['ValidCount'],goal_failure=np.mean([not c['semantic_goal_correct'] for c in r['candidates']]),
             collision=np.mean([not c['tip_segments_clear'] for c in r['candidates']]))
@@ -33,7 +34,7 @@ def paired_family_metrics(details):
 
 def analyze(arms,seeds,output):
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
-    results={};families={};allrows={};paired={};paired_families={}
+    results={};families={};allrows={};paired={};paired_families={};variants={}
     for split in ('paired_dev','old_dev','dev32'):
         for seed in seeds:
             for arm in arms:
@@ -45,6 +46,11 @@ def analyze(arms,seeds,output):
                 if split=='paired_dev':
                     paired[key]=summary['paired']['metrics']
                     paired_families[key]=paired_family_metrics(summary['paired']['details'])
+                    variants[key]={}
+                    for variant in ('open','closed','shifted'):
+                        subset=[r for r in rows if r['id'].rsplit('_target',1)[0].endswith('_'+variant)]
+                        fm=family_metrics(subset)
+                        variants[key][variant]={k:float(np.mean([r[k] for r in fm.values()])) for k in next(iter(fm.values()))}
     comparisons={}
     for split in ('paired_dev','old_dev','dev32'):
         for a,b in zip(arms[:-1],arms[1:]):
@@ -86,7 +92,7 @@ def analyze(arms,seeds,output):
         streams={r['sampler']['index_chain_sha256'] for r in states.values()};initial={r['initial_sha256'] for r in states.values()}
         assert len(streams)==len(initial)==1,'Unequal training exposure/initialization'
         stream[str(seed)]=dict(arms=list(states),sampler_sha256=next(iter(streams)),initial_sha256=next(iter(initial)))
-    write(output/'RESULTS.json',dict(results=results,paired=paired,comparisons=comparisons,seed0_gate=gate,negatives=negatives,stream_identity=stream,
+    write(output/'RESULTS.json',dict(results=results,paired=paired,variants=variants,comparisons=comparisons,seed0_gate=gate,negatives=negatives,stream_identity=stream,
         uncertainty_scope='Family bootstrap conditional on the trained seeds; not a confidence interval over all random initializations.'))
     lines=['# Paired route-set comparison','','All numbers use sealed, unrepaired M8 outputs. DEV is development evidence.','',
            '| split / arm / seed | valid % | modes | reference coverage % | goal fail % | collision % | frozen q top1 % |',
