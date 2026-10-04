@@ -1,3 +1,7 @@
+## Paired modes research started — 2026-10-04
+
+Current user authorizes execution of the agreed paired-scene R0/R1/R2 research plan toward a paper prototype. New family `paired_modes_v1`; no reserved TEST access. Resource check: authorized GPU1 has a nonproject job (~506MiB), kept untouched; 1.2TiB disk free, four CPU threads and35% CUDA cap retained. New data plan:128TRAIN/32DEV_MODEL families x open/closed/shifted. RGB-D uses existing RLBench renderer; new references explicitly geometric upper-level polylines, not robot execution traces. First6-scene pilot precedes full collection. No training has started at this entry. Read `reports/paired_modes_v1/PROTOCOL.md`; inspect actual collection receipts before any resume. Local untracked historical files are unrelated and preserved.
+
 ## Goal-preserving / adaptive method round completed negative — 2026-10-04
 
 This entry supersedes the active entry below. Two authorized mechanisms completed, each seed0/3000 steps/191TRAIN/M8/H24/fixed q. C endpoint decoupling actual autograd cut clearance to goal/shared encoders, but DEV32 valid60.42/collision29.82/target13.54/modes3.854 versus B seed0 69.27/25.65/7.55/4.625. D=B+projected adaptive dual also negative DEV32:60.94/30.86/11.33/4.083. C/D no seed1/2, no favorable-seed selection. C+dual E NOT run. Conditional Round3 gate false; no relation module or other method search. Best remains existing three-seed segment-clearance B, not a validated new paper core.

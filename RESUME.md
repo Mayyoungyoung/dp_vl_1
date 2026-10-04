@@ -1,3 +1,7 @@
+## Paired modes research started — 2026-10-04
+
+Latest authorized family is `paired_modes_v1`. Read its PROTOCOL and latest STATE first. First pilot is6 new scenes; no training launched at this entry. Check actual `runs/paired_modes_v1/collection_*/` receipts and PIDs before continuing. New reference kind is geometric upper-level teacher, not robot rollout. Do not restart any completed historical family or access reserved TEST. GPU1 UUID/35%,4CPU remain in force; existing nonproject GPU processes untouched.
+
 ## Goal-preserving / adaptive method round completed negative — 2026-10-04
 
 This entry supersedes the active entry below. Two authorized mechanisms completed, each seed0/3000 steps/191TRAIN/M8/H24/fixed q. C endpoint decoupling actual autograd cut clearance to goal/shared encoders, but DEV32 valid60.42/collision29.82/target13.54/modes3.854 versus B seed0 69.27/25.65/7.55/4.625. D=B+projected adaptive dual also negative DEV32:60.94/30.86/11.33/4.083. C/D no seed1/2, no favorable-seed selection. C+dual E NOT run. Conditional Round3 gate false; no relation module or other method search. Best remains existing three-seed segment-clearance B, not a validated new paper core.
