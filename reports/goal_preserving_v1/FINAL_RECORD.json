@@ -1,0 +1,202 @@
+{
+  "jobs": 8,
+  "completed": 8,
+  "server_technical_failures": 0,
+  "cumulative_job_seconds": 889.3624142970657,
+  "tested": 8,
+  "skipped": 0,
+  "formal_trainings": 2,
+  "formal_updates": 6000,
+  "training_unique_candidates": 1536000,
+  "C_extra_identical_clearance_decoder_recomputations": 768000,
+  "fixed_final_evaluation_requests": 264,
+  "fixed_final_evaluation_candidates": 2112,
+  "periodic_old_dev_requests": 432,
+  "periodic_old_dev_candidates": 3456,
+  "new_q_training_steps": 0,
+  "new_qwen_encodings": 0,
+  "checked_primary_source_files": 15,
+  "archive_sha256": {
+    "5bd15cd8fa136a9567bf4803cf82c5d6d5516592": "be0adb462796c13c00ebe85f4be76eee3d365cca080fdeb148d4c8583e88b524",
+    "d8af10e183e6e87829d8ff93735090feab53218e": "5582410828bb6d65885465ece94574f00bf5ad646f759e948d67d539331d3251"
+  },
+  "artifact_checks": [
+    {
+      "kind": "last_checkpoint",
+      "arm": "C",
+      "sha256": "073156f143d40905ac02f4fa0fc7fa92875d1b372f1aad21f3716a76c3953b81"
+    },
+    {
+      "kind": "last_checkpoint",
+      "arm": "D",
+      "sha256": "b5f69fcc280f04296167526083852cf070443c9ce876ed8a828c7b7f54a27447"
+    },
+    {
+      "kind": "candidate_pool",
+      "path": "reports\\goal_preserving_v1\\evaluation\\dev32\\C_seed0",
+      "sha256": "b21c62d480eebcb47d4e6b48a1877749dc1ca1249ab9591835263be37c86713f"
+    },
+    {
+      "kind": "candidate_pool",
+      "path": "reports\\goal_preserving_v1\\evaluation\\dev32\\D_seed0",
+      "sha256": "8e1612d5a3e8abf03e70f89c0b8cf3e77c1c4d803cccb38dbad0251ed558ae3c"
+    },
+    {
+      "kind": "candidate_pool",
+      "path": "reports\\goal_preserving_v1\\evaluation\\old_dev\\C_seed0",
+      "sha256": "57aa718a259c4a35fe6b024fdb64194d9c588eda2a57314af14dfd4a0757f586"
+    },
+    {
+      "kind": "candidate_pool",
+      "path": "reports\\goal_preserving_v1\\evaluation\\old_dev\\D_seed0",
+      "sha256": "bfabe7be531e17ce705fb6dc20dc846743f2dd986a183d9313f50e5ead373c66"
+    }
+  ],
+  "TEST_LOCKED_access": false,
+  "stop_reason": "C/D negative DEV32 seed0; no replication. Round3 gate false because validity/collision/target have not jointly improved. E interaction not run.",
+  "server_no_project_processes_and_no_active_lock": true,
+  "local_verifier_note": "First comparison used LF Git blobs versus CRLF git-archive Python/config exports and asserted. Corrected read-only check: actual job hashes equal immutable tar bytes; LF-normalized bytes equal committed blobs. No runtime/source mutation or rerun.",
+  "commands": [
+    {
+      "id": "eval_C_seed0_dev32",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.evaluate_goal_preserving",
+        "--arm",
+        "C",
+        "--seed",
+        "0",
+        "--split",
+        "dev32"
+      ],
+      "source_commit": "5bd15cd8fa136a9567bf4803cf82c5d6d5516592",
+      "start_utc": "2026-10-04T11:09:37.872629+00:00",
+      "end_utc": "2026-10-04T11:10:05.050648+00:00",
+      "elapsed_seconds": 27.17801151704043,
+      "exit_code": 0
+    },
+    {
+      "id": "eval_C_seed0_old_dev",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.evaluate_goal_preserving",
+        "--arm",
+        "C",
+        "--seed",
+        "0",
+        "--split",
+        "old_dev"
+      ],
+      "source_commit": "5bd15cd8fa136a9567bf4803cf82c5d6d5516592",
+      "start_utc": "2026-10-04T11:09:00.179850+00:00",
+      "end_utc": "2026-10-04T11:09:37.716336+00:00",
+      "elapsed_seconds": 37.53647725097835,
+      "exit_code": 0
+    },
+    {
+      "id": "eval_D_seed0_dev32",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.evaluate_goal_preserving",
+        "--arm",
+        "D",
+        "--seed",
+        "0",
+        "--split",
+        "dev32"
+      ],
+      "source_commit": "d8af10e183e6e87829d8ff93735090feab53218e",
+      "start_utc": "2026-10-04T11:17:38.116115+00:00",
+      "end_utc": "2026-10-04T11:17:52.230464+00:00",
+      "elapsed_seconds": 14.114341474953108,
+      "exit_code": 0
+    },
+    {
+      "id": "eval_D_seed0_old_dev",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.evaluate_goal_preserving",
+        "--arm",
+        "D",
+        "--seed",
+        "0",
+        "--split",
+        "old_dev"
+      ],
+      "source_commit": "d8af10e183e6e87829d8ff93735090feab53218e",
+      "start_utc": "2026-10-04T11:17:26.057745+00:00",
+      "end_utc": "2026-10-04T11:17:37.969920+00:00",
+      "elapsed_seconds": 11.912165364949033,
+      "exit_code": 0
+    },
+    {
+      "id": "round1_tests",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_goal_preserving.py",
+        "tests/test_segment_clearance.py",
+        "-q"
+      ],
+      "source_commit": "5bd15cd8fa136a9567bf4803cf82c5d6d5516592",
+      "start_utc": "2026-10-04T10:59:57.298860+00:00",
+      "end_utc": "2026-10-04T11:01:30.178048+00:00",
+      "elapsed_seconds": 92.8791816229932,
+      "exit_code": 0
+    },
+    {
+      "id": "round2_tests",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_adaptive_clearance.py",
+        "-q"
+      ],
+      "source_commit": "d8af10e183e6e87829d8ff93735090feab53218e",
+      "start_utc": "2026-10-04T11:11:56.755877+00:00",
+      "end_utc": "2026-10-04T11:12:14.851751+00:00",
+      "elapsed_seconds": 18.095865083043464,
+      "exit_code": 0
+    },
+    {
+      "id": "train_C_seed0",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.train_goal_preserving",
+        "--arm",
+        "C",
+        "--seed",
+        "0"
+      ],
+      "source_commit": "5bd15cd8fa136a9567bf4803cf82c5d6d5516592",
+      "start_utc": "2026-10-04T11:01:41.285714+00:00",
+      "end_utc": "2026-10-04T11:08:34.649440+00:00",
+      "elapsed_seconds": 413.3637187180575,
+      "exit_code": 0
+    },
+    {
+      "id": "train_D_seed0",
+      "command": [
+        "/home/wzy/dpvlm/route_set_v1/.venv/bin/python",
+        "-m",
+        "scripts.train_goal_preserving",
+        "--arm",
+        "D",
+        "--seed",
+        "0"
+      ],
+      "source_commit": "d8af10e183e6e87829d8ff93735090feab53218e",
+      "start_utc": "2026-10-04T11:12:14.979934+00:00",
+      "end_utc": "2026-10-04T11:16:49.262599+00:00",
+      "elapsed_seconds": 274.2826532650506,
+      "exit_code": 0
+    }
+  ]
+}
