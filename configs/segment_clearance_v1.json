@@ -1,0 +1,17 @@
+{
+  "protocol": "segment_clearance_v1",
+  "gpu_wall_budget_seconds": 21600,
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "memory_fraction": 0.35,
+  "cpu_threads": 4,
+  "seeds": [0,1,2],
+  "steps": 3000,
+  "baseline": "unchanged expanded191 Ordinary M8 protocol; reuse only with exact initialization, sampler, data and optimizer audit",
+  "loss": "mean over all8*23 segments of relu(.02 - minimum signed L-infinity clearance to any of the four physical AABBs)^2",
+  "lambda": null,
+  "lambda_rule": "one TRAIN-only probe: original-loss parameter-gradient norm divided by clearance-loss parameter-gradient norm, median over first4 fixed batches at seed0 initialization; round to2 significant digits; no optimizer updates or DEV selection",
+  "supervision_change": "Additional TRAIN physical obstacle boxes enter loss only; not equal information supervision to A",
+  "q": "existing Ordinary seed0 deployed scorer, same normalization and temperature for all generators",
+  "evaluation": "fixed last3000 only; oldDEV12 and already-used DEV_MODEL32; original metrics/thresholds/selector unchanged",
+  "TEST_LOCKED_access": false
+}
