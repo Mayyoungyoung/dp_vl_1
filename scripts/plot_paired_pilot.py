@@ -24,9 +24,10 @@ def plot(root,output):
         for file in sorted(scene.glob('target1_route*.npz')):
             with np.load(file) as a:path=a['gripper_pose'][:,:3]
             above=bool(np.max(path[:,2])>.91)
-            ax.plot(path[:,0],path[:,1],ls='--' if above else '-',alpha=.8,lw=1.5)
+            slot=int(file.stem.rsplit('route',1)[1])
+            ax.plot(path[:,0],path[:,1],color=plt.get_cmap('tab10')(slot),ls='--' if above else '-',alpha=.8,lw=1.5)
         ax.set(xlabel='x (m)',ylabel='y (m)',xlim=(-.02,.52),ylim=(-.3,.3));ax.set_aspect('equal');ax.grid(alpha=.15)
-    fig.suptitle('Actual paired RGB-D scenes and geometric teacher paths\nTop-down paths target the same center sphere; geometry labels are training/evaluation only',fontsize=12)
+    fig.suptitle('Actual paired RGB-D scenes and geometric teacher paths\nSame center target; dashed paths pass above posts. Geometry labels are training/evaluation only.',fontsize=12)
     output.parent.mkdir(parents=True,exist_ok=True);fig.savefig(output,dpi=180);plt.close(fig)
 
 

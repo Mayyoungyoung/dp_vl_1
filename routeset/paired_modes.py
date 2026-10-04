@@ -51,12 +51,30 @@ def relation_cost(paths, config, modes):
             +(value-limits[None,:,:,1]).clamp_min(0).square()).sum(-1).mean(-1)
 
 
-def mode_descriptor(paths, config):
-    crossing=row_crossings(paths,config['row_x'])
-    offset=paths.new_tensor([[np.mean(ys),config['post_base_z']+h]
-                           for ys,h in zip(config['post_y'],config['post_heights'])])
-    # Translation-relative, metric descriptor: no path-coordinate equality.
-    return crossing-offset[None]
+def mode_descriptor(paths, config, modes):
+    """One mode per selected path, relative to its own passage boundaries.
+
+    Exterior passages track signed clearance from the corresponding inflated
+    obstacle edge, not row-center coordinates. Interior gaps use a normalized
+    lateral fraction scaled by a fixed .15m canonical width. Thus changing
+    obstacle spacing permits the shared route to deform without pair penalty.
+    """
+    crossing=row_crossings(paths,config['row_x']);offsets=[];scales=[]
+    for mode in modes:
+        off=[];scale=[]
+        for r,label in enumerate(mode):
+            ys=config['post_y'][r];top=config['post_base_z']+config['post_heights'][r]
+            factor=1.
+            if label=='over':center=float(np.mean(ys))
+            elif label=='gap0':center=ys[0]-.0375
+            elif int(label[3:])==len(ys):center=ys[-1]+.0375
+            else:
+                j=int(label[3:]);lo=ys[j-1]+.0375;hi=ys[j]-.0375
+                if hi<=lo:raise ValueError('Closed relation cannot be a shared positive witness')
+                center=(lo+hi)/2;factor=.15/(hi-lo)
+            off.append([center,top]);scale.append([factor,1.])
+        offsets.append(off);scales.append(scale)
+    return (crossing-paths.new_tensor(offsets))*paths.new_tensor(scales)
 
 
 def within_scene_loss(paths, configs, modes):
@@ -78,8 +96,8 @@ def partial_pair_loss(paths, configs, modes, pairs):
         # Partial matching: only shared, positively witnessed relation classes.
         # Deleted/new/unknown classes have no edge and are learned per-scene.
         ia=ca.detach().argmin(0);ib=cb.detach().argmin(0)
-        da=mode_descriptor(paths[a],configs[a])[ia]
-        db=mode_descriptor(paths[b],configs[b])[ib]
+        da=mode_descriptor(paths[a][ia],configs[a],common)
+        db=mode_descriptor(paths[b][ib],configs[b],common)
         values.append((da-db).square().mean())
         matched+=len(common)
     return (torch.stack(values).mean() if values else paths.sum()*0),matched

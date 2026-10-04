@@ -34,6 +34,18 @@ def test_partial_correspondence_ignores_unmatched_and_allows_translation():
     assert n==0 and float(loss)==0
 
 
+def test_shared_exterior_modes_can_deform_when_gap_closes():
+    plans=registration()['parent_plan'][:2];paths=[];modes=[]
+    for plan in plans:
+        slots=[s for s in plan['guide_plans'][0] if s['collection_allowed']]
+        x=torch.tensor([np.vstack([plan['config']['entry_xyz'],s['waypoints_supervision_only']]).tolist() for s in slots],dtype=torch.float64)
+        paths.append(x);modes.append([tuple(s['intent_supervision_only']) for s in slots])
+    loss,n=partial_pair_loss(paths,[p['config'] for p in plans],modes,[(0,1)])
+    assert n>0 and float(loss)<1e-12
+    # The routes really deform: shared outer passage y coordinates differ.
+    assert not torch.equal(paths[0][0],paths[1][0])
+
+
 def test_relation_loss_has_correct_nonzero_finite_difference_gradient():
     x,c,m=example();x=x[:1].clone();x[...,1]+=.11;x.requires_grad_(True)
     f=lambda v: relation_cost(v,c,[m[0]]).sum()
