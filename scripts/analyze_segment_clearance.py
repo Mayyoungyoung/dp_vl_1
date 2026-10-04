@@ -69,7 +69,7 @@ def analyze(root):
             ab=out['three_seed_means'] if seed=='mean' else {a:out['seeds'][a][seed] for a in ('A','B')}
             cells=['%s/%s'%(split,seed)]+[('%.3f→%.3f'%(ab['A'][k],ab['B'][k]) if k=='GeometricModeCount8' else '%.2f→%.2f%%'%(100*ab['A'][k],100*ab['B'][k])) for k in fields]
             table.append('| '+' | '.join(cells)+' |')
-    (root/'CORE_TABLE.md').write_text('\n'.join(table)+'\n')
+    (root/'CORE_TABLE.md').write_text('\n'.join(table)+'\n',encoding='utf8')
     plots(root,results,all_rows)
 
 
