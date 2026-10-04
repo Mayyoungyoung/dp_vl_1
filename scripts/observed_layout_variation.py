@@ -77,7 +77,7 @@ def gap_certificates(config,centers=None,halves=None):
     return rows
 
 
-def crossing_signature(xyz,config):
+def crossing_signature(xyz,config,low_band_top_offset=None):
     xyz=np.asarray(xyz,dtype=float);xs=config['row_x'];m=config['tip_clearance_m']
     if xyz.ndim!=2 or xyz.shape[1:]!=(3,) or len(xyz)<2 or not np.isfinite(xyz).all():return None
     if not xyz[0,0]<xs[0] or not xyz[-1,0]>xs[-1]:return None
@@ -92,7 +92,7 @@ def crossing_signature(xyz,config):
             for p in points:
                 top=config['post_base_z']+config['post_heights'][row]
                 if p[2]>top+m:label='over'
-                elif config['post_base_z']+m<=p[2]<=top-m:
+                elif config['post_base_z']+m<=p[2]<=top+(low_band_top_offset if low_band_top_offset is not None else -m):
                     ys=config['post_y'][row];y=p[1]
                     if y<ys[0]-.0175-m:label='gap0'
                     elif y>ys[-1]+.0175+m:label='gap%d'%len(ys)

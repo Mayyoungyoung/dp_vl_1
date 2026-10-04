@@ -745,3 +745,8 @@ Finisher at runs/paired_modes_v1/coordinator_finish_v1 waits for replication exi
 
 R_full comparison is ordinary whole-path symmetric Chamfer consistency, same paired observations/3000 steps/initialization/M8. Original R0/R1/R2 computations are unchanged in their active release. New test covers query permutation, zero identical-set loss and nonzero penalty/gradient when a mode disappears. This is a strong conventional mechanism control, not an added claimed novelty. Main seed0 evidence and calibrated deployment manifests committed/pushed atc25f18e. Local RESULTS_REPORT.md is an explicitly marked interim snapshot awaiting final multi-seed/control outcomes.
 
+
+## Three original seeds completed; mechanism not established — 2026-10-05
+
+R0/R1/R2 all nine trainings completed; coordinator_replication closed exit0. R2-R1 mean candidate validity -3.805pp, distinct valid modes +.2222, shared reference relation recall +.0827pp; seed2 is a clear reversal. Do not present seed0 as stable success. Complete statistics in reports/paired_modes_v1/three_seed_extended. Finisher c25f18e remains active, completing q seeds1/2, public CLI and the unchanged prospective full-set control. A new TRAIN-only gradient/correspondence diagnostic is prepared to wait for its closure; no method revision trained yet. Preserve all results and locked roles.
+

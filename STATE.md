@@ -1,3 +1,7 @@
+## Three original seeds completed; mechanism not established — 2026-10-05
+
+R0/R1/R2 all nine trainings completed; coordinator_replication closed exit0. R2-R1 mean candidate validity -3.805pp, distinct valid modes +.2222, shared reference relation recall +.0827pp; seed2 is a clear reversal. Do not present seed0 as stable success. Complete statistics in reports/paired_modes_v1/three_seed_extended. Finisher c25f18e remains active, completing q seeds1/2, public CLI and the unchanged prospective full-set control. A new TRAIN-only gradient/correspondence diagnostic is prepared to wait for its closure; no method revision trained yet. Preserve all results and locked roles.
+
 ## Frozen finite completion queue is waiting — 2026-10-05
 
 Original three-arm replication remains active from7a47f96, SSH16494; seed1 R0/R1 have completed and R2 is running. A separate finite continuation was ACTUALLY launched from immutablec25f18ea192954c4eee1e45f9ce8de631f865c69, SSH70544, via bash scripts/run_paired_finish.sh; it only waits while replication runs. Archive SHA8000128f334b7034d30718f79aabeaeab94410397928777ee82fda5c154118de verified; both shell launchers pass bash-n. Do not duplicate or change either running source/launcher.
