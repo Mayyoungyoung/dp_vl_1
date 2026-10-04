@@ -106,3 +106,21 @@ def test_full_set_control_is_permutation_invariant_but_penalizes_deleted_modes()
     assert float(loss)>0
     g=torch.autograd.grad(loss,y)[0]
     assert torch.isfinite(g).all() and g.abs().sum()>0
+
+
+def test_present_only_correspondence_has_no_edge_for_unrepresented_prediction():
+    x,c,m=example();a=x[:1].clone();b=a.clone();b[...,2]+=.4;b.requires_grad_(True)
+    ordinary,n=partial_pair_loss([a,b],[c,c],[[m[0]],[m[0]]],[(0,1)])
+    guarded,k=partial_pair_loss([a,b],[c,c],[[m[0]],[m[0]]],[(0,1)],require_present=True)
+    assert float(ordinary)>0 and n==1
+    assert float(guarded)==0 and k==0
+    assert torch.count_nonzero(torch.autograd.grad(guarded,b)[0])==0
+
+
+def test_present_only_keeps_real_correspondence_and_query_permutation():
+    x,c,m=example();a=x[:1].clone();b=a.clone();b[...,1]-=.01
+    original,n=partial_pair_loss([a,b],[c,c],[[m[0]],[m[0]]],[(0,1)])
+    guarded,k=partial_pair_loss([a,b],[c,c],[[m[0]],[m[0]]],[(0,1)],require_present=True)
+    assert n==k==1 and float(original)==float(guarded)>0
+    permuted,_=partial_pair_loss([x.flip(0),x],[c,c],[m,m],[(0,1)],require_present=True)
+    assert float(permuted)==0

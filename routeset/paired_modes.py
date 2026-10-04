@@ -91,7 +91,7 @@ def within_scene_loss(paths, configs, modes):
     return torch.stack(values).mean() if values else paths.sum()*0
 
 
-def partial_pair_loss(paths, configs, modes, pairs):
+def partial_pair_loss(paths, configs, modes, pairs, require_present=False):
     values=[]; matched=0
     for a,b in pairs:
         common=sorted(set(modes[a])&set(modes[b]))
@@ -102,14 +102,22 @@ def partial_pair_loss(paths, configs, modes, pairs):
         # Deleted/new/unknown classes have no edge and are learned per-scene.
         eligible_a=ca.detach()==ca.detach().amin(0,keepdim=True)
         eligible_b=cb.detach()==cb.detach().amin(0,keepdim=True)
+        present=(ca.detach().amin(0)<=1e-12)&(cb.detach().amin(0)<=1e-12)
         da=mode_descriptor(paths[a],configs[a],common)
         db=mode_descriptor(paths[b],configs[b],common)
         distance=(da[:,None]-db[None,:]).square().mean((-1,-2))
         # Flat relation bands can have several equally suitable candidates.
         # Minimize over ALL eligible pairs rather than breaking ties by index.
         allowed=eligible_a[:,None]&eligible_b[None,:]
-        values.append(distance.masked_fill(~allowed,float('inf')).amin((0,1)).mean())
-        matched+=len(common)
+        per_mode=distance.masked_fill(~allowed,float('inf')).amin((0,1))
+        if require_present:
+            # A witnessed class need not yet be represented by a prediction.
+            # Missing predictions get their per-scene supervision, not an edge
+            # to the nearest (possibly different) predicted class. Normalize by
+            # all shared classes to avoid increasing the force on the survivors.
+            per_mode=per_mode*present.to(per_mode.dtype)
+        values.append(per_mode.mean())
+        matched+=int(present.sum()) if require_present else len(common)
     return (torch.stack(values).mean() if values else paths.sum()*0),matched
 
 

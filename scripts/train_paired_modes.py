@@ -165,7 +165,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
         cfgs=[configs[i] for i in ids[:16]];types=[modes[i] for i in ids[:16]]
         rel=within_scene_loss(xyz[:16],cfgs,types)
         pair,matched=(full_set_pair_loss(xyz[:16],pairs) if arm=='R_full'
-                      else partial_pair_loss(xyz[:16],cfgs,types,pairs))
+                      else partial_pair_loss(xyz[:16],cfgs,types,pairs,require_present=arm=='R3'))
         if probe:
             params=[p for p in model.parameters() if p.requires_grad]
             norms=[];grads=[]
@@ -182,7 +182,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
             # The old half keeps exactly its original target objective.
             old_loss=positive_assignment_loss(pred[16:],target[16:],data['path_mask'][ids[16:]],'saturation',loss_rng)
             loss=.5*(balanced+old_loss)+.02*ground+160*clear+coefficients['relation']*rel
-            if arm in ('R2','R_full'):loss=loss+coefficients['pair']*pair
+            if arm in ('R2','R3','R_full'):loss=loss+coefficients['pair']*pair
         else:loss=ordinary
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
@@ -212,6 +212,6 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2','R_full'],default='R0');p.add_argument('--run-name');p.add_argument('--stop-after',type=int)
+    p=argparse.ArgumentParser();p.add_argument('--arm',choices=['R0','R1','R2','R3','R_full'],default='R0');p.add_argument('--run-name');p.add_argument('--stop-after',type=int)
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int);p.add_argument('--resume',action='store_true');p.add_argument('--probe',action='store_true')
     a=p.parse_args();train(a.arm,a.seed,a.steps,a.resume,a.probe,a.run_name,a.stop_after)
