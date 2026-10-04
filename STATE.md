@@ -1,3 +1,9 @@
+## Actual Qwen and training recovery verified — 2026-10-05
+
+Frozen Qwen encoded all1440 new requests; status frozen_rgb_language_feature_extraction_complete,127.465826s including30.906953s load, peak CUDA4,279,495,680bytes. Four TRAIN gradient batches set relation=.5837024194 and pair=.2849657071; no optimizer updates in probe. Actual R2 continuous100 versus50+50 checkpoints exactly match model,optimizer,scheduler,allRNG,lossRNG,sampler,config,step and coefficients. Formal R0 seed0 is now running from unchanged a45818f; no newDEV model results yet. Active coordinator SSH24758 remains authoritative.
+
+H24 TRAIN floor filter excluded22 reference paths across20 requests; no raw files changed. Mask SHA071a97ceb689b6cc370086bf5ee8aa88afca8496cce8ae4fc449772912680895. Local evidence in reports/paired_modes_v1/data_evidence/{qwen_status,coefficients,resume_verification}.json. Read-only download initially used nonexistent cache_report.json, corrected to actual status.json; no experiment affected.
+
 ## Paired dataset complete; genuine Qwen extraction active — 2026-10-05
 
 All480 new scenes completed and initialization passed;128TRAIN/32DEV_MODEL independent families x3 variants x3 targets.12960 registered geometric slots yielded11760 accepted high-level teacher polylines (TRAIN9408,DEV2352); no robot rollout claim. All160 families passed exact equality of actual gripper pose/open, cameras, target positions and colors across variants. New raw data3,629,345,085bytes, within8GiB. Successful worker wall sum9180.747224s. Original6-worker technical pilot failure remains separate and preserved.
