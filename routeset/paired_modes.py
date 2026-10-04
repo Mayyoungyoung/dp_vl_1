@@ -52,7 +52,7 @@ def relation_cost(paths, config, modes):
 
 
 def mode_descriptor(paths, config, modes):
-    """One mode per selected path, relative to its own passage boundaries.
+    """M x C x R x 2 descriptors relative to each passage's boundaries.
 
     Exterior passages track signed clearance from the corresponding inflated
     obstacle edge, not row-center coordinates. Interior gaps use a normalized
@@ -74,7 +74,7 @@ def mode_descriptor(paths, config, modes):
                 center=(lo+hi)/2;factor=.15/(hi-lo)
             off.append([center,top]);scale.append([factor,1.])
         offsets.append(off);scales.append(scale)
-    return (crossing-paths.new_tensor(offsets))*paths.new_tensor(scales)
+    return (crossing[:,None]-paths.new_tensor(offsets)[None])*paths.new_tensor(scales)[None]
 
 
 def within_scene_loss(paths, configs, modes):
@@ -95,10 +95,15 @@ def partial_pair_loss(paths, configs, modes, pairs):
         cb=relation_cost(paths[b],configs[b],common)
         # Partial matching: only shared, positively witnessed relation classes.
         # Deleted/new/unknown classes have no edge and are learned per-scene.
-        ia=ca.detach().argmin(0);ib=cb.detach().argmin(0)
-        da=mode_descriptor(paths[a][ia],configs[a],common)
-        db=mode_descriptor(paths[b][ib],configs[b],common)
-        values.append((da-db).square().mean())
+        eligible_a=ca.detach()==ca.detach().amin(0,keepdim=True)
+        eligible_b=cb.detach()==cb.detach().amin(0,keepdim=True)
+        da=mode_descriptor(paths[a],configs[a],common)
+        db=mode_descriptor(paths[b],configs[b],common)
+        distance=(da[:,None]-db[None,:]).square().mean((-1,-2))
+        # Flat relation bands can have several equally suitable candidates.
+        # Minimize over ALL eligible pairs rather than breaking ties by index.
+        allowed=eligible_a[:,None]&eligible_b[None,:]
+        values.append(distance.masked_fill(~allowed,float('inf')).amin((0,1)).mean())
         matched+=len(common)
     return (torch.stack(values).mean() if values else paths.sum()*0),matched
 

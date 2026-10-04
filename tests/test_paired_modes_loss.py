@@ -46,6 +46,15 @@ def test_shared_exterior_modes_can_deform_when_gap_closes():
     assert not torch.equal(paths[0][0],paths[1][0])
 
 
+def test_partial_match_is_permutation_invariant_with_flat_band_ties():
+    x,c,m=example();base=x[:1];deformed=base.clone();deformed[...,1]-=.01
+    a=torch.cat([base,deformed]);b=deformed
+    assert torch.equal(relation_cost(a,c,[m[0]]),torch.zeros((2,1),dtype=a.dtype))
+    left,_=partial_pair_loss([a,b],[c,c],[[m[0]],[m[0]]],[(0,1)])
+    right,_=partial_pair_loss([a.flip(0),b],[c,c],[[m[0]],[m[0]]],[(0,1)])
+    assert float(left)==float(right)==0
+
+
 def test_relation_loss_has_correct_nonzero_finite_difference_gradient():
     x,c,m=example();x=x[:1].clone();x[...,1]+=.11;x.requires_grad_(True)
     f=lambda v: relation_cost(v,c,[m[0]]).sum()
