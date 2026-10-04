@@ -120,7 +120,7 @@ def full_set_pair_loss(paths, pairs):
     """
     values=[]
     for a,b in pairs:
-        distance=(paths[a,:,None]-paths[b,None,:]).square().mean((-1,-2))
+        distance=(paths[a][:,None]-paths[b][None,:]).square().mean((-1,-2))
         values.append((distance.amin(0).mean()+distance.amin(1).mean())/2)
     return (torch.stack(values).mean() if values else paths.sum()*0),len(values)
 

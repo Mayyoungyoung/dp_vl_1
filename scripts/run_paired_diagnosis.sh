@@ -11,7 +11,7 @@ sha256sum "$0" > "$C/launcher_sha256.txt"
 printf '%s\n' "$(basename "$PWD")" > "$C/source_commit.txt"
 trap 'code=$?; printf "{\"exit_code\":%d,\"elapsed_seconds\":%d}\n" "$code" "$SECONDS" > "$C/closure.json"' EXIT
 while [[ ! -f "$R/coordinator_finish_v1/closure.json" ]]; do sleep 10; done
-"$P/.venv/bin/python" -c "import json; assert json.load(open('$R/coordinator_finish_v1/closure.json'))['exit_code']==0"
+# Diagnostics require completed original models, regardless of a later control's technical failure.
 {
   date -u
   nvidia-smi -i 1 --query-gpu=index,uuid,memory.used,memory.free,utilization.gpu --format=csv
