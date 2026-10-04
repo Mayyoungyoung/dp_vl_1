@@ -9,3 +9,9 @@ Source5bd15cd8fa136a9567bf4803cf82c5d6d5516592. Existing resource/provenance wra
 Round2 conditional design: if residual collisions remain, use request/query/segment projected dual weights on signed2cm constraint violations, with the existing quadratic penalty as augmentation. Weights are training state only and absent at inference. Safe segments have zero hinge gradient and reduce their dual weights; persistent violations accumulate constraint pressure. Constants must be fixed analytically from training schedule/geometric scale, not DEV sweep.
 
 Round3 relation-conditioned query allowed only if first two rounds improve validity, collision and target fidelity while mode coverage is the main remaining bottleneck. Do not add it merely to fill three rounds.
+
+## Round1 completed negative; Round2 adaptive constraint — 2026-10-04
+
+C seed0 fixed last3000: DEV32 valid60.417 vs B69.271%, collision29.818 vs25.651%, target13.542 vs7.552%, modes3.854 vs4.625, qTop186.458 vs92.708%. OldDEV valid51.042 vs68.403%, target27.778 vs11.458%. Actual strict autograd routing verified, but shared route supervision and single predicted endpoint still do not preserve semantic fidelity. Do not replicate C seeds1/2. All checkpoint/RNG and negative pools retained. No engineering failure or TEST_LOCKED access.
+
+Round2 D starts from B architecture/common original parent (not rejected C checkpoint) and adds TRAIN-only projected request/query/segment dual weights. Mean duplicate draws; eta=320/(3000*32/573), cap=320*(max TRAIN box halfsize+.02), zero initial dual plus existing160 quadratic hinge. Persistent violations increase pressure; safe signed slack lowers dual, safe segments get zero direct clearance gradient. Constants fixed analytically, no DEV sweep. Seed0 first. If useful, test C+same adaptive mechanism as an interaction ablation and replicate useful variants; Round3 relation gate remains conditional. Existing evaluation unchanged.

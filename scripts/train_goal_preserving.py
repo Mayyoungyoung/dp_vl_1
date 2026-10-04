@@ -89,7 +89,7 @@ def train(arm,seed,expanded_data=True,probe=False):
     pair=audit_pair(seed,initial,geometry,train_ids,data,cfg)
     write(output/'parent_pair_audit.json',pair)
     from routeset.goal_preserving import GoalPreservingRouteHead, verify_gradient_routes
-    model=GoalPreservingRouteHead.from_baseline(model)
+    if arm in ('C','E'): model=GoalPreservingRouteHead.from_baseline(model)
     initial=tensor_state_digest(model.state_dict())
     write(output/'training_geometry_sha256.json',box_hashes)
     if probe:
@@ -99,6 +99,9 @@ def train(arm,seed,expanded_data=True,probe=False):
     coefficient=clearance_cfg['lambda']
     assert coefficient is not None and coefficient>0
     from routeset.segment_clearance import segment_clearance_loss
+    from routeset.adaptive_clearance import SegmentDual
+    dual = SegmentDual(len(data['scene_ids']),8,23,cfg['steps']*cfg['batch_size']/len(train_ids),float(halves[train_ids].max())+.02,'cuda') if arm in ('D','E') else None
+    if dual is not None: write(output/'dual_config.json',dict(rate=dual.rate,cap=dual.cap,quadratic=dual.quadratic,expected_visits=cfg['steps']*cfg['batch_size']/len(train_ids),state_shape=list(dual.weights.shape)))
     optimizer=torch.optim.AdamW(model.parameters(),lr=cfg['lr'],weight_decay=.0001)
     history=[];drawhash=hashlib.sha256();started=time.perf_counter();best=-float('inf')
     write(output/'initialization.json',dict(model_sha256=initial,parent_sha256=sha(PARENT/'last.pt'),seed=seed,
@@ -111,7 +114,7 @@ def train(arm,seed,expanded_data=True,probe=False):
         prediction=torch.cat([xyz[:,:,1:],events[:,:,1:,None]*.2],-1)
         target=torch.cat([target_xyz[:,:,1:],target_events[:,:,1:,None]*.2],-1)
         w=torch.tensor(weights[ids],device='cuda')
-        if arm in ('C','D'):
+        if arm in ('C','D','E'):
             route_loss=positive_assignment_loss(prediction,target,data['path_mask'][ids],'saturation',rng)
             pi_loss=xyz.new_zeros(())
         else:
@@ -120,19 +123,25 @@ def train(arm,seed,expanded_data=True,probe=False):
         grounding=positive_endpoint_attention_loss(details['attention'],inputs['world_xyz'],inputs['valid_mask'],
             target_xyz[:,:,-1],torch.tensor(data['path_mask'][ids],device='cuda'),.025)
         original_loss=route_loss+.02*grounding+cfg['pi_loss_weight']*pi_loss
-        mask=torch.tensor(data['path_mask'][ids],device='cuda')
-        goal_target=(target_xyz[:,:,-1]*mask[:,:,None]).sum(1)/mask.sum(1)[:,None]
-        goal_loss=(details['goal']-goal_target).square().mean()
-        safe_paths=model.clearance_paths(details,inputs['current'])
+        goal_loss=xyz.new_zeros(())
+        safe_paths=xyz
+        if arm in ('C','E'):
+            mask=torch.tensor(data['path_mask'][ids],device='cuda')
+            goal_target=(target_xyz[:,:,-1]*mask[:,:,None]).sum(1)/mask.sum(1)[:,None]
+            goal_loss=(details['goal']-goal_target).square().mean()
+            safe_paths=model.clearance_paths(details,inputs['current'])
         clearance_loss=segment_clearance_loss(safe_paths,centers[ids],halves[ids])
-        if step==1:
+        if step==1 and arm in ('C','E'):
             write(output/'gradient_routes.json',verify_gradient_routes(model,details,inputs['current'],xyz,clearance_loss,goal_loss))
-        loss=original_loss+coefficient*clearance_loss+clearance_cfg['goal_loss_weight']*goal_loss
+        penalty=coefficient*clearance_loss
+        if dual is not None: penalty,signed_violation=dual.loss(safe_paths,centers[ids],halves[ids],ids)
+        loss=original_loss+penalty+clearance_cfg['goal_loss_weight']*goal_loss
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite generator loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);optimizer.step()
-        if step%100==0:print(json.dumps(dict(step=step,loss=float(loss),route_loss=float(route_loss),pi_loss=float(pi_loss),clearance_loss=float(clearance_loss),lambda_clearance=coefficient,goal_loss=float(goal_loss))),flush=True)
+        if dual is not None: dual.update(ids,signed_violation)
+        if step%100==0:print(json.dumps(dict(step=step,loss=float(loss),route_loss=float(route_loss),pi_loss=float(pi_loss),clearance_loss=float(clearance_loss),lambda_clearance=coefficient,goal_loss=float(goal_loss),dual_mean=0. if dual is None else float(dual.weights[train_ids].mean()),dual_max=0. if dual is None else float(dual.weights.max()))),flush=True)
         if step%100==0:
-            atomic_checkpoint(output/'recovery.pt',dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),
+            atomic_checkpoint(output/'recovery.pt',dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),dual_state=None if dual is None else dual.state_dict(),
                 step=step,config=cfg,clearance_config=clearance_cfg,arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
                 parent_sha256=sha(PARENT/'last.pt'),dataset_fingerprint=geometry['fingerprint'],elapsed_seconds=time.perf_counter()-started))
         if step%500==0:
@@ -142,7 +151,7 @@ def train(arm,seed,expanded_data=True,probe=False):
                 selection_metric='tip_unique_valid',evaluation_sources=(pcfg['observations'],pcfg['supervision']))
             torch.set_rng_state(saved_rng);torch.cuda.set_rng_state_all(saved_cuda)
             score=metrics['selection_score'];history.append(dict(step=step,metrics=metrics))
-            state=dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,config=cfg,clearance_config=clearance_cfg,
+            state=dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),dual_state=None if dual is None else dual.state_dict(),step=step,config=cfg,clearance_config=clearance_cfg,
                 arm=arm,seed=seed,history=history,draw_sha256=drawhash.hexdigest(),initial_sha256=initial,
                 parent_sha256=sha(PARENT/'last.pt'),dataset_fingerprint=geometry['fingerprint'],elapsed_seconds=time.perf_counter()-started)
             atomic_checkpoint(output/'last.pt',state)
@@ -154,9 +163,9 @@ def train(arm,seed,expanded_data=True,probe=False):
         last_checkpoint_sha256=sha(output/'last.pt'),best_checkpoint_sha256=sha(output/'best.pt'),
         elapsed_seconds=time.perf_counter()-started,peak_allocated_bytes=torch.cuda.max_memory_allocated(),
         train_parents=len(set(data['parent_ids'][train_ids])),train_inputs=len(train_ids),expanded_data=expanded_data,
-        clearance_lambda=coefficient,scientific_scope='Independent observation goal and interior deformation; strict clearance gradient routing; fixed q transfer'))
+        clearance_lambda=coefficient,scientific_scope=('B + projected dual clearance' if arm=='D' else 'Independent goal/interior + '+('fixed clearance' if arm=='C' else 'projected dual clearance'))+'; fixed q transfer'))
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--seed',type=int,default=0);p.add_argument('--arm',choices=['C','D'],default='C')
+    p=argparse.ArgumentParser();p.add_argument('--seed',type=int,default=0);p.add_argument('--arm',choices=['C','D','E'],default='C')
     a=p.parse_args();train(a.arm,a.seed)

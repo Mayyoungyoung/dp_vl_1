@@ -35,7 +35,7 @@ def infer(split, seed, arm):
         state=torch.load(checkpoint,map_location='cpu',weights_only=False)
         assert state['step']==3000 and state['seed']==seed
         from routeset.goal_preserving import GoalPreservingRouteHead
-        planner.generator=GoalPreservingRouteHead.from_baseline(planner.generator)
+        if arm in ('C','E'): planner.generator=GoalPreservingRouteHead.from_baseline(planner.generator)
         planner.generator.load_state_dict(state['model'],strict=True);planner.eval()
         folder=OUT/('%s_seed%d'%(arm,seed));folder.mkdir(parents=True,exist_ok=False)
         torch.save(dict(seed=0,cpu=torch.get_rng_state(),cuda=torch.cuda.get_rng_state_all(),numpy=np.random.get_state(),python=random.getstate()),folder/'rng_before.pt')
@@ -81,5 +81,5 @@ def infer(split, seed, arm):
         del planner;torch.cuda.empty_cache()
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--seed',type=int,required=True);p.add_argument('--arm',choices=['C','D'],required=True);p.add_argument('--split',choices=['old_dev','dev32'],required=True)
+    p=argparse.ArgumentParser();p.add_argument('--seed',type=int,required=True);p.add_argument('--arm',choices=['C','D','E'],required=True);p.add_argument('--split',choices=['old_dev','dev32'],required=True)
     a=p.parse_args();infer(a.split,a.seed,a.arm)

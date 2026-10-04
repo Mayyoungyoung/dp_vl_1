@@ -13,5 +13,16 @@
   "initialization": "same original12000 parent and seeded M8 expansion as B; independent goal decoder cloned from it; interior output rows divided by phi for comparable initial offsets; fresh AdamW",
   "selection": "fixed last3000; seed0 first then seed1/2 only with positive mechanism signal; no lambda sweep",
   "q": "unchanged Ordinary seed0 scorer, normalization, temperature, selector",
-  "TEST_LOCKED_access": false
+  "TEST_LOCKED_access": false,
+  "round2": {
+    "arms": {
+      "D": "B+adaptive dual",
+      "E": "C+adaptive dual, conditional interaction ablation"
+    },
+    "dual_update": "projected lambda += eta*(rho-d), mean duplicate request draws within batch",
+    "eta": "320/(3000*32/573)",
+    "cap": "320*(max TRAIN physical halfsize + .02)",
+    "safe_gradient": "zero outside violated constraints; safe signed slack lowers lambda",
+    "state": "request/query/segment table saved in each optimizer/RNG checkpoint; no inference state"
+  }
 }
