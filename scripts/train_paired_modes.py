@@ -44,14 +44,16 @@ def load_data():
         g=load_geometry(d,folder/'observations.jsonl',folder/'supervision.jsonl',2)
         ds,geo=(d,g) if ds is None else merge(ds,geo,d,g)
         labelmap.update({r['id']:r for r in lines(folder/'supervision.jsonl')})
-    configs=[];centers=[];halves=[]
+    configs=[];centers=[];halves=[];truth_hashes={}
     for ident in ds['scene_ids']:
         label=labelmap[str(ident)];c=read(label['route_config'])
+        for key in ('route_config','verification_only'):truth_hashes[label[key]]=sha(label[key])
         if 'post_heights' not in c:c['post_heights']=[c['post_size_xyz'][2]]*len(c['row_x'])
         configs.append(c)
         with np.load(label['verification_only']) as z:
             centers.append(z['obstacle_centers']);halves.append(z['obstacle_halfsizes'])
     assert len({x.shape for x in centers})==1
+    geo['fingerprint']=hashlib.sha256(json.dumps(dict(observed=geo['fingerprint'],supervision=truth_hashes),sort_keys=True).encode()).hexdigest()
     return ds,geo,configs,np.stack(centers),np.stack(halves),pcfg,labelmap
 
 
@@ -109,6 +111,7 @@ def train(arm,seed,steps=None,resume=False,probe=False,run_name=None,stop_after=
     opts=head_options(pcfg);opts['max_candidates']=8
     model=ProbabilisticGeometryRouteHead(**opts).cuda()
     initpath=ROOT/'runs/segment_clearance_v1'/('B_seed%d'%seed)/'last.pt'
+    assert sha(initpath)==read(initpath.parent/'summary.json')['last_checkpoint_sha256']
     model.load_state_dict(torch.load(initpath,map_location='cpu',weights_only=False)['model'])
     initial=tensor_state_digest(model.state_dict())
     optimizer=torch.optim.AdamW(model.parameters(),lr=pc['lr'],weight_decay=.0001)
