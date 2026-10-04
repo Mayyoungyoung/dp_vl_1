@@ -1,13 +1,14 @@
 """Fixed Ordinary q transfer evaluation; unchanged generator forward and metric rules."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import numpy as np
 from scripts.run_observed_probability import ROOT,RUN,OLD,read,write,sha,lines
 POLICY_ORDINARY_HASH='574e89ceb1358af474036575a7183edb67c1ee2427a90bb7254135fb6493d96a'
 def infer(split, seed, arm):
     DATA=OLD if split=="old_dev" else ROOT/"data/geometric_modes_v1/DEV_MODEL"
-    OUT=ROOT/"runs/segment_clearance_v1/evaluation"/split
+    OUT=ROOT/"runs/segment_clearance_v1/evaluation_v2"/split
     checkpoint=(RUN/("M8_ordinary_seed%d_expanded"%seed) if arm=="A" else ROOT/"runs/segment_clearance_v1"/("B_seed%d"%seed))/"last.pt"
     import torch
     from routeset.observed_probability import load_scored_planner
