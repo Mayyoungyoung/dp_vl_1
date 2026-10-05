@@ -1,3 +1,7 @@
+## Active plan: factored route reliability — 2026-10-05
+
+User authorized SayCan-inspired task probability times conditional upper-level feasibility, then experiments. New independent family runs/factored_q_v1. Frozen R1 M8 pools, original role separation, four scorer arms single/joint/marginal/conditional, all3 generator x3 scorer seeds. Task AND feasibility labels exactly reproduce original validity. No generator updates or new candidates in this first stage; no RL claim. Config/protocol frozen before results. Resource read-only check: GPU1 580MiB with unrelated project job, availableRAM65GiB/disk1.2TiB; only our allowed35%/4threads, no other job touched. Server tests/profile/resume/formal queue not yet launched at this entry. See reports/factored_q_v1/PROTOCOL.md.
+
 ## FINAL: functional R1+q delivered; new mechanism not established — 2026-10-05
 
 All15 generator runs (R0/R1/R_full/R2/R3 x3), all9 scorer/calibration/deployment pipelines (R0/R1/R2 x3) and final TRAIN semantic diagnosis completed. All finite coordinators closed, no project active.lock or active job. R3 fails all6 frozen conditions; final TRAIN gradient evidence is mixed, so no second revision is implemented or queued. Do not resume stale queues described in older entries below.

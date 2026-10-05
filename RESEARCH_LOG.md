@@ -798,3 +798,8 @@ Final report reports/paired_modes_v1/RESULTS_REPORT.md; deployment DEPLOYMENT.md
 
 Last actual job source d5a3517772e3f4db774336c74e954d62700fa91f, semantic diagnosis exit0 at2026-10-04T20:07:18.848359+00:00. Shared-server restrictions unchanged, other processes untouched. TEST_LOCKED never used. New paired DEV and old DEV are development evidence; scores fit onlySCORE_TRAIN, selectedDEV_SCORE, temperatureCALIBRATION. Historical entries below are retained chronology, not current pending work.
 
+
+## Active plan: factored route reliability — 2026-10-05
+
+User authorized SayCan-inspired task probability times conditional upper-level feasibility, then experiments. New independent family runs/factored_q_v1. Frozen R1 M8 pools, original role separation, four scorer arms single/joint/marginal/conditional, all3 generator x3 scorer seeds. Task AND feasibility labels exactly reproduce original validity. No generator updates or new candidates in this first stage; no RL claim. Config/protocol frozen before results. Resource read-only check: GPU1 580MiB with unrelated project job, availableRAM65GiB/disk1.2TiB; only our allowed35%/4threads, no other job touched. Server tests/profile/resume/formal queue not yet launched at this entry. See reports/factored_q_v1/PROTOCOL.md.
+
