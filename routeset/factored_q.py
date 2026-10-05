@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from .observed_probability import RouteValidityHead
 
 
-ARMS = ('single', 'joint', 'marginal', 'conditional')
+ARMS = ('single', 'joint', 'marginal', 'conditional', 'conditional_endpoint')
 
 
 def factor_labels(candidates):
@@ -31,11 +31,19 @@ class FactorRouteScorer(nn.Module):
                                    for _ in range(1 if arm == 'single' else 2)])
 
     def forward(self, nodes, context):
+        if self.arm == 'conditional_endpoint':
+            # T depends on endpoint and constant-reach event correctness, not
+            # the intermediate spatial route. Incoming endpoint direction is
+            # replaced by start/min/max event values (same80 input dimensions).
+            task_nodes=nodes[...,23:24,:].clone()
+            event=nodes[...,14]
+            task_nodes[...,0,3:6]=torch.stack([event[...,0],event.amin(-1),event.amax(-1)],-1)
+            return torch.stack([self.heads[0](task_nodes,context),self.heads[1](nodes,context)],-1)
         return torch.stack([head(nodes, context) for head in self.heads], -1)
 
 
 def log_joint(logits, arm):
-    if arm in ('marginal', 'conditional'):
+    if arm in ('marginal', 'conditional', 'conditional_endpoint'):
         return F.logsigmoid(logits).sum(-1)
     z = logits[..., 0] if arm == 'single' else logits.sum(-1) / math.sqrt(2.)
     return F.logsigmoid(z)
@@ -52,7 +60,7 @@ def training_loss(logits, task, feas, arm):
         return joint_nll(logits, task * feas, arm)
     lt = F.binary_cross_entropy_with_logits(logits[..., 0], task)
     lf = F.binary_cross_entropy_with_logits(logits[..., 1], feas, reduction='none')
-    if arm == 'conditional':
+    if arm in ('conditional', 'conditional_endpoint'):
         lf = (lf * task).sum() / task.sum().clamp_min(1)
     else:
         lf = lf.mean()
@@ -60,7 +68,7 @@ def training_loss(logits, task, feas, arm):
 
 
 def apply_calibration(logits, arm, calibration):
-    if arm in ('marginal', 'conditional'):
+    if arm in ('marginal', 'conditional', 'conditional_endpoint'):
         temperature = torch.as_tensor(calibration['temperatures'], device=logits.device, dtype=logits.dtype)
         factors = (logits / temperature).sigmoid()
         return factors.prod(-1), factors

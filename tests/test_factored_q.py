@@ -54,3 +54,14 @@ def test_platt_float32_inputs_do_not_stall_at_identity():
     target=1/(1+np.exp(-(.4*z.astype(float)+.7)))
     fit=fit_joint_platt(z,target)
     assert abs(fit['slope']-.4)<.01 and abs(fit['intercept']-.7)<.01
+
+
+def test_endpoint_task_is_invariant_to_intermediate_geometry_but_reads_events():
+    torch.manual_seed(17);model=FactorRouteScorer('conditional_endpoint')
+    x=torch.randn(2,8,47,80);context=torch.randn(2,8,131)
+    changed=torch.randn_like(x);changed[...,23,:]=x[...,23,:];changed[...,14]=x[...,14]
+    changed[...,23,3:6]=123. # Incoming segment must not alter task matching.
+    torch.testing.assert_close(model(x,context)[...,0],model(changed,context)[...,0],rtol=0,atol=0)
+    assert not torch.allclose(model(x,context)[...,1],model(changed,context)[...,1])
+    changed[...,14]=changed[...,14]+2
+    assert not torch.allclose(model(x,context)[...,0],model(changed,context)[...,0])

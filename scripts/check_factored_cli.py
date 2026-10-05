@@ -9,8 +9,8 @@ from scripts.paired_modes_data import DATA
 from scripts.run_factored_q import RUN
 
 
-def main(seed,version='deployment_v2'):
-    deployment=RUN/('conditional_g%d_s0'%seed)/version
+def main(seed,version='deployment_v2',arm='conditional'):
+    deployment=RUN/('%s_g%d_s0'%(arm,seed))/version
     manifest=read(deployment/'manifest.json');identifier=manifest['example_id']
     # The registry supplies only an observed-state file pointer to the CLI.
     row=next(r for r in lines(DATA/'export/observations.jsonl') if r['id']==identifier)
@@ -34,4 +34,4 @@ def main(seed,version='deployment_v2'):
 
 
 if __name__=='__main__':
-    main(0)
+    p=argparse.ArgumentParser();p.add_argument('--arm',default='conditional');p.add_argument('--seed',type=int,default=0);a=p.parse_args();main(a.seed,arm=a.arm)

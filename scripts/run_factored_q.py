@@ -49,6 +49,8 @@ def fit(arm, gs, ss, resume=False, name=None, steps=None, stop_after=None):
     from routeset.train_v2 import atomic_checkpoint, rng_state, restore_rng
     from routeset.observed_training_audit import new_stream_audit, append_indices, tensor_state_digest
     cfg = read(POLICY)
+    if arm=='conditional_endpoint':
+        cfg=dict(cfg,revision=read(SOURCE/'configs/factored_q_endpoint_revision_v1.json'))
     if steps is not None:
         cfg = dict(cfg, steps=steps)
     tr, th = load_pool(gs, 'SCORE_TRAIN'); dv, dh = load_pool(gs, 'DEV_SCORE')
@@ -178,10 +180,10 @@ def evaluate(arm, gs, ss, version='evaluation'):
     for role in ('SCORE_TRAIN','DEV_SCORE'):
         d,_=load_pool(gs,role); assert not set(d['parents']) & set(cal['parents'])
     def bce(z,y):return float((np.logaddexp(0,z)-y*z).mean())
-    if arm in ('marginal','conditional'):
+    if arm in ('marginal','conditional','conditional_endpoint'):
         temps=[]
         for j,key in enumerate(('task','feas')):
-            mask=cal['task'] if j==1 and arm=='conditional' else np.ones_like(cal['task'])
+            mask=cal['task'] if j==1 and arm in ('conditional','conditional_endpoint') else np.ones_like(cal['task'])
             z,y=cz[...,j][mask],cal[key][mask]
             fit=minimize_scalar(lambda t:bce(z/np.exp(t),y),bounds=(-3,3),method='bounded')
             assert fit.success; temps.append(float(np.exp(fit.x)))
@@ -204,7 +206,7 @@ def evaluate(arm, gs, ss, version='evaluation'):
         if f is not None:
             arrays.update(q_task=f[...,0],q_feas=f[...,1])
             results[role]['factors']=dict(task=binary_metrics(f[...,0],d['task']),
-                  feas_target_population=binary_metrics(f[...,1],d['feas'],d['task'] if arm=='conditional' else None))
+                  feas_target_population=binary_metrics(f[...,1],d['feas'],d['task'] if arm in ('conditional','conditional_endpoint') else None))
             np.testing.assert_allclose(q,f[...,0]*f[...,1],rtol=0,atol=0)
         np.savez_compressed(target/(role+'.npz'),**arrays)
     write(out/(version+'.json'),dict(arm=arm,generator_seed=gs,scorer_seed=ss,calibration=calibration,
@@ -214,11 +216,11 @@ def evaluate(arm, gs, ss, version='evaluation'):
     print('EVAL',out.name,{r:{k:results[r]['calibrated'][k] for k in ('brier','selected_valid','nll')} for r in results},flush=True)
 
 
-def package(gs=0,ss=0,version='evaluation',deployment='deployment'):
+def package(gs=0,ss=0,version='evaluation',deployment='deployment',arm='conditional'):
     torch=torch_setup()
     from routeset.factored_q import FactorRouteScorer,FactoredRoutePlanner,load_factored_planner
     from routeset.observed_probability import ProbabilisticGeometryRouteHead
-    arm='conditional'; base=folder(arm,gs,ss); target=base/deployment; target.mkdir(exist_ok=False)
+    base=folder(arm,gs,ss); target=base/deployment; target.mkdir(exist_ok=False)
     saved=torch.load(base/'best.pt',map_location='cpu',weights_only=False); evaluation=read(base/(version+'.json'))
     genfile=OLD/('R1_seed%d'%gs)/'last.pt'; gen=torch.load(genfile,map_location='cpu',weights_only=False)
     generator=ProbabilisticGeometryRouteHead(**gen['config']['head_options']).cuda().eval();generator.load_state_dict(gen['model'])
@@ -254,4 +256,4 @@ if __name__=='__main__':
     a=p.parse_args()
     if a.stage in ('fit','run'):fit(a.arm,a.generator_seed,a.scorer_seed,a.resume,a.name,a.steps,a.stop_after)
     if a.stage in ('evaluate','run'):evaluate(a.arm,a.generator_seed,a.scorer_seed,a.evaluation_version)
-    if a.stage=='package':package(a.generator_seed,a.scorer_seed,a.evaluation_version,a.deployment_version)
+    if a.stage=='package':package(a.generator_seed,a.scorer_seed,a.evaluation_version,a.deployment_version,a.arm)

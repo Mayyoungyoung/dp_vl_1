@@ -5,9 +5,9 @@ import numpy as np
 from scripts.run_observed_probability import ROOT,read,write,sha
 
 
-def analyze(root,output,version='evaluation'):
+def analyze(root,output,version='evaluation',arms=None,primary='conditional'):
     root,output=Path(root),Path(output);output.mkdir(parents=True,exist_ok=False)
-    arms=['single','joint','marginal','conditional'];data={};inputs={}
+    arms=arms or ['single','joint','marginal','conditional'];data={};inputs={}
     for arm in arms:
         for gs in range(3):
             for ss in range(3):
@@ -21,14 +21,14 @@ def analyze(root,output,version='evaluation'):
                 values=[dict(r['set_metrics'],ece=r['reliability_bins_ece'],selected_ece=r['selected_reliability_bins_ece'],aurc=r['selected_aurc']) for r in rows]
                 means['%s/%s/%s'%(role,mode,arm)]={k:dict(mean=float(np.mean([v[k] for v in values])),sd=float(np.std([v[k] for v in values],ddof=1))) for k in values[0]}
                 per_generator['%s/%s/%s'%(role,mode,arm)]=[{k:float(np.mean([v[k] for v in values[g*3:(g+1)*3]])) for k in values[0]} for g in range(3)]
-            for base in ('single','joint','marginal'):
+            for base in [a for a in arms if a!=primary]:
                 for metric in ('brier','nll','top1','k4_valid','k4_all','k4_modes','accepted08_modes'):
-                    a=[data['conditional_g%d_s%d'%(g,s)]['results'][role][mode]['families'] for g in range(3) for s in range(3)]
+                    a=[data['%s_g%d_s%d'%(primary,g,s)]['results'][role][mode]['families'] for g in range(3) for s in range(3)]
                     b=[data['%s_g%d_s%d'%(base,g,s)]['results'][role][mode]['families'] for g in range(3) for s in range(3)]
                     families=sorted(a[0]);assert all(sorted(r)==families for r in a+b)
                     diff=np.array([np.mean([aa[f][metric]-bb[f][metric] for aa,bb in zip(a,b)]) for f in families])
                     boot=diff[rng.integers(len(diff),size=(5000,len(diff)))].mean(1)
-                    comparisons['%s/%s/conditional-%s/%s'%(role,mode,base,metric)]=dict(mean=float(diff.mean()),ci95=np.quantile(boot,[.025,.975]).tolist(),families=len(diff))
+                    comparisons['%s/%s/%s-%s/%s'%(role,mode,primary,base,metric)]=dict(mean=float(diff.mean()),ci95=np.quantile(boot,[.025,.975]).tolist(),families=len(diff))
     # Verify every capacity-matched arm used identical initialization and sample order.
     checks=[]
     for g in range(3):
@@ -52,4 +52,4 @@ def analyze(root,output,version='evaluation'):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--root',default=str(ROOT/'runs/factored_q_v1'));p.add_argument('--output',default=str(ROOT/'runs/factored_q_v1/analysis'));p.add_argument('--evaluation-version',default='evaluation');a=p.parse_args();analyze(a.root,a.output,a.evaluation_version)
+    p=argparse.ArgumentParser();p.add_argument('--root',default=str(ROOT/'runs/factored_q_v1'));p.add_argument('--output',default=str(ROOT/'runs/factored_q_v1/analysis'));p.add_argument('--evaluation-version',default='evaluation');p.add_argument('--arms',nargs='+');p.add_argument('--primary',default='conditional');a=p.parse_args();analyze(a.root,a.output,a.evaluation_version,a.arms,a.primary)

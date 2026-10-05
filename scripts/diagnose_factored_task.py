@@ -4,7 +4,7 @@ from scripts.run_factored_q import RUN,OLD,load_pool,folder
 from scripts.run_observed_probability import read,write,lines,torch_setup
 
 
-def main():
+def main(arm='conditional'):
     torch=torch_setup()
     from routeset.factored_q import FactorRouteScorer
     from routeset.observed_probability import ProbabilisticGeometryRouteHead,route_observation_features
@@ -18,8 +18,8 @@ def main():
         generator=ProbabilisticGeometryRouteHead(**st['config']['head_options']).cuda().eval();generator.load_state_dict(st['model'])
         heads=[]
         for ss in range(3):
-            state=torch.load(folder('conditional',gs,ss)/'best.pt',map_location='cpu',weights_only=False)
-            m=FactorRouteScorer('conditional').cuda().eval();m.load_state_dict(state['model'])
+            state=torch.load(folder(arm,gs,ss)/'best.pt',map_location='cpu',weights_only=False)
+            m=FactorRouteScorer(arm).cuda().eval();m.load_state_dict(state['model'])
             heads.append((m,state['normalization']))
         deltas=[[] for _ in heads]
         # Fixed first24 TRAIN requests, regardless of predictions, no DEV selection.
@@ -42,10 +42,13 @@ def main():
         for ss,values in enumerate(deltas):
             result['g%d_s%d'%(gs,ss)]=dict(mean_abs_change=float(np.mean(values)),p95=float(np.quantile(values,.95)),max=float(np.max(values)),values=values)
     triggered=any(v['mean_abs_change']>.02 or v['p95']>.1 for v in result.values())
-    write(RUN/'task_invariance_diagnosis.json',dict(results=result,revision_gate=triggered,
+    filename='task_invariance_diagnosis.json' if arm=='conditional' else arm+'_invariance.json'
+    write(RUN/filename,dict(results=result,revision_gate=triggered,arm=arm,modified_paths=576,scorer_candidate_evaluations=1728,
           gate='Any model mean task-probability change >.02 or p95 >.1; fixed24 SCORE_TRAIN requests and all9 models.',
           scope='Task checker label is exactly invariant because endpoints/events are held fixed. Changed paths are real recomputed observation features. This diagnoses task-score sensitivity, not proof it causes the DEV performance gap.'))
     print('TASK_INVARIANCE',triggered,{k:{j:v[j] for j in ('mean_abs_change','p95')} for k,v in result.items()},flush=True)
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    import argparse
+    p=argparse.ArgumentParser();p.add_argument('--arm',default='conditional');a=p.parse_args();main(a.arm)
