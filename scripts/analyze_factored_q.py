@@ -5,13 +5,13 @@ import numpy as np
 from scripts.run_observed_probability import ROOT,read,write,sha
 
 
-def analyze(root,output):
+def analyze(root,output,version='evaluation'):
     root,output=Path(root),Path(output);output.mkdir(parents=True,exist_ok=False)
     arms=['single','joint','marginal','conditional'];data={};inputs={}
     for arm in arms:
         for gs in range(3):
             for ss in range(3):
-                name='%s_g%d_s%d'%(arm,gs,ss);p=root/name/'evaluation.json'
+                name='%s_g%d_s%d'%(arm,gs,ss);p=root/name/(version+'.json')
                 data[name]=read(p);inputs[name]=sha(p)
     means={};per_generator={};comparisons={};rng=np.random.default_rng(731)
     for role in ('paired_dev','old_dev','dev32'):
@@ -37,7 +37,7 @@ def analyze(root,output):
             fits=[read(root/('%s_g%d_s%d'%(a,g,s))/'fit_summary.json') for a in arms]
             assert len({c['initial_sha256'] for c in configs[1:]})==1
             # Sampler stores initialization too; compare only actual order fingerprint.
-            sampler_keys=[k for k in fits[0]['sampler'] if 'index' in k or 'sample' in k or 'batch' in k or 'exposure' in k]
+            sampler_keys=['batches','observation_draws','index_chain_sha256','initial_sampler_state_sha256']
             for k in sampler_keys:assert all(f['sampler'][k]==fits[0]['sampler'][k] for f in fits),k
             checks.append(dict(generator_seed=g,scorer_seed=s,matched_initialization=True,matched_sampler_keys=sampler_keys))
     write(output/'RESULTS.json',dict(means=means,per_generator=per_generator,comparisons=comparisons,checks=checks,input_sha256=inputs,
@@ -52,4 +52,4 @@ def analyze(root,output):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--root',default=str(ROOT/'runs/factored_q_v1'));p.add_argument('--output',default=str(ROOT/'runs/factored_q_v1/analysis'));a=p.parse_args();analyze(a.root,a.output)
+    p=argparse.ArgumentParser();p.add_argument('--root',default=str(ROOT/'runs/factored_q_v1'));p.add_argument('--output',default=str(ROOT/'runs/factored_q_v1/analysis'));p.add_argument('--evaluation-version',default='evaluation');a=p.parse_args();analyze(a.root,a.output,a.evaluation_version)

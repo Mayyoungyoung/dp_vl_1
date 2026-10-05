@@ -1,3 +1,7 @@
+## Factored-q formal queue actually running — 2026-10-05
+
+Immutable source e471ae7d4731513b0e3463c14de0d51498c2ec8f; source archive SHA5baf0d386e5ab2e02d943dba5c603d880f9c3ec365353a4149ee92e699520283. SSH session87998 runs scripts/run_factored_queue.sh. Server unit tests5passed0skipped. Actual100 versus50+50 resume comparison passed exactly for model,optimizer,scheduler,RNG,sampler,settings,normalization,step,best,history. Formal36 scorer fits now running sequentially; do not duplicate queue or modify live source. Initial single_g0_s0 completed exit0. No scientific result claimed from first cell. Raw candidate generation unchanged.
+
 ## Active plan: factored route reliability — 2026-10-05
 
 User authorized SayCan-inspired task probability times conditional upper-level feasibility, then experiments. New independent family runs/factored_q_v1. Frozen R1 M8 pools, original role separation, four scorer arms single/joint/marginal/conditional, all3 generator x3 scorer seeds. Task AND feasibility labels exactly reproduce original validity. No generator updates or new candidates in this first stage; no RL claim. Config/protocol frozen before results. Resource read-only check: GPU1 580MiB with unrelated project job, availableRAM65GiB/disk1.2TiB; only our allowed35%/4threads, no other job touched. Server tests/profile/resume/formal queue not yet launched at this entry. See reports/factored_q_v1/PROTOCOL.md.

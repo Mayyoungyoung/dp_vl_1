@@ -151,7 +151,19 @@ def binary_metrics(q, y, mask=None):
                 nll=float(-(y*np.log(q)+(1-y)*np.log1p(-q)).mean()), mean_q=float(q.mean()), prevalence=float(y.mean()))
 
 
-def evaluate(arm, gs, ss):
+def fit_joint_platt(logits, labels):
+    from scipy.optimize import minimize
+    z=np.asarray(logits,dtype=np.float64);y=np.asarray(labels,dtype=np.float64)
+    def objective(ab):
+        slope=np.exp(ab[0]);p=slope*z+ab[1]
+        residual=1/(1+np.exp(-np.clip(p,-700,700)))-y
+        return float((np.logaddexp(0,p)-y*p).mean()),np.array([(residual*slope*z).mean(),residual.mean()])
+    fit=minimize(objective,[0.,0.],jac=True,method='L-BFGS-B',bounds=[(-3,3),(-5,5)])
+    if not fit.success:raise RuntimeError(str(fit.message))
+    return dict(slope=float(np.exp(fit.x[0])),intercept=float(fit.x[1]))
+
+
+def evaluate(arm, gs, ss, version='evaluation'):
     torch=torch_setup()
     from routeset.factored_q import FactorRouteScorer, apply_calibration
     from scipy.optimize import minimize, minimize_scalar
@@ -162,7 +174,7 @@ def evaluate(arm, gs, ss):
         x=[torch.tensor((d[k]-norm[k+'_mean'])/norm[k+'_std'],device='cuda') for k in ('nodes','context')]
         with torch.inference_mode():
             return model(*x).cpu().numpy()
-    cal,ch=load_pool(gs,'CALIBRATION'); cz=predict(cal)
+    cal,ch=load_pool(gs,'CALIBRATION'); cz=predict(cal).astype(np.float64)
     for role in ('SCORE_TRAIN','DEV_SCORE'):
         d,_=load_pool(gs,role); assert not set(d['parents']) & set(cal['parents'])
     def bce(z,y):return float((np.logaddexp(0,z)-y*z).mean())
@@ -177,12 +189,9 @@ def evaluate(arm, gs, ss):
         identity=dict(temperatures=[1.,1.])
     else:
         z=cz[...,0] if arm=='single' else cz.sum(-1)/math.sqrt(2.)
-        fit=minimize(lambda ab:bce(np.exp(ab[0])*z+ab[1],cal['labels']),[0.,0.],
-                     method='L-BFGS-B',bounds=[(-3,3),(-5,5)])
-        assert fit.success,fit.message
-        calibration=dict(slope=float(np.exp(fit.x[0])),intercept=float(fit.x[1]))
+        calibration=fit_joint_platt(z,cal['labels'])
         identity=dict(slope=1.,intercept=0.)
-    target=out/'evaluation'; target.mkdir(exist_ok=False)
+    target=out/version; target.mkdir(exist_ok=False)
     results={}
     for role in ('paired_dev','old_dev','dev32'):
         d,dh=load_pool(gs,role); z=predict(d)
@@ -198,18 +207,19 @@ def evaluate(arm, gs, ss):
                   feas_target_population=binary_metrics(f[...,1],d['feas'],d['task'] if arm=='conditional' else None))
             np.testing.assert_allclose(q,f[...,0]*f[...,1],rtol=0,atol=0)
         np.savez_compressed(target/(role+'.npz'),**arrays)
-    write(out/'evaluation.json',dict(arm=arm,generator_seed=gs,scorer_seed=ss,calibration=calibration,
+    write(out/(version+'.json'),dict(arm=arm,generator_seed=gs,scorer_seed=ss,calibration=calibration,
           calibration_pool_hashes=ch,scorer_sha256=sha(out/'best.pt'),results=results,
+          calibration_arithmetic='float64 optimizer objective; finite-difference Platt optimization must not operate on float32 logits',
           claim='Upper-level task AND geometry only; product probability interpretation requires conditional arm and empirical calibration. No execution or independent final-test claim.'))
     print('EVAL',out.name,{r:{k:results[r]['calibrated'][k] for k in ('brier','selected_valid','nll')} for r in results},flush=True)
 
 
-def package(gs=0,ss=0):
+def package(gs=0,ss=0,version='evaluation',deployment='deployment'):
     torch=torch_setup()
     from routeset.factored_q import FactorRouteScorer,FactoredRoutePlanner,load_factored_planner
     from routeset.observed_probability import ProbabilisticGeometryRouteHead
-    arm='conditional'; base=folder(arm,gs,ss); target=base/'deployment'; target.mkdir(exist_ok=False)
-    saved=torch.load(base/'best.pt',map_location='cpu',weights_only=False); evaluation=read(base/'evaluation.json')
+    arm='conditional'; base=folder(arm,gs,ss); target=base/deployment; target.mkdir(exist_ok=False)
+    saved=torch.load(base/'best.pt',map_location='cpu',weights_only=False); evaluation=read(base/(version+'.json'))
     genfile=OLD/('R1_seed%d'%gs)/'last.pt'; gen=torch.load(genfile,map_location='cpu',weights_only=False)
     generator=ProbabilisticGeometryRouteHead(**gen['config']['head_options']).cuda().eval();generator.load_state_dict(gen['model'])
     scorer=FactorRouteScorer(arm).cuda().eval();scorer.load_state_dict(saved['model'])
@@ -218,7 +228,7 @@ def package(gs=0,ss=0):
     inp={k:v.cuda() for k,v in torch.load(original/'example_observed_inputs.pt',map_location='cpu',weights_only=False).items()}
     with torch.inference_mode():pred=planner(**inp,return_k=4)
     d,_=load_pool(gs,'paired_dev'); ident=read(original/'manifest.json')['example_id'];idx=list(d['ids']).index(ident)
-    with np.load(base/'evaluation/paired_dev.npz') as z:
+    with np.load(base/version/'paired_dev.npz') as z:
         np.testing.assert_allclose(pred['q'][0].cpu().numpy(),z['q'][idx],rtol=1e-5,atol=1e-6)
     np.testing.assert_array_equal(pred['paths'][0].cpu().numpy(),d['paths'][idx])
     torch.save(dict(model=planner.state_dict(),head_options=gen['config']['head_options'],arm=arm,width=64,
@@ -239,7 +249,9 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['fit','evaluate','run','package']);p.add_argument('--arm',default='conditional')
     p.add_argument('--generator-seed',type=int,default=0);p.add_argument('--scorer-seed',type=int,default=0)
     p.add_argument('--resume',action='store_true');p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int)
+    p.add_argument('--evaluation-version',default='evaluation')
+    p.add_argument('--deployment-version',default='deployment')
     a=p.parse_args()
     if a.stage in ('fit','run'):fit(a.arm,a.generator_seed,a.scorer_seed,a.resume,a.name,a.steps,a.stop_after)
-    if a.stage in ('evaluate','run'):evaluate(a.arm,a.generator_seed,a.scorer_seed)
-    if a.stage=='package':package(a.generator_seed,a.scorer_seed)
+    if a.stage in ('evaluate','run'):evaluate(a.arm,a.generator_seed,a.scorer_seed,a.evaluation_version)
+    if a.stage=='package':package(a.generator_seed,a.scorer_seed,a.evaluation_version,a.deployment_version)

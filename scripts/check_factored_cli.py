@@ -9,14 +9,14 @@ from scripts.paired_modes_data import DATA
 from scripts.run_factored_q import RUN
 
 
-def main(seed):
-    deployment=RUN/('conditional_g%d_s0'%seed)/'deployment'
+def main(seed,version='deployment_v2'):
+    deployment=RUN/('conditional_g%d_s0'%seed)/version
     manifest=read(deployment/'manifest.json');identifier=manifest['example_id']
     # The registry supplies only an observed-state file pointer to the CLI.
     row=next(r for r in lines(DATA/'export/observations.jsonl') if r['id']==identifier)
     record=next(r for r in lines(DATA/'export/supervision.jsonl') if r['id']==identifier)
     assert row['split']==record['split']=='DEV_MODEL'
-    output=deployment.parent/('public_cli_seed%d'%seed);output.mkdir(exist_ok=False)
+    output=deployment.parent/('public_cli_'+version);output.mkdir(exist_ok=False)
     command=[sys.executable,'-m','scripts.predict_factored_planner','--bundle',str(deployment/'planner.pt'),
         '--manifest',str(DATA/'export/observations.jsonl'),'--id',identifier,'--observation',record['observation'],
         '--qwen-cache',str(DATA/'export/qwen_cache'),'--output',str(output/'prediction.json'),'--k','4']

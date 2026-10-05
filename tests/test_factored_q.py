@@ -46,3 +46,11 @@ def test_labels_preserve_checker_conjunction_and_events():
     changed=dict(c,event_state_sequence_correct=False,TipValid=False)
     t,f=factor_labels([c,changed]);np.testing.assert_array_equal(t,[True,False]);assert f.all()
     with pytest.raises(ValueError):factor_labels([dict(c,TipValid=False)])
+
+
+def test_platt_float32_inputs_do_not_stall_at_identity():
+    from scripts.run_factored_q import fit_joint_platt
+    z=np.linspace(-5,5,101,dtype=np.float32)
+    target=1/(1+np.exp(-(.4*z.astype(float)+.7)))
+    fit=fit_joint_platt(z,target)
+    assert abs(fit['slope']-.4)<.01 and abs(fit['intercept']-.7)<.01
