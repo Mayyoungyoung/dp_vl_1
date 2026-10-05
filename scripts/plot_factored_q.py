@@ -58,7 +58,7 @@ def plot(root,output,arms=None):
     fig,ax=plt.subplots(figsize=(9,4));x=np.arange(8)
     ax.bar(x-.24,qt,width=.24,label='Task matching');ax.bar(x,qf,width=.24,label='Feasible | task');ax.bar(x+.24,q,width=.24,label='Product')
     ax.set_xticks(x);ax.set_xticklabels(['%d\n%s'%(j+1,'valid' if y[j] else 'invalid') for j in x]);ax.set(ylim=(0,1.05),ylabel='Estimated probability',xlabel='Actual route candidate')
-    ax.set_title(manifest['example_id']+' | '+labels[model],fontsize=10);ax.legend(fontsize=9);ax.grid(axis='y',alpha=.2)
+    ax.set_title(manifest['example_id']+' | '+labels[model],fontsize=10,pad=47);ax.legend(fontsize=9,loc='upper center',bbox_to_anchor=(.5,1.22),ncol=3);ax.grid(axis='y',alpha=.2)
     fig.tight_layout()
     for ext in ('png','pdf'):fig.savefig(output/('factor_example.'+ext),dpi=180,bbox_inches='tight')
     plt.close(fig)

@@ -20,7 +20,7 @@ Each head uses the pre-existing route-observation representation: 24 vertices pl
 
 The marginal control uses the same heads but learns P(F|x) over all candidates, then multiplies two marginal predictions. The matched-capacity joint control has exactly the same two heads and initialization; its combined logit is (z0+z1)/sqrt(2), trained on Y alone. The smaller original single-head architecture is also retrained. These separate parameter count, component supervision and conditional masking.
 
-Generator and scorer seeds are crossed, not merely paired:3 frozen generators x3 scorer seeds x4 arms. Every arm sees the same sampled requests within a cell, with no change in generator candidates or reference coverage. A score improvement must not be described as improved raw multi-route generation.
+Generator and scorer seeds are crossed, not merely paired:3 frozen generators x3 scorer seeds x4 initial arms, followed by one diagnosed nine-cell revision. Every arm sees the same sampled requests within a cell, with no change in generator candidates or reference coverage. A score improvement must not be described as improved raw multi-route generation.
 
 ## Calibration and evaluation
 
@@ -33,3 +33,9 @@ Primary evaluation uses unchanged natural generator pools on reused paired DEV p
 [SayCan](https://arxiv.org/abs/2204.01691) combines language-model skill relevance with learned skill affordances. This implementation transfers that functional separation to actual continuous waypoint candidates. Unlike SayCan's RL value learning, this round uses full upper-level success/failure labels and supervised critics. The product and probability chain rule are established ideas, not new theory. Any contribution must come from demonstrated reliability/diversity improvements, robust transfer and a precise empirical explanation over strong controls; these are hypotheses until measured.
 
 The concise intended research question is: does explicitly separating task errors from conditional geometric failures improve the reliability of selecting among multiple observation-conditioned paths? If matched joint or marginal controls perform equally well, that result limits the conditional-factorization claim and must be retained.
+
+## Bounded endpoint-task revision
+
+TRAIN-only interventions kept the actual endpoint, initial point, events and observation fixed while swapping intermediate XYZ points. The original task score changed despite an unchanged task label. The diagnosed revision uses only the endpoint probe for the task head, replacing its incoming-direction channels with start/min/max event summaries. Global observed context and endpoint offset remain available; the feasibility head still sees the entire path. Head widths, parameter count, initialization, sampled requests, optimizer and calibration are held fixed. This is an architectural invariance for constant-state reach tasks, not a general solution to temporal manipulation semantics. The real-feature intervention is repeated after training.
+
+The revision's two-temperature calibrated product is retained even if it performs worse than a single joint classifier; numerical correctness of a product does not establish empirical reliability. All reported probabilities are estimates requiring validation in the intended deployment distribution.
