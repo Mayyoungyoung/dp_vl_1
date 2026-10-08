@@ -32,12 +32,12 @@ def paired(a,b):
     return result
 
 
-def main(root,output):
+def main(root,output,evaluation='evaluation'):
     root=Path(root);out=Path(output);out.mkdir(parents=True,exist_ok=False)
     metrics={};rows={};training={}
     for arm in ARMS:
         f=root/('frequency_'+arm)
-        metrics[arm]=read(f/'evaluation/metrics.json');rows[arm]=read(f/'evaluation/rows.json')
+        metrics[arm]=read(f/evaluation/'metrics.json');rows[arm]=read(f/evaluation/'rows.json')
         training[arm]=read(f/'summary.json')
     contrasts={a+'_minus_empirical_uniform':paired(rows['empirical_uniform'],rows[a]) for a in ARMS[1:]}
     contrasts['set_matching_minus_balanced']=paired(rows['balanced'],rows['set_matching'])
@@ -45,7 +45,7 @@ def main(root,output):
     for arm in ('empirical_90','empirical_98'):
         rare=contrasts[arm+'_minus_empirical_uniform']['rare8']
         gate[arm]=bool(rare['delta']<=-.1 and rare['CI95'][1]<0)
-    result=dict(metrics=metrics,training=training,contrasts=contrasts,frequency_retention_gate=gate,
+    result=dict(metrics=metrics,training=training,contrasts=contrasts,frequency_retention_gate=gate,evaluation=evaluation,
         uncertainty_scope='32 DEV_MODEL families; fixed seed0 trained models. No training-seed uncertainty or final-test claim.',
         decision='Analyze ordinary controls before any novel mechanism; do not substitute an easy empirical arm for the strongest baseline')
     (out/'RESULTS.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
@@ -85,4 +85,5 @@ follows from this pilot. All failures and full candidate sets are retained.
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--root',required=True);p.add_argument('--output',required=True);a=p.parse_args();main(a.root,a.output)
+    p=argparse.ArgumentParser();p.add_argument('--root',required=True);p.add_argument('--output',required=True)
+    p.add_argument('--evaluation',default='evaluation');a=p.parse_args();main(a.root,a.output,a.evaluation)

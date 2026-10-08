@@ -193,15 +193,32 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
             exposure_scope='set matching uses full positive set per draw; actual target processing cost explicitly differs'))
 
 
-def evaluate(name):
+def fixed_path_scores(planner, paths, events, inputs):
+    """Score external paths with the untouched deployment feature extractor."""
+    from routeset.observed_probability import route_observation_features
+    geometry=planner.generator.geometry(**inputs,return_point_features=True)
+    context=(planner.generator.head.feature_encoder(inputs['features'])
+        +planner.generator.head.state_encoder(inputs['current'])+geometry['context'])
+    nodes,ctx=route_observation_features(paths,events,inputs['current'],inputs['world_xyz'],
+        inputs['rgb'],inputs['valid_mask'],geometry['point_features'],context,geometry['anchor_xyz'])
+    logits=planner.scorer((nodes-planner.nodes_mean)/planner.nodes_std,
+        (ctx-planner.context_mean)/planner.context_std)
+    return (logits/planner.temperature).sigmoid()
+
+
+def evaluate(name,fixed_q=False):
     torch=torch_setup()
     from scripts.evaluate_paired_modes import inputs_for
     from routeset.observed_probability import load_scored_planner
     from scripts.paired_modes_reliability import reliability_metrics
-    folder=RUN/name;out=folder/'evaluation';out.mkdir(exist_ok=False)
+    folder=RUN/name;out=folder/('evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
     bundle=OLD_RUN/'reliability/R1_seed0/deployment_seed0/planner.pt'
     model=load_scored_planner(bundle,'cuda');s=torch.load(folder/'last.pt',map_location='cpu',weights_only=False)
-    model.generator.load_state_dict(s['model']);model.eval();model.requires_grad_(False)
+    if fixed_q:
+        generator=copy.deepcopy(model.generator)
+        generator.load_state_dict(s['model']);generator.eval();generator.requires_grad_(False)
+    else:model.generator.load_state_dict(s['model'])
+    model.eval();model.requires_grad_(False)
     with np.load(SUPPORT/'support.npz') as a: support={k:a[k] for k in a.files}
     smap={str(k):i for i,k in enumerate(support['ids'])}
     rows=[r for r in lines(DATA/'export/observations.jsonl') if r['split']=='DEV_MODEL']
@@ -209,7 +226,11 @@ def evaluate(name):
     paths=[];events=[];qs=[];details=[];hashes={};tic=time.monotonic()
     for row in rows:
         inp=inputs_for(row,labels[row['id']],DATA/'export/qwen_cache',torch,hashes)
-        with torch.inference_mode():p=model(**inp,return_k=4)
+        with torch.inference_mode():
+            if fixed_q:
+                xyz,event,_=generator(**inp)
+                p=dict(paths=xyz,events=event,q=fixed_path_scores(model,xyz,event,inp))
+            else:p=model(**inp,return_k=4)
         paths.append(p['paths'][0].cpu().numpy());events.append(p['events'][0].cpu().numpy());qs.append(p['q'][0].cpu().numpy())
     # Candidates are generated solely from observations before oracle checking.
     ys=[]
@@ -237,13 +258,14 @@ def evaluate(name):
         majority_hit=float(np.mean([r['majority_hit'] for r in details])),duplicates=float(np.mean([r['duplicates'] for r in details])),
         reliability=rel,by_variant={v:average([r['raw'] for r in details if r['variant']==v]) for v in ('open','closed','shifted')},
         generator_sha256=sha(folder/'last.pt'),scorer_bundle_sha256=sha(bundle),pool_sha256=sha(out/'pool.npz'),
-        elapsed_seconds=time.monotonic()-tic,input_sha256=hashes,locked_access=False)
+        elapsed_seconds=time.monotonic()-tic,input_sha256=hashes,locked_access=False,
+        scoring_contract='fixed complete deployment scorer and observation encoder' if fixed_q else 'fixed scorer weights with changed generator observation encoder')
     write(out/'rows.json',plain(details));write(out/'metrics.json',plain(summary));print(json.dumps(summary['raw']),flush=True)
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate']);p.add_argument('--arm',default='empirical_uniform')
+    p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true');a=p.parse_args()
     if a.stage=='prepare':prepare()
     elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume)
-    else:evaluate(a.name)
+    else:evaluate(a.name,fixed_q=a.stage=='evaluate_fixed_q')

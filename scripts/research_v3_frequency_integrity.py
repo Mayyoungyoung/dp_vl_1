@@ -52,7 +52,7 @@ def initial_rows(root):
     return rows
 
 
-def main(root, output):
+def main(root, output, evaluation='evaluation_fixed_q_v2'):
     import torch
     from routeset.observed_training_audit import tensor_state_digest
     root=Path(root);out=Path(output);out.mkdir(parents=True,exist_ok=False)
@@ -69,13 +69,19 @@ def main(root, output):
         assert exposure['unique_routes']==s['unique_routes']==len(checkpoint['unique_routes'])
         assert tensor_state_digest(checkpoint['model'])==s['final_sha256']
         write(out/(arm+'_exposure.json'),exposure)
-        rows=read(f/'evaluation/rows.json');metrics=read(f/'evaluation/metrics.json')
+        rows=read(f/evaluation/'rows.json');metrics=read(f/evaluation/'metrics.json')
         assert metrics['generator_sha256']==s['last_sha256']
-        assert metrics['pool_sha256']==sha(f/'evaluation/pool.npz')
+        assert metrics['pool_sha256']==sha(f/evaluation/'pool.npz')
+        assert metrics['scoring_contract']=='fixed complete deployment scorer and observation encoder'
+        with np.load(f/'evaluation/pool.npz') as old,np.load(f/evaluation/'pool.npz') as fixed:
+            for key in ('paths','events','ids','parents','labels'):
+                np.testing.assert_array_equal(old[key],fixed[key])
+            score_change=dict(mean_absolute=float(np.abs(old['q']-fixed['q']).mean()),
+                max_absolute=float(np.abs(old['q']-fixed['q']).max()))
         states[arm]=s['final_sha256'];streams[arm]=s['sampler']
         hashes[arm]=dict(checkpoint=s['last_sha256'],pool=metrics['pool_sha256'],config=sha(f/'config.json'),
-            rows=sha(f/'evaluation/rows.json'),scorer_bundle=metrics['scorer_bundle_sha256'])
-        results[arm]=dict(versus_initial=paired(baseline,rows),
+            rows=sha(f/evaluation/'rows.json'),scorer_bundle=metrics['scorer_bundle_sha256'])
+        results[arm]=dict(versus_initial=paired(baseline,rows),fixed_encoder_score_change=score_change,
             exposure={k:v for k,v in exposure.items() if k!='rows'},
             by_variant={v:dict(n=sum(r['variant']==v for r in rows),
                 collision_fraction=float(np.mean([not c['post_segments_clear'] for r in rows if r['variant']==v for c in r['candidates']])),
@@ -85,7 +91,7 @@ def main(root, output):
     assert all(stream==streams[ARMS[0]] for stream in streams.values())
     assert len({v['scorer_bundle'] for v in hashes.values()})==1
     assert states['balanced']==states['empirical_uniform']
-    with np.load(root/'frequency_balanced/evaluation/pool.npz') as b,np.load(root/'frequency_empirical_uniform/evaluation/pool.npz') as u:
+    with np.load(root/'frequency_balanced'/evaluation/'pool.npz') as b,np.load(root/'frequency_empirical_uniform'/evaluation/'pool.npz') as u:
         assert b.files==u.files
         for k in b.files:np.testing.assert_array_equal(b[k],u[k])
     initial={k:float(np.mean([row_metrics(r)[k] for r in baseline])) for k in row_metrics(baseline[0])}
