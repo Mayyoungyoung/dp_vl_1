@@ -1,5 +1,7 @@
 # Next action
 
-Run resource-capped audit and exact model replay from a committed immutable export.
-Do not restart any historical coordinator. Use the audit to decide a single core
-bottleneck and a minimal controlled training comparison before large experiments.
+Audit and both exact deployed model replays completed. Run the frozen frequency
+coordinator after source export: actual resume verification first, then five
+1200-step head retention controls. Inspect receipts and evaluate all five arms;
+do not select a method from the first cell or treat its launch as completion.
+After results, quantify parent-bootstrap changes and decide the next hypothesis.

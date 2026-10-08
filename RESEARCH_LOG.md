@@ -822,3 +822,20 @@ Paired DEV calibrated means across3x3: single top1 93.7114%,Brier.138960,K4all81
 
 Default dual-factor demo is fixedg0s0 at runs/factored_q_v1/conditional_endpoint_g0_s0/deployment_v2/planner.pt SHA9f819f4cd1d1fb71f771942c07b3071aebdf9b0dd5e88eb6f7105bc8e7e95016. Seven server tests0skip; actual resume equivalence exact;893downloaded files verified against closed remote snapshot. No TEST_LOCKED access. Final report reports/factored_q_v1/RESULTS_REPORT.md, usage DEPLOYMENT.md, evidence-bound PAPER_OUTLINE.md. Functional research prototype delivered, but top-conference method claim remains unsupported. Next scientific focus if continuing: conditional geometric-score shift, not more task-head or controller changes. Historical entries below are chronology only.
 
+
+## 2026-10-09 Research V3 audit and exact replay
+Baseline127f547 preserved; new source1c9c95d. Audit_v3 exit0,25.575s;
+30 prior relevant tests passed and NumPy serialization repair2tests passed.
+1440 unique complete inputs (1152 TRAIN/288 DEV_MODEL),160 families,11760
+H24-valid references. Teacher per-mode count ratios all1, no natural rare-mode
+frequency evidence. No paired-family or score/calibration parent overlap.
+All6912 raw R1 candidate labels independently rechecked; exact continuous
+checker disagreements0. Vertex+midpoint probes missed182 post collisions.
+R1 OracleValid@8 mean95.3704%;40/864 generator-empty requests versus12/864
+scorer-top1 misses with a valid pool. Failures overlap:1252 post collisions,
+387 semantic errors,0 workspace-floor/event failures. Historical portal mode
+counts conflate central-low with some above routes; current coarse relation
+labels leave2141 valid candidates unknown. New operational mode audit queued.
+Actual single-q and endpoint dual bundles replay paths/events/q/selected_indices
+exactly, from genuine observed input tensors. Failed audit_v1/v2 retained.
+No new training completed and no TEST_LOCKED access. Resource bounds unchanged.
