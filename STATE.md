@@ -1,3 +1,17 @@
+## V3 frequency controls complete; safety control running — 2026-10-09
+
+Supersedes the recovery entry below. Read research_v3/RESEARCH_STATE.md.
+Six1200-step frequency arms, corrected complete-fixed-q evaluation and actual
+counterfactual path survival diagnosis are complete. Bias hypothesis passes;
+ordinary controls explain substantial gains, no novel-method claim. All paired
+source/input/exposure checks and strict resume equality passed. Corrected q
+holds its entire observation encoder fixed; old coupled results remain evidence.
+TRAIN-only sparse collision gate passed59/1024. Source609a0b590d0cf07d93ada0ff4c58ccea363a5de2
+safety queue is running in SSH29657;9 tests and100-step preflight complete,
+mean continuation/evaluation complete, worst continuation active at last read.
+Read actual safety_coordinator_v1/closure.json and receipts before any action.
+Public V3 CLI110abd9 is frozen/deployed but not yet executed. No reserved data opened.
+
 ## V3 frequency retention recovery running — 2026-10-09
 
 Read research_v3/RESEARCH_STATE.md and EXPERIMENT_LEDGER.md first. The V3 data,

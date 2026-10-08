@@ -1,3 +1,14 @@
+## V3 current safety control — 2026-10-09
+
+All frequency/recovery/fixed-q/sampled queues closed. Current safety queue from
+609a0b5 is active in SSH29657:9 tests and100-step preflight passed; mean1200 arm
+and its evaluation completed. Worst1200 follows, then safety_analysis_v1. Read
+research_v3/RESEARCH_STATE.md and real receipts; do not duplicate any prior run.
+The CLI check source110abd9 is deployed but not run. After safety closure, run
+scripts.research_v3_check_cli through launch_research_v3.sh with fresh id/output,
+then seal/download completed records and inspect the registered safety gate.
+Resource cap remains GPU1/35%/4CPU, cumulative7200 command seconds including failures.
+
 ## V3 current recovery — 2026-10-09
 
 Frequency coordinatorv3 is already running from immutable5ae75bf in SSH43335.
