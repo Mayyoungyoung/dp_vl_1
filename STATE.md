@@ -1,3 +1,9 @@
+## V3 matched-q closed; new disjoint score-data smoke prepared — 2026-10-09
+
+
+## 2026-10-09 Matched old-domain q completed and rejected
+All12 queue jobs exit0 from85f8213, coordinator95s. Three calibrated Brier values.164112/.174366/.145578, mean.161352 vs fixed.148448; gatefalse. Public seed0 subprocess paths/events exact,q maxdifference within1e-6,selection exact. All pools and original pairedDEV arrays exact; roles disjoint. Same generator validity43.42% SCORE_TRAIN,42.71% DEV_SCORE,39.45% CALIBRATION vs86.81% pairedDEV indicates substantial scoring-domain shift; not proof of pure label shift. New95 files downloaded/hashverified, archive2d0488ec4a8ce99c5eca8afccaced9356b3ba8cc51faf6d1648426a59e979f99. Cumulative2296.288556 command seconds. Register64 fresh paired-layout score families before collection, no existing role reuse, same model and training settings. This isolates ordinary scoring data coverage, not architecture novelty. First6-parent physical smoke gate before remainder. No existing queue running.
+
 ## V3 matched single-q baseline running — 2026-10-09
 
 Current finite queue source85f821367df92ba932365595933e21d61fbd3b97, archive

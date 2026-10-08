@@ -1,7 +1,8 @@
 # Next action
 
-Matched-q finite queue85f8213 ACTUALLY running inSSH65284. Inspect closure
-and actual receipts, never infer success from launch. Four exact pools then
-three1200-step ordinary q fits/calibrations and public seed0 CLI. No duplicate.
-Analyze frozen matched-score gate and all seed outcomes; no novel-method claim.
-Original anchor intervention rejected, no tuning. All other queues closed.
+All existing queues CLOSED. Read PAIRED_SCORE_DATA_PROTOCOL.md. Prepare fresh
+64-family score-domain data after immutable export; unit registration test,
+then first6-parent physical smoke under180s. Inspect initialization/readback
+and one observed image. Only after smoke passes start frozen remaining queue.
+No existing data/roles overwritten; old and matched q gate failures retained.
+No new method or paper acceptance claim. Budget2296.288556/7200 command seconds.

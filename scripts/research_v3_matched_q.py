@@ -15,12 +15,13 @@ from scripts.analyze_paired_selection import select
 ROOT=RUN/'matched_q_v1'
 BUNDLE=OLD_RUN/'reliability/R1_seed0/deployment_seed0/planner.pt'
 GEN=RUN/'safety_mean/last.pt'
+DATASET=dataset
 
 
 def pool(role):
     torch=torch_setup()
     from routeset.observed_probability import load_scored_planner,route_observation_features
-    folder,split=dataset(role)
+    folder,split=DATASET(role)
     rows=[r for r in lines(folder/'observations.jsonl') if r['split']==split]
     labels={r['id']:r for r in lines(folder/'supervision.jsonl') if r['split']==split}
     scorer=load_scored_planner(BUNDLE,'cuda');generator=copy.deepcopy(scorer.generator)
@@ -62,6 +63,20 @@ def check_roles():
         for b in parents:
             if a!=b:assert not parents[a]&parents[b]
     write(ROOT/'roles.json',{k:sorted(v) for k,v in parents.items()})
+
+
+def paired_score_dataset(role):
+    if role=='paired_dev':return dataset('paired_dev')
+    from scripts.research_v3_score_data import DATA
+    assert role in ('SCORE_TRAIN','DEV_SCORE','CALIBRATION')
+    path=DATA/'exports'/role;m=read(path/'manifest.json')
+    assert m['role']==role and m['registration_sha256']==sha(DATA/'registration.json')
+    for name,digest in m['output_sha256'].items():assert sha(path/name)==digest
+    plans=read(DATA/'registration.json')['parent_plan']
+    expected={p['parent_id'] for p in plans if p['role']==role}
+    rows=lines(path/'observations.jsonl')
+    assert {r['parent_id'] for r in rows}==expected and all(r['split']==role for r in rows)
+    return path,role
 
 
 def calibrate(seed):
@@ -138,7 +153,9 @@ def analyze():
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['pool','roles','fit','calibrate','analyze'])
-    p.add_argument('--role',choices=['SCORE_TRAIN','DEV_SCORE','CALIBRATION','paired_dev']);p.add_argument('--seed',type=int,choices=[0,1,2],default=0);a=p.parse_args()
+    p.add_argument('--role',choices=['SCORE_TRAIN','DEV_SCORE','CALIBRATION','paired_dev']);p.add_argument('--seed',type=int,choices=[0,1,2],default=0)
+    p.add_argument('--domain',choices=['old','paired'],default='old');a=p.parse_args()
+    if a.domain=='paired':ROOT=RUN/'matched_q_paired_v1';DATASET=paired_score_dataset
     legacy.RUN=ROOT
     if a.stage=='pool':pool(a.role)
     elif a.stage=='roles':check_roles()
