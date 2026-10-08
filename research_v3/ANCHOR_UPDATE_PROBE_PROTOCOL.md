@@ -25,3 +25,10 @@ batch, no automatic new-method claim or adoption gate. This is a short training
 diagnostic, distinct from the previous read-only derivative probe. Cap120s under
 existing GPU1/35%/4thread budget; decide from the whole result whether a full
 matched estimator ablation is justified.
+
+Post-run access-scope clarification (2026-10-09): the shared generator loader
+materializes permitted historical/paired DEV caches as well as TRAIN. All
+diagnostic index selection, loss, gradients and updates use the explicit1152
+TRAIN index subset only; no DEV-driven choice or optimizer update. Earlier
+no-DEV-access wording is corrected, not retrospectively redefined. No locked
+TEST or scorer-role payload is loaded. Frozen executed source is preserved.

@@ -1,3 +1,15 @@
+## V3 original-witness control ACTIVE — 2026-10-09
+
+Source14da6aa0702870842664fc78f76bb2a67ba02341, source archive
+c57d3d756de915ff5e1373391c92af2c63a4af3c1c772defa98c357d5ea5e183.
+SSH34554 runs immutable run_research_v3_canonical.sh. Tests exit0; training
+actually started. Same historical R1 seed0,1200 updates and full mode matching,
+but only original witnesses instead of5-reference blocks. This isolates ordinary
+within-mode augmentation from coverage assignment; no new-method claim.
+Do not duplicate or edit running source. Inspect canonical_coordinator_v1 and
+actual receipts. All prior anchor/optimizer jobs closed; budget before this
+queue5480.435936/7200 seconds. Goal ACTIVE; final result pending.
+
 ## V3 anchor and optimizer controls CLOSED — 2026-10-09
 
 Source4b259e6b63b4707a2938fc6f657437ea4d4219d5, archive

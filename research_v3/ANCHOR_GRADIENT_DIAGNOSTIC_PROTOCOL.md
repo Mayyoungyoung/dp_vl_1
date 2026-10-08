@@ -35,3 +35,10 @@ No inference input may include boxes/goals; geometry is used only to measure
 the TRAIN loss. No DEV, score, calibration or locked-test role is used by the
 probe. Proposed cap120s, GPU1/35%/4threads, inside remaining V3 command budget.
 This protocol is registered; implementation and execution are still pending.
+
+Post-run access-scope clarification (2026-10-09): the shared generator loader
+materializes permitted historical/paired DEV caches as well as TRAIN. All
+diagnostic index selection, loss, gradients and updates use the explicit1152
+TRAIN index subset only; no DEV-driven choice or optimizer update. Earlier
+no-DEV-access wording is corrected, not retrospectively redefined. No locked
+TEST or scorer-role payload is loaded. Frozen executed source is preserved.

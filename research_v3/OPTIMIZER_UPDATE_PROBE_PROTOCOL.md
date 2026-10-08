@@ -28,3 +28,10 @@ This tests a first-step continuation confound, not long-run benefit, novelty,
 or failure of Adam. No automatic long-training gate. A long continuation, if
 justified by the whole result, needs a separate fixed-budget protocol and
 comparison with the existing fresh-optimizer control.
+
+Post-run access-scope clarification (2026-10-09): the shared generator loader
+materializes permitted historical/paired DEV caches as well as TRAIN. All
+diagnostic index selection, loss, gradients and updates use the explicit1152
+TRAIN index subset only; no DEV-driven choice or optimizer update. Earlier
+no-DEV-access wording is corrected, not retrospectively redefined. No locked
+TEST or scorer-role payload is loaded. Frozen executed source is preserved.

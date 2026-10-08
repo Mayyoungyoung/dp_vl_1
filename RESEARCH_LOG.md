@@ -977,3 +977,11 @@ Goal ACTIVE; no novel advantage established. Next research decision concerns
 reference augmentation versus full-set coverage assignment, not more optimizer
 or anchor tuning. Historical ACTIVE entries below are superseded.
 
+
+## Access-scope wording correction, 2026-10-09
+
+Inspection of scripts/train_paired_modes.py:load_data confirms that diagnostic loaders materialize permitted DEV caches, though only explicit TRAIN indices feed any losses/updates. Corrected prior claims of no DEV payload reading. This does not change computed samples or results and does not involve TEST_LOCKED/scorer-role access. Source exports are preserved.
+
+## Canonical attempt1 timed out, 2026-10-09
+
+8 tests pass. Training source14da6aa hit180s timeout, exit124, receipt180.323454s. Evaluation did not run. Preserve recovery checkpoint and all failure receipts; a separately frozen same-source strict-state resume is registered under research_v3/CANONICAL_RESUME_PROTOCOL.md. No changed objective, lr, planned1200 steps or data. Budget5662.947181/7200 command seconds,1537.052819 remain.

@@ -37,7 +37,10 @@ assignment RNG, lr3e-4/decay1e-4/clip1. Eight scratch step1 checkpoints retained
 Full gradient differences0.70–2.07%; actual update differences3.21–8.16%,
 cosines>=0.99667. Hard mode increases the post-step objective on two batches
 relative to STE and slightly decreases it on two. Both have a large first-step
-increase and similar path-coordinate jumps. No DEV payload is read.
+increase and similar path-coordinate jumps. No DEV samples contribute to these losses or updates. The shared load_data() loader
+does materialize permitted historical/paired DEV caches before explicit TRAIN
+index selection; earlier wording saying no DEV payload is read was too strong.
+No TEST_LOCKED or scorer-role data is loaded by this generator loader.
 
 ## Ordinary optimizer-state probe
 
