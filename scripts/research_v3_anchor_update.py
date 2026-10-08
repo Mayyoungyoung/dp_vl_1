@@ -66,6 +66,10 @@ def main(output,optimizer_control=False):
                 maximum_path_change_m=float((px.cpu()-torch.tensor(before_paths)).abs().max()))
             name=f'batch{batch}_{mode}'
             np.savez_compressed(out/(name+'.npz'),before_paths=before_paths,before_events=before_events,after_paths=px.cpu().numpy(),after_events=pe.cpu().numpy(),ids=[str(data['scene_ids'][j]) for j in ids])
+            if mode=='fresh_optimizer':
+                with np.load(RUN/'anchor_update_probe_v1'/f'batch{batch}_straight_through_peak.npz') as old:
+                    for key,value in [('before_paths',before_paths),('before_events',before_events),('after_paths',px.cpu().numpy()),('after_events',pe.cpu().numpy())]:
+                        np.testing.assert_array_equal(old[key],value)
             torch.save(dict(model=model.state_dict(),optimizer=optimizer.state_dict(),step=1,parent_sha256=source_sha,anchor_mode=model.geometry.anchor_mode,branch=mode,
                 cpu_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state_all(),sampler=rng.bit_generator.state,assignment_rng_before=assignment_state,assignment_rng_after=loss_rng_after),out/(name+'.pt'))
             del model,optimizer,components,xyz,event,details,total,after,px,pe,da
@@ -75,6 +79,9 @@ def main(output,optimizer_control=False):
             a,b=(vecs[k] for k in branches)
             result[key+'_difference_fraction']=float(torch.linalg.vector_norm(a-b)/(torch.linalg.vector_norm(a)+1e-30))
             result[key+'_cosine']=float(torch.dot(a,b)/(torch.linalg.vector_norm(a)*torch.linalg.vector_norm(b)+1e-30))
+        if optimizer_control:
+            assert torch.equal(vectors[branches[0]],vectors[branches[1]])
+            result.update(initial_gradient_exact=True,fresh_previous_prediction_replay_exact=True)
         records.append(result);print({k:v for k,v in result.items() if k!='ids'},flush=True)
     assert tensor_state_digest(base.state_dict())==initial and sha(checkpoint)==source_sha
     write(out/'RESULTS.json',dict(rows=records,parent_sha256=source_sha,parent_unchanged=True,data_fingerprint=geo['fingerprint'],
