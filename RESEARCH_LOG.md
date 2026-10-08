@@ -1019,3 +1019,7 @@ but only explicit TRAIN indices feed diagnostics/updates; no TEST_LOCKED or
 scorer-role payload accessed. Old no-DEV-read wording was too strong.
 Historical ACTIVE entries below are superseded.
 
+
+## TRAIN edit retention closed
+
+Source1df437d,4 tests pass, audit exit0 in27.703155s. Correct-endpoint slot opportunities45/47/32/20 in384 pairs per direction, versus DEV23/40/23/23 in96. Eligible known-mode paths have2-3cm median nearest-reference mean point distance; perturbations narrow it by<1mm. All cases/distances retained; no model forward/update.128 jobs123success5failure;5886.110034/7200 command seconds,1313.889966 remain.7 closure files SHA verified.

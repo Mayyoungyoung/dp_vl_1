@@ -130,7 +130,9 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False,verified_edit_support=False):
+    if verified_edit_support and (linear_control!='mean' or restore_optimizer):
+        raise ValueError('Registered augmentation requires ordinary fresh-optimizer mean continuation')
     if restore_optimizer and linear_control!='mean':
         raise ValueError('Registered optimizer continuation requires the ordinary quadratic control')
     if linear_control is not None and (linear_control not in ('mean','linear') or safety_control is not None or arm!='set_matching'):
@@ -146,8 +148,14 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
     from routeset.observed_training_audit import tensor_state_digest,new_stream_audit,append_indices
     cfg=read(POLICY);steps=steps or cfg['steps'];out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed run cannot be overwritten')
-    assert sha(SUPPORT/'support.npz')==read(SUPPORT/'receipt.json')['support_sha256']
-    with np.load(SUPPORT/'support.npz') as a: support={k:a[k] for k in a.files}
+    support_root=RUN/'verified_edit_support_v1' if verified_edit_support else SUPPORT
+    assert sha(support_root/'support.npz')==read(support_root/'receipt.json')['support_sha256']
+    with np.load(support_root/'support.npz') as a: support={k:a[k] for k in a.files}
+    if verified_edit_support:
+        assert sha(SUPPORT/'support.npz')==read(support_root/'receipt.json')['base_support_sha256']
+        with np.load(SUPPORT/'support.npz') as a:ground_support={k:a[k] for k in ('paths','mask','ids','splits')}
+        ground_index={str(k):i for i,k in enumerate(ground_support['ids'])}
+        np.testing.assert_array_equal(support['ids'],ground_support['ids'][ground_support['splits']=='TRAIN'])
     data,geo,configs,cs,hs,_,labelmap=load_data();index={str(x):i for i,x in enumerate(data['scene_ids'])}
     trainids=np.flatnonzero(support['splits']=='TRAIN');mapped=np.array([index[str(support['ids'][i])] for i in trainids])
     assert len(trainids)==1152 and all(data['splits'][j]=='TRAIN' for j in mapped)
@@ -179,11 +187,13 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         optimizer_initial=tensor_state_digest(buffers(optimizer.state_dict()))
         assert optimizer_initial==tensor_state_digest(buffers(saved['optimizer']))
     scheduler=torch.optim.lr_scheduler.LambdaLR(optimizer,lambda step:1.)
-    settings=dict(arm=arm,steps=steps,policy=cfg,initial_checkpoint_sha256=sha(init),support_sha256=sha(SUPPORT/'support.npz'),
+    settings=dict(arm=arm,steps=steps,policy=cfg,initial_checkpoint_sha256=sha(init),support_sha256=sha(support_root/'support.npz'),
         data_fingerprint=geo['fingerprint'],source_sha256=source_identity(),head_options=saved['config']['head_options'],
         input_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest())
     if arm=='set_canonical':
         settings['reference_contract']='Original first path in each immutable prepare() witness block; exclude four verified variants, preserve every witness mode'
+    if verified_edit_support:
+        settings.update(reference_contract='Verified same-known-mode TRAIN edit positives added; original semantic grounding unchanged',grounding_support_sha256=sha(SUPPORT/'support.npz'),augmentation_receipt_sha256=sha(support_root/'receipt.json'))
     if safety is not None:
         settings.update(safety_control=safety_control,safety_diagnostic_sha256=sha(RUN/'safety_train_diagnostic_v1/RESULTS.json'),
             collision_coefficient=160. if safety_control=='mean' else safety['worst_collision_coefficient'],
@@ -234,8 +244,11 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
             regression=torch.stack([match_loss(pred[i:i+1],truth[i:i+1,:len(sampletags[i])],
                 np.array([sampletags[i]]),lrng) for i in range(len(pred))]).mean()
         else:regression=positive_assignment_loss(pred,truth,valid,'positive',lrng)
-        ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],
-            torch.tensor(valid,device='cuda'),.025)
+        if verified_edit_support:
+            gi=np.array([ground_index[str(support['ids'][s])] for s in si])
+            gx=torch.tensor(ground_support['paths'][gi,:,-1],device='cuda');gm=torch.tensor(ground_support['mask'][gi],device='cuda')
+        else:gx,gm=tx[:,:,-1],torch.tensor(valid,device='cuda')
+        ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],gx,gm,.025)
         if linear_control=='linear':
             from routeset.segment_clearance import path_segment_clearances
             deficits=(.02-path_segment_clearances(xyz,cs[ids],hs[ids])).clamp_min(0)
@@ -342,9 +355,9 @@ def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
-    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');a=p.parse_args()
+    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');p.add_argument('--verified-edit-support',action='store_true');a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled','set_canonical'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer)
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer,a.verified_edit_support)
     else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass',paired_score=a.paired_score)
