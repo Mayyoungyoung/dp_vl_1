@@ -94,3 +94,46 @@ Cumulative99 jobs95success4historical failures,4436.170683/7200 experiment
 command seconds,2763.829317 remain. All queues CLOSED. Goal ACTIVE.
 Next is a TRAIN gradient diagnostic decision, not an authorized outcome claim
 for a new loss. See research_v3/NEXT_ACTION.md; no locked test access.
+
+## V3 ordinary margin pair ACTIVE — 2026-10-09
+
+TRAIN gradient source681babb exit0,36.569954s:12/1024 colliding paths,
+4 finite ratios, fixed linear coefficient0.7072220602395802, median cosine
+.8580494422348532; prospective gate true. Formal pair source84d7e4d, archive
+94dceba6dac1684b73f6ea250bd51815d27bad7402a1979859d4ad10f38be5ee,
+SSH77050 executes run_research_v3_linear.sh.11 geometry/matching tests pass,
+parent predictions/labels exact, q max4.47e-7 replay error. Mean arm1200steps
+completed exit0,267.877952s and evaluation11.665755s. Linear arm ACTUALLY live
+PID4164470, last observed step600; no final comparison yet. Do not duplicate
+or edit frozen launcher/imports. Inspect linear_coordinator_v1/closure.json
+and actual process/receipt. Future comparison includes unchanged complete
+paired-domain q seed0, all288DEV, matched input/target exposure and extra steps.
+Goal remains ACTIVE. Historical closed-state entries below predate this pair.
+
+## V3 ordinary linear margin rejected; all jobs closed — 2026-10-09
+
+Main source84d7e4ddc470bc08230b80a5fc12f033fd916f94, archive
+94dceba6dac1684b73f6ea250bd51815d27bad7402a1979859d4ad10f38be5ee.
+All8 coordinator jobs exit0,577s;11 tests pass. Same initial tensors and exact
+input/target exposure verified. Fixed paired-domain q parent replay exact
+paths/events/labels, q max4.47e-7. Both1200-step continuations complete.
+Linear-minus-mean: validity-1.3455pp CI[-5.0347,2.4740], distinct-.22222,
+rare+.0926pp, Brier+.009351; registered gateFALSE. No weight/margin sweep.
+Extra quadratic training versus parent +.4774pp validity with CI crossing0,
+slightly fewer modes; preserve safety_mean as current reference baseline.
+Follow-up source629043c8a600c8436a257cd5606a281d9b3165cc, archive
+60867fd62f702b28e8b4a6c0b620638e433f5c303999747b209a9d1598384b12:
+both full TRAIN audits exit0. Quadratic/linear collision261/117 of9216,
+semantic errors75/161; DEV collisions200/197 and semantic errors106/150.
+This is a fitting/semantic/generalization tradeoff, not proved gradient conflict.
+252 closed artifact files SHA verified, archive
+482c4ea047d2d556909168e25b8123ea13a6d8db3573be933f2e39377d15c072.
+110 closed jobs106success4historical failures,5091.294504/7200 command seconds,
+2108.705496 remain. No V3 workers or active lock at verified closure.
+Failure figure rendered/visually checked; all12 shared-endpoint failures retained:
+newq seeds0/1/2 give maxq>=.8 on10/11/10 failures, original6. Label-defined
+subgroup is descriptive, not an inference detector or subgroup calibration test.
+Next: registered read-only anchor derivative diagnostic, NOT implemented/run.
+Hard-forward/soft-backward source fact is known; causal harm and novel benefit
+remain unproven. Goal ACTIVE, no external blocker. See linear_v1/REPORT.md and
+ANCHOR_GRADIENT_DIAGNOSTIC_PROTOCOL.md. Historical active entries superseded.

@@ -1,6 +1,28 @@
 # Primary-source novelty audit — accessed 2026-10-09
 
+Additional failure-confidence scope check (official PDF introduction and
+primary abstract, not a reproduction): [Rethinking Confidence Calibration for
+Failure Prediction, ECCV2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136850512.pdf)
+explicitly distinguishes aggregate confidence calibration from separating
+correct and incorrect predictions. Therefore our lower Brier alongside high q
+on shared endpoint failures is not itself a novel research problem.
+[Addressing Failure Prediction by Learning Model Confidence](https://arxiv.org/abs/1910.04851)
+already learns a confidence target for failure detection. A new confidence head
+or an error-prediction objective alone is not sufficient novelty. These are
+classification papers; no claim of equivalent route labels, capacity, task
+performance, or a reproduced robot-planning baseline follows from this review.
+
 This is an initial scope review, not a novelty claim or external benchmark result.
+
+For a possible follow-up on the repository's hard-forward/soft-backward anchor,
+[Bengio et al.](https://arxiv.org/abs/1308.3432) already describe straight-through
+gradient estimation for hard/stochastic operations, and
+[Yin et al.](https://arxiv.org/abs/1903.05662) study coarse-gradient behavior in
+a particular activation-quantized model. Their scope does not prove our anchor
+is harmful or that removing its surrogate derivative helps route learning.
+Any stop-gradient or estimator ablation is an ordinary control unless a
+distinct mechanism and empirical advantage are established. Abstract-level
+review only; no reproduction or transfer of their convergence assumptions.
 
 - [3D HAMSTER paper](https://arxiv.org/abs/2606.31329) and
   [official implementation](https://github.com/DAVIAN-Robotics/3D_HAMSTER):
