@@ -1,28 +1,33 @@
 # Next action
 
-## V3 frozen factorial and TRAIN attribution CLOSED — 2026-10-09
+## V3 empirical phase CLOSED; resource limit first verified — 2026-10-09
 
-142 jobs137success5retained experiment failures;6814.223800019/7200 command
-seconds spent,385.776199981 remain. All queues CLOSED, no active lock at latest
-packaging. One pre-job relative-launcher path failure retained separately.
-Frozen source d3e48492;both1200steps done,10tests pass, parameter/actual sampler
-hash checks pass. Frozen augmentation retention+2.7663pp CI[.8182,4.9935] versus
-frozen plain, below5pp gate; interaction with unfrozen augmentation crosses0.
-Frozen plain/aug valid81.6406%/83.4635% below parent86.8056%. Both gatesFALSE.
-TRAIN audits source f96b94d4, both exit0 in21.598520/21.375803s. Frozen plain:
-8884valid/177collisions/161semanticwrong; frozen augmented:8885/228/109 of9216.
-Augmentation exchanges52 fewer endpoint errors for51 more collisions on TRAIN.
-Original safety_mean remains strongest established reference; no default change.
-41 factorial and12 TRAIN audit closure files SHA verified; reports/figures at
-research_v3/frozen_factorial_v1. No novel method established; Gate B/C/D false.
+All queues terminal.148 experiment jobs:142success6retained failures;
+7179.431179778/7200 experiment command seconds,20.568820222 remain. Separate
+pre-job launcher path failure remains preserved outside these job counts.
+All-mode source60e562f:5jobs exit0,10tests pass,1200steps completed273.277296s.
+GateFALSE: fixed-source retention1731 vs1788 known-augmentation vs1872parent;
+all-minus-known-augmentation-2.6279pp CI[-4.8286,-.3741]. Teacher-known losses67
+outweigh unreferenced gains10. Validity81.8576% vsparent86.8056%. Keep safety_mean.
+All-mode TRAIN source dc5f5cc6: overall exit124 at50.535494s. Full predictions/
+checker results saved:8787/9216valid,294collisions,142semantic errors,8all-wrong
+endpoint requests. Subsequent three-model vocabulary statistics NOT completed.
+Do not rerun/relocate the timed-out workload to bypass cap; preserve partials.
+28primary plus7partial closure files individually SHA verified.
 
-Local TRAIN-only unreferenced audit source ed51502 completed:853 unique excluded
-positive paths add760 destination/mode pairs across608requests/125families.
-All five new labels contain over-passage; expanded modes6-13 per request;
-M8 unavoidable missing classes768->1422. See unreferenced_train_v1. No DEV or
-new payload/model access in this local audit; server budget unchanged.
-Next ALL_MODE_EDIT_COMPLETION_PROTOCOL.md registered NOT IMPLEMENTED/RUN:
-one bounded ordinary all-mode versus known-mode data control, same parent,
-explicit group RNG divergence from larger class sets, caps370s within385.7762.
-No automatic new-method claim or budget expansion. Goal ACTIVE. Prior active
-entries superseded. All TEST_LOCKED and source/resource restrictions retained.
+FINAL_RESEARCH_REPORT.md, ACCEPTANCE_AUDIT_20261009.md and REPRODUCE.md now
+summarize actual scope, failures, missing evidence and recovery conditions.
+16 CSV/checkpoint rows verified;3 audit reports rebuilt text-exact;3D failure
+figure replay pixel-exact. Artifacts/optimizer/RNG/source/commands retained.
+GateA scoped positive, GateB/C/D unmet. No new algorithm advantage, novel-paper
+files conditional on core evidence remain unwritten; no TEST_LOCKED access.
+
+Resource blocker FIRST observed this goal turn:20.57s cannot support observed
+250-277s training or a fair two-arm comparison (~570s). Three paired seeds need
+~1700s+, excluding data/baseline construction; more budget is necessary, not
+sufficient for a paper. No claim that all scientific hypotheses are exhausted.
+Goal remains ACTIVE; do not mark complete. Blocked audit count1, not yet eligible
+for status=blocked. Next continuation: revalidate actual receipts/no live job,
+finish any material delivery issue if found; otherwise report same resource
+condition and follow three-consecutive-turn rule. Do not invent a small training
+substitute, weaken gates, consume locked tests or raise budget without approval.

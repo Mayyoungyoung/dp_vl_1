@@ -1,3 +1,46 @@
+## V3 empirical phase CLOSED; resource limit first verified — 2026-10-09
+
+All queues terminal.148 experiment jobs:142success6retained failures;
+7179.431179778/7200 experiment command seconds,20.568820222 remain. Separate
+pre-job launcher path failure remains preserved outside these job counts.
+All-mode source60e562f:5jobs exit0,10tests pass,1200steps completed273.277296s.
+GateFALSE: fixed-source retention1731 vs1788 known-augmentation vs1872parent;
+all-minus-known-augmentation-2.6279pp CI[-4.8286,-.3741]. Teacher-known losses67
+outweigh unreferenced gains10. Validity81.8576% vsparent86.8056%. Keep safety_mean.
+All-mode TRAIN source dc5f5cc6: overall exit124 at50.535494s. Full predictions/
+checker results saved:8787/9216valid,294collisions,142semantic errors,8all-wrong
+endpoint requests. Subsequent three-model vocabulary statistics NOT completed.
+Do not rerun/relocate the timed-out workload to bypass cap; preserve partials.
+28primary plus7partial closure files individually SHA verified.
+
+FINAL_RESEARCH_REPORT.md, ACCEPTANCE_AUDIT_20261009.md and REPRODUCE.md now
+summarize actual scope, failures, missing evidence and recovery conditions.
+16 CSV/checkpoint rows verified;3 audit reports rebuilt text-exact;3D failure
+figure replay pixel-exact. Artifacts/optimizer/RNG/source/commands retained.
+GateA scoped positive, GateB/C/D unmet. No new algorithm advantage, novel-paper
+files conditional on core evidence remain unwritten; no TEST_LOCKED access.
+
+Resource blocker FIRST observed this goal turn:20.57s cannot support observed
+250-277s training or a fair two-arm comparison (~570s). Three paired seeds need
+~1700s+, excluding data/baseline construction; more budget is necessary, not
+sufficient for a paper. No claim that all scientific hypotheses are exhausted.
+Goal remains ACTIVE; do not mark complete. Blocked audit count1, not yet eligible
+for status=blocked. Next continuation: revalidate actual receipts/no live job,
+finish any material delivery issue if found; otherwise report same resource
+condition and follow three-consecutive-turn rule. Do not invent a small training
+substitute, weaken gates, consume locked tests or raise budget without approval.
+
+## V3 all-mode completion ACTIVE — 2026-10-09
+
+Source60e562f483fcda7455329b105b06b495c6e23885 archive
+47237ae987e88b9915e446c116b8f90d48dc56d4a50b5eff2d2a4849855f452f.
+SSH99502 runs immutable run_research_v3_all_mode_completion.sh. Tests exit0;
+preparation exit0 in21.561510s, every checker outcome replayed and old pool
+preserved.1200-step unfrozen all-mode training actually launched. No result yet.
+Budget before queue6814.223800/7200,385.776200 remain; registered caps370s.
+Do not restart/duplicate, modify frozen source, expand budget or infer success.
+Follow actual job receipts. Goal ACTIVE; prior completed controls remain negative.
+
 ## V3 frozen factorial and TRAIN attribution CLOSED — 2026-10-09
 
 142 jobs137success5retained experiment failures;6814.223800019/7200 command
