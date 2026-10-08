@@ -1,5 +1,5 @@
 import numpy as np
-from scripts.research_v3_audit import exact_clear, probes_clear
+from scripts.research_v3_audit import exact_clear, probes_clear, plain
 
 
 def test_continuous_multibox_check_finds_collision_between_clear_probes():
@@ -10,3 +10,9 @@ def test_continuous_multibox_check_finds_collision_between_clear_probes():
     assert exact_clear(paths,cs,hs).tolist()==[False,True]
     refined = np.stack([paths[:,0],(paths[:,0]+paths[:,1])/2,paths[:,1]],1)
     np.testing.assert_array_equal(exact_clear(paths,cs,hs),exact_clear(refined,cs,hs))
+
+
+def test_audit_numpy_counts_are_json_serializable():
+    import json
+    value={'rows':[{'n':np.int64(3),'valid':np.bool_(True),'score':np.float32(.5)}]}
+    assert json.loads(json.dumps(plain(value)))=={'rows':[{'n':3,'valid':True,'score':.5}]}

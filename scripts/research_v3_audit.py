@@ -18,6 +18,14 @@ from routeset.geometry import segment_aabb_intersection
 from routeset.geometric_modes import portal_word, encode_word
 
 
+def plain(value):
+    """Serialize NumPy audit counts without changing values or labels."""
+    if isinstance(value, np.generic):return value.item()
+    if isinstance(value, dict):return {k:plain(v) for k,v in value.items()}
+    if isinstance(value, (list, tuple)):return [plain(v) for v in value]
+    return value
+
+
 def mode(path, cfg):
     value = crossing_signature(path, cfg)
     return None if value is None else '|'.join(value)
@@ -170,8 +178,8 @@ def main(output):
     write(out/'metrics.json', dict(data=data, generator=results, taxonomy=errors,
         mode_scope='Known positive low/over relation witnesses; report historical portal words separately. Neither is proven homotopy.',
         source_inputs_sha256=inputs, observed_image_sha256=image_hashes))
-    write(out/'candidate_rows.json', allrows)
-    print(json.dumps(dict(data=data, generator=results, taxonomy=errors)), flush=True)
+    write(out/'candidate_rows.json', plain(allrows))
+    print(json.dumps(plain(dict(data=data, generator=results, taxonomy=errors))), flush=True)
 
 
 def smoke(output):
