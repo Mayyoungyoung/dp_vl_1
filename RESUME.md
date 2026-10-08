@@ -1,3 +1,24 @@
+## V3 new paired score-data queue ACTIVE — 2026-10-09
+
+Current immutable source9bbc0213a542815cd767716ddc5e5869f5d19d4c, archive
+402174d005255ab69fb234383f2a62b48e7d96ea95772343944de0c596c33ff2.
+SSH65969 runs scripts/run_research_v3_paired_score.sh; do not duplicate.
+Registration test and preparation passed; first6 physical smoke parents exit0
+in74.554165s, all initialization true, observed first image inspected.
+Remaining186 collector is RUNNING (last inspected indices40/41 complete,
+42total including smoke, no failures at that read). It then exports3 separate
+roles, genuine Qwen per role, four exact pools, three ordinary q fits/calibrations,
+seed0 public CLI and analysis. Read paired_score_coordinator_v1/closure.json,
+jobs/paired_score_collect_remaining and collection receipts before action.
+All older queues closed. New source hashes MUST NOT replace running9bbc export.
+Server cumulative completed budget2377.000461 seconds before remaining collector;
+running duration not yet included. Collection timeout2220s, total V3cap7200s.
+Current matched_old q gate false; source85f8213 scores .1641/.1744/.1456 Brier.
+New calibration-only controls prospectively registered while collection running
+in CALIBRATION_CONTROL_PROTOCOL.md; local2 tests passed. They are NOT launched
+or exported yet. Run after paired queue closes from a fresh immutable export.
+Core novelty remains unestablished. Goal ACTIVE, no final-paper completion claim.
+
 ## V3 matched-q closed; new disjoint score-data smoke prepared — 2026-10-09
 
 

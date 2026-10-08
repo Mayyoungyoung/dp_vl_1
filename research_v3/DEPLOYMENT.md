@@ -28,4 +28,4 @@ F:/dpvlm/runs/research_v3_checkpoint_20261009/runs/research_v3_v1/public_cli_v1�
 生成器SHA0ffc30128082061cb7e1cff0e66068b2ab63a9014007cab567b1270e943fbf09；
 固定完整评分包SHA5718fd973d1908307987cdac06c2886f4670fba7ed06cc1ababe9fe76323d4ca。
 原始优化器/RNG/sampler在各训练输出的recovery.pt与last.pt中保留。
-不同生成器的新增候选分布尚未做新的独立评分拟合/校准；q不是有效性保证。
+平均惩罚生成器已做三个普通匹配评分器的独立拟合/校准，但旧评分分布门槛失败，未替换本演示默认完整评分器。新配对布局评分数据实验仍在运行；q不是有效性保证。
