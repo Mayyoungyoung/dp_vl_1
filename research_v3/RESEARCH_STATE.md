@@ -1,3 +1,15 @@
+## V3 matched single-q baseline running — 2026-10-09
+
+Current finite queue source85f821367df92ba932365595933e21d61fbd3b97, archive
+057294dcf07e24f18a6569801a75926c2f20ccb3a3e0a9801d5e7f694d05373f,
+SSH65284 actually runs scripts/run_research_v3_matched_q.sh. This freezes
+safety_mean proposal model and original score feature encoder, constructs
+four role-specific exact pools, trains/calibrates all3 ordinary q seeds.
+Check matched_q_coordinator_v1/closure.json and receipts before action;
+no duplicate launch. Anchor TRAIN gate passed but full DEV route gate FAILED:
+valid+1.345pp CI crosses0, any-valid unchanged, Brier worsened.05185.
+No anchor adoption or bandwidth tuning. Core novelty remains unsupported.
+
 # Research V3 state — 2026-10-09
 
 Status: audit and six frequency controls completed; gradient-matched safety control completed and rejected, no novel-method claim. Baseline commit 127f547;

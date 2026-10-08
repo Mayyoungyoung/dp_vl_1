@@ -864,3 +864,5 @@ Source cb695826f46d9256ea908c9ca02ff62e3de4ade3, archive921223425f7cabb5f04e722f
 
 ## 2026-10-09 Ordinary anchor intervention rejected
 Source33485a0dfb8b864cc5150b1abc8e6249062575a5 archive9c2c19b429e269b1847a638811c7274983c63b12e5541a35dc4f4ea8d60011b2. All13 tests pass. All288DEV evaluation exit0; analysis exit0. Validity+1.345pp,CI[-.0434,2.7344] crosses0; any-valid unchanged; Brier worsens.051848 CI[.033505,.070861]. Frozen gate false. Reject default adoption and no bandwidth tuning. Original safety_mean remains unchanged. New information from next finite queue: ordinary single-q matched to stronger generator rather than fixed historical transfer. Three scorer seeds use exact same candidate pool and original complete feature encoder; original score/calibration parent roles fixed. This is fair baseline completion, not new-method evidence. Total2202.868517 seconds before matched queue.
+
+Matched q source85f8213/archive057294dcf07e24f18a6569801a75926c2f20ccb3a3e0a9801d5e7f694d05373f actually launchedSSH65284. Local state append initially failed due implicit GBK decoding; corrected explicitUTF8, no experiment source modified or result lost.

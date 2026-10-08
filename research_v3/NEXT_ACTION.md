@@ -1,8 +1,7 @@
 # Next action
 
-Anchor intervention rejected, no bandwidth sweep. Complete ordinary matched-q
-baseline using MATCHED_Q_PROTOCOL.md. Frozen safety_mean generator, complete
-original score features, separate SCORE_TRAIN/DEV_SCORE/CALIBRATION roles,
-all3 scorer seeds; exact candidate replay first. Code prepared, not launched
-at this entry. Check matched_q_coordinator_v1 closure and receipts before action.
-No new-mechanism or final paper claim; research continues.
+Matched-q finite queue85f8213 ACTUALLY running inSSH65284. Inspect closure
+and actual receipts, never infer success from launch. Four exact pools then
+three1200-step ordinary q fits/calibrations and public seed0 CLI. No duplicate.
+Analyze frozen matched-score gate and all seed outcomes; no novel-method claim.
+Original anchor intervention rejected, no tuning. All other queues closed.
