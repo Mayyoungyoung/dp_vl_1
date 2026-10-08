@@ -1,3 +1,19 @@
+## V3 frozen factorial CLOSED; TRAIN failure audit REGISTERED — 2026-10-09
+
+All6 source d3e48492 jobs exit0;10tests pass, coordinator549s. Both1200-step
+frozen encoders retain exact initial tensors. Registered augmentation and plain
+freezing gatesFALSE. Frozen plain/aug valid81.6406%/83.4635% versus parent86.8056%;
+retention1717/1777 versus1872 of2169. Aug-minus-plain retention+2.7663pp
+CI[.8182,4.9935], but interaction with unfrozen augmentation crosses0.
+No ordinary default change or novel-method claim. Report frozen_factorial_v1.
+41 closure files SHA verified; archive06dd5fe201476d53497661783b592c9760391260f12c6e12935fb426c5610c22.
+140 jobs135success5retained experiment failures;6771.249477/7200 command
+seconds,428.750523 remain. One pre-job relative-launcher failure separately
+preserved, not counted as an experiment. No active experiment queue.
+Next FROZEN_FACTORIAL_TRAIN_AUDIT_PROTOCOL.md registered, not yet run at this
+commit:two fullTRAIN final-state audits cap60s each; no parameter updates.
+Goal ACTIVE; Gate B/C/D false, no TEST_LOCKED access. Prior ACTIVE superseded.
+
 ## V3 frozen encoder factorial ACTIVE — 2026-10-09
 
 Immutable source d3e48492b9eda3c5b665ab972285c21eb5ed8675, archive
