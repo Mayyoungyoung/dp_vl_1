@@ -1,6 +1,6 @@
 # Research V3 state — 2026-10-09
 
-Status: phase-one audit and five frequency controls completed; equal-target control running, no novel-method claim. Baseline commit 127f547;
+Status: audit and six frequency controls completed; gradient-matched safety control running, no novel-method claim. Baseline commit 127f547;
 branch codex/multiroute-v2. Existing untracked work preserved separately.
 
 Historical evidence: R2/R3 cross-scene correspondence failed against R1 across
@@ -33,11 +33,19 @@ deployment q replay passed. All five actual input streams/initializations match;
 uniform and balanced final tensors/pools are identical. Replayed exposure agrees
 with checkpoints:90:10 leaves272 request-minority modes unexposed,98:2 leaves3915.
 
-ACTUAL current coordinator: sampled_coordinator_v1 from immutable
-daf6c013e1152a8ea0e10775f4c294572239f789, SSH53093. Four server tests passed;
-train set_sampled1200, fixed-q evaluate, equal-budget analysis and concrete-path
-counterfactual diagnosis in sequence. Do not restart completed original arms.
-ArchiveSHA d98be20eeb242f7e60298cae8151b372824ac4b8b1cede4310f4f188e59e45cb.
+Equal-target control and counterfactual diagnosis fromdaf6c01 completed exit0.
+set_sampled rare57.685%,valid76.866%,distinct6.149; beats sampled balanced but
+loses to full-set matching. Full matching almost eliminates valid duplicates.
+Under open-to-closed edit it loses76/498 still-valid source witness modes;
+mode substitutions and finite output budget must not be mislabeled failures.
+
+TRAIN diagnosis24c9e42:59/1024 paths collide, all59<=5 bad segments,38 one segment;
+prospective safety-control gate true. Coefficient10.158783248832323 fixed by
+TRAIN gradient ratios. ACTUAL safety preflight/queue from immutable
+609a0b590d0cf07d93ada0ff4c58ccea363a5de2, SSH29657: geometry tests completed,
+100-step preflight then mean/worst1200-step paired continuation and evaluation.
+ArchiveSHA2b406d405ee10a83b60d060688d3627a18fb330f43c60608d78d7d1d3d2c35c8.
+This is a conventional strong-baseline test, not a proposed novel mechanism.
 
 Resources: SSH wzy3090 only; GPU1 UUID GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab,
 35% memory, four CPU threads, existing environment. Exploratory launcher budget
