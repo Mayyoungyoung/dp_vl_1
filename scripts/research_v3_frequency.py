@@ -122,7 +122,7 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
     torch=torch_setup()
     from scripts.train_paired_modes import load_data, source_identity
     from scripts.train_observed_geometry import batch_inputs
@@ -139,7 +139,15 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
     data,geo,configs,cs,hs,_,labelmap=load_data();index={str(x):i for i,x in enumerate(data['scene_ids'])}
     trainids=np.flatnonzero(support['splits']=='TRAIN');mapped=np.array([index[str(support['ids'][i])] for i in trainids])
     assert len(trainids)==1152 and all(data['splits'][j]=='TRAIN' for j in mapped)
-    init=OLD_RUN/'R1_seed0/last.pt';saved=torch.load(init,map_location='cpu',weights_only=False)
+    init=OLD_RUN/'R1_seed0/last.pt'
+    safety=None
+    if safety_control is not None:
+        assert arm=='set_matching' and safety_control in ('mean','worst')
+        safety=read(RUN/'safety_train_diagnostic_v1/RESULTS.json')
+        assert safety['ordinary_safety_control_gate']
+        init=RUN/'frequency_set_matching/last.pt'
+        assert sha(init)==safety['checkpoint_sha256']
+    saved=torch.load(init,map_location='cpu',weights_only=False)
     torch.manual_seed(cfg['seed']);np.random.seed(cfg['seed']);random.seed(cfg['seed'])
     rng=np.random.default_rng(cfg['seed']);lrng=np.random.default_rng(cfg['seed']+6100)
     model=ProbabilisticGeometryRouteHead(**saved['config']['head_options']).cuda();model.load_state_dict(saved['model'])
@@ -148,6 +156,10 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
     settings=dict(arm=arm,steps=steps,policy=cfg,initial_checkpoint_sha256=sha(init),support_sha256=sha(SUPPORT/'support.npz'),
         data_fingerprint=geo['fingerprint'],source_sha256=source_identity(),head_options=saved['config']['head_options'],
         input_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest())
+    if safety is not None:
+        settings.update(safety_control=safety_control,safety_diagnostic_sha256=sha(RUN/'safety_train_diagnostic_v1/RESULTS.json'),
+            collision_coefficient=160. if safety_control=='mean' else safety['worst_collision_coefficient'],
+            continuation_scope='Fresh optimizer from fixed full-set checkpoint; same1200-step input/target stream in both arms')
     audit=new_stream_audit(model,rng.bit_generator.state,torch.get_rng_state());initial=tensor_state_digest(model.state_dict())
     exposure=Counter();unique=set();history=[];start=0
     if resume:
@@ -189,6 +201,11 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
         ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],
             torch.tensor(valid,device='cuda'),.025)
         clear=segment_clearance_loss(xyz,cs[ids],hs[ids])+workspace_floor_loss(xyz,floors[ids])
+        if safety_control=='worst':
+            from routeset.segment_clearance import path_segment_clearances
+            deficits=(.02-path_segment_clearances(xyz,cs[ids],hs[ids])).clamp_min(0)
+            clear=(safety['worst_collision_coefficient']/160*deficits.square().amax(-1).mean()
+                +workspace_floor_loss(xyz,floors[ids]))
         loss=regression+.02*ground+160*clear
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite pilot loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
@@ -277,9 +294,10 @@ def evaluate(name,fixed_q=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q']);p.add_argument('--arm',default='empirical_uniform')
-    p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true');a=p.parse_args()
+    p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
+    p.add_argument('--safety-control',choices=['mean','worst']);a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume)
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control)
     else:evaluate(a.name,fixed_q=a.stage=='evaluate_fixed_q')

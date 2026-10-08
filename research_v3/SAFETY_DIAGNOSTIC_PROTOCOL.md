@@ -25,3 +25,12 @@ continuation; same fixed q. Require validity gain>=2pp with positive family CI,
 distinct valid modes gain>=0.15 and rare recall loss<=2pp before replication.
 Report failures and all metrics regardless of gate. This remains an ordinary
 strong-baseline test. It cannot establish algorithmic novelty by itself.
+
+Actual TRAIN diagnostic24c9e42 completed:59/1024 path states collide, all59 have
+at most5 offending segments,38 have one. Gate passes. Frozen worst coefficient
+10.158783248832323 from the four gradient norm ratios. No updates were used to
+choose it. Two-arm continuation starts from identical full-set last1200 with
+fresh identical optimizers; it does not alter or resume the finished original
+training output. All observations, reference sets and1200 input batches repeat
+identically across the two arms. This is explicitly an objective-allocation
+control and extra training budget, not equal-cost comparison with initial R1.
