@@ -91,7 +91,7 @@ class ObservedGeometryEncoder(nn.Module):
     """
     def __init__(self, feature_dim=4096, width=128, point_width=64, anchor_mode='soft'):
         super().__init__()
-        if anchor_mode not in ('soft', 'straight_through_peak', 'local_mass_peak'):
+        if anchor_mode not in ('soft', 'straight_through_peak', 'local_mass_peak', 'hard_peak'):
             raise ValueError('unsupported anchor_mode')
         self.anchor_mode = anchor_mode
         self.feature_dim, self.width, self.point_width = feature_dim, width, point_width
@@ -128,12 +128,13 @@ class ObservedGeometryEncoder(nn.Module):
         safe_xyz = torch.where(valid_mask[..., None], world_xyz, torch.zeros_like(world_xyz))
         soft_anchor = (weights[..., None] * safe_xyz).sum(1)
         anchor = soft_anchor
-        if self.anchor_mode == 'straight_through_peak':
+        if self.anchor_mode in ('straight_through_peak','hard_peak'):
             peak_index = weights.masked_fill(~valid_mask, float('-inf')).argmax(1)
             peak_anchor = safe_xyz[torch.arange(batch, device=safe_xyz.device), peak_index]
             # Forward exactly equals an existing valid observed point. Backward
             # follows the unchanged soft spatial expectation. No label is used.
-            anchor = peak_anchor.detach() + (soft_anchor-soft_anchor.detach())
+            anchor = (peak_anchor.detach() + (soft_anchor-soft_anchor.detach())
+                      if self.anchor_mode=='straight_through_peak' else peak_anchor)
         elif self.anchor_mode == 'local_mass_peak':
             # Ordinary inference-only intervention; no target or oracle inputs.
             if self.training:
