@@ -843,3 +843,7 @@ No new training completed and no TEST_LOCKED access. Resource bounds unchanged.
 ## 2026-10-09 V3 frequency recovery verified
 Immutable5ae75bf, archiveSHA f1d084e81bcb2224159bb69305f409c0750f97fc8b878392debe95ebc3518856. Coordinatorv2 history mismatch retained. Fixed planned-step logging passes five tests and actual100 versus50+50 strict full checkpoint equality. Coordinatorv3 SSH43335 now runs five1200-step arms in sequence. Uniform arm finished training/evaluation; no complete comparison yet. New read-only exposure/integrity analysis prepared; local deterministic replay test passed. Locked data untouched.
 
+
+## 2026-10-09 Frequency hypothesis supported; ordinary-control explanation remains
+All five1200-step arms exit0. Minority known recall uniform44.641%,90:10 6.904%,98:2 zero; both prospective gates pass. Ordinary full-set matching64.358%, valid82.205%, distinct6.566 but5.1x reference processing. Fixed-q correction2550c9d froze complete score feature encoder; old coupled-feature results retained. Actual replay exact; paths/events/labels unchanged across correction. Integrity/exposure audit exit0; all input streams/initializations equal, uniform/balanced outputs exact. New equal307,200-target stratified control fromdaf6c01 actually running inSSH53093, followed by concrete-path survival diagnostic. Four new server tests passed. No independent final result or novel mechanism claimed.
+
