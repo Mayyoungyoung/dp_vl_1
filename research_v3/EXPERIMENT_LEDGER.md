@@ -36,3 +36,11 @@ new padding tuple omitted the H24 coordinate dimension (61.301s including data
 load). Original coordinator closed exit1. Add shape/mask-preserving padding
 test and new v2 coordinator/profile names; keep the initial directory unchanged.
 Support data and the registered scientific protocol are unchanged.
+
+Frequency coordinator v2 source d5976f5 closed exit1 at the strict resume check.
+Both 100-step models trained successfully; comparison reached history after
+model/optimizer/RNG fields, but the paused arm stored an extra step50 history
+entry. Do not weaken the equality checker. Fix the logging schedule to use the
+planned final step, not pause boundary, and rerun 100 versus50+50 in fresh v3
+outputs. Preserve all original checkpoints and failed receipt. Formal five-arm
+training has not started. Server inspection 2026-10-09 confirms no V3 live worker.

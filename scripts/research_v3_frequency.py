@@ -91,6 +91,11 @@ def pad_targets(target, targete):
     return paths,events,valid
 
 
+def record_history(step, planned_steps):
+    """A pause must not change the experiment's deterministic log schedule."""
+    return step % 100 == 0 or step == planned_steps
+
+
 def match_loss(pred,target,tags,rng):
     import torch
     from scipy.optimize import linear_sum_assignment
@@ -176,7 +181,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite pilot loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
         optimizer.step();scheduler.step()
-        if step%100==0 or step==end:
+        if record_history(step,steps):
             history.append(dict(step=step,loss=float(loss),regression=float(regression),clearance=float(clear)))
             print(json.dumps(history[-1]),flush=True)
         if step%300==0 or step==end:atomic_checkpoint(out/'recovery.pt',state(step))

@@ -1,7 +1,13 @@
 import copy
 import numpy as np
 import torch
-from scripts.research_v3_frequency import match_loss, probabilities, pad_targets
+from scripts.research_v3_frequency import match_loss, probabilities, pad_targets, record_history
+
+
+def test_pause_does_not_add_history_or_change_resume_schedule():
+    uninterrupted=[s for s in range(1,151) if record_history(s,150)]
+    resumed=[s for part in (range(1,51),range(51,151)) for s in part if record_history(s,150)]
+    assert uninterrupted == resumed == [100,150]
 
 
 def test_frequency_mass_is_about_demonstrations_not_validity():
