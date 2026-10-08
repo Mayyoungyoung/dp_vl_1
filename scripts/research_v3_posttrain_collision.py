@@ -17,7 +17,7 @@ def main(output,checkpoint_name='safety_mean'):
     rows=[r for r in lines(folder/'observations.jsonl') if r['split']=='TRAIN']
     labels={r['id']:r for r in lines(folder/'supervision.jsonl') if r['split']=='TRAIN'}
     assert len(rows)==1152 and len({r['parent_id'].rsplit('_',1)[0] for r in rows})==128
-    assert checkpoint_name in ('safety_mean','margin_mean','margin_linear','optimizer_restored','verified_edit_augmented','frozen_encoder_plain','frozen_encoder_augmented')
+    assert checkpoint_name in ('safety_mean','margin_mean','margin_linear','optimizer_restored','verified_edit_augmented','frozen_encoder_plain','frozen_encoder_augmented','verified_edit_all_modes')
     checkpoint=RUN/checkpoint_name/'last.pt';saved=torch.load(checkpoint,map_location='cpu',weights_only=False)
     model=ProbabilisticGeometryRouteHead(**saved['config']['head_options']).cuda()
     model.load_state_dict(saved['model']);model.eval();torch.manual_seed(0)
@@ -65,4 +65,4 @@ def main(output,checkpoint_name='safety_mean'):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--checkpoint-name',default='safety_mean',choices=['safety_mean','margin_mean','margin_linear','optimizer_restored','verified_edit_augmented','frozen_encoder_plain','frozen_encoder_augmented']);a=p.parse_args();main(a.output,a.checkpoint_name)
+    p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--checkpoint-name',default='safety_mean',choices=['safety_mean','margin_mean','margin_linear','optimizer_restored','verified_edit_augmented','frozen_encoder_plain','frozen_encoder_augmented','verified_edit_all_modes']);a=p.parse_args();main(a.output,a.checkpoint_name)
