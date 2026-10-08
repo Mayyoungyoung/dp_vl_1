@@ -191,3 +191,7 @@ but only explicit TRAIN indices feed diagnostics/updates; no TEST_LOCKED or
 scorer-role payload accessed. Old no-DEV-read wording was too strong.
 Historical ACTIVE entries below are superseded.
 
+
+## Verified augmentation full TRAIN attribution closed; frozen factorial registered
+
+Source8866936, full1152TRAIN audit exit0 in21.536214s:8842/9216 valid,192 collisions,187 semantic errors,11 all-endpoint-wrong requests. Six closure files SHA verified. Compared with fresh continuation, collision reduces69 but semantic errors increase112. This is not solely a DEV gap.134 jobs129success5failures,6223.231135/7200 command seconds used. Frozen-input encoder2x2 ordinary control registered before new outputs; two new arms cap840s. No gate/new-method/default adoption.

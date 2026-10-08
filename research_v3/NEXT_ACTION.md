@@ -1,27 +1,20 @@
 # Next action
 
-All queues CLOSED.126 jobs121success5preserved failures;5857.809212/7200
-command seconds used,1342.190788 remain. See STRONG_COUNTERFACTUAL_CLOSURE_ARTIFACTS_20261009.json and earlier two closure manifests. No default model changes.
+## V3 verified augmentation CLOSED; frozen factorial REGISTERED — 2026-10-09
 
-New ordinary controls reject long hard-anchor training, optimizer-reset causal
-claims and a simple within-mode-augmentation explanation. Keep original
-safety_mean and all three paired-domain q seeds; no more weight/lr/anchor sweeps.
+134 jobs129success5retained failures;6223.231134932/7200 experiment command
+seconds spent,976.768865068 remain. All existing queues CLOSED. Verified edit
+augmentation gateFALSE: retention+.5994pp CI[-2.8392,3.9172] versus fresh,
+validity-3.6892pp and Brier+.022907. Parent also exceeds both continuations.
+TRAIN augmented collision192 vs261 fresh but semantic errors187 vs75;
+DEV collision220 vs200, semantic175 vs106. All artifacts SHA verified.
+Read research_v3/verified_edit_v1/REPORT.md and closure manifests.
 
-Current strong-baseline edit audit still finds23/40/23/23 mode opportunities
-in already-correct-endpoint or duplicate slots across the four directions.
-Many are known teacher modes. Shared endpoint errors explain another large
-part of the raw gap. Read strong_edit_decomposition_v2/REPORT.md before
-reusing the older stage1 counterfactual numbers or proposing a mechanism.
-
-Implement and run the prospectively registered TRAIN_EDIT_RETENTION_PROTOCOL.md
-next. Reuse exact sealed1152 TRAIN predictions, no new forward; check matching
-source/goal conditions, all4 directions and teacher-nearest distances. This
-separates a learnable residual on TRAIN from pure generalization and tests
-whether prospective verified positives add geometry beyond existing references.
-No automatic training or new-method claim. Any later correspondence objective
-must beat identical verified-data augmentation and the strong ordinary baseline.
-Historical R2/R3 and45-factor-q negative results remain constraints.
-
-Goal ACTIVE; Gate B/C/D unmet. No external blocker currently prevents this
-small diagnostic. Do not spend the remaining budget on cosmetically different
-controls or manufacture a paper contribution from ordinary-method results.
+Next FROZEN_ENCODER_FACTORIAL_PROTOCOL.md prospectively registered and implemented,
+NOT YET RUN at this commit. Two new1200-step ordinary frozen-encoder arms with
+and without existing verified augmentation; same safety_mean parent/freshAdam,
+fixed complete q. Reuse existing unfrozen arms, fixed source witnesses and
+unchanged primary augmentation gate. Caps840s within976.768865 remaining.
+Do not launch without immutable source export or exceed cumulative7200 budget.
+Goal ACTIVE; no novel mechanism established, Gate B/C/D false. No TEST_LOCKED.
+Historical ACTIVE entries below superseded.

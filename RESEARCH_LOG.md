@@ -1027,3 +1027,7 @@ Source1df437d,4 tests pass, audit exit0 in27.703155s. Correct-endpoint slot oppo
 ## Verified edit augmentation rejected
 
 All5 coordinator jobs exit0 in316s, training277.166349s.9027 cross-valid same-mode TRAIN positives added to47040 originals;853 unreferenced positives recorded/excluded, no new modes or grounding labels. Initial/input/group RNG checks exact. Fixed-source retention1775->1788 of2169, gain+.5994pp CI[-2.8392,3.9172]; validity-3.6892pp, distinct-.27431, Brier+.022907; gateFALSE. Untouched parent retains1872/2169 and exceeds both continuations.27 closure files SHA verified;133 jobs128success5failure,6201.694921/7200 command seconds used. Full TRAIN failure audit separately registered; no weight/count sweep.
+
+## Verified augmentation full TRAIN attribution closed; frozen factorial registered
+
+Source8866936, full1152TRAIN audit exit0 in21.536214s:8842/9216 valid,192 collisions,187 semantic errors,11 all-endpoint-wrong requests. Six closure files SHA verified. Compared with fresh continuation, collision reduces69 but semantic errors increase112. This is not solely a DEV gap.134 jobs129success5failures,6223.231135/7200 command seconds used. Frozen-input encoder2x2 ordinary control registered before new outputs; two new arms cap840s. No gate/new-method/default adoption.

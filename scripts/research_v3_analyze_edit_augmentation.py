@@ -5,9 +5,9 @@ from scripts.research_v3_analyze_frequency import paired
 from scripts.run_observed_probability import read,write,sha,torch_setup
 
 
-def main():
-    torch=torch_setup();out=RUN/'verified_edit_analysis_v1';out.mkdir(exist_ok=False)
-    names=['margin_mean','verified_edit_augmented'];training={};metrics={};rows={};configs={};rngs={}
+def main(names=None,output='verified_edit_analysis_v1'):
+    torch=torch_setup();out=RUN/output;out.mkdir(exist_ok=False)
+    names=names or ['margin_mean','verified_edit_augmented'];training={};metrics={};rows={};configs={};rngs={}
     for name in names:
         root=RUN/name;ev=root/'evaluation_matched_q_v1'
         training[name]=read(root/'summary.json');configs[name]=read(root/'config.json')

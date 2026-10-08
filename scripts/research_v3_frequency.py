@@ -130,7 +130,9 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False,verified_edit_support=False):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False,verified_edit_support=False,freeze_input_encoders=False):
+    if freeze_input_encoders and (linear_control!='mean' or restore_optimizer):
+        raise ValueError('Frozen-input control requires fresh ordinary mean continuation')
     if verified_edit_support and (linear_control!='mean' or restore_optimizer):
         raise ValueError('Registered augmentation requires ordinary fresh-optimizer mean continuation')
     if restore_optimizer and linear_control!='mean':
@@ -177,7 +179,11 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
     torch.manual_seed(cfg['seed']);np.random.seed(cfg['seed']);random.seed(cfg['seed'])
     rng=np.random.default_rng(cfg['seed']);lrng=np.random.default_rng(cfg['seed']+6100)
     model=ProbabilisticGeometryRouteHead(**saved['config']['head_options']).cuda();model.load_state_dict(saved['model'])
-    optimizer=torch.optim.AdamW(model.parameters(),lr=cfg['lr'],weight_decay=.0001)
+    frozen_initial=None
+    if freeze_input_encoders:
+        from routeset import frozen_input_control
+        frozen_input_control.freeze(model);frozen_initial=frozen_input_control.digest(model)
+    optimizer=torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),lr=cfg['lr'],weight_decay=.0001)
     optimizer_initial=None
     if restore_optimizer:
         optimizer.load_state_dict(copy.deepcopy(saved['optimizer']))
@@ -192,6 +198,8 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         input_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest())
     if arm=='set_canonical':
         settings['reference_contract']='Original first path in each immutable prepare() witness block; exclude four verified variants, preserve every witness mode'
+    if freeze_input_encoders:
+        settings['frozen_input_encoders']=frozen_input_control.audit(model,frozen_initial)
     if verified_edit_support:
         settings.update(reference_contract='Verified same-known-mode TRAIN edit positives added; original semantic grounding unchanged',grounding_support_sha256=sha(SUPPORT/'support.npz'),augmentation_receipt_sha256=sha(support_root/'receipt.json'))
     if safety is not None:
@@ -221,7 +229,9 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         mode_exposure=dict(exposure),unique_routes=sorted(unique),config=dict(head_options=saved['config']['head_options']))
     for step in range(start+1,end+1):
         local=rng.integers(len(trainids),size=cfg['batch_size']);si=trainids[local];ids=mapped[local];audit=append_indices(audit,ids)
-        inp=batch_inputs(data,geo,ids,'cuda');model.train();xyz,event,details=model(**inp)
+        inp=batch_inputs(data,geo,ids,'cuda');model.train()
+        if freeze_input_encoders:frozen_input_control.freeze(model)
+        xyz,event,details=model(**inp)
         target=[];targete=[];sampletags=[]
         for sidx in si:
             n=int(support['mask'][sidx].sum());tags=support['modes'][sidx,:n]
@@ -268,6 +278,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
             print(json.dumps(history[-1]),flush=True)
         if step%300==0 or step==end:atomic_checkpoint(out/'recovery.pt',state(step))
     if end==steps:
+        if freeze_input_encoders:write(out/'frozen_input_audit.json',frozen_input_control.audit(model,frozen_initial))
         atomic_checkpoint(out/'last.pt',state(end));assert tensor_state_digest(model.state_dict())!=initial
         write(out/'summary.json',dict(steps=end,elapsed_seconds=time.monotonic()-tic,sampler=audit,
             last_sha256=sha(out/'last.pt'),initial_sha256=initial,final_sha256=tensor_state_digest(model.state_dict()),
@@ -355,9 +366,9 @@ def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
-    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');p.add_argument('--verified-edit-support',action='store_true');a=p.parse_args()
+    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');p.add_argument('--verified-edit-support',action='store_true');p.add_argument('--freeze-input-encoders',action='store_true');a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled','set_canonical'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer,a.verified_edit_support)
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer,a.verified_edit_support,a.freeze_input_encoders)
     else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass',paired_score=a.paired_score)
