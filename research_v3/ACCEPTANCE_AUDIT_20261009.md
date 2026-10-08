@@ -33,7 +33,7 @@ FINAL_RESEARCH_REPORT.md. This audit was updated after their actual receipts.
 |11.2:10experiment items/task breadth |above audits/baselines/metrics/failures|Development components exist; final mechanism ablations/multiseed results missing. Current V3 chiefly reach; no general claim for intermediate-constraint tasks.|
 |11.3:nine paper files |paper directory not created|Conditioned on core evidence in user request; condition unmet. Do not fabricate an abstract, method contribution or paper readiness.|
 |12: final report, summary, models, commands and decisions |RESEARCH_REPORT_20261009.md, EXPERIMENT_SUMMARY.csv, DEPLOYMENT.md, closure manifests|Research assets exist. FINAL_RESEARCH_REPORT and REPRODUCE now include all closed outcomes;16table/checkpoint rows verified,3reports text-exact and failure figure pixel-exact on replay. Local ignored archives hold binaries; Git contains source/manifests, not model weights.|
-|13-15: sustained research or genuine block |actual iterative experiments/negative reports|Substantial progress, not task completion. Further comparable empirical work blocked by20.568820s remaining versus250-277s measured training; first blocked condition recorded, goal active. No claim that all hypotheses are exhausted.|
+|13-15: sustained research or genuine block |actual iterative experiments/negative reports|Substantial progress, not task completion. Further comparable empirical work blocked by20.568820s remaining versus250-277s measured training; same condition verified on three consecutive goal turns, goal marked blocked. No claim that all hypotheses are exhausted.|
 
 Gate audit: A is a scoped positive result, not blanket success. B and C require
 an incremental new mechanism, which current evidence does not provide. D and
