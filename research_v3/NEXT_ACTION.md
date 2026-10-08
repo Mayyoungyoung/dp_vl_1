@@ -1,20 +1,28 @@
 # Next action
 
-## V3 verified augmentation CLOSED; frozen factorial REGISTERED — 2026-10-09
+## V3 frozen factorial and TRAIN attribution CLOSED — 2026-10-09
 
-134 jobs129success5retained failures;6223.231134932/7200 experiment command
-seconds spent,976.768865068 remain. All existing queues CLOSED. Verified edit
-augmentation gateFALSE: retention+.5994pp CI[-2.8392,3.9172] versus fresh,
-validity-3.6892pp and Brier+.022907. Parent also exceeds both continuations.
-TRAIN augmented collision192 vs261 fresh but semantic errors187 vs75;
-DEV collision220 vs200, semantic175 vs106. All artifacts SHA verified.
-Read research_v3/verified_edit_v1/REPORT.md and closure manifests.
+142 jobs137success5retained experiment failures;6814.223800019/7200 command
+seconds spent,385.776199981 remain. All queues CLOSED, no active lock at latest
+packaging. One pre-job relative-launcher path failure retained separately.
+Frozen source d3e48492;both1200steps done,10tests pass, parameter/actual sampler
+hash checks pass. Frozen augmentation retention+2.7663pp CI[.8182,4.9935] versus
+frozen plain, below5pp gate; interaction with unfrozen augmentation crosses0.
+Frozen plain/aug valid81.6406%/83.4635% below parent86.8056%. Both gatesFALSE.
+TRAIN audits source f96b94d4, both exit0 in21.598520/21.375803s. Frozen plain:
+8884valid/177collisions/161semanticwrong; frozen augmented:8885/228/109 of9216.
+Augmentation exchanges52 fewer endpoint errors for51 more collisions on TRAIN.
+Original safety_mean remains strongest established reference; no default change.
+41 factorial and12 TRAIN audit closure files SHA verified; reports/figures at
+research_v3/frozen_factorial_v1. No novel method established; Gate B/C/D false.
 
-Next FROZEN_ENCODER_FACTORIAL_PROTOCOL.md prospectively registered and implemented,
-NOT YET RUN at this commit. Two new1200-step ordinary frozen-encoder arms with
-and without existing verified augmentation; same safety_mean parent/freshAdam,
-fixed complete q. Reuse existing unfrozen arms, fixed source witnesses and
-unchanged primary augmentation gate. Caps840s within976.768865 remaining.
-Do not launch without immutable source export or exceed cumulative7200 budget.
-Goal ACTIVE; no novel mechanism established, Gate B/C/D false. No TEST_LOCKED.
-Historical ACTIVE entries below superseded.
+Local TRAIN-only unreferenced audit source ed51502 completed:853 unique excluded
+positive paths add760 destination/mode pairs across608requests/125families.
+All five new labels contain over-passage; expanded modes6-13 per request;
+M8 unavoidable missing classes768->1422. See unreferenced_train_v1. No DEV or
+new payload/model access in this local audit; server budget unchanged.
+Next ALL_MODE_EDIT_COMPLETION_PROTOCOL.md registered NOT IMPLEMENTED/RUN:
+one bounded ordinary all-mode versus known-mode data control, same parent,
+explicit group RNG divergence from larger class sets, caps370s within385.7762.
+No automatic new-method claim or budget expansion. Goal ACTIVE. Prior active
+entries superseded. All TEST_LOCKED and source/resource restrictions retained.

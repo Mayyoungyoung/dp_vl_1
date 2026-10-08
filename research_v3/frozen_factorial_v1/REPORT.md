@@ -19,3 +19,40 @@ The retention denominator uses fixed safety_mean source witnesses for all destin
 ![Family intervals](factorial.png)
 
 Full metrics, direction counts, failure details and provenance remain in the closed artifact archive; compact results accompany this report.
+
+## Full TRAIN and DEV error attribution
+
+| Split/model | Valid | Post collisions | Wrong endpoints | All endpoints wrong requests |
+|---|---:|---:|---:|---:|
+| TRAIN parent /9216 |8937|189|91|7|
+| TRAIN unfrozen plain |8883|261|75|6|
+| TRAIN unfrozen augmented |8842|192|187|11|
+| TRAIN frozen plain |8884|177|161|13|
+| TRAIN frozen augmented |8885|228|109|6|
+| DEV parent /2304 |2000|207|108|12|
+| DEV unfrozen plain |2011|200|106|11|
+| DEV unfrozen augmented |1926|220|175|16|
+| DEV frozen plain |1881|295|151|15|
+| DEV frozen augmented |1923|285|115|12|
+
+Errors overlap; never sum them as exclusive categories. Frozen augmentation
+reduces TRAIN endpoint errors52 but adds51 collisions, leaving valid count+1.
+On DEV it reduces endpoint errors36 and collisions10 versus frozen plain, yet
+remains below the untouched parent. Frozen inputs alone do not preserve task
+endpoints or solve generalization. These are fixed-seed development results.
+
+Training/evaluation source d3e48492b9eda3c5b665ab972285c21eb5ed8675;
+source archive f447f6b41d18bcce7bd6c04f596a04289073365d173d8f47c043070c993c26cf.
+All6jobs exit0, coordinator549s;10tests pass. TRAIN audit source
+f96b94d4c308c91a3933105e1726155ac69162e7, source archive
+d5b4881b20b58180540a780070526f91fa8b10707ee2a9f4483ef648df6fad2e;
+two audit jobs exit0 in21.598520/21.375803 command seconds. Actual commands,
+full source/input hashes and checkpoints/RNG are in closure receipts.41factorial
+and12TRAIN audit files individually SHA verified.142jobs137success5retained
+experiment failures,6814.223800/7200command seconds spent,385.776200remain.
+A pre-job relative-path launcher error was preserved separately; absolute-path
+retry used unchanged immutable source. No active queue; retain safety_mean.
+
+The figure was visually checked; trailing whitespace in generated SVG source
+was trimmed without changing its graphics. This report's TRAIN attribution was
+added after the read-only figure/report generator; source results remain sealed.
