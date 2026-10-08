@@ -1,3 +1,19 @@
+## V3 collection verified live; calibration follow-up frozen — 2026-10-09
+
+Verified actual processes: collectorPID4127618 and its new worker PIDs live;
+source9bbc021 main queueSSH65969 continues unchanged. Latest inspected worker
+index78 completed exit0 with initialization true (no complete-data claim).
+Calibrator follow-up ACTUALLY waiting inSSH21432, PID4133095, source
+0954ff5df97726b0945aaab3866bd06e1b8bd6b5, archiveSHA
+9a7e04d87237a3f69975d3ffa79db84cec042026f636ac658c52ae625ef237cb.
+It waits for paired_score_coordinator_v1 exit0, then runs2 tests and registered
+temperature/monotone-affine newCAL-only controls. Do not duplicate either queue.
+New diagnostic figure in research_v3/figures_scoring_v1 is rendered and visually
+checked, derived only from closed original snapshots, with source hashes.
+Goal remains ACTIVE. No novel mechanism, formal new-method seeds or final-test
+result established. Historical running entries below are superseded only where
+explicitly closed; the two queues named here really are live.
+
 ## V3 new paired score-data queue ACTIVE — 2026-10-09
 
 Current immutable source9bbc0213a542815cd767716ddc5e5869f5d19d4c, archive
