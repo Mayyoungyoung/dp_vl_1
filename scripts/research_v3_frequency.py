@@ -200,12 +200,12 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
         else:regression=positive_assignment_loss(pred,truth,valid,'positive',lrng)
         ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],
             torch.tensor(valid,device='cuda'),.025)
-        clear=segment_clearance_loss(xyz,cs[ids],hs[ids])+workspace_floor_loss(xyz,floors[ids])
         if safety_control=='worst':
             from routeset.segment_clearance import path_segment_clearances
             deficits=(.02-path_segment_clearances(xyz,cs[ids],hs[ids])).clamp_min(0)
             clear=(safety['worst_collision_coefficient']/160*deficits.square().amax(-1).mean()
                 +workspace_floor_loss(xyz,floors[ids]))
+        else:clear=segment_clearance_loss(xyz,cs[ids],hs[ids])+workspace_floor_loss(xyz,floors[ids])
         loss=regression+.02*ground+160*clear
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite pilot loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.)
