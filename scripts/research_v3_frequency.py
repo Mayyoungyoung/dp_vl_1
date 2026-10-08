@@ -122,7 +122,9 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False):
+    if restore_optimizer and linear_control!='mean':
+        raise ValueError('Registered optimizer continuation requires the ordinary quadratic control')
     if linear_control is not None and (linear_control not in ('mean','linear') or safety_control is not None or arm!='set_matching'):
         raise ValueError('Linear-margin pair requires set matching and its own continuation')
     torch=torch_setup()
@@ -160,6 +162,14 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
     rng=np.random.default_rng(cfg['seed']);lrng=np.random.default_rng(cfg['seed']+6100)
     model=ProbabilisticGeometryRouteHead(**saved['config']['head_options']).cuda();model.load_state_dict(saved['model'])
     optimizer=torch.optim.AdamW(model.parameters(),lr=cfg['lr'],weight_decay=.0001)
+    optimizer_initial=None
+    if restore_optimizer:
+        optimizer.load_state_dict(copy.deepcopy(saved['optimizer']))
+        assert all(g['lr']==cfg['lr'] and g['weight_decay']==.0001 for g in optimizer.param_groups)
+        assert {int(s['step']) for s in optimizer.state.values()}=={1200}
+        def buffers(state):return {f'{i}/{k}':v for i,s in state['state'].items() for k,v in s.items() if torch.is_tensor(v)}
+        optimizer_initial=tensor_state_digest(buffers(optimizer.state_dict()))
+        assert optimizer_initial==tensor_state_digest(buffers(saved['optimizer']))
     scheduler=torch.optim.lr_scheduler.LambdaLR(optimizer,lambda step:1.)
     settings=dict(arm=arm,steps=steps,policy=cfg,initial_checkpoint_sha256=sha(init),support_sha256=sha(SUPPORT/'support.npz'),
         data_fingerprint=geo['fingerprint'],source_sha256=source_identity(),head_options=saved['config']['head_options'],
@@ -172,6 +182,9 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         settings.update(linear_control=linear_control,linear_diagnostic_sha256=sha(RUN/'linear_gradient_v1/RESULTS.json'),
             collision_coefficient=160. if linear_control=='mean' else linear['linear_coefficient'],
             continuation_scope='Fresh optimizer from fixed safety_mean checkpoint; same1200-step input/target stream in both arms')
+    if restore_optimizer:
+        settings.update(optimizer_initial_sha256=optimizer_initial,restored_optimizer_step=1200,
+            continuation_scope='Saved AdamW moments/time index from safety_mean, same reset input/target RNG and1200 additional steps as margin_mean; no learning-rate change')
     audit=new_stream_audit(model,rng.bit_generator.state,torch.get_rng_state());initial=tensor_state_digest(model.state_dict())
     exposure=Counter();unique=set();history=[];start=0
     if resume:
@@ -318,9 +331,9 @@ def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
-    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');a=p.parse_args()
+    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control)
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer)
     else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass',paired_score=a.paired_score)

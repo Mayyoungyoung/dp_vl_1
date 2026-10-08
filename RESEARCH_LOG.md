@@ -949,3 +949,7 @@ Next: registered read-only anchor derivative diagnostic, NOT implemented/run.
 Hard-forward/soft-backward source fact is known; causal harm and novel benefit
 remain unproven. Goal ACTIVE, no external blocker. See linear_v1/REPORT.md and
 ANCHOR_GRADIENT_DIAGNOSTIC_PROTOCOL.md. Historical active entries superseded.
+
+## 2026-10-09 anchor/optimizer diagnostics
+
+8 derivative/geometry tests pass. Anchor derivative and both eight-step scratch diagnostics completed exit0. All TRAIN-only; same parent preserved. Full anchor gradient differences0.70-2.07%, update differences3.21-8.16%; hard derivative has no consistent objective advantage. Do not launch a long hard-anchor pair. Fresh AdamW causes large first-step jumps under both modes. Restored moments reduce jumps with exactly equal initial gradients and exact prior fresh prediction replay. This is an ordinary continuation confound, not novelty. A fixed1200-step restored-state comparison is prospectively registered in research_v3/OPTIMIZER_CONTINUATION_PROTOCOL.md. Budget after114 jobs5191.477281/7200 command seconds;2008.522719 remain. Artifact closure pending.
