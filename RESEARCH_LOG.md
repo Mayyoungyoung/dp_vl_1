@@ -839,3 +839,7 @@ labels leave2141 valid candidates unknown. New operational mode audit queued.
 Actual single-q and endpoint dual bundles replay paths/events/q/selected_indices
 exactly, from genuine observed input tensors. Failed audit_v1/v2 retained.
 No new training completed and no TEST_LOCKED access. Resource bounds unchanged.
+
+## 2026-10-09 V3 frequency recovery verified
+Immutable5ae75bf, archiveSHA f1d084e81bcb2224159bb69305f409c0750f97fc8b878392debe95ebc3518856. Coordinatorv2 history mismatch retained. Fixed planned-step logging passes five tests and actual100 versus50+50 strict full checkpoint equality. Coordinatorv3 SSH43335 now runs five1200-step arms in sequence. Uniform arm finished training/evaluation; no complete comparison yet. New read-only exposure/integrity analysis prepared; local deterministic replay test passed. Locked data untouched.
+

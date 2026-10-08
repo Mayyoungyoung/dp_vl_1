@@ -1,3 +1,11 @@
+## V3 current recovery — 2026-10-09
+
+Frequency coordinatorv3 is already running from immutable5ae75bf in SSH43335.
+Read research_v3/RESEARCH_STATE.md; inspect actual jobs/closure before any launch.
+Thev2 failure was an extra history row at pause50; strict comparison is unchanged.
+New source changes the logging schedule and uses fresh resume-check outputs.
+No formal five-arm result has been read yet; no new-method claim. TEST_LOCKED closed.
+
 ## FINAL: factored-q prototype delivered; strong-baseline advantage rejected — 2026-10-05
 
 All45 scorer fits (5arms x3generator x3scorer), evaluation_v2 calibration,18 dual-factor deployments and two actual public CLI checks completed. Final revision source8f2739c8dbfd86a330d8f303fdeedda4ca27a822, archive59570550f8a28d40f603384dbd2c09e60a51fc359a268ee9eedf98fea7867897. All coordinators exit0;115job receipts completed; no active.lock or pending project jobs. Cumulative launcher commandwall941.863926s, not GPU-utilization hours. Do not restart historical queues.

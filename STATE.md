@@ -1,3 +1,15 @@
+## V3 frequency retention recovery running — 2026-10-09
+
+Read research_v3/RESEARCH_STATE.md and EXPERIMENT_LEDGER.md first. The V3 data,
+oracle and continuous-collision audits completed. Five-arm frequency pilot has
+no result yet. Coordinatorv2 closed exit1 at resume history equality. New fixed
+source5ae75bfcd16d32eba3649d94ac50402a9b0859bc, archiveSHA
+f1d084e81bcb2224159bb69305f409c0750f97fc8b878392debe95ebc3518856,
+is ACTUALLY running coordinatorv3 in SSH43335. Five tests passed. Inspect
+runs/research_v3_v1/jobs and frequency_coordinator_v3/closure.json before action;
+do not duplicate the launcher. Budget remains7200 cumulative command seconds,
+including failures. Original history and all unrelated untracked files retained.
+
 ## FINAL: factored-q prototype delivered; strong-baseline advantage rejected — 2026-10-05
 
 All45 scorer fits (5arms x3generator x3scorer), evaluation_v2 calibration,18 dual-factor deployments and two actual public CLI checks completed. Final revision source8f2739c8dbfd86a330d8f303fdeedda4ca27a822, archive59570550f8a28d40f603384dbd2c09e60a51fc359a268ee9eedf98fea7867897. All coordinators exit0;115job receipts completed; no active.lock or pending project jobs. Cumulative launcher commandwall941.863926s, not GPU-utilization hours. Do not restart historical queues.
