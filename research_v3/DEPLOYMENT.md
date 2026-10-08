@@ -28,4 +28,20 @@ F:/dpvlm/runs/research_v3_checkpoint_20261009/runs/research_v3_v1/public_cli_v1�
 生成器SHA0ffc30128082061cb7e1cff0e66068b2ab63a9014007cab567b1270e943fbf09；
 固定完整评分包SHA5718fd973d1908307987cdac06c2886f4670fba7ed06cc1ababe9fe76323d4ca。
 原始优化器/RNG/sampler在各训练输出的recovery.pt与last.pt中保留。
-平均惩罚生成器已做三个普通匹配评分器的独立拟合/校准，但旧评分分布门槛失败，未替换本演示默认完整评分器。新配对布局评分数据实验仍在运行；q不是有效性保证。
+平均惩罚生成器在旧评分分布的三个重训q门槛失败；随后新配对布局评分数据实验
+已全部完成，三个普通q门槛通过。上述旧演示仍保留为历史复现入口。
+
+新增的强普通基线已实际通过独立CLI重放，预先指定seed0，没有挑最佳评分种子。
+使用冻结源码目录
+`/home/wzy/dpvlm/route_set_v1/research_v2/releases/9bbc0213a542815cd767716ddc5e5869f5d19d4c`，
+保持上述观测参数，将bundle改为
+`/home/wzy/dpvlm/route_set_v1/runs/research_v3_v1/matched_q_paired_v1/reliability/mean_seed0/calibration_seed0/scorer_bundle.pt`，
+checkpoint改为
+`/home/wzy/dpvlm/route_set_v1/runs/research_v3_v1/safety_mean/last.pt`。
+仍使用全新的job id和output路径，并经过相同资源包装器。
+
+该bundle SHA为2d87cb3c92336e224f48ec7888abb5ffa5c648eeaca86102d62780588ed0f72e；
+proposal SHA为ff2dfbc5463a38e9acb2af740e9b605cbfda5d1317cc146f5f2c4e65c2a7a60c。
+本地闭合快照保存完整checkpoint、训练RNG/优化器和CLI_RECEIPT.json。
+实际路径/事件/选集精确一致，q最大差1.1921e-7；2.947秒计时不含在线Qwen。
+新q仍只是上层几何事件的概率估计，未验证新的独立TEST或机器人执行。

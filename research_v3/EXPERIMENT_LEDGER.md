@@ -72,3 +72,25 @@ SSH1473/PID4138597, waits calibration exit0. OriginalTRAIN-only historical
 prototype, gridstride2, fixed rules and all288DEV endpoint checks. Local stride
 test1pass; server result pending. Distinct information: simple observable color
 localization versus the failed learned-attention aggregation, not new networks.
+
+## 2026-10-09 Scoring, calibration and localization closed
+
+Sources9bbc021/0954ff5/381de22 all coordinators exit0. All192 new parents pass; genuine Qwen and576 role-separated requests complete. Fixed-generator three q calibrated Brier .075390/.078527/.075223 mean.076380 versus .148448; ordinary gate true, no generator or novelty claim. Temperature-only .167084, affine .107789; CAL fitting does not promise DEV calibration improvement. Prototype270/288 vs276/288, CI[-.065972,.020833], gatefalse, no route intervention. Source6667db8 isolation tests/audit exit0,1003 permitted parents including192new,0new-vs-old/within-new geometry/observation duplicates. Source archive914178655c16c3f78261ccb4409dabe31289ee8ac4a6d5f2773c7ee579159f38. Initial premature extraction failed EOF before jobs; recovered only after complete archive SHA match, then froze launcher/source before startup. Local first extraction API unsupported and aborted before writing; safe validated-member compatible retry passed all hashes.
+
+Closed scoring snapshot1441 files verified, archiveeae241c803a37d97c40009db4bbd04143c95da040fce9573fd399732bde3851e;9333 new-data hashes sealed, raw stays server.98 closed jobs94success4historic failures,4411.600108 experiment command seconds,2788.399892 remain. Local capacity audit preserves all original metrics: mean207 post-collision paths all floor-valid;196clearance-only97goal-only11both invalid,76valid duplicate slots,153valid distinct outside-witness modes not errors. Known missing2.017/request includes .667 unavoidableM8 and1.351 residual. See SCORE_CLOSURE_REPORT.md and manifests.
+
+## V3 full TRAIN collision diagnostic closed — 2026-10-09
+
+Source232ca6d2fcc24887d886dce2119a8d398caa49b1, source-only archive
+71f36bff13847ac53307f1d6bcae6091568c71b8bbf72bc325430253cc6d855c.
+posttrain_collision_v1 exit0,24.570574s. All1152 TRAIN predictions sealed before
+geometry checks.189/9216 post collisions (188 correct goals),8937valid,
+1145/1152 any-valid,7all-endpoint failures. Collision deficits median2.720mm,
+max15.258mm;117 one-segment,53 two-segment,19 three-segment; all floor-valid.
+DEV207/2304 post collisions remains larger. No model update or q role access.
+Six artifact files locally SHA verified, archive
+e7c7e9a3436aef3b9e6973cc309836423fefa3b3189289712ae9b9d27f4cef85.
+Cumulative99 jobs95success4historical failures,4436.170683/7200 experiment
+command seconds,2763.829317 remain. All queues CLOSED. Goal ACTIVE.
+Next is a TRAIN gradient diagnostic decision, not an authorized outcome claim
+for a new loss. See research_v3/NEXT_ACTION.md; no locked test access.

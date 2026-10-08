@@ -1,3 +1,47 @@
+## V3 full TRAIN collision diagnostic closed — 2026-10-09
+
+Source232ca6d2fcc24887d886dce2119a8d398caa49b1, source-only archive
+71f36bff13847ac53307f1d6bcae6091568c71b8bbf72bc325430253cc6d855c.
+posttrain_collision_v1 exit0,24.570574s. All1152 TRAIN predictions sealed before
+geometry checks.189/9216 post collisions (188 correct goals),8937valid,
+1145/1152 any-valid,7all-endpoint failures. Collision deficits median2.720mm,
+max15.258mm;117 one-segment,53 two-segment,19 three-segment; all floor-valid.
+DEV207/2304 post collisions remains larger. No model update or q role access.
+Six artifact files locally SHA verified, archive
+e7c7e9a3436aef3b9e6973cc309836423fefa3b3189289712ae9b9d27f4cef85.
+Cumulative99 jobs95success4historical failures,4436.170683/7200 experiment
+command seconds,2763.829317 remain. All queues CLOSED. Goal ACTIVE.
+Next is a TRAIN gradient diagnostic decision, not an authorized outcome claim
+for a new loss. See research_v3/NEXT_ACTION.md; no locked test access.
+
+## V3 scoring/data/localization closure — 2026-10-09
+
+All three coordinators (paired score, calibration control, prototype) CLOSED
+exit0; isolation jobs also exit0. No live V3 experiment or active.lock at closure.
+Source9bbc021: all192 new parents initialized successfully;576 role-separated
+requests and genuine pinned Qwen caches complete. Three ordinary matched scorer
+seeds give calibrated Brier .075390/.078527/.075223, mean .076380 versus fixed
+.148448; registered gate true. Same generator, paths/events/labels unchanged;
+not three generator replications or novel-method evidence.
+Source0954ff5: CAL-only temperature .167084 Brier, affine .107789. Temperature
+does not automatically improve DEV. Source381de22: prototype270/288 versus
+mean276/288 correct endpoints; gate false, no route intervention.
+Source6667db8 isolation: 1003 permitted parents including192 new, zero new/old
+or within-new unordered1mm geometry/observed RGB-D identity conflicts. No locked
+payload read. Source archive SHA914178655c16c3f78261ccb4409dabe31289ee8ac4a6d5f2773c7ee579159f38.
+Initial extraction before transfer completed failed before experiments started;
+complete archive verified then extracted before any launcher ran.
+Closed local snapshot1441 files SHA verified; archive
+eae241c803a37d97c40009db4bbd04143c95da040fce9573fd399732bde3851e.
+9333 raw new-data files hash-sealed on server; raw payload not downloaded.
+98 closed jobs94success4retained failures;4411.600108 command seconds of7200,
+2788.399892 remain. Archive/transfer/local analysis are bookkeeping, not GPU-time
+measurements. See SCORING_CLOSURE_ARTIFACTS_20261009.json and SCORE_CLOSURE_REPORT.md.
+Read-only capacity audit: mean304 invalid candidates=196clearance-only,
+97goal-only,11both. Missing known modes2.017/request includes .667 unavoidable
+M8 capacity and1.351 remaining; valid outside-witness modes are not errors.
+Historical running entries below are superseded. Goal ACTIVE, Gate D false.
+
 ## V3 collection verified live; calibration follow-up frozen — 2026-10-09
 
 Verified actual processes: collectorPID4127618 and its new worker PIDs live;
