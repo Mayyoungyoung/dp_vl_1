@@ -680,3 +680,13 @@ All four source3f9cea5 landmark replication jobs completed exit0; do not resume/
 ## Recovery checkpoint — 2026-10-02 16:20 UTC
 
 Latest fixed release2c47c2a4c354ecfeb2f73b8121476f5000e82a98 is pushed/deployed; archiveSHA62b57e714cf6f9b428e46355cdfc0b6f152eb3626796f97ef241745e71a885a4. Its greedy TRAIN8 has completed; do not rerun. Static mesh-api-fix2 six-config run also completed; do not relaunch. Read agent-produced reports/status for full measured results. No next continuation or new physical pilot is running as of this checkpoint. Old six-task coordinator285850 remains active,112/144 closed at16:17; check live receipt first. JOBS snapshot16:16 includes278 records; registry281 retains historical/completion transitions and includes previously omittedvlm_/multitask_ families. All-parent seed0 figures are frozen e122 with16 hashes/8 reviewed PNG pages.
+## V3 ordinary localization diagnostic queued — 2026-10-09
+
+Main9bbc021/SSH65969 remains live; calibration0954ff5/SSH21432 waits main exit0.
+Prototype381de220d11311fb4472d78633141c25b1f38def is ACTUALLY waiting inSSH1473,
+PID4138597, after calibration exit0. ArchiveSHA
+c2ee654c4acac34778b844b3a40f0ca9773026ec3f7d76a596e5c532b6a7bfae.
+TRAIN-only fixed historical RGB-D color prototype, gridstride2, all288DEV
+endpoint checks; no route update. Local stride test passed; server test queued.
+All three coordinators are frozen and sequential. Do not duplicate or infer
+results from launch. Goal active; no new-method or final-paper claim.

@@ -57,3 +57,19 @@ Additional primary-source checks in this continuation:
 These checks constrain mechanism selection; they are not an exhaustive novelty
 search or reproduction of the external methods. RoboTracer has a newer v4
 (2026-07-03); pin the cited version when writing the eventual related work.
+# Additional uncertainty literature check — 2026-10-09
+
+Primary abstracts and official proceedings pages were checked, not reproduced:
+
+- [Scenario-Based Motion Planning with Bounded Probability of Collision](https://arxiv.org/abs/2307.01070) treats joint collision risk across obstacles and a plan horizon through scenario optimization. Joint-risk modeling alone is not a new contribution; its event differs from coverage by a set of alternative routes.
+- [Collision Probabilities for Continuous-Time Systems Without Sampling](https://www.roboticsproceedings.org/rss16/p019.html), RSS2020, studies continuous-time risk approximation and discretization consistency. Our deterministic segment checker is label verification, not new stochastic risk theory.
+- [From Prediction Uncertainty to Conformalized Distance Fields for Safe Motion Planning](https://arxiv.org/abs/2607.00776) studies field-level functional conformal bounds. Ordinary temperature calibration does not establish those guarantees.
+- [CausalDriveBench](https://arxiv.org/abs/2609.32157) distinguishes trajectory consequences under scene modifications from language causal QA. Naming a component counterfactual does not establish causal or mode-retention benefits.
+
+Project inference: current selection is only0.045 modes@4 below its candidate-pool
+oracle. There is no current evidence for a complex joint-risk selector. Any
+future partial-observation study first needs physically rendered observations
+and verified label ambiguity; invisible colliders or small pixel differences
+cannot substitute for observational equivalence. Marginal q failing to identify
+joint set events is a known fact, not our contribution. No such experiment is
+launched; first close the scoring, calibration and ordinary localization controls.

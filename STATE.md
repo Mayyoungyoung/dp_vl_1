@@ -794,3 +794,13 @@ This block supersedes earlier in-progress collection/continuation statements abo
 
 - Actual6bc2b8 Qwen SFT preflight v2 now completed:7 tests,4 optimizer steps,8 updated adapter tensors,4.839GB peak allocation; original OOM retained. Formal resumable variable-K SFT is being implemented, not yet launched.
 - Actual6bc2b8 six-task ordinary baseline completed1500x32,192000 path states. Cache96/96 in8.675s including load; head70.058s/.01946GPUh,950.86MiB. Best500 TRAIN macro ADE1.783cm versus DEV17.121cm, DEV endpoint24.498cm; final1500 ADE17.216cm. Event sequence100% is reference order only, no path/robot success. Both checkpoints/predictions preserved in reports/observed_multitask_prefix24_v1 artifact index. Add nearest-reference retrieval control and prospectively enlarge TRAIN, rather than repeat this tiny-data training for an apparent seed gain.
+## V3 ordinary localization diagnostic queued — 2026-10-09
+
+Main9bbc021/SSH65969 remains live; calibration0954ff5/SSH21432 waits main exit0.
+Prototype381de220d11311fb4472d78633141c25b1f38def is ACTUALLY waiting inSSH1473,
+PID4138597, after calibration exit0. ArchiveSHA
+c2ee654c4acac34778b844b3a40f0ca9773026ec3f7d76a596e5c532b6a7bfae.
+TRAIN-only fixed historical RGB-D color prototype, gridstride2, all288DEV
+endpoint checks; no route update. Local stride test passed; server test queued.
+All three coordinators are frozen and sequential. Do not duplicate or infer
+results from launch. Goal active; no new-method or final-paper claim.

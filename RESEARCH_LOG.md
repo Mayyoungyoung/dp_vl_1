@@ -875,3 +875,12 @@ All12 queue jobs exit0 from85f8213, coordinator95s. Three calibrated Brier value
 
 ## 2026-10-09 Active collection revalidated; calibration follow-up queued
 Previous goal turn changed authoritative state and produced completed experiments, so classified progress. Current read verified collectorPID4127618 plus workers live, not merely a lock. Frozen follow-up0954ff5/archive9a7e04d87237a3f69975d3ffa79db84cec042026f636ac658c52ae625ef237cb actually waitingSSH21432/PID4133095 for main exit0, then registered tests/calibrators. No current source overwritten. Read-only scoring figure rendered/visually checked with hashes. Source review also confirms old R2/R3 TRAIN class_weights uses observed_layout_variation.crossing_signature, which ALREADY prioritizes over; it does not use the lateral-first portal metric. The V3 portal-label audit therefore does not by itself justify rerunning rejected R2/R3 as if their training labels had that precedence bug. Narrow height-strip differences remain a separate issue, not evidence of a new benefit.
+## 2026-10-09 Ordinary localization check queued
+
+Diagnostic381de22/archivec2ee654c4acac34778b844b3a40f0ca9773026ec3f7d76a596e5c532b6a7bfae
+actually waitsSSH1473/PID4138597 after calibration. It tests whether observed
+color information can resolve shared target errors, unlike smoothing learned
+attention. Existing prototype rules fixed, originalTRAIN only, gridstride2,
+allDEV endpoint checks, no routes changed. Local stride test1pass. Additional
+primary abstracts checked in LITERATURE_REVIEW.md; joint risk and conformal
+fields are not empty research areas. No novelty or causal benefit assumed.

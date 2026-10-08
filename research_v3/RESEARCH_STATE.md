@@ -117,3 +117,12 @@ DEV12 all-endpoint failures all outside anchor residual range; TRAIN2 failures,
 All prior queues CLOSED. Next registered TRAIN-only mass diagnostic uses all
 1152 TRAIN requests and one fixed sigma; no route/model update yet. See
 ANCHOR_MASS_PROTOCOL.md. Goal remains active; paper novelty unestablished.
+## Current additional diagnostic — 2026-10-09
+
+Prototype localization381de22, archivec2ee654c4acac34778b844b3a40f0ca9773026ec3f7d76a596e5c532b6a7bfae,
+ACTUALLY waitsSSH1473/PID4138597 after calibration0954ff5/SSH21432, itself waiting
+on paired-score9bbc021/SSH65969. It is a fixed ordinary TRAIN-fitted color
+prototype with stride2 observations, not a new route model. Local1 test passes;
+actual server test and all288DEV endpoint results pending. No duplicate queues.
+Additional primary-source checks in LITERATURE_REVIEW.md constrain unsupported
+joint-risk or conformal novelty claims. Research objective remains active.
