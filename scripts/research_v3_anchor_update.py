@@ -6,7 +6,7 @@ from scripts.run_observed_probability import torch_setup,read,write,sha
 from scripts.research_v3_frequency import RUN,SUPPORT,pad_targets,match_loss
 
 
-def main(output):
+def main(output,optimizer_control=False):
     torch=torch_setup()
     from scripts.train_paired_modes import load_data
     from scripts.train_observed_geometry import batch_inputs
@@ -40,10 +40,16 @@ def main(output):
             ground=.02*positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],mask,.025)
             clear=160*(segment_clearance_loss(xyz,cs,hs)+workspace_floor_loss(xyz,floors))
             return dict(regression=regression,grounding=ground,clearance=clear),xyz,event,details,copy.deepcopy(loss_rng.bit_generator.state)
-        for mode in ('straight_through_peak','hard_peak'):
-            torch.manual_seed(0);model=copy.deepcopy(base);model.geometry.anchor_mode=mode
+        branches=('fresh_optimizer','restored_optimizer') if optimizer_control else ('straight_through_peak','hard_peak')
+        for mode in branches:
+            torch.manual_seed(0);model=copy.deepcopy(base)
+            model.geometry.anchor_mode='straight_through_peak' if optimizer_control else mode
             assert tensor_state_digest(model.state_dict())==initial
             optimizer=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
+            if mode=='restored_optimizer':
+                optimizer.load_state_dict(copy.deepcopy(saved['optimizer']))
+                assert all(g['lr']==.0003 and g['weight_decay']==.0001 for g in optimizer.param_groups)
+                assert {int(s['step']) for s in optimizer.state.values()}=={1200}
             components,xyz,event,details,loss_rng_after=evaluate(model)
             before_paths=xyz.detach().cpu().numpy();before_events=event.detach().cpu().numpy();before_anchor=details['attention'].argmax(-1).detach().cpu().numpy()
             if reference is None:reference=(before_paths,before_events,before_anchor)
@@ -60,21 +66,21 @@ def main(output):
                 maximum_path_change_m=float((px.cpu()-torch.tensor(before_paths)).abs().max()))
             name=f'batch{batch}_{mode}'
             np.savez_compressed(out/(name+'.npz'),before_paths=before_paths,before_events=before_events,after_paths=px.cpu().numpy(),after_events=pe.cpu().numpy(),ids=[str(data['scene_ids'][j]) for j in ids])
-            torch.save(dict(model=model.state_dict(),optimizer=optimizer.state_dict(),step=1,parent_sha256=source_sha,anchor_mode=mode,
+            torch.save(dict(model=model.state_dict(),optimizer=optimizer.state_dict(),step=1,parent_sha256=source_sha,anchor_mode=model.geometry.anchor_mode,branch=mode,
                 cpu_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state_all(),sampler=rng.bit_generator.state,assignment_rng_before=assignment_state,assignment_rng_after=loss_rng_after),out/(name+'.pt'))
             del model,optimizer,components,xyz,event,details,total,after,px,pe,da
         lrng.bit_generator.state=loss_rng_after
         result=dict(batch=batch,ids=[str(data['scene_ids'][j]) for j in ids],modes=values,initial_forward_exact=True)
         for key,vecs in [('gradient',vectors),('update',updates)]:
-            a,b=(vecs[k] for k in ('straight_through_peak','hard_peak'))
+            a,b=(vecs[k] for k in branches)
             result[key+'_difference_fraction']=float(torch.linalg.vector_norm(a-b)/(torch.linalg.vector_norm(a)+1e-30))
             result[key+'_cosine']=float(torch.dot(a,b)/(torch.linalg.vector_norm(a)*torch.linalg.vector_norm(b)+1e-30))
         records.append(result);print({k:v for k,v in result.items() if k!='ids'},flush=True)
     assert tensor_state_digest(base.state_dict())==initial and sha(checkpoint)==source_sha
     write(out/'RESULTS.json',dict(rows=records,parent_sha256=source_sha,parent_unchanged=True,data_fingerprint=geo['fingerprint'],
         support_sha256=sha(SUPPORT/'support.npz'),artifacts_sha256={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.pt','.npz')},
-        scope='Eight isolated scratch step1 updates, each reset to the same original parent. All four batches retained, same reference RNG, TRAIN only. No generalization or novelty claim.'))
+        optimizer_control=optimizer_control,scope='Eight isolated scratch step1 updates, each reset to the same original parent. All four batches retained, same reference RNG, TRAIN only. No generalization or novelty claim.'))
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--output',required=True);a=p.parse_args();main(a.output)
+    p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--optimizer-control',action='store_true');a=p.parse_args();main(a.output,a.optimizer_control)
