@@ -107,6 +107,14 @@ def sampled_distinct_targets(tags,rng,budget=8):
     return np.array(picked,dtype=int)
 
 
+def canonical_targets(tags,variants_per_witness=4):
+    """prepare() stores each original witness before its checked variants."""
+    block=1+variants_per_witness
+    if len(tags)==0 or len(tags)%block or not np.all(tags.reshape(-1,block)==tags[::block,None]):
+        raise ValueError('Malformed witness/variant blocks')
+    return np.arange(0,len(tags),block,dtype=int)
+
+
 def match_loss(pred,target,tags,rng):
     import torch
     from scipy.optimize import linear_sum_assignment
@@ -174,6 +182,8 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
     settings=dict(arm=arm,steps=steps,policy=cfg,initial_checkpoint_sha256=sha(init),support_sha256=sha(SUPPORT/'support.npz'),
         data_fingerprint=geo['fingerprint'],source_sha256=source_identity(),head_options=saved['config']['head_options'],
         input_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest())
+    if arm=='set_canonical':
+        settings['reference_contract']='Original first path in each immutable prepare() witness block; exclude four verified variants, preserve every witness mode'
     if safety is not None:
         settings.update(safety_control=safety_control,safety_diagnostic_sha256=sha(RUN/'safety_train_diagnostic_v1/RESULTS.json'),
             collision_coefficient=160. if safety_control=='mean' else safety['worst_collision_coefficient'],
@@ -206,6 +216,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         for sidx in si:
             n=int(support['mask'][sidx].sum());tags=support['modes'][sidx,:n]
             if arm=='set_matching':picked=np.arange(n)
+            elif arm=='set_canonical':picked=canonical_targets(tags,cfg['variants_per_witness'])
             elif arm=='set_sampled':picked=sampled_distinct_targets(tags,lrng)
             else:
                 probs=probabilities(tags,arm);w=np.array([probs[g]/np.count_nonzero(tags==g) for g in tags])
@@ -218,7 +229,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         tx=torch.tensor(target,device='cuda');te=torch.tensor(targete,device='cuda')
         pred=torch.cat([xyz[:,:,1:],event[:,:,1:,None]*.2],-1)
         truth=torch.cat([tx[:,:,1:],te[:,:,1:,None]*.2],-1)
-        if arm=='set_matching':
+        if arm in ('set_matching','set_canonical'):
             # Variable-cardinality groups are processed without padded classes.
             regression=torch.stack([match_loss(pred[i:i+1],truth[i:i+1,:len(sampletags[i])],
                 np.array([sampletags[i]]),lrng) for i in range(len(pred))]).mean()
@@ -332,7 +343,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
     p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');a=p.parse_args()
-    if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
+    if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled','set_canonical'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
     elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer)

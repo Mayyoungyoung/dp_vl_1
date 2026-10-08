@@ -1,26 +1,23 @@
 # Next action
 
-All V3 jobs are CLOSED. Latest ordinary linear-margin pair fails its gate;
-no new coefficient, margin or learning-rate sweep. Read linear_v1/REPORT.md.
-110 jobs106success4retained failures;5091.294504/7200 command seconds used,
-2108.705496 remain. Source84d7e4d and629043c queues finished; never duplicate.
-All252 closure files locally SHA verified, manifest LINEAR_CLOSURE_ARTIFACTS_20261009.json.
+All anchor/optimizer jobs CLOSED.119 jobs115success4retained failures;
+5480.435936/7200 command seconds used,1719.564064 remain.291 newly sealed
+artifact files SHA verified. See ANCHOR_OPTIMIZER_CLOSURE_ARTIFACTS_20261009.json.
 
-Keep safety_mean as the current reference generator and all three new-domain
-q seeds in reporting. Extra quadratic updates provide no clear joint benefit;
-linear reduces TRAIN collisions but raises endpoint errors and fails on DEV.
-The shared-failure q analysis and figure are descriptive, not a novel detector.
+Hard-anchor derivative mismatch is real but full-objective updates do not support
+a long ablation. Saved optimizer moments reduce first-step spikes and TRAIN
+collisions, but the1200-step DEV gate fails. Keep original safety_mean and all
+three new-domain q seeds in reporting. No more anchor/optimizer/linear-loss sweeps.
 
-Next safe action is to implement and run the prospectively registered
-ANCHOR_GRADIENT_DIAGNOSTIC_PROTOCOL.md. It compares the same hard forward anchor
-with straight-through versus zero anchor derivative, keeping genuine context
-attention gradients, then checks log_attention_scale central differences on
-four fixed TRAIN batches. First require exact same forward outputs within
-precision; report float64-vs-original deviations. No updates, no DEV scoring,
-no automatic training gate. If the scalar is clamped or numerical finite
-checks inconclusive, retain that result without adaptive parameter selection.
+Next execute the registered CANONICAL_REFERENCE_PROTOCOL.md: same full group
+matching with original witnesses only, without the four within-mode variants.
+This separates rich reference augmentation from the coverage objective; earlier
+eight-reference sampling changed both reference richness and matching freedom.
+Single seed0 fixed1200-step ordinary attribution control, original complete q,
+same input/initial model/update budget, explicitly different reference compute.
+No method novelty or stronger-baseline adoption claim before actual results.
 
-A surrogate derivative is intentional and has substantial prior art. Its
-mismatch is not proof of causal harm; only a separately registered matched
-ablation could support a consequence. Do not rebrand stop-gradient as novelty.
-Core Gate B/C/D remain unproven; goal ACTIVE, no verified external blocker.
+Then consolidate the supported and rejected mechanisms. Further experiments
+must identify a new separable explanation or a verified failure bottleneck;
+do not consume the remaining budget with cosmetically different controls.
+Gate B/C/D remain unmet and the goal ACTIVE.

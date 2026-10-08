@@ -953,3 +953,27 @@ ANCHOR_GRADIENT_DIAGNOSTIC_PROTOCOL.md. Historical active entries superseded.
 ## 2026-10-09 anchor/optimizer diagnostics
 
 8 derivative/geometry tests pass. Anchor derivative and both eight-step scratch diagnostics completed exit0. All TRAIN-only; same parent preserved. Full anchor gradient differences0.70-2.07%, update differences3.21-8.16%; hard derivative has no consistent objective advantage. Do not launch a long hard-anchor pair. Fresh AdamW causes large first-step jumps under both modes. Restored moments reduce jumps with exactly equal initial gradients and exact prior fresh prediction replay. This is an ordinary continuation confound, not novelty. A fixed1200-step restored-state comparison is prospectively registered in research_v3/OPTIMIZER_CONTINUATION_PROTOCOL.md. Budget after114 jobs5191.477281/7200 command seconds;2008.522719 remain. Artifact closure pending.
+
+## V3 anchor and optimizer controls CLOSED — 2026-10-09
+
+Source4b259e6b63b4707a2938fc6f657437ea4d4219d5, archive
+8ac5a208f29370ed2fd398e2c49780cd64bd42f6292806d7783c0a07e63292d0.
+All5 optimizer coordinator jobs exit0 in289s;11 tests pass. Matched initial
+model, actual input/reference exposure verified; optimizer counters1200/2400.
+Restored-minus-fresh validity+.1736pp CI[-2.5174,2.9948], modes+.00347,
+rare+.8594pp and Brier+.001225. Registered gateFALSE. TRAIN collisions261->103,
+semantic errors75->101, both6 shared endpoint failures. DEV collisions200->179,
+semantic errors106->117, shared endpoint failures11->13. Keep safety_mean.
+Earlier derivative8 tests pass; forward-identical hard-anchor surrogate mismatch
+verified, but full-objective scratch hard gradients give no consistent benefit.
+Saved Adam removes first-step loss spikes, without proved long-run DEV benefit.
+No hard-anchor training pair, optimizer sweep or new-method adoption.
+291 closed artifact files locally SHA verified, archive
+ ef1f8220d8bffd3ac2522eb1066c3e34602386eff469b37b1102e5c77d2482a8.
+119 jobs115success4historical failures,5480.435936/7200 command seconds;
+1719.564064 remain. All coordinator jobs closed; no active lock at packaging.
+Reports: anchor_diagnostics_v1/REPORT.md and optimizer_v1/REPORT.md.
+Goal ACTIVE; no novel advantage established. Next research decision concerns
+reference augmentation versus full-set coverage assignment, not more optimizer
+or anchor tuning. Historical ACTIVE entries below are superseded.
+
