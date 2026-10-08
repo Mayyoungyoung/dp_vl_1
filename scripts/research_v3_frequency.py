@@ -83,6 +83,14 @@ def probabilities(tags, arm):
     return {g:p if g==major else (1-p)/(len(groups)-1) for g in groups}
 
 
+def pad_targets(target, targete):
+    maximum=max(len(a) for a in target)
+    valid=np.array([[True]*len(a)+[False]*(maximum-len(a)) for a in target])
+    paths=np.array([np.pad(a,((0,maximum-len(a)),(0,0),(0,0))) for a in target])
+    events=np.array([np.pad(a,((0,maximum-len(a)),(0,0))) for a in targete])
+    return paths,events,valid
+
+
 def match_loss(pred,target,tags,rng):
     import torch
     from scipy.optimize import linear_sum_assignment
@@ -152,11 +160,8 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
             for j in picked:
                 exposure[tags[j]]+=1;unique.add('%d:%d'%(sidx,j))
         # Matching accepts variable reference counts. Pad only its batch labels.
-        maximum=max(len(a) for a in target)
-        valid=np.array([[True]*len(a)+[False]*(maximum-len(a)) for a in target])
-        target=[np.pad(a,((0,maximum-len(a)),(0,0))) for a in target]
-        targete=[np.pad(a,((0,maximum-len(a)),)) for a in targete]
-        tx=torch.tensor(np.array(target),device='cuda');te=torch.tensor(np.array(targete),device='cuda')
+        target,targete,valid=pad_targets(target,targete)
+        tx=torch.tensor(target,device='cuda');te=torch.tensor(targete,device='cuda')
         pred=torch.cat([xyz[:,:,1:],event[:,:,1:,None]*.2],-1)
         truth=torch.cat([tx[:,:,1:],te[:,:,1:,None]*.2],-1)
         if arm=='set_matching':

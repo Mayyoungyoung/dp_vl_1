@@ -30,3 +30,9 @@ V3-FREQ-PREP sourceb6727ff exit0,51.130s;47040 attempted/accepted unique perturb
 Dataset hash77f11adf55fe68ae93b7efc42ce4162213f41d12355d907b5ca606d97749d150.
 No extra independence is claimed from perturbations. Fixed minority mass protocol
 and retention gate registered in FREQUENCY_PROTOCOL.md before optimization.
+
+Frequency profile source8a5071f failed before its first optimizer update: the
+new padding tuple omitted the H24 coordinate dimension (61.301s including data
+load). Original coordinator closed exit1. Add shape/mask-preserving padding
+test and new v2 coordinator/profile names; keep the initial directory unchanged.
+Support data and the registered scientific protocol are unchanged.

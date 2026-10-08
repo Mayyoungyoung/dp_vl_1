@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 import torch
-from scripts.research_v3_frequency import match_loss, probabilities
+from scripts.research_v3_frequency import match_loss, probabilities, pad_targets
 
 
 def test_frequency_mass_is_about_demonstrations_not_validity():
@@ -28,3 +28,12 @@ def test_matching_handles_more_groups_than_budget_without_impossible_full_cover(
     target=torch.arange(4.).reshape(1,4,1,1)
     loss=match_loss(pred,target,np.array([['a','b','c','d']]),np.random.default_rng(3))
     assert torch.isfinite(loss);loss.backward();assert torch.isfinite(pred.grad).all()
+
+
+def test_reference_padding_preserves_h24_geometry_events_and_mask():
+    a,b=np.ones((8,24,3),np.float32),np.ones((31,24,3),np.float32)*2
+    x,e,m=pad_targets([a,b],[np.ones((8,24)),np.zeros((31,24))])
+    assert x.shape==(2,31,24,3) and e.shape==(2,31,24)
+    assert m.sum(1).tolist()==[8,31]
+    np.testing.assert_array_equal(x[0,:8],a);np.testing.assert_array_equal(x[1],b)
+    assert not x[0,8:].any() and not m[0,8:].any()
