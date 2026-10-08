@@ -985,3 +985,7 @@ Inspection of scripts/train_paired_modes.py:load_data confirms that diagnostic l
 ## Canonical attempt1 timed out, 2026-10-09
 
 8 tests pass. Training source14da6aa hit180s timeout, exit124, receipt180.323454s. Evaluation did not run. Preserve recovery checkpoint and all failure receipts; a separately frozen same-source strict-state resume is registered under research_v3/CANONICAL_RESUME_PROTOCOL.md. No changed objective, lr, planned1200 steps or data. Budget5662.947181/7200 command seconds,1537.052819 remain.
+
+## Canonical reference attribution closed, 2026-10-09
+
+Exact-state resume completed1200 steps; failed180s attempt retained. Full-minus-canonical validity0pp CI[-1.2153,1.3889], rare-2.0081pp CI[-3.6227,-.3037], selected distinct+.0625, Brier-.015745. Augmentation gateFALSE. Corrected prior over-attribution of full-set gain to within-mode variants; canonical is not globally better. Actual input/initial model/group RNG equal, reference exposure exactly5:1.268 closure files SHA verified.124 jobs119success5failure,5844.733775/7200 command seconds used,1355.266225 remain.

@@ -1,3 +1,20 @@
+## V3 canonical exact-state recovery ACTIVE — 2026-10-09
+
+First attempt source14da6aa reached180s timeout, exit124; retained failure.
+Source681579246946984e52ece367773fc85a22ebd44b, archive
+ defcf14a364c2455a7831f7c182a80243687f5337b562e93f3c2657199711923,
+now runs research_v3/run_canonical_resume.sh viaSSH80394. Imported scripts,
+routeset and configs are byte-identical to14da6aa (git diff verified).
+Original recovery sealed before resume, SHA
+ d82c0b2ab2a939d1ebdc16224434fa5d2310b57a304613b32f0827bf42356d09.
+Same strict settings/model/optimizer/RNG/input-stream restore, planned1200 steps
+unchanged; remaining-step cap240s. Inspect canonical_resume_coordinator_v1
+closure and actual receipts; do not duplicate or modify either source export.
+Budget before resume5662.947181/7200 command seconds. Goal ACTIVE.
+Access wording corrected: shared loader materializes permitted DEV caches;
+only explicit TRAIN indices enter diagnostic/update computation. No locked TEST
+or scorer-role payload accessed. Prior no-DEV-read wording was too strong.
+
 ## V3 original-witness control ACTIVE — 2026-10-09
 
 Source14da6aa0702870842664fc78f76bb2a67ba02341, source archive

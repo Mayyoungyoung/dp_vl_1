@@ -19,13 +19,17 @@ EDGES=[('open','closed'),('open','shifted'),('closed','open'),('shifted','open')
 def survival(source_valid,cross_valid,cross_words,destination_valid,destination_words):
     still={w for v,c,w in zip(source_valid,cross_valid,cross_words) if v and c and w is not None}
     actual={w for v,w in zip(destination_valid,destination_words) if v and w is not None}
+    classified=[w for v,w in zip(destination_valid,destination_words) if v and w is not None]
+    free=int(np.sum(~np.array(destination_valid,dtype=bool)))+len(classified)-len(set(classified))
     return dict(surviving_source_routes=int(np.sum(np.array(source_valid)&np.array(cross_valid))),
         invalidated_source_routes=int(np.sum(np.array(source_valid)&~np.array(cross_valid))),
         surviving_witness_modes=len(still),retained_witness_modes=len(still&actual),
-        lost_witness_modes=sorted(still-actual),surviving_modes=sorted(still))
+        lost_witness_modes=sorted(still-actual),surviving_modes=sorted(still),
+        destination_invalid_or_duplicate_slots=free,
+        slot_feasible_lost_modes=min(len(still-actual),free))
 
 
-def main(output):
+def main(output,strong_only=False):
     out=RUN/output;out.mkdir(parents=True,exist_ok=False)
     labels={r['id']:r for r in lines(DATA/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
     refs={k:references(v) for k,v in labels.items()}
@@ -36,12 +40,15 @@ def main(output):
         grouped[(family,ident.rsplit('target',1)[1])][variant]=ident
     assert len(grouped)==96 and all(set(v)=={'open','closed','shifted'} for v in grouped.values())
     allrows={};summary={};hashes={}
-    for arm in ['initial']+ARMS+['set_sampled']:
+    strong={'safety_mean':'evaluation_matched_q_v1','safety_worst':'evaluation_fixed_q_v2',
+        'margin_mean':'evaluation_matched_q_v1','optimizer_restored':'evaluation_matched_q_v1',
+        'frequency_set_canonical':'evaluation_fixed_q_v2'}
+    for arm in strong if strong_only else ['initial']+ARMS+['set_sampled']:
         if arm=='initial':
             pool=OLD_RUN/'evaluation/paired_dev/R1_seed0/pool.npz'
             oldrows=read(RUN/'audit_v4/candidate_rows.json')['0']
         else:
-            folder=RUN/('frequency_'+arm)/'evaluation_fixed_q_v2'
+            folder=RUN/arm/strong[arm] if strong_only else RUN/('frequency_'+arm)/'evaluation_fixed_q_v2'
             pool=folder/'pool.npz';oldrows=read(folder/'rows.json')
             assert sha(pool)==read(folder/'metrics.json')['pool_sha256']
         hashes[arm]=sha(pool)
@@ -71,6 +78,8 @@ def main(output):
             summary[arm][a+'_to_'+b]=dict(pairs=len(rr),surviving_mode_opportunities=opportunities,
                 lost_surviving_modes=lost,lost_fraction=lost/opportunities if opportunities else None,
                 pairs_losing_surviving_modes=sum(bool(r['lost_witness_modes']) for r in rr),
+                slot_feasible_lost_modes=sum(r['slot_feasible_lost_modes'] for r in rr),
+                pairs_with_slot_feasible_loss=sum(r['slot_feasible_lost_modes']>0 for r in rr),
                 invalidated_source_routes=sum(r['invalidated_source_routes'] for r in rr),
                 adaptation_gain=float(np.mean([r['concrete_adaptation_gain'] for r in rr])))
     write(out/'rows.json',plain(allrows));write(out/'RESULTS.json',dict(summary=summary,pool_sha256=hashes,
@@ -81,4 +90,4 @@ def main(output):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--output',required=True);a=p.parse_args();main(a.output)
+    p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--strong-only',action='store_true');a=p.parse_args();main(a.output,a.strong_only)
