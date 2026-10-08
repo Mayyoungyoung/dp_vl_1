@@ -8,7 +8,7 @@ from scripts.paired_modes_data import DATA
 from scripts.evaluate_paired_modes import inputs_for,check_candidates
 
 
-def main(output):
+def main(output,checkpoint_name='safety_mean'):
     torch=torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead
     from routeset.segment_clearance import path_segment_clearances
@@ -17,7 +17,8 @@ def main(output):
     rows=[r for r in lines(folder/'observations.jsonl') if r['split']=='TRAIN']
     labels={r['id']:r for r in lines(folder/'supervision.jsonl') if r['split']=='TRAIN'}
     assert len(rows)==1152 and len({r['parent_id'].rsplit('_',1)[0] for r in rows})==128
-    checkpoint=RUN/'safety_mean/last.pt';saved=torch.load(checkpoint,map_location='cpu',weights_only=False)
+    assert checkpoint_name in ('safety_mean','margin_mean','margin_linear')
+    checkpoint=RUN/checkpoint_name/'last.pt';saved=torch.load(checkpoint,map_location='cpu',weights_only=False)
     model=ProbabilisticGeometryRouteHead(**saved['config']['head_options']).cuda()
     model.load_state_dict(saved['model']);model.eval();torch.manual_seed(0)
     torch.save(dict(cpu=torch.get_rng_state(),cuda=torch.cuda.get_rng_state_all()),out/'rng_before.pt')
@@ -57,10 +58,11 @@ def main(output):
     result=dict(counts=dict(counts),colliding_maximum_deficit_quantiles_m=np.quantile(deficits,[0,.25,.5,.75,1]).tolist() if deficits else [],
         colliding_violating_segment_counts=dict(Counter(bad_segments)),checkpoint_sha256=sha(checkpoint),
         prediction_sha256=prediction_hash,input_sha256=hashes,
-        scope='All1152 original TRAIN requests, fixed final safety_mean model, no updates or scorer role access. Oracle geometry opened after all predictions sealed; diagnostic only.')
+        checkpoint_name=checkpoint_name,
+        scope='All1152 original TRAIN requests, fixed named final model, no updates or scorer role access. Oracle geometry opened after all predictions sealed; diagnostic only.')
     write(out/'rows.json',records);write(out/'RESULTS.json',result)
     print({k:v for k,v in result.items() if k!='input_sha256'},flush=True)
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--output',required=True);a=p.parse_args();main(a.output)
+    p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--checkpoint-name',default='safety_mean',choices=['safety_mean','margin_mean','margin_linear']);a=p.parse_args();main(a.output,a.checkpoint_name)

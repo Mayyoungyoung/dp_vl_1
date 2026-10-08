@@ -38,3 +38,11 @@ Require exact initial tensor and input/target exposure equality, finite losses,
 full optimizer/RNG checkpoints. Diagnostic <=60s; each training <=360s,
 evaluation <=60s. GPU1 UUID/35%/4threads, all under remaining V3 cumulative cap.
 No final TEST, collector directory evaluation, robot execution or altered data.
+
+Follow-up registered while the finite pair is still running, before inspecting
+the pair's DEV comparison: reuse the full1152-TRAIN post-training collision
+audit on both final checkpoints (120s cap each). This checks whether reduced
+training violations, if present, transfer to DEV. It makes no further updates
+and does not change the adoption gate or select a checkpoint. Preserve the
+previous safety_mean audit and predictions. Run from a new immutable export
+only after the pair coordinator closes successfully.
