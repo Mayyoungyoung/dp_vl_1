@@ -91,8 +91,8 @@ class ObservedGeometryEncoder(nn.Module):
     """
     def __init__(self, feature_dim=4096, width=128, point_width=64, anchor_mode='soft'):
         super().__init__()
-        if anchor_mode not in ('soft', 'straight_through_peak'):
-            raise ValueError('anchor_mode must be soft or straight_through_peak')
+        if anchor_mode not in ('soft', 'straight_through_peak', 'local_mass_peak'):
+            raise ValueError('unsupported anchor_mode')
         self.anchor_mode = anchor_mode
         self.feature_dim, self.width, self.point_width = feature_dim, width, point_width
         self.task_query = nn.Sequential(nn.LayerNorm(feature_dim), nn.Linear(feature_dim, point_width))
@@ -134,6 +134,13 @@ class ObservedGeometryEncoder(nn.Module):
             # Forward exactly equals an existing valid observed point. Backward
             # follows the unchanged soft spatial expectation. No label is used.
             anchor = peak_anchor.detach() + (soft_anchor-soft_anchor.detach())
+        elif self.anchor_mode == 'local_mass_peak':
+            # Ordinary inference-only intervention; no target or oracle inputs.
+            if self.training:
+                raise RuntimeError('local_mass_peak is registered for inference only')
+            from .attention_mass import mass_anchor
+            anchor = torch.stack([mass_anchor(safe_xyz[i,valid_mask[i]],
+                weights[i,valid_mask[i]])[0] for i in range(batch)])
         attended = (weights[..., None] * point_features).sum(1)
         mean = (point_features * valid_mask[..., None]).sum(1) / valid_mask.sum(1, keepdim=True)
         context = self.fusion(torch.cat([attended, mean, query, anchor-current[:, :3]], dim=-1))

@@ -235,17 +235,19 @@ def fixed_path_scores(planner, paths, events, inputs):
     return (logits/planner.temperature).sigmoid()
 
 
-def evaluate(name,fixed_q=False):
+def evaluate(name,fixed_q=False,anchor_mass=False):
     torch=torch_setup()
     from scripts.evaluate_paired_modes import inputs_for
     from routeset.observed_probability import load_scored_planner
     from scripts.paired_modes_reliability import reliability_metrics
-    folder=RUN/name;out=folder/('evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
+    if anchor_mass and not fixed_q:raise ValueError('anchor intervention requires complete fixed scorer')
+    folder=RUN/name;out=folder/('evaluation_anchor_mass_v1' if anchor_mass else 'evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
     bundle=OLD_RUN/'reliability/R1_seed0/deployment_seed0/planner.pt'
     model=load_scored_planner(bundle,'cuda');s=torch.load(folder/'last.pt',map_location='cpu',weights_only=False)
     if fixed_q:
         generator=copy.deepcopy(model.generator)
         generator.load_state_dict(s['model']);generator.eval();generator.requires_grad_(False)
+        if anchor_mass:generator.geometry.anchor_mode='local_mass_peak'
     else:model.generator.load_state_dict(s['model'])
     model.eval();model.requires_grad_(False)
     with np.load(SUPPORT/'support.npz') as a: support={k:a[k] for k in a.files}
@@ -288,16 +290,17 @@ def evaluate(name,fixed_q=False):
         reliability=rel,by_variant={v:average([r['raw'] for r in details if r['variant']==v]) for v in ('open','closed','shifted')},
         generator_sha256=sha(folder/'last.pt'),scorer_bundle_sha256=sha(bundle),pool_sha256=sha(out/'pool.npz'),
         elapsed_seconds=time.monotonic()-tic,input_sha256=hashes,locked_access=False,
-        scoring_contract='fixed complete deployment scorer and observation encoder' if fixed_q else 'fixed scorer weights with changed generator observation encoder')
+        scoring_contract='fixed complete deployment scorer and observation encoder' if fixed_q else 'fixed scorer weights with changed generator observation encoder',
+        anchor_intervention='local_mass_peak sigma .025 over all valid points, inference only' if anchor_mass else None)
     write(out/'rows.json',plain(details));write(out/'metrics.json',plain(summary));print(json.dumps(summary['raw']),flush=True)
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q']);p.add_argument('--arm',default='empirical_uniform')
+    p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
     p.add_argument('--safety-control',choices=['mean','worst']);a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
     elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control)
-    else:evaluate(a.name,fixed_q=a.stage=='evaluate_fixed_q')
+    else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass')
