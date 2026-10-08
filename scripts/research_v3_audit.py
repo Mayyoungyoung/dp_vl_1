@@ -31,7 +31,10 @@ def probes_clear(paths, centers, halves):
 
 
 def exact_clear(paths, centers, halves):
-    hit = segment_aabb_intersection(paths[:, :-1, None], paths[:, 1:, None],
+    shape = (len(paths), paths.shape[1]-1, len(centers), 3)
+    a = np.broadcast_to(paths[:, :-1, None], shape)
+    b = np.broadcast_to(paths[:, 1:, None], shape)
+    hit = segment_aabb_intersection(a, b,
                                    centers[None, None]-halves[None, None]-.02,
                                    centers[None, None]+halves[None, None]+.02)
     return ~hit.any((1, 2))
