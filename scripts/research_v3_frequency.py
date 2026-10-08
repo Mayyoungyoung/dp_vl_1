@@ -130,7 +130,10 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False,verified_edit_support=False,freeze_input_encoders=False):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None,restore_optimizer=False,verified_edit_support=False,freeze_input_encoders=False,all_mode_edit_support=False):
+    if all_mode_edit_support:
+        if freeze_input_encoders:raise ValueError('All-mode completion uses the registered unfrozen control')
+        verified_edit_support=True
     if freeze_input_encoders and (linear_control!='mean' or restore_optimizer):
         raise ValueError('Frozen-input control requires fresh ordinary mean continuation')
     if verified_edit_support and (linear_control!='mean' or restore_optimizer):
@@ -151,6 +154,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
     cfg=read(POLICY);steps=steps or cfg['steps'];out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed run cannot be overwritten')
     support_root=RUN/'verified_edit_support_v1' if verified_edit_support else SUPPORT
+    if all_mode_edit_support:support_root=RUN/'verified_edit_all_modes_support_v1'
     assert sha(support_root/'support.npz')==read(support_root/'receipt.json')['support_sha256']
     with np.load(support_root/'support.npz') as a: support={k:a[k] for k in a.files}
     if verified_edit_support:
@@ -202,6 +206,9 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,l
         settings['frozen_input_encoders']=frozen_input_control.audit(model,frozen_initial)
     if verified_edit_support:
         settings.update(reference_contract='Verified same-known-mode TRAIN edit positives added; original semantic grounding unchanged',grounding_support_sha256=sha(SUPPORT/'support.npz'),augmentation_receipt_sha256=sha(support_root/'receipt.json'))
+    if all_mode_edit_support:
+        settings.update(reference_contract='All verified TRAIN edit positives, including missing modes; original grounding unchanged',
+            group_rng_contract='Same initial RNG and subset-matching algorithm; expanded mode sets change final group RNG and selected classes')
     if safety is not None:
         settings.update(safety_control=safety_control,safety_diagnostic_sha256=sha(RUN/'safety_train_diagnostic_v1/RESULTS.json'),
             collision_coefficient=160. if safety_control=='mean' else safety['worst_collision_coefficient'],
@@ -366,9 +373,9 @@ def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
-    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');p.add_argument('--verified-edit-support',action='store_true');p.add_argument('--freeze-input-encoders',action='store_true');a=p.parse_args()
+    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');p.add_argument('--restore-optimizer',action='store_true');p.add_argument('--verified-edit-support',action='store_true');p.add_argument('--freeze-input-encoders',action='store_true');p.add_argument('--all-mode-edit-support',action='store_true');a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled','set_canonical'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer,a.verified_edit_support,a.freeze_input_encoders)
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control,a.restore_optimizer,a.verified_edit_support,a.freeze_input_encoders,a.all_mode_edit_support)
     else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass',paired_score=a.paired_score)
