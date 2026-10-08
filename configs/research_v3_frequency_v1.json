@@ -1,0 +1,21 @@
+{
+  "protocol": "controlled_frequency_retention_v1",
+  "seed": 0,
+  "steps": 1200,
+  "batch_size": 32,
+  "lr": 0.0003,
+  "variants_per_witness": 4,
+  "perturbation_seed": 610090,
+  "jitter_amplitudes_m": [0.002, 0.007, 0.002],
+  "arms": ["empirical_uniform", "empirical_90", "empirical_98", "balanced", "set_matching"],
+  "initialization": "identical historical R1 seed0 final checkpoint; tests retention under biased head fine-tuning, not learning from scratch",
+  "majority_mode": ["gap0", "gap0"],
+  "frequency_rule": "majority mass .9 or .98, remaining mass equally divided among other witnessed modes; uniform arm is uniform over modes",
+  "effective_sample_units": "128 independent TRAIN layout families; generated perturbations are correlated teacher variants, not independent human demonstrations",
+  "training_roles": ["TRAIN"],
+  "evaluation_roles": ["DEV_MODEL"],
+  "selection": "fixed last1200; no generator checkpoint selection using DEV",
+  "q": "fixed historical R1 seed0 single q and calibration for all arms; no scoring improvement claim",
+  "hypothesis_gate": "biased empirical rare-mode recall@8 declines >=0.10 versus empirical uniform, with parent-bootstrap upper bound below zero; protection candidate validity decrease <0.02 for a claimed mechanism gain",
+  "decision": "If ordinary balancing or matching suffices, reject frequency balancing as novelty and diagnose another bottleneck. No method mechanism implemented before this gate."
+}

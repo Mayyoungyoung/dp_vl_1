@@ -16,6 +16,7 @@ from scripts.observed_layout_variation import crossing_signature, gap_certificat
 from scripts.analyze_paired_selection import select
 from routeset.geometry import segment_aabb_intersection
 from routeset.geometric_modes import portal_word, encode_word
+from routeset.research_v3_modes import passage_signature
 
 
 def plain(value):
@@ -27,7 +28,7 @@ def plain(value):
 
 
 def mode(path, cfg):
-    value = crossing_signature(path, cfg)
+    value = passage_signature(path, cfg)
     return None if value is None else '|'.join(value)
 
 
@@ -176,7 +177,7 @@ def main(output):
                 rare_mode_recall=None, rare_mode_reason='Paired teacher counts do not define natural demo frequencies',
                 modes_exhaustive=False, locked_access=False)
     write(out/'metrics.json', dict(data=data, generator=results, taxonomy=errors,
-        mode_scope='Known positive low/over relation witnesses; report historical portal words separately. Neither is proven homotopy.',
+        mode_scope='First forward crossing; above inflated top takes precedence, else lateral gap. Known positive witnesses only; legacy portal words separately; neither is proven homotopy.',
         source_inputs_sha256=inputs, observed_image_sha256=image_hashes))
     write(out/'candidate_rows.json', plain(allrows))
     print(json.dumps(plain(dict(data=data, generator=results, taxonomy=errors))), flush=True)
