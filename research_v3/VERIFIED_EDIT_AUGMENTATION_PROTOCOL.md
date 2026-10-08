@@ -47,3 +47,10 @@ references), evaluation60s, analysis60s. Serial within1313.889966 remaining
 command seconds, GPU1/35%/4threads; immutable source/launcher and all receipts,
 failures, checkpoints and RNG. No new images, Qwen calls, score-role fit, locked
 TEST access or raw collector traversal. No automatic weight/count/lr sweeps.
+
+Before new DEV outputs are available: also report unchanged safety_mean on the
+same fixed-source retention metric and ordinary route metrics. The registered
+primary gate versus margin_mean is unchanged, but a result which only repairs
+damage from extra training cannot establish superiority over the original
+strong reference. This contextual parent comparison must appear regardless of
+the primary gate outcome; no new threshold or checkpoint selection is added.

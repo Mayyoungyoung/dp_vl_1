@@ -1023,3 +1023,7 @@ Historical ACTIVE entries below are superseded.
 ## TRAIN edit retention closed
 
 Source1df437d,4 tests pass, audit exit0 in27.703155s. Correct-endpoint slot opportunities45/47/32/20 in384 pairs per direction, versus DEV23/40/23/23 in96. Eligible known-mode paths have2-3cm median nearest-reference mean point distance; perturbations narrow it by<1mm. All cases/distances retained; no model forward/update.128 jobs123success5failure;5886.110034/7200 command seconds,1313.889966 remain.7 closure files SHA verified.
+
+## Verified edit augmentation rejected
+
+All5 coordinator jobs exit0 in316s, training277.166349s.9027 cross-valid same-mode TRAIN positives added to47040 originals;853 unreferenced positives recorded/excluded, no new modes or grounding labels. Initial/input/group RNG checks exact. Fixed-source retention1775->1788 of2169, gain+.5994pp CI[-2.8392,3.9172]; validity-3.6892pp, distinct-.27431, Brier+.022907; gateFALSE. Untouched parent retains1872/2169 and exceeds both continuations.27 closure files SHA verified;133 jobs128success5failure,6201.694921/7200 command seconds used. Full TRAIN failure audit separately registered; no weight/count sweep.
