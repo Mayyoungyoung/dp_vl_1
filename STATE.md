@@ -1,3 +1,17 @@
+## V3 frozen encoder factorial ACTIVE — 2026-10-09
+
+Immutable source d3e48492b9eda3c5b665ab972285c21eb5ed8675, archive
+f447f6b41d18bcce7bd6c04f596a04289073365d173d8f47c043070c993c26cf.
+Absolute frozen launcher scripts/run_research_v3_frozen_factorial.sh runs in
+SSH session20389. Ten tests pass; first1200-step frozen plain training launched.
+No new result claim. Caps840s within976.768865 command seconds remaining before
+queue. Follow actual receipts/coordinator; do not duplicate or modify source.
+Initial relative-path invocation exited1 before jobs/trap when launcher SHA
+could not resolve its relative $0 after cd. Preserved failed coordinator at
+frozen_factorial_launch_path_failure_v1; retry uses unchanged absolute launcher.
+This pre-job orchestration failure is separate from134 completed experiment jobs.
+Goal ACTIVE. Prior completed augmentation report remains negative. No locked TEST.
+
 ## V3 verified augmentation CLOSED; frozen factorial REGISTERED — 2026-10-09
 
 134 jobs129success5retained failures;6223.231134932/7200 experiment command
