@@ -1,3 +1,15 @@
+## V3 safety controls and public CLI closed; anchor diagnosis continuing — 2026-10-09
+
+Supersedes all running-queue entries below. Every prior V3 job is closed;
+no active.lock at verified server inspection. Mean/worst safety controls finish
+exit0, worst gate fails. Public observed-only CLI actually passes exact replay.
+Closed snapshot244 files verified;54 receipts include4 retained failures,
+2123.775622 command seconds. Anchor audit adds17.604335s, total2141.379957.
+Anchor source de8c791: all432 audited requests have observed goal support;
+all12 mean DEV all-endpoint failures are outside shared-anchor residual range.
+Next: registered TRAIN-only exact local attention-mass diagnostic, no optimizer
+updates, no DEV tuning, no new-method claim. See research_v3/NEXT_ACTION.md.
+
 ## V3 frequency controls complete; safety control running — 2026-10-09
 
 Supersedes the recovery entry below. Read research_v3/RESEARCH_STATE.md.

@@ -1,6 +1,6 @@
 # Research V3 state — 2026-10-09
 
-Status: audit and six frequency controls completed; gradient-matched safety control running, no novel-method claim. Baseline commit 127f547;
+Status: audit and six frequency controls completed; gradient-matched safety control completed and rejected, no novel-method claim. Baseline commit 127f547;
 branch codex/multiroute-v2. Existing untracked work preserved separately.
 
 Historical evidence: R2/R3 cross-scene correspondence failed against R1 across
@@ -17,7 +17,7 @@ ValidDistinct5.5914, known witness recall62.281%. K4 recall40.209%, distinct3.58
 scorer-miss12/864; extra K4 capacity loss149/864 mode slots. Generation coverage
 and collisions dominate, while selection is close to its capacity bound.
 
-Frequency hypothesis is unknown: original teacher counts are uniform. All47040
+Controlled frequency hypothesis is supported; original teacher counts are uniform. All47040
 unique smooth perturbations passed checks (support hash77f11adf55fe68ae93b7efc42ce4162213f41d12355d907b5ca606d97749d150).
 Five1200-step arms from5ae75bf completed, strict100 versus50+50 equality passed.
 Both bias gates true: rare recall44.641% uniform,6.904%90:10,0%98:2.
@@ -51,3 +51,14 @@ Resources: SSH wzy3090 only; GPU1 UUID GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab,
 35% memory, four CPU threads, existing environment. Exploratory launcher budget
 7200 cumulative command seconds, includes failures; not GPU utilization hours.
 Server experiments use immutable exports; local workspace writes all code.
+
+Superseding checkpoint: safety_mean and safety_worst completed exit0. Worst
+validity gain0.217pp CI crosses0; minority recall loses3.108pp. Frozen gate fails;
+no sweep. Public CLI110abd9 exact paths/events/q/selection verified,2.801s with
+cached Qwen. Closed snapshot244 files allSHA verified,54jobs incl4failures.
+Anchor audit de8c791 exit0:432/432 requests have visible goal support. Mean
+DEV12 all-endpoint failures all outside anchor residual range; TRAIN2 failures,
+1 impossible. Total command budget2141.379957/7200s after this audit.
+All prior queues CLOSED. Next registered TRAIN-only mass diagnostic uses all
+1152 TRAIN requests and one fixed sigma; no route/model update yet. See
+ANCHOR_MASS_PROTOCOL.md. Goal remains active; paper novelty unestablished.

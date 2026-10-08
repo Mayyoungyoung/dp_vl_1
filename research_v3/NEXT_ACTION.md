@@ -1,9 +1,10 @@
 # Next action
 
-All six frequency controls and concrete-path survival diagnosis are complete.
-Current safety queue609a0b5 is running in SSH29657 after TRAIN gate passed.
-Inspect safety_worst_preflight_v1 and safety_coordinator_v1 receipts before action.
-Read SAFETY_DIAGNOSTIC_PROTOCOL.md. Evaluate both final models and the frozen
-validity/mode/rare protection gate; no coefficient sweep or early positive claim.
-Then decide whether remaining error needs a new mechanism or broader data.
-Do not infer novelty from ordinary balancing, matching or max collision loss.
+All previous V3 queues CLOSED; do not restart them. Safety gate false.
+Register/run ANCHOR_MASS_PROTOCOL.md from a fresh immutable local commit export:
+all1152 TRAIN requests, safety_mean only, exact Gaussian sigma.025m over every
+visible point. Max600 seconds. Compare peak/mass/soft anchors without changing
+routes or training. Actual tests and receipt must pass before claiming results.
+Only a passing fixed mass gate justifies registering a route intervention.
+No TEST_LOCKED, scale sweep, extra scorer calibration or new novelty claim.
+Research goal is active; report RESEARCH_REPORT_20261009.md is a checkpoint.
