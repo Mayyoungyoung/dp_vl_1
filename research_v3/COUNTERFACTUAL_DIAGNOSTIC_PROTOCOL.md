@@ -1,6 +1,6 @@
 # Concrete-path edit diagnostic
 
-Read all completed initial and five ordinary-control predictions on the32
+Read all completed initial, five original controls and the equal-target-budget control on the32
 registered DEV_MODEL families. Each target has open/closed/shifted observations.
 Test open-to-closed, open-to-shifted and their reverse directions, keeping the
 entire original path and event sequence unchanged. Verify start and goals match.

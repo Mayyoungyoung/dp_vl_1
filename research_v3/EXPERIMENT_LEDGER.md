@@ -44,3 +44,6 @@ entry. Do not weaken the equality checker. Fix the logging schedule to use the
 planned final step, not pause boundary, and rerun 100 versus50+50 in fresh v3
 outputs. Preserve all original checkpoints and failed receipt. Formal five-arm
 training has not started. Server inspection 2026-10-09 confirms no V3 live worker.
+
+Source5ae75bf actual100 versus50+50 full checkpoint comparison passed. Four sampling arms have completed. Set matching remains active; no final comparison declared. Evaluator source inspection revealed scorer observation encoder changed with each generator: preserve original evaluation as coupled-feature transfer, supersede only selection/probability conclusions with fixed_q_v2 from2550c9d. Same saved candidates, no retraining or DEV calibration. Local combined PyTorch test command could not collect because system Anaconda has no torch; no packages installed. The pure NumPy exposure and counterfactual tests passed locally (1 and3 tests respectively). Full tests and real q replay are in the frozen server correction queue, not yet run.
+

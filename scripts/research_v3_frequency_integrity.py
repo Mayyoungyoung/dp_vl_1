@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import numpy as np
 from scripts.research_v3_analyze_frequency import ARMS, paired, row_metrics
-from scripts.research_v3_frequency import probabilities
+from scripts.research_v3_frequency import probabilities,sampled_distinct_targets
 from scripts.run_observed_probability import read, write, sha
 
 
@@ -21,6 +21,7 @@ def replay_exposure(support, cfg, arm):
         for s in indices:
             n=int(support['mask'][s].sum());tags=support['modes'][s,:n];tags_batch.append(tags)
             if arm=='set_matching':chosen=np.arange(n)
+            elif arm=='set_sampled':chosen=sampled_distinct_targets(tags,lrng)
             else:
                 p=probabilities(tags,arm);w=np.array([p[t]/np.count_nonzero(tags==t) for t in tags])
                 chosen=lrng.choice(n,8,replace=True,p=w)

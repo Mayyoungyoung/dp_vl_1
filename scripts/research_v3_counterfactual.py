@@ -36,7 +36,7 @@ def main(output):
         grouped[(family,ident.rsplit('target',1)[1])][variant]=ident
     assert len(grouped)==96 and all(set(v)=={'open','closed','shifted'} for v in grouped.values())
     allrows={};summary={};hashes={}
-    for arm in ['initial']+ARMS:
+    for arm in ['initial']+ARMS+['set_sampled']:
         if arm=='initial':
             pool=OLD_RUN/'evaluation/paired_dev/R1_seed0/pool.npz'
             oldrows=read(RUN/'audit_v4/candidate_rows.json')['0']

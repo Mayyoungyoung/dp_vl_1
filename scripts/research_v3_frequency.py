@@ -96,6 +96,17 @@ def record_history(step, planned_steps):
     return step % 100 == 0 or step == planned_steps
 
 
+def sampled_distinct_targets(tags,rng,budget=8):
+    """Ordinary mode-stratified sampling; exactly the same target slot budget."""
+    groups=sorted(set(tags));order=rng.permutation(len(groups))[:budget]
+    picked=[int(rng.choice(np.flatnonzero(tags==groups[j]))) for j in order]
+    if len(picked)<budget:
+        mass=probabilities(tags,'balanced')
+        weights=np.array([mass[g]/np.count_nonzero(tags==g) for g in tags])
+        picked.extend(rng.choice(len(tags),budget-len(picked),replace=True,p=weights).tolist())
+    return np.array(picked,dtype=int)
+
+
 def match_loss(pred,target,tags,rng):
     import torch
     from scipy.optimize import linear_sum_assignment
@@ -158,6 +169,7 @@ def train(arm,name,steps=None,stop_after=None,resume=False):
         for sidx in si:
             n=int(support['mask'][sidx].sum());tags=support['modes'][sidx,:n]
             if arm=='set_matching':picked=np.arange(n)
+            elif arm=='set_sampled':picked=sampled_distinct_targets(tags,lrng)
             else:
                 probs=probabilities(tags,arm);w=np.array([probs[g]/np.count_nonzero(tags==g) for g in tags])
                 picked=lrng.choice(n,8,replace=True,p=w)
@@ -266,6 +278,8 @@ def evaluate(name,fixed_q=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true');a=p.parse_args()
+    if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
+        p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
     elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume)
     else:evaluate(a.name,fixed_q=a.stage=='evaluate_fixed_q')
