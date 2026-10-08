@@ -122,7 +122,9 @@ def match_loss(pred,target,tags,rng):
     return torch.stack(terms).mean()
 
 
-def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
+def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None,linear_control=None):
+    if linear_control is not None and (linear_control not in ('mean','linear') or safety_control is not None or arm!='set_matching'):
+        raise ValueError('Linear-margin pair requires set matching and its own continuation')
     torch=torch_setup()
     from scripts.train_paired_modes import load_data, source_identity
     from scripts.train_observed_geometry import batch_inputs
@@ -147,6 +149,12 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
         assert safety['ordinary_safety_control_gate']
         init=RUN/'frequency_set_matching/last.pt'
         assert sha(init)==safety['checkpoint_sha256']
+    linear=None
+    if linear_control is not None:
+        linear=read(RUN/'linear_gradient_v1/RESULTS.json')
+        assert linear['ordinary_linear_gate']
+        init=RUN/'safety_mean/last.pt'
+        assert sha(init)==linear['checkpoint_sha256']
     saved=torch.load(init,map_location='cpu',weights_only=False)
     torch.manual_seed(cfg['seed']);np.random.seed(cfg['seed']);random.seed(cfg['seed'])
     rng=np.random.default_rng(cfg['seed']);lrng=np.random.default_rng(cfg['seed']+6100)
@@ -160,6 +168,10 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
         settings.update(safety_control=safety_control,safety_diagnostic_sha256=sha(RUN/'safety_train_diagnostic_v1/RESULTS.json'),
             collision_coefficient=160. if safety_control=='mean' else safety['worst_collision_coefficient'],
             continuation_scope='Fresh optimizer from fixed full-set checkpoint; same1200-step input/target stream in both arms')
+    if linear is not None:
+        settings.update(linear_control=linear_control,linear_diagnostic_sha256=sha(RUN/'linear_gradient_v1/RESULTS.json'),
+            collision_coefficient=160. if linear_control=='mean' else linear['linear_coefficient'],
+            continuation_scope='Fresh optimizer from fixed safety_mean checkpoint; same1200-step input/target stream in both arms')
     audit=new_stream_audit(model,rng.bit_generator.state,torch.get_rng_state());initial=tensor_state_digest(model.state_dict())
     exposure=Counter();unique=set();history=[];start=0
     if resume:
@@ -200,7 +212,11 @@ def train(arm,name,steps=None,stop_after=None,resume=False,safety_control=None):
         else:regression=positive_assignment_loss(pred,truth,valid,'positive',lrng)
         ground=positive_endpoint_attention_loss(details['attention'],inp['world_xyz'],inp['valid_mask'],tx[:,:,-1],
             torch.tensor(valid,device='cuda'),.025)
-        if safety_control=='worst':
+        if linear_control=='linear':
+            from routeset.segment_clearance import path_segment_clearances
+            deficits=(.02-path_segment_clearances(xyz,cs[ids],hs[ids])).clamp_min(0)
+            clear=linear['linear_coefficient']/160*deficits.mean()+workspace_floor_loss(xyz,floors[ids])
+        elif safety_control=='worst':
             from routeset.segment_clearance import path_segment_clearances
             deficits=(.02-path_segment_clearances(xyz,cs[ids],hs[ids])).clamp_min(0)
             clear=(safety['worst_collision_coefficient']/160*deficits.square().amax(-1).mean()
@@ -235,14 +251,18 @@ def fixed_path_scores(planner, paths, events, inputs):
     return (logits/planner.temperature).sigmoid()
 
 
-def evaluate(name,fixed_q=False,anchor_mass=False):
+def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
     torch=torch_setup()
     from scripts.evaluate_paired_modes import inputs_for
     from routeset.observed_probability import load_scored_planner
     from scripts.paired_modes_reliability import reliability_metrics
     if anchor_mass and not fixed_q:raise ValueError('anchor intervention requires complete fixed scorer')
-    folder=RUN/name;out=folder/('evaluation_anchor_mass_v1' if anchor_mass else 'evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
+    if paired_score and (not fixed_q or anchor_mass):raise ValueError('Paired-domain q requires unchanged complete score encoder and no anchor intervention')
+    folder=RUN/name;out=folder/('evaluation_matched_q_v1' if paired_score else 'evaluation_anchor_mass_v1' if anchor_mass else 'evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
     bundle=OLD_RUN/'reliability/R1_seed0/deployment_seed0/planner.pt'
+    if paired_score:
+        bundle=RUN/'matched_q_paired_v1/reliability/mean_seed0/calibration_seed0/scorer_bundle.pt'
+        assert sha(bundle)=='2d87cb3c92336e224f48ec7888abb5ffa5c648eeaca86102d62780588ed0f72e'
     model=load_scored_planner(bundle,'cuda');s=torch.load(folder/'last.pt',map_location='cpu',weights_only=False)
     if fixed_q:
         generator=copy.deepcopy(model.generator)
@@ -298,9 +318,9 @@ def evaluate(name,fixed_q=False,anchor_mass=False):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate','evaluate_fixed_q','evaluate_anchor_mass']);p.add_argument('--arm',default='empirical_uniform')
     p.add_argument('--name');p.add_argument('--steps',type=int);p.add_argument('--stop-after',type=int);p.add_argument('--resume',action='store_true')
-    p.add_argument('--safety-control',choices=['mean','worst']);a=p.parse_args()
+    p.add_argument('--safety-control',choices=['mean','worst']);p.add_argument('--linear-control',choices=['mean','linear']);p.add_argument('--paired-score',action='store_true');a=p.parse_args()
     if a.arm not in ('empirical_uniform','empirical_90','empirical_98','balanced','set_matching','set_sampled'):
         p.error('Unregistered training arm')
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control)
-    else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass')
+    elif a.stage=='train':train(a.arm,a.name,a.steps,a.stop_after,a.resume,a.safety_control,a.linear_control)
+    else:evaluate(a.name,fixed_q=a.stage in ('evaluate_fixed_q','evaluate_anchor_mass'),anchor_mass=a.stage=='evaluate_anchor_mass',paired_score=a.paired_score)
