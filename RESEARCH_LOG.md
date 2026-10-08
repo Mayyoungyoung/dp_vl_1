@@ -989,3 +989,33 @@ Inspection of scripts/train_paired_modes.py:load_data confirms that diagnostic l
 ## Canonical reference attribution closed, 2026-10-09
 
 Exact-state resume completed1200 steps; failed180s attempt retained. Full-minus-canonical validity0pp CI[-1.2153,1.3889], rare-2.0081pp CI[-3.6227,-.3037], selected distinct+.0625, Brier-.015745. Augmentation gateFALSE. Corrected prior over-attribution of full-set gain to within-mode variants; canonical is not globally better. Actual input/initial model/group RNG equal, reference exposure exactly5:1.268 closure files SHA verified.124 jobs119success5failure,5844.733775/7200 command seconds used,1355.266225 remain.
+
+## V3 strong edit residual verified; all queues CLOSED — 2026-10-09
+
+Latest source934cb15c1718371319daf7ade38994ae8e78c19e, archive
+f13a2f8b1c391723152578b4851ff222005c2590a4343028918dbe44dd51cfc8.
+3 tests pass; all5-model same-path counterfactual audit exit0,12.290352s.
+For safety_mean, open->closed loses50/496 surviving modes;46 fit into invalid/
+duplicate slots, but23 involve all-wrong endpoints. Stricter correct-endpoint
+slot opportunities are23/40/23/23 across open->closed/open->shifted/reverses.
+Known-reference opportunities17/35/16/18; unreferenced7/6/8/6 compete for slots,
+so do not add them. All models/directions and semantic/reference decompositions
+are retained; no q transfer, inference method or new training claim.
+Canonical control also CLOSED after preserved timeout and strict resume:
+1200 steps, validity equal to full refs, rare recall+2.0081pp but worse selected
+sets/Brier. Full-reference augmentation gateFALSE. Earlier rich-reference-value
+inference corrected; both retain ordinary-method status. Original safety_mean
+and three paired-domain q seeds remain reference, no novel method established.
+Artifacts:291 anchor/optimizer closure files,268 canonical closure files,6 strong
+counterfactual files individually SHA verified (counts overlap older receipts).
+126 jobs121success5retained failures,5857.809212/7200 command seconds;
+1342.190788 remain. All queues closed, no active lock at latest packaging.
+Next registered TRAIN_EDIT_RETENTION_PROTOCOL.md is NOT IMPLEMENTED/RUN:
+reuse sealed TRAIN predictions to quantify the corresponding residual and
+nearest same-mode teacher distances before choosing any new training objective.
+Goal ACTIVE; no external blocker. Do not rerun old queues or broaden into sweeps.
+Access correction: shared training loader materializes permitted DEV caches,
+but only explicit TRAIN indices feed diagnostics/updates; no TEST_LOCKED or
+scorer-role payload accessed. Old no-DEV-read wording was too strong.
+Historical ACTIVE entries below are superseded.
+

@@ -1,3 +1,32 @@
+## V3 strong edit residual verified; all queues CLOSED — 2026-10-09
+
+Latest source934cb15c1718371319daf7ade38994ae8e78c19e, archive
+f13a2f8b1c391723152578b4851ff222005c2590a4343028918dbe44dd51cfc8.
+3 tests pass; all5-model same-path counterfactual audit exit0,12.290352s.
+For safety_mean, open->closed loses50/496 surviving modes;46 fit into invalid/
+duplicate slots, but23 involve all-wrong endpoints. Stricter correct-endpoint
+slot opportunities are23/40/23/23 across open->closed/open->shifted/reverses.
+Known-reference opportunities17/35/16/18; unreferenced7/6/8/6 compete for slots,
+so do not add them. All models/directions and semantic/reference decompositions
+are retained; no q transfer, inference method or new training claim.
+Canonical control also CLOSED after preserved timeout and strict resume:
+1200 steps, validity equal to full refs, rare recall+2.0081pp but worse selected
+sets/Brier. Full-reference augmentation gateFALSE. Earlier rich-reference-value
+inference corrected; both retain ordinary-method status. Original safety_mean
+and three paired-domain q seeds remain reference, no novel method established.
+Artifacts:291 anchor/optimizer closure files,268 canonical closure files,6 strong
+counterfactual files individually SHA verified (counts overlap older receipts).
+126 jobs121success5retained failures,5857.809212/7200 command seconds;
+1342.190788 remain. All queues closed, no active lock at latest packaging.
+Next registered TRAIN_EDIT_RETENTION_PROTOCOL.md is NOT IMPLEMENTED/RUN:
+reuse sealed TRAIN predictions to quantify the corresponding residual and
+nearest same-mode teacher distances before choosing any new training objective.
+Goal ACTIVE; no external blocker. Do not rerun old queues or broaden into sweeps.
+Access correction: shared training loader materializes permitted DEV caches,
+but only explicit TRAIN indices feed diagnostics/updates; no TEST_LOCKED or
+scorer-role payload accessed. Old no-DEV-read wording was too strong.
+Historical ACTIVE entries below are superseded.
+
 ## V3 canonical exact-state recovery ACTIVE — 2026-10-09
 
 First attempt source14da6aa reached180s timeout, exit124; retained failure.
