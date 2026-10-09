@@ -93,3 +93,16 @@ not random point sampling. Keep all old uniform metrics and name the new geometr
 Both XYZ/bounded receive the same tapered supervision, same C initialization,
 same2400draws/loss scale; collect new TRAIN feedback/heads. No independent novelty
 claim for tapering. Confirm whether endpoint tradeoff and true mode failures improve.
+
+## Final representation replication lock, before tapered seed0 results
+
+Complete exactly three paired full generator continuations0,1,2 for tapered
+XYZ/bounded,2400steps final, matching new feedback and success2400heads. Seed0
+screen is reused. This definitive mechanism check is committed irrespective of
+seed0 sign, with no significance-seeking seed extension. It supersedes the earlier
+conditional seed expansion solely for this final representation. Do not weaken
+the .15U8/quality gates or declare success for a significant smaller effect.
+Compare bounded against matched XYZ, projection and centerline, reporting every
+seed and conditional family/crossed intervals. All start from shared historicalC0;
+these are three generator continuations, not independent pretraining runs.
+Independent new-family/robot expansion remains conditional on accepted mechanism.
