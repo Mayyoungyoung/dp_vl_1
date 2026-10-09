@@ -1,3 +1,18 @@
+## 2026-10-09 — Realized coverage research starts under new authorization
+
+User removes old time cap and fixed repair-count stops; existing hardware only.
+Branch codex/realized-coverage-v1, separate ledger, no deployment change. FrozenC
+single-slot interventions preserve explicit companion(mode,variant) pairs; all8
+routes and q-selected4rechecked.1152TRAIN/288DEV complete. TRAIN1590unrequested
+recoverable modes but181net-positive; DEV370/77. Added-but-net-nonpositive cases
+TRAIN5114/DEV1101. Sampled DEV oracle best local gain0.306is not deployable score.
+Original collector serializer failed at64records, fixed/reused them;8.046s charged.
+18tests pass. Matched feedback success2400: U8=6.9583,V8=.88759,U4=3.7743,V4=.94358;
+set-net2400:6.750,.87804,3.7292,.94184. Strong simple control wins first screen.
+Geometry continuation ordinary/KL-only/gap/hard3600curves active717e1ad, SSH17244.
+No path-displacement loss. All comparisons remain development, TEST_LOCKED unread.
+Do not interpret historical closure budgets as limits on current authorization.
+
 ## Segment clearance round completed — 2026-10-04
 
 This entry supersedes older running descriptions. Exactly3 new B runs completed from immutableacc6de5, each3000 updates/expanded191/M8/H24;3 historical Ordinary A reused after exact initial/parent/config/data/full96000-input-stream audits. TRAIN-only lambda160 frozen before training. No q, network, selector, endpoints or metric changes; physical four-box labels enter extra TRAIN loss only. TEST_LOCKED never read.

@@ -27,12 +27,15 @@ def pack(folder):
 def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     assert not (out/'last.pt').exists()
-    d,ids,manifest=pack(RUN/feedback);rng=np.random.default_rng(seed)
+    packs=[pack(RUN/f) for f in feedback.split(',')]
+    d={k:np.concatenate([a[k] for a,_,_ in packs]) for k in packs[0][0]};ids=sum([b for _,b,_ in packs],[]);manifest=packs[0][2]
+    assert all(c['generator_sha256']==manifest['generator_sha256'] for _,_,c in packs)
+    rng=np.random.default_rng(seed)
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed)
     model=(SuccessHead() if kind=='success' else SetUtility()).cuda()
     data={k:torch.as_tensor(v,device='cuda') for k,v in d.items()}
     opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
-    settings=dict(kind=kind,feedback=feedback,feedback_sha256=sha(RUN/feedback/'SUMMARY.json'),generator_sha256=manifest['generator_sha256'],
+    settings=dict(kind=kind,feedback=feedback,feedback_sha256={f:sha(RUN/f/'SUMMARY.json') for f in feedback.split(',')},generator_sha256=manifest['generator_sha256'],
         seed=seed,steps=steps,batch_size=128,lr=.0003,source_commit=os.environ.get('CODE_COMMIT'))
     history=[];stream='';start=0;tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,history=history,stream=stream)

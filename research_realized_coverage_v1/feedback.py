@@ -9,12 +9,19 @@ from research_realized_coverage_v1.core import *
 from scripts.evaluate_paired_modes import inputs_for,references
 from scripts.research_v3_audit import plain
 
-def collect(name,split,resume=False,limit=None,checkpoint=BASE):
+def collect(name,split,resume=False,limit=None,checkpoint=BASE,proposal=None):
     torch_setup();model,_=load_generator(checkpoint);model.requires_grad_(False)
     scorer=load_scored_planner(Q,'cuda');scorer.requires_grad_(False)
     out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     manifest=dict(generator_sha256=sha(checkpoint),scorer_sha256=sha(Q),split=split,seed=91009,
         query_design='16 modes x two rotating slots; all seven companion pairs unchanged',source_commit=os.environ.get('CODE_COMMIT'))
+    head=None
+    if proposal:
+        from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,allocate
+        saved=torch.load(RUN/proposal,map_location='cpu',weights_only=False)
+        assert saved['settings']['generator_sha256']==sha(checkpoint)
+        kind=saved['settings']['kind'];head=(SuccessHead() if kind=='success' else SetUtility()).cuda()
+        head.load_state_dict(saved['model']);head.eval();manifest['proposal_sha256']=sha(RUN/proposal)
     if resume:
         before=read(out/'manifest.json');assert {k:v for k,v in before.items() if k!='source_commit'}=={k:v for k,v in manifest.items() if k!='source_commit'}
         write(out/('resume_'+manifest['source_commit']+'.json'),dict(original=before,current=manifest))
@@ -27,7 +34,12 @@ def collect(name,split,resume=False,limit=None,checkpoint=BASE):
         path=out/(row['id']+'.npz')
         if not path.exists():
             inp=inputs_for(row,labels[row['id']],DATA/'export/qwen_cache',torch,hashes)
-            runner=SceneRunner(model,scorer,inp);queries=interventions(runner.base,runner.base_variants,index)
+            runner=SceneRunner(model,scorer,inp)
+            if head:
+                with torch.no_grad():
+                    mm,vv,_=allocate(kind,head,runner.context,torch.as_tensor(runner.base[None],device='cuda'),torch.as_tensor(runner.base_variants[None],device='cuda'))
+                runner.base=mm[0].cpu().numpy();runner.base_variants=vv[0].cpu().numpy()
+            queries=interventions(runner.base,runner.base_variants,index)
             m=np.array([r[0] for r in queries]);v=np.array([r[1] for r in queries]);slot=np.array([r[2] for r in queries]);target=np.array([r[3] for r in queries])
             p,e,q=runner.run(m,v);ref=references(labels[row['id']]);a=assess(p,e,q,ref)
             np.savez_compressed(path,context=runner.context[0].cpu().numpy(),modes=m,variants=v,slot=slot,target=target,
@@ -66,5 +78,5 @@ def collect(name,split,resume=False,limit=None,checkpoint=BASE):
     write(out/'SUMMARY.json',summary);print(json.dumps({k:v for k,v in summary.items() if k not in ('files','input_hashes')}),flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--split',choices=['TRAIN','DEV_MODEL'],required=True);p.add_argument('--resume',action='store_true');p.add_argument('--limit',type=int);p.add_argument('--checkpoint',type=type(BASE),default=BASE);a=p.parse_args()
-    collect(a.name,a.split,a.resume,a.limit,a.checkpoint)
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--split',choices=['TRAIN','DEV_MODEL'],required=True);p.add_argument('--resume',action='store_true');p.add_argument('--limit',type=int);p.add_argument('--checkpoint',type=type(BASE),default=BASE);p.add_argument('--proposal');a=p.parse_args()
+    collect(a.name,a.split,a.resume,a.limit,a.checkpoint,a.proposal)

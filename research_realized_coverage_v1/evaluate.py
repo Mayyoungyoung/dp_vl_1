@@ -8,7 +8,7 @@ from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,alloc
 from scripts.evaluate_paired_modes import inputs_for,references,check_candidates
 from scripts.research_v3_audit import coverage,average,plain
 
-def evaluate(name,head=None,checkpoint=BASE):
+def evaluate(name,head=None,checkpoint=BASE,start_head=None):
     torch_setup();model,ck=load_generator(checkpoint);model.requires_grad_(False)
     scorer=load_scored_planner(Q,'cuda');scorer.requires_grad_(False)
     proposal=None;kind=None
@@ -16,6 +16,11 @@ def evaluate(name,head=None,checkpoint=BASE):
         saved=torch.load(RUN/head,map_location='cpu',weights_only=False);kind=saved['settings']['kind']
         assert saved['settings']['generator_sha256']==sha(checkpoint),'Stale feedback/head generator binding'
         proposal=(SuccessHead() if kind=='success' else SetUtility()).cuda();proposal.load_state_dict(saved['model']);proposal.eval()
+    starter=None
+    if start_head:
+        initial=torch.load(RUN/start_head,map_location='cpu',weights_only=False)
+        assert initial['settings']['kind']=='success' and initial['settings']['generator_sha256']==sha(checkpoint)
+        starter=SuccessHead().cuda();starter.load_state_dict(initial['model']);starter.eval()
     out=RUN/name/'eval_adaptive';out.mkdir(parents=True,exist_ok=False)
     rows=[r for r in lines(DATA/'export/observations.jsonl') if r['split']=='DEV_MODEL'];assert len(rows)==288
     labels={r['id']:r for r in lines(DATA/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
@@ -27,6 +32,7 @@ def evaluate(name,head=None,checkpoint=BASE):
         with torch.inference_mode():
             m=torch.as_tensor(runner.base[None],device='cuda');v=torch.as_tensor(runner.base_variants[None],device='cuda')
             torch.cuda.synchronize();tic=time.monotonic()
+            if starter:m,v,_=allocate('success',starter,runner.context,m,v)
             if proposal:
                 m,v,c=allocate(kind,proposal,runner.context,m,v)
                 for k in cost:cost[k]+=c[k]
@@ -45,9 +51,10 @@ def evaluate(name,head=None,checkpoint=BASE):
     np.savez_compressed(out/'pool.npz',**pools)
     report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),
         condition_hit=float(np.mean([r['condition_hit'] for r in results])),generator_sha256=sha(checkpoint),head_sha256=sha(RUN/head) if head else None,
+        start_head_sha256=sha(RUN/start_head) if start_head else None,
         scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),cost=dict(cost,decoded_sets=288,generated_routes=2304,
             proposal_ms_mean=1000*np.mean(alloc_time),decode_and_q_ms_mean=1000*np.mean(times)),input_hashes=hashes,locked_access=False)
     write(out/'rows.json',plain(results));write(out/'metrics.json',plain(report));print(json.dumps(plain({k:v for k,v in report.items() if k!='input_hashes'})),flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--head');p.add_argument('--checkpoint',type=type(BASE),default=BASE);a=p.parse_args();evaluate(**vars(a))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--head');p.add_argument('--start-head');p.add_argument('--checkpoint',type=type(BASE),default=BASE);a=p.parse_args();evaluate(**vars(a))

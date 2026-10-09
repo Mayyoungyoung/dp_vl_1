@@ -58,3 +58,13 @@ add one eight-route decode per request to feedback cost (including64 saved befor
 the serializer failure). Those discarded routes never enter main inference.
 The new deployment code computes base queries directly from logits and invokes
 the trajectory decoder exactly once. Explicit query variants preserve companions.
+
+## Query-context refresh, before outputs
+
+Success sorting beats original C allocation; it is now the strong base proposal.
+Original net head was trained on only C-centered one-swap neighborhoods. Measure
+its TRAIN/DEV gain prediction first. Collect a second TRAIN pool centered on
+success allocation, give BOTH heads the union and equal2400updates/three curve
+checkpoints. Start net refinement from the strong success query set, still no
+extra route decode. This is an on-policy-context repair, not new positives or
+additional information exclusive to the proposed arm. Keep initial failures.

@@ -1,3 +1,16 @@
+## Realized coverage v1 ACTIVE — new authorization — 2026-10-09
+
+User removes historical total-time caps and two-repair stopping rules. New branch
+codex/realized-coverage-v1, new ledger runs/realized_coverage_v1/jobs. Hardware
+unchanged: wzy3090 GPU1 UUID,0.35memory,four threads. Read new PROTOCOL.md and
+research_realized_coverage_v1/RESEARCH_STATE.md. No research completion claim.
+FrozenC TRAIN/DEV feedback complete. DEV370recoverable unrequested modes but only
+77sampled net-positive, nondegrading recoveries. Success2400 yields6.958valid modes
+versusC6.764; initial net-set head6.750 fails to beat the strong simple method.
+Active SSH17244 immutable717e1ad: ordinary/KL-only/gap/hard geometry3600step
+curves; displacement disabled. Next refresh generator-bound feedback before
+joint comparisons. Default parent unchanged; TEST_LOCKED unread.
+
 ## Mode geometry v1 CLOSED — limited representation gain, full method not accepted — 2026-10-09
 
 Read research_mode_geometry_v1/RESULTS.md, FAILURE_ANALYSIS.md and REPRODUCE.md.
