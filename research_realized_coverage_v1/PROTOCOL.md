@@ -97,3 +97,15 @@ The first geometry screen shares starting weights/data/steps but branch-specific
 query sampling advances RNG differently, so it is NOT an exact-input-stream
 causal comparison. Fix stateless per-step request/target draws before formal
 paired geometry replication; retain this exploratory screen as such.
+
+## Five-seed allocator lock before dense screen results
+
+Regardless of favorable/unfavorable seed0, complete exactly seeds0–4 for success
+and dense heads on the same two-context frozenC feedback pool,2400updates final.
+This tests stable representation/interaction evidence and reports negative outcomes
+without selecting an earlier curve checkpoint. Seed0 success/dense runs are reused;
+seeds1–4use corresponding success head to initialize dense query refinement.
+All have the same actual feedback minibatch stream within seed. Report family-only
+and crossed seed/family bootstrap intervals, both conditional on fixedC0/preexisting
+TRAIN pool. This does not substitute for five geometry continuations if joint
+geometry later shows a positive mechanism signal. Do not add seeds adaptively.
