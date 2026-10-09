@@ -26,6 +26,8 @@ def evaluate(name,head=None,checkpoint=BASE,start_head=None):
     labels={r['id']:r for r in lines(DATA/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
     with np.load(old.SUPPORT/'support.npz') as z:known={str(k):set(z['modes'][i,z['mask'][i]]) for i,k in enumerate(z['ids']) if z['splits'][i]=='DEV_MODEL'}
     results=[];pools={k:[] for k in ('paths','events','q','ids','mode_ids','variant_ids')};hashes={};times=[];alloc_time=[];cost=dict(replacements=0,query_sets_evaluated=0)
+    decoder_calls=[]
+    hook=model.head.output.register_forward_hook(lambda module,args,result:decoder_calls.append(tuple(result.shape)))
     for row in rows:
         inp=inputs_for(row,labels[row['id']],DATA/'export/qwen_cache',torch,hashes)
         runner=SceneRunner(model,scorer,inp)
@@ -49,10 +51,11 @@ def evaluate(name,head=None,checkpoint=BASE,start_head=None):
             condition_hit=float(np.mean(valid&(a['words'][0]==m[0].cpu().numpy())))))
         for k,val in dict(paths=p,events=e,q=q,ids=row['id'],mode_ids=m[0].cpu().numpy(),variant_ids=v[0].cpu().numpy()).items():pools[k].append(val)
     np.savez_compressed(out/'pool.npz',**pools)
+    hook.remove();assert len(decoder_calls)==len(rows) and all(s[:2]==(1,8) for s in decoder_calls),decoder_calls
     report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),
         condition_hit=float(np.mean([r['condition_hit'] for r in results])),generator_sha256=sha(checkpoint),head_sha256=sha(RUN/head) if head else None,
         start_head_sha256=sha(RUN/start_head) if start_head else None,
-        scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),cost=dict(cost,decoded_sets=288,generated_routes=2304,
+        scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),cost=dict(cost,decoded_sets=len(decoder_calls),generated_routes=8*len(decoder_calls),decoder_calls_observed=True,
             proposal_ms_mean=1000*np.mean(alloc_time),decode_and_q_ms_mean=1000*np.mean(times)),input_hashes=hashes,locked_access=False)
     write(out/'rows.json',plain(results));write(out/'metrics.json',plain(report));print(json.dumps(plain({k:v for k,v in report.items() if k!='input_hashes'})),flush=True)
 
