@@ -15,12 +15,17 @@ from routeset.paired_modes import workspace_floor_loss
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
 
-def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=BASE,resume=False,stop_after=None):
+def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=BASE,resume=False,stop_after=None,nearest=False,canonical_draws=False):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume);assert not (out/'last.pt').exists()
     with np.load(PREP/'train.npz') as z:d={k:z[k] for k in z.files}
     with np.load(POOL) as z:s={k:z[k] for k in z.files}
     assert np.array_equal(d['ids'],s['ids']) and set(s['splits'])=={'TRAIN'}
     bm=[{VOCAB.index(w):np.flatnonzero(s['mask'][i]&(s['modes'][i]==w)) for w in sorted(set(s['modes'][i,s['mask'][i]]))} for i in range(len(d['ids']))]
+    if nearest:
+        allpaths=torch.as_tensor(s['paths'],device='cuda');group=np.zeros((len(d['ids']),16,s['paths'].shape[1]),bool)
+        for i,words in enumerate(bm):
+            for m,indices in words.items():group[i,m,indices]=True
+        group=torch.as_tensor(group,device='cuda')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     model,ck=load_generator(checkpoint);model.train()
     t={k:torch.as_tensor(d[k],device='cuda') for k in ('context','anchor','current','evidence','centers','halves','floors')}
@@ -41,7 +46,8 @@ def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=B
     opt=torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],lr=.0001,weight_decay=.0001)
     settings=dict(arm=arm,steps=steps,seed=seed,head=head,feedback=feedback,initial_sha256=sha(checkpoint),lr=.0001,
         prepared_sha256=sha(PREP/'train.npz'),support_sha256=sha(POOL),head_sha256=sha(RUN/head) if head else None,
-        source_commit=os.environ.get('CODE_COMMIT'),displacement_weight=0.,route_normalization='Mean over witnessed query routes and coordinates; clearance/event unchanged')
+        source_commit=os.environ.get('CODE_COMMIT'),displacement_weight=0.,nearest=nearest,canonical_draws=canonical_draws,
+        route_normalization='Mean over witnessed query routes and coordinates; clearance/event unchanged')
     initial=tensor_state_digest(model.state_dict());frozen=tensor_state_digest({k:v for k,v in model.state_dict().items() if k.startswith(('geometry.','head.feature_encoder.','head.state_encoder.'))})
     history=[];stream='';start=0;tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,
@@ -51,10 +57,13 @@ def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=B
         model.load_state_dict(r['model']);opt.load_state_dict(r['optimizer']);restore_rng(r['rng'],rng);history=r['history'];stream=r['stream'];start=r['step']
     else:write(out/'config.json',settings)
     for step in range(start+1,min(steps,stop_after or steps)+1):
+        if canonical_draws:rng=np.random.default_rng(seed*1000003+step)
         chosen=rng.integers(len(d['pairs']),size=16);ids=d['pairs'][chosen].reshape(-1);modes=[];vs=[];targets=[];masks=[]
-        for j in chosen:
+        for position,j in enumerate(chosen):
+            if canonical_draws:rng=np.random.default_rng(seed*1000000007+step*100003+position*2)
             common=rng.permutation(np.flatnonzero(d['pair_mask'][j]))[:6]
             for side,i in enumerate(d['pairs'][j]):
+                if canonical_draws:rng=np.random.default_rng(seed*1000000007+step*100003+position*2+side+100)
                 extra=rng.permutation(sorted(set(bm[i])-set(common)))[:8-len(common)].tolist()
                 while len(common)+len(extra)<8:extra.append(int(rng.choice(list(bm[i]))))
                 conventional=np.r_[common,extra].astype(np.int64)
@@ -76,6 +85,11 @@ def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=B
         stream=hashlib.sha256(stream.encode()+ids.tobytes()+m.tobytes()+v.tobytes()+target.tobytes()).hexdigest()
         p,e,info=model.decode(t['context'][ids],t['anchor'][ids],t['current'][ids],torch.as_tensor(m,device='cuda'),variant_ids=torch.as_tensor(v,device='cuda'))
         weight=torch.as_tensor(mask,device='cuda');tx=torch.as_tensor(target,device='cuda')
+        if nearest:
+            with torch.no_grad():
+                eligible=group[torch.as_tensor(ids,device='cuda')[:,None],torch.as_tensor(m,device='cuda')]
+                dist=(p[:,:,None]-allpaths[ids,None]).square().mean((-1,-2));choice=dist.masked_fill(~eligible,float('inf')).argmin(-1)
+                tx=allpaths[torch.as_tensor(ids,device='cuda')[:,None],choice]
         route=((p[:,:,1:]-tx[:,:,1:]).square().mean((-1,-2))*weight).sum()/weight.sum().clamp_min(1)
         clear=segment_clearance_loss(p,t['centers'][ids],t['halves'][ids])+workspace_floor_loss(p,t['floors'][ids])
         event=.01*(e-t['current'][ids,None,None,7]).square().mean();ml=mode_loss(info['mode_logits'],t['evidence'][ids])
@@ -91,4 +105,5 @@ def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=B
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--arm',choices=['ordinary','kl_only','gap','hard'],required=True)
     p.add_argument('--steps',type=int,default=3600);p.add_argument('--seed',type=int,default=0);p.add_argument('--head');p.add_argument('--feedback',default='feedback_C_train')
-    p.add_argument('--checkpoint',type=type(BASE),default=BASE);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);a=p.parse_args();train(**vars(a))
+    p.add_argument('--checkpoint',type=type(BASE),default=BASE);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int)
+    p.add_argument('--nearest',action='store_true');p.add_argument('--canonical-draws',action='store_true');a=p.parse_args();train(**vars(a))

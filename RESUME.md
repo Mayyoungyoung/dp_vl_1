@@ -2,11 +2,12 @@
 
 Current attachment authorizes time beyond old caps, with existing hardware rules.
 Branch codex/realized-coverage-v1. Read STATE top and new research directory state.
-FrozenC feedback and allocation screen complete: simple success sorting improves
-coverage, initial set utility does not.18tests pass. Geometry queue SSH17244 from
-717e1ad runs ordinary/KL-only/gap/hard3600steps with600/1800/3600evaluations.
-No displacement. Do not duplicate jobs or edit exported running source. Refresh
-feedback/heads against new generator snapshots before joint-system claims.
+FrozenC feedback, allocation/context refresh and geometry curves complete.
+Simple success sorting improves coverage; initial and dense set utilities do not.
+ACTIVE SSH40076 frozen13e22ce refreshes ordinary/gap/hard600step feedback and
+heads. Then exportedbbf9606 followup queue (not yet started) performs reference
+diagnosis,4remaining paired allocation seeds,added-only,resume tests/statistics.
+No displacement. Do not duplicate jobs or edit exported running source.
 No paper acceptance, no TEST_LOCKED access, no changed deployment default.
 
 ## Mode geometry v1 CLOSED — 2026-10-09

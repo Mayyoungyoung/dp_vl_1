@@ -7,9 +7,11 @@ research_realized_coverage_v1/RESEARCH_STATE.md. No research completion claim.
 FrozenC TRAIN/DEV feedback complete. DEV370recoverable unrequested modes but only
 77sampled net-positive, nondegrading recoveries. Success2400 yields6.958valid modes
 versusC6.764; initial net-set head6.750 fails to beat the strong simple method.
-Active SSH17244 immutable717e1ad: ordinary/KL-only/gap/hard geometry3600step
-curves; displacement disabled. Next refresh generator-bound feedback before
-joint comparisons. Default parent unchanged; TEST_LOCKED unread.
+Geometry3600curves completed; displacement disabled, continued adaptive models
+all worse than originalC. Success context refresh6.983valid modes; dense net6.885.
+ACTIVE SSH40076 from13e22ce performs matching-generator joint feedback refresh.
+Five-seed allocator followup exportedbbf9606 but not started. Consult research
+state for exact queue, not older log descriptions. Default unchanged; locked unread.
 
 ## Mode geometry v1 CLOSED — limited representation gain, full method not accepted — 2026-10-09
 
