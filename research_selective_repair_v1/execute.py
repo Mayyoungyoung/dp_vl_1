@@ -15,7 +15,9 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
         tic=time.monotonic()
         try:
             phase['name']='restore';check,_,obs=physical.physical.restore_check(task,posts,saved,gripper_shapes,external_shapes);record['restore']=check;counts['strict_route_restores']+=1
-            trace.append(pilot.state_sample(task));np.testing.assert_allclose(trace[0][0][:3],paths[slot,0],atol=.005,rtol=0)
+            trace.append(pilot.state_sample(task))
+            if not np.allclose(trace[0][0][:3],paths[slot,0],atol=.005,rtol=0):
+                raise ValueError('Route start does not match restored public gripper state')
             # Equal RNG per request/rank for every method; no method-specific retry.
             random.seed(plan['seed']+rank);np.random.seed(plan['seed']+rank)
             phase['name']='route';pilot.execute(task,paths[slot,1:],trace[0][0][3:],gripper_shapes,external_shapes,trace,record,cfg)
