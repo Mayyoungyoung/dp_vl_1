@@ -1,15 +1,13 @@
-## Selective repair ACTIVE — 2026-10-09
+## Selective repair ACTIVE - 2026-10-10
 
-New user execution brief: implement current-observation selective repair with
-physical intervention data, strong controls, new-family confirmation and fixed
-Panda execution. New explicit branch codex/selective-route-repair-v1. Read
-research_selective_repair_v1/PROTOCOL.md and RESEARCH_STATE.md before continuing.
-Concentrated preparation source6b710db SSH12792 active; do not duplicate it.
-Strict geometry ceiling26/288=.09028 U8 is insufficient;141/197DEV failures are
-goal errors. Prospectively pivot to observed goal-tail correction, identical
-observed target proposals for all controls. Core model/data/executor code ready;
-no model/result acceptance yet. Same wzy3090 GPU1 UUID/.35/fourthreads; locked
-unread, historical defaults preserved. Old CLOSED evidence remains below.
+Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md. Initial
+screen terminal; selective hard gate gives0repairs,ordinary residual +.13889U8
+vs strong center. Common-baseline recenter +.10417 with2damages; prototype
+rule damages100validroutes. No method accepted. Early executor failed from
+Torch import in simulator; lightweight IO fix and targeted decoupled/balanced
+gate recovery queued next,then new physical TRAIN/DEV interventions. No
+remaining old queue/lock. Frozen launchers only,keep failed receipts. Same
+wzy3090 GPU1 UUID/.35/fourthreads,locked unread. Historical sections below.
 
 ## Feasible-space v1 CLOSED — 2026-10-09
 

@@ -84,3 +84,6 @@ scales0/.25/.5/.75/1, including zero. Learned gate thresholds .25/.5/.7/.9/1.01.
 Repair–damage comparisons use the fixed1% valid-draft damage budget. Scores used
 for this pivot are historical/reused DEV evidence. Independent confirmation is
 still generated only after all remaining checkpoints/protocols are frozen.
+
+## Prospective gate correction,2026-10-10
+First selective seed0 produces no repair at any registered gate threshold; residual same-data gains40routes withoutdamage. TRAIN rarepositive and softgate/direction coupling are measured failure hypotheses. One targeted correction keeps data,seed,2400updates,LR,features,architecture and bounds fixed: direction learns with deterministic six-tail support; endpoint gate BCE is balanced using actual TRAIN positive/negative ratio. Inference still uses hard observed gate. Same registered DEV thresholds and1%damage criterion apply. No change to+.15 or confirmation contract.
