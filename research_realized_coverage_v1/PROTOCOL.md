@@ -40,3 +40,21 @@ improving at3600 extend the SAME schedule for both arms, record before outcomes.
 No fixed maximum repair count; each new change needs a distinct measured cause.
 New held-out family rules will be frozen only after stable development signal;
 TEST_LOCKED remains unread. Default parent unchanged.
+
+## Geometry screen, before outcomes
+
+Use lr0.0001 for all continuations from converged C, same600/1800/3600curve,
+same32scene batch, full old positives, unchanged normalized geometry penalties.
+Ordinary and KL-only use conventional witnessed modes. Gap uses50% ordinary
+coverage draws and50% proposed eight-query contexts with one witnessed failure
+injected, sampling floor0.1 prevents starvation. Hard control has the same
+forced-mode mechanism with conventional positive companions. No displacement.
+Adaptive evaluations first expose geometry effects without stale success feedback;
+proposal heads must then be refreshed on the matching generator snapshot before
+joint system comparisons. No performance claim from stale-head outputs.
+
+The first collector source used one disposable baseline decode to obtain queries;
+add one eight-route decode per request to feedback cost (including64 saved before
+the serializer failure). Those discarded routes never enter main inference.
+The new deployment code computes base queries directly from logits and invokes
+the trajectory decoder exactly once. Explicit query variants preserve companions.
