@@ -13,9 +13,15 @@ VOCAB = ['|'.join(x) for x in itertools.product(('gap0','gap1','gap2','over'), r
 
 
 class ModeGeometryHead(ProbabilisticGeometryRouteHead):
-    def __init__(self, *args, conditional=True, **kwargs):
+    def __init__(self, *args, conditional=True, decoder_communication=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.conditional = conditional
+        self.decoder_communication=decoder_communication
+        if not decoder_communication:
+            for block in self.head.blocks:
+                block.communicate=False
+                block.attention.requires_grad_(False)
+                block.attention_norm.requires_grad_(False)
         width = self.head.queries.shape[-1]
         self.mode_predictor = nn.Sequential(nn.LayerNorm(width), nn.Linear(width, width),
                                             nn.SiLU(), nn.Linear(width, len(VOCAB)))

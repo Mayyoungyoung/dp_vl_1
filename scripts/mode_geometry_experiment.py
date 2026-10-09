@@ -22,10 +22,10 @@ POOL=old.RUN/'verified_edit_all_modes_support_v1/support.npz'
 Q=old.RUN/'matched_q_paired_v1/reliability/mean_seed0/calibration_seed0/scorer_bundle.pt'
 
 
-def new_model(torch, conditional):
+def new_model(torch, conditional, independent_decoder=False):
     from routeset.mode_geometry import ModeGeometryHead
     saved=torch.load(INITIAL,map_location='cpu',weights_only=False)
-    model=ModeGeometryHead(**saved['config']['head_options'],conditional=conditional)
+    model=ModeGeometryHead(**saved['config']['head_options'],conditional=conditional,decoder_communication=not independent_decoder)
     result=model.load_state_dict(saved['model'],strict=False)
     assert not result.unexpected_keys and all(k.startswith(('mode_predictor.','mode_embedding.','variant_embedding.')) for k in result.missing_keys)
     model.freeze_encoders()
@@ -104,7 +104,7 @@ def prepare():
     print(json.dumps(dict(counts=counts,pairs=len(pairs))),flush=True)
 
 
-def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.):
+def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,independent_decoder=False):
     torch=torch_setup()
     from routeset.mode_geometry import mode_loss,pair_displacement_loss,VOCAB
     from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
@@ -122,7 +122,7 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.):
     per_mode=[{VOCAB.index(w):np.flatnonzero(s['mask'][i] & (s['modes'][i]==w))
         for w in set(s['modes'][i,s['mask'][i]])} for i in range(len(s['ids']))]
     torch.manual_seed(seed);random.seed(seed);np.random.seed(seed);rng=np.random.default_rng(seed)
-    model,options=new_model(torch,arm!='B')
+    model,options=new_model(torch,arm!='B',independent_decoder)
     with torch.no_grad():model.mode_embedding.weight.copy_(torch.as_tensor(d['mode_init'],device='cuda'))
     optimizer=torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],lr=.0003,weight_decay=.0001)
     initial=tensor_state_digest(model.state_dict())
@@ -130,10 +130,10 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.):
     tensors={k:torch.as_tensor(d[k],device='cuda',dtype=torch.float32) for k in ('context','anchor','current','evidence','centers','halves','floors')}
     settings=dict(arm=arm,seed=seed,steps=steps,pair_weight=pair_weight,prepared_sha256=manifest['data_sha256'],initial_sha256=sha(INITIAL),
         source_commit=os.environ.get('CODE_COMMIT'),source_hashes={str(p.relative_to(SOURCE)):sha(p) for p in [SOURCE/'routeset/mode_geometry.py',SOURCE/'scripts/mode_geometry_experiment.py']},
-        batch_size=32,lambda_mode=.001,lambda_pair=pair_weight,lr=.0003,encoder_frozen=True)
+        batch_size=32,lambda_mode=.001,lambda_pair=pair_weight,lr=.0003,encoder_frozen=True,independent_decoder=independent_decoder)
     history=[];start=0;stream='';tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,history=history,
-        stream=stream,settings=settings,config=dict(head_options=options,conditional=arm!='B'),initial_tensor_sha256=initial,frozen_sha256=frozen)
+        stream=stream,settings=settings,config=dict(head_options=options,conditional=arm!='B',decoder_communication=not independent_decoder),initial_tensor_sha256=initial,frozen_sha256=frozen)
     if resume:
         ck=torch.load(out/'recovery.pt',map_location='cpu',weights_only=False);assert ck['settings']==settings
         model.load_state_dict(ck['model']);optimizer.load_state_dict(ck['optimizer']);restore_rng(ck['rng'],rng)
@@ -190,7 +190,7 @@ def evaluate(name,sampling):
     from scripts.evaluate_paired_modes import inputs_for
     out=RUN/name/('eval_'+sampling);out.mkdir(exist_ok=False)
     saved=torch.load(RUN/name/'last.pt',map_location='cpu',weights_only=False)
-    model=ModeGeometryHead(**saved['config']['head_options'],conditional=saved['config']['conditional']).cuda()
+    model=ModeGeometryHead(**saved['config']['head_options'],conditional=saved['config']['conditional'],decoder_communication=saved['config'].get('decoder_communication',True)).cuda()
     model.load_state_dict(saved['model']);model.eval();model.requires_grad_(False)
     assert sha(Q)=='2d87cb3c92336e224f48ec7888abb5ffa5c648eeaca86102d62780588ed0f72e'
     scorer=load_scored_planner(Q,'cuda');scorer.eval();scorer.requires_grad_(False)
@@ -224,7 +224,8 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate']);p.add_argument('--arm',choices=['B','C','D'])
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=1200);p.add_argument('--name')
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--pair-weight',type=float,default=1.)
+    p.add_argument('--independent-decoder',action='store_true')
     p.add_argument('--sampling',choices=['ordinary','balanced','adaptive'],default='balanced');a=p.parse_args()
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight)
+    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight,a.independent_decoder)
     else:evaluate(a.name,a.sampling)

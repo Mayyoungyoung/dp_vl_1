@@ -72,5 +72,12 @@ class ModeGeometryTests(unittest.TestCase):
         _,_,d=self.model.decode(self.context,self.anchor,self.current)
         self.assertTrue(torch.all(d['mode_ids']==3))
 
+    def test_independent_shared_decoder_has_no_companion_interference(self):
+        model=ModeGeometryHead(feature_dim=12,width=16,point_width=8,horizon=24,max_candidates=8,decoder_communication=False)
+        p,_,_=model.decode(self.context,self.anchor,self.current,self.modes)
+        changed=self.modes.clone();changed[:,1:]+=8
+        q,_,_=model.decode(self.context,self.anchor,self.current,changed)
+        torch.testing.assert_close(p[:,0],q[:,0],atol=1e-7,rtol=1e-7)
+
 
 if __name__=='__main__':unittest.main()

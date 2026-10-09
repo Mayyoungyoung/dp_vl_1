@@ -18,7 +18,7 @@ def diagnose(names,output):
     report={}
     for name in names:
         ck=torch.load(RUN/name/'last.pt',map_location='cpu',weights_only=False)
-        model=ModeGeometryHead(**ck['config']['head_options'],conditional=ck['config']['conditional']).cuda()
+        model=ModeGeometryHead(**ck['config']['head_options'],conditional=ck['config']['conditional'],decoder_communication=ck['config'].get('decoder_communication',True)).cuda()
         model.load_state_dict(ck['model']);model.eval();model.requires_grad_(False)
         counts=dict(opportunities=0,valid_intended=0,source_context_valid_intended=0,mode_selected=0,
                     companion_changed_valid_intended=0)

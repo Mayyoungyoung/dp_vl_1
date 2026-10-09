@@ -80,3 +80,22 @@ word. This is not an absence certificate. Keep original `balanced` and `ordinary
 results, evaluate adaptive on the SAME fixed checkpoints, and expose it as the
 model API default. This changes no training data, decoder weights or oracle use.
 Report strategy-dependent effects instead of attributing them to architecture.
+
+## One structural repair, registered after full-step failure and TRAIN diagnostic
+
+At1200steps D86.85%/6.660 and return4valid93.14% underperform C89.24%/6.778 and
+94.79%. Do not choose the better400-step D. TRAIN first128 changed-coordinate
+pairs (466 mode opportunities) show D398 correct-valid modes with repeated
+companions versus449 after changing companions; mean route shift7.675mm.
+C similarly shifts8.317mm. Swapping destination context to source context reduces
+correct-valid D398->326, so input geometry matters, but companion interference
+is a concrete representation problem. Displacement regression error alone does
+not imply route validity or semantic compliance.
+
+Change ONE architectural factor: bypass candidate self-attention in shared
+decoder blocks, leaving per-token context modulation/MLP/output shared. Train
+C_ind/D_ind1200steps seed0 with unchanged losses, targets and frozen encoders.
+Compare adaptive allocation for both old/new checkpoints. No target/weight sweep.
+If repaired D has no useful advantage over C, accept lack of pair evidence;
+do not keep adding modules. If representation has a useful signal, replicate
+the relevant ordinary/C/D controls for seeds1,2, reporting all seeds.
