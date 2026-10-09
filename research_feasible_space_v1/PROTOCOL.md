@@ -94,7 +94,7 @@ Both XYZ/bounded receive the same tapered supervision, same C initialization,
 same2400draws/loss scale; collect new TRAIN feedback/heads. No independent novelty
 claim for tapering. Confirm whether endpoint tradeoff and true mode failures improve.
 
-## Final representation replication lock, before tapered seed0 results
+## Final representation replication lock, before inspecting tapered seed0 results
 
 Complete exactly three paired full generator continuations0,1,2 for tapered
 XYZ/bounded,2400steps final, matching new feedback and success2400heads. Seed0
@@ -106,3 +106,14 @@ Compare bounded against matched XYZ, projection and centerline, reporting every
 seed and conditional family/crossed intervals. All start from shared historicalC0;
 these are three generator continuations, not independent pretraining runs.
 Independent new-family/robot expansion remains conditional on accepted mechanism.
+The prospective additional runs are seeds1/2; seed0 is explicitly reused screening
+evidence. The lock was made before reading its output, not before its training launch.
+
+Shared-query center/projection outputs isolate the geometric mapping, but their
+proposal labels originate from the parent XYZ/bounded output. To give strongest
+standalone controls fresh matching feedback, create immutable decoder views with
+unchanged weight tensors and declared center/projection mapping, NEW checkpoint
+hashes. For each3seeds collect identical TRAIN16word/two-slot outcome design and
+fit success2400 on that actual decoder. Retain shared-head ablations separately.
+Main acceptance must pass both shared and independently refitted controls; no
+claim from a postprocessor inheriting mismatched success labels.
