@@ -29,7 +29,7 @@ def main(name,checkpoints):
                 p,e,_=model.decode(torch.tensor(d['context'][i:i+1],device='cuda'),torch.tensor(d['anchor'][i:i+1],device='cuda'),current,m,v,reference_corridor=(centers,r))
                 predictions[k]=(p.cpu().numpy()[0],e.cpu().numpy()[0])
         for k,(p,e) in predictions.items():
-            ok,w=check(p,e);counts[k]['routes']+=8;counts[k]['valid']+=int(ok.sum());counts[k]['correct_mode']+=sum(a==VOCAB[b] and x for a,b,x in zip(w,modes,ok))
+            ok,w=check(p,e);counts[k]['routes']+=8;counts[k]['valid']+=int(ok.sum());counts[k]['correct_mode']+=int(sum(a==VOCAB[b] and x for a,b,x in zip(w,modes,ok)))
             counts[k]['length'].extend(np.linalg.norm(np.diff(p,axis=1),axis=-1).sum(1).tolist());pools[k].append(p)
     for k,val in counts.items():val['mean_length']=float(np.mean(val.pop('length')));val['validity']=val['valid']/val['routes'];np.savez_compressed(out/('paths_'+str(list(counts).index(k))+'.npz'),paths=pools[k])
     report=dict(scope='TRAIN128,oracle supplied corridor; NOT observation deployment',models=counts,checkpoints={str(p):sha(p) for p in checkpoints},locked_access=False)

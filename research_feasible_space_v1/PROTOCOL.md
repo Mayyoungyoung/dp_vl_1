@@ -60,3 +60,20 @@ Whole-arm execution is conditional on mechanism benefit, never inferred from pat
 Every repair must address an observed cause and be registered before outcomes.
 Checkpoints include optimizer/RNG/sample stream and source/data hashes. Job receipts
 record commands, failures, budget and actual imported source. No running source edits.
+
+## Envelope repair registered after first XYZ screen, before repaired outcomes
+
+Same-info XYZ2400: cell feasibility7.552% while route validity86.762%. Only298/305
+invalid routes have uncertified predicted cells;7fail despite certified cells.
+Initial weighted clearance gradient norm .2219 vs route .01997. Thus final-path
+clearance alone does not train the whole predicted region. Radius labels measured
+around reference centers are optimistic around shifted predicted centers.
+
+Add cell-envelope supervision to BOTH same-info XYZ and bounded arms, from the
+same C initialization, seed0, same draws/2400updates. Use existing160clearance
+scale, no DEV weight search: `L_cell=mean(relu(r-.8*min(segment_slack,floor_slack))²)`.
+Exact segment slack of predicted centers supplies both center/radius gradients,
+using TRAIN truth only. This is conventional feasibility supervision, not claimed
+novelty. Record radius collapse, endpoint failures and final selected metrics.
+Run fresh matching feedback/success fit for both repaired decoders, not obsolete
+screen snapshots. Compare centerline and projection of each repaired snapshot.

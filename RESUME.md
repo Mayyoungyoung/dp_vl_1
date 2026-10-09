@@ -1,3 +1,15 @@
+## Feasible-space v1 ACTIVE — 2026-10-09
+
+Only active queue SSH55164, frozen8c8ee34, scripts/run_feasible_screen_v1.sh.
+Four2400step matched observed models, then center/projection controls. Read actual
+receipts before launching. Prior sourcef6180 oracle600step xyz/bounded completed;
+oracle diagnostic0 failed NumPy-int serialization after saved predictions. Fix
+exists locally; freeze it, run oracle_diagnostic1 after current queue, no retrain.
+Next fresh matching TRAIN feedback/success heads for xyz/bounded, frozen q4return,
+fixed2169/270analysis and perturbation/corridor diagnostics. No default changed.
+Read research_feasible_space_v1/{PROTOCOL,DATA,METHOD,RESEARCH_STATE}. Existing
+TEST_LOCKED/source/hardware rules remain; old realized-coverage queue is closed.
+
 ## Realized coverage v1 ACTIVE — 2026-10-09
 
 Current attachment authorizes time beyond old caps, with existing hardware rules.

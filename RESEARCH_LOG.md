@@ -1304,3 +1304,21 @@ remains in this family; do not relaunch existing fresh-output scripts. Use new
 output names/source exports for reproduction. All new weights, feedback and
 predictions are copied to runs/realized_coverage_v1. Default unchanged; no
 TEST_LOCKED/new-distribution/whole-arm claim. Paper-ready=false.
+
+## 2026-10-09 Feasible-space v1: reference geometry and first learned screen
+
+Current attached brief changes representation, removing old wall-time caps while
+retaining wzy3090 GPU1/.35memory/four threads and locked splits. Fast-forwarded
+codex/multiroute-v2 to99fd106; unrelated untracked workspace files untouched.
+StageA source df4cceda5e543c3bdb7c97b0c50231abfdec3df4: prepare exit0,41.4818s;
+56920/56920 reference certificates,51211/56920 two-prototype containment,20336/20336
+valid correct-mode centerlines, zero medoid fallback. This is TRAIN oracle only.
+Sourcef6180: corrected tests6pass; oracle XYZ/bounded600steps25.2428/25.0360s,
+identical final stream with zero clearance losses. Diagnostic0 failed at JSON
+NumPy-int serialization,5.1884s; paths preserved, no success report. Earlier
+5bb63aa test failed on Sequential.weight access,1.8595s; corrected test only.
+Pre-launch bad df4cced69e6 prefix and local unittest module lookup are command
+failures, not training outcomes. Fixed methods carry no claimed novel advantage.
+Source8c8ee34 SSH55164 active: matched four-arm2400step observation-only screen.
+Next fresh decoder-bound TRAIN success feedback and strong projection/centerline
+comparisons. No TEST_LOCKED/raw-directory access, scorer fit or default switch.

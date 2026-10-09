@@ -66,7 +66,7 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
         invalid_with_bad_corridor=sum(r['invalid_with_bad_corridor'] for r in results),invalid_with_certified_corridor=sum(r['invalid_with_certified_corridor'] for r in results),
         cost=dict(decoded_sets=len(rows),diagnostic_extra_decodes=len(rows) if perturb else 0,generated_routes=len(rows)*8,decode_q_ms_mean=float(np.mean(times)*1000)),input_hashes=hashes,locked_access=False)
     write(out/'rows.json',plain(results));write(out/'metrics.json',plain(report));write(out/'stability.json',stability)
-    print(json.dumps({k:v for k,v in report.items() if k!='input_hashes'}),flush=True)
+    print(json.dumps(plain({k:v for k,v in report.items() if k!='input_hashes'})),flush=True)
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',required=True,type=type(RUN));p.add_argument('--head',type=type(RUN))

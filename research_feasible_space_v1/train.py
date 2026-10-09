@@ -8,10 +8,10 @@ from research_feasible_space_v1.prepare import RUN
 from research_feasible_space_v1.model import FeasibleSpaceHead
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
-from routeset.segment_clearance import segment_clearance_loss
+from routeset.segment_clearance import segment_clearance_loss,path_segment_clearances
 from routeset.paired_modes import workspace_floor_loss
 
-def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=False,stop_after=None):
+def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=False,stop_after=None,cell_loss=False):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed checkpoint')
     with np.load(PREP/'train.npz') as z:d={k:z[k] for k in z.files}
@@ -26,9 +26,9 @@ def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=F
     tc={k:torch.as_tensor(c[k],device='cuda') for k in ('centers','radii')}
     from routeset.mode_geometry import VOCAB
     bm=[{VOCAB.index(w):np.flatnonzero(s['mask'][i]&(s['modes'][i]==w)) for w in sorted(set(s['modes'][i,s['mask'][i]]))} for i in range(len(d['ids']))]
-    settings=dict(arm=arm,steps=steps,seed=seed,peer_boundaries=peer_boundaries,oracle=oracle,lr=.0001,batch_size=32,
+    settings=dict(arm=arm,steps=steps,seed=seed,peer_boundaries=peer_boundaries,oracle=oracle,cell_loss=cell_loss,lr=.0001,batch_size=32,
         generator_sha256=sha(BASE),support_sha256=sha(POOL),prepared_sha256=sha(PREP/'train.npz'),corridors_sha256=sha(RUN/'prepared/corridors.npz'),
-        source_commit=os.environ.get('CODE_COMMIT'),loss='route + corridor_center + radius_mse +160clear +.01event; oracle excludes corridor losses')
+        source_commit=os.environ.get('CODE_COMMIT'),loss='route + corridor_center + radius_mse +160clear +.01event; optional160cell_envelope; oracle excludes corridor losses')
     history=[];stream='';start=0;tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,
         config=baseck['config'],history=history,stream=stream,initial_tensor_sha256=initial,frozen_sha256=frozen)
@@ -53,7 +53,14 @@ def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=F
         radius_loss=(info['predicted_radii']-radius).square().mean()
         clear=segment_clearance_loss(p,t['centers'][ids],t['halves'][ids])+workspace_floor_loss(p,t['floors'][ids])
         event=(e-t['current'][ids,None,None,7]).square().mean()
-        loss=route+160*clear+.01*event+(center_loss+radius_loss if not oracle else 0)
+        if cell_loss:
+            pc=info['predicted_centers'];pr=info['predicted_radii']
+            slack=path_segment_clearances(pc,t['centers'][ids],t['halves'][ids])-.02
+            floor_slack=torch.minimum(pc[:,:,:-1,2],pc[:,:,1:,2])-t['floors'][ids,None,None]
+            slack=torch.minimum(slack,floor_slack)
+            envelope=(pr-.8*slack).clamp_min(0).square().mean()
+        else:envelope=route*0
+        loss=route+160*clear+.01*event+(center_loss+radius_loss if not oracle else 0)+160*envelope
         if step==1:
             trainable=[p for p in model.parameters() if p.requires_grad]
             norms={}
@@ -63,7 +70,7 @@ def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=F
             write(out/'INITIAL_GRADIENTS.json',norms)
         opt.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);opt.step()
         if step%100==0:
-            history.append(dict(step=step,loss=float(loss),route=float(route),clear=float(clear),center=float(center_loss),radius=float(radius_loss)))
+            history.append(dict(step=step,loss=float(loss),route=float(route),clear=float(clear),center=float(center_loss),radius=float(radius_loss),envelope=float(envelope)))
             print(history[-1],flush=True)
         if step in (600,1200,2400) or step==steps:atomic_checkpoint(out/('step%d.pt'%step),state(step))
         if step%100==0 or step==min(steps,stop_after or steps):atomic_checkpoint(out/'recovery.pt',state(step))
@@ -75,4 +82,4 @@ def train(name,arm,steps=2400,seed=0,peer_boundaries=False,oracle=False,resume=F
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--arm',choices=['xyz','relative','bounded'],required=True)
     p.add_argument('--steps',type=int,default=2400);p.add_argument('--seed',type=int,default=0);p.add_argument('--peer-boundaries',action='store_true');p.add_argument('--oracle',action='store_true')
-    p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);train(**vars(p.parse_args()))
+    p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--cell-loss',action='store_true');train(**vars(p.parse_args()))

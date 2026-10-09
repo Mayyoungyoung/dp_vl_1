@@ -1,3 +1,17 @@
+## Feasible-space v1 ACTIVE — 2026-10-09
+
+Current request moves to learned mode-conditioned feasible-space representation.
+Branch codex/multiroute-v2, new runs/feasible_space_v1 ledger. Hardware unchanged:
+wzy3090 GPU1 UUID/.35memory/four CPU threads; old total-time caps removed by brief.
+Read research_feasible_space_v1/PROTOCOL.md and RESEARCH_STATE.md. Source8c8ee34
+SSH55164 runs four matched2400step observation-only generators and evaluations.
+StageAall56920TRAIN witnesses certified;2prototype coverage89.970%;20336valid
+prototype centerlines. Oracle xyz/bounded600step trains complete, diagnostic
+serializer failed and awaits fixed NEW output. No positive method claim yet.
+Tests6pass after correcting a Sequential-gradient assertion; both failures retained.
+Historical realized-coverage family CLOSED at99fd106; old ACTIVE entries below
+are superseded. Unrelated existing untracked files preserved. TEST_LOCKED unread.
+
 ## Realized coverage v1 ACTIVE — new authorization — 2026-10-09
 
 User removes historical total-time caps and two-repair stopping rules. New branch
