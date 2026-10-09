@@ -82,3 +82,18 @@ tokenwise(no-peer) outcomes and strongest success sorting; same pools/2400steps.
 Dense labels are available to every control. This factorization tests whether
 request/actual-word aliasing supplies identifiable supervision beyond scalar reward.
 It is a conventional structured predictor, not accepted innovation by construction.
+
+## Joint refresh comparison
+
+All four geometry curves600/1800/3600fail to improve original C under adaptive
+allocation; ordinary/kl-only deteriorate toward3600. Do not extend a deteriorating
+curve automatically. For a fixed equal-update joint comparison use600steps for
+ordinary/gap/hard, before seeing refreshed-head output. Collect matching snapshot
+TRAIN feedback (same request/word/rotating-slot design) and fit BOTH success and
+dense heads2400steps on each pool. Compare proposed and ordinary heads on each
+same generator as well as across geometry arms. Decoder-specific outcome labels
+necessarily change with the snapshot; feedback budgets and eligibility match.
+The first geometry screen shares starting weights/data/steps but branch-specific
+query sampling advances RNG differently, so it is NOT an exact-input-stream
+causal comparison. Fix stateless per-step request/target draws before formal
+paired geometry replication; retain this exploratory screen as such.
