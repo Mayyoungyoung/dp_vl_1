@@ -59,3 +59,14 @@ No TEST_LOCKED access; no full-arm execution or independent generalization claim
 Keep historical defaults. Publishability is contingent on evidence, not embedding
 or pair-loss implementation alone. All commands, checkpoints/RNG and actual source
 hashes saved. Never overwrite launched code, outputs or immutable launcher.
+
+## Full-step control addition after first B/C pilot
+
+400-step C reaches87.28% validity/6.653 modes versus pair-weighted ordinary
+B74.83%/5.958. This is a structure signal but B's displacement objective could
+be hurting its ordinary outputs. Before declaring an advantage run B0 with
+identical data/mode/pair target draws and lambda_pair0. It is the requested
+ordinary weighted-set baseline; B retains the extra same-pair-objective control.
+Run B0/B/C/D for1200 fixed steps, seed0, no hyperparameter changes. The strongest
+ordinary arm determines comparison. D must improve over C to support H2/H3.
+This clarification is registered before D pilot metrics and full-step outcomes.
