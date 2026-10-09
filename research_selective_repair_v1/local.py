@@ -43,6 +43,7 @@ def optimize(drafts,centers=None,halves=None,floor=None,points=None,steps=64):
         with torch.no_grad():node=(torch.cdist(x,pts[None].expand(len(x),-1,-1)).min(-1).values<.045).float()
     node=torch.nn.functional.max_pool1d(node[:,None],5,stride=1,padding=2)[:,0]
     mask=masks(node,.5,12);delta=torch.zeros_like(x,requires_grad=True);opt=torch.optim.Adam([delta],lr=.004)
+    if not bool(mask.any()):return np.asarray(drafts).copy(),mask.cpu().numpy()
     for _ in range(steps):
         p=x+mask[...,None]*delta
         if centers is not None:

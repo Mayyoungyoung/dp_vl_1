@@ -1411,3 +1411,31 @@ Clean aggregate three-seed and fresh plots use actual corrected JSON. Final
 RESULTS/ABLATIONS/FAILURE_ANALYSIS, METHOD/DATA/REPRODUCE, research paper draft,
 closure and report manifests delivered. No claimed novel benefit or paper success.
 Historical defaults/runs/main/d0d97eb and unrelated untracked files preserved.
+
+## 2026-10-09 Selective repair authorization, opportunity and minimal pivot
+
+User requests actual selective repair research with strong controls, physical
+interventions, frozen new families and early fixed Panda execution. New explicit
+branch codex/selective-route-repair-v1 overrides prior AGENTS branch instruction.
+GPU1 UUID matches,24576MiB/628MiB occupied at startup; same.35/four threads. No
+new wall-time quota supplied. Source6b710db runs concentrated real-center TRAIN/
+DEV construction; active SSH12792, no other experiment queue started. Do not
+modify running source. Unrelated untracked files and historical defaults preserved.
+
+Existing identical center/head verified DEV pool immediately supplies the
+necessary opportunity ceiling:26/288=.090278 strict correct-goal/actual-mode
+geometric opportunities, insufficient for+.15 even with perfect repair.197
+failures:141goal,30mode/unclassified,26remaininggeometry(priority categories);
+multi-label66geometry,102requested/actual mismatch or unclassified,29unclassified
+collisions with correct goals. Goal errors median.1454m;96/141exceed8cm. No claim
+that requested words are actual modes on colliding/unclassified routes.
+
+Prospectively pivot to goal-tail correction using identical TRAIN-fitted observed
+color/extent target proposals for every control. Smooth last6node correction,
+first18nodes fixed in selective arm,40cm displacement budget needed for wrong
+sphere goals; true goals only TRAIN teacher/evaluation. Main+.15/quality gates
+and1%damage budget unchanged. Core models/data/executor implemented locally,
+not yet evaluated. Local test import failed because local Python lacks torch;
+no package/environment change, will use existing server runtime. Pending screen
+checks deploy zero repair, same-data center update, ordinary residual, selective
+correction and observed geometry/goal-rule controls. Continue actual experiments.

@@ -8,7 +8,7 @@ from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
 from routeset.segment_clearance import path_segment_clearances
 
-def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=None):
+def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=None,goal_tail=False):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed training')
     files=[RUN/n/'samples.npz' for n in data.split(',')]
@@ -19,13 +19,13 @@ def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=
     d={k:np.concatenate([x[k] for x in datasets]) for k in datasets[0]}
     assert set(d['splits'])=={'TRAIN'}
     torch.manual_seed(seed);random.seed(seed);np.random.seed(seed);rng=np.random.default_rng(seed)
-    center,baseck=center_model();head=RepairHead(center.base.mode_embedding.embedding_dim,arm).cuda()
+    center,baseck=center_model();head=RepairHead(center.base.mode_embedding.embedding_dim,arm,goal_tail).cuda()
     if arm=='recenter':
         center.corridor_blocks.requires_grad_(True);center.corridor_output.requires_grad_(True)
     trainable=list(head.parameters())+[p for p in center.parameters() if p.requires_grad]
     opt=torch.optim.AdamW(trainable,lr=.0003,weight_decay=.0001)
     t={k:torch.as_tensor(v,device='cuda') for k,v in d.items() if v.dtype.kind not in 'USO'}
-    settings=dict(arm=arm,seed=seed,steps=steps,batch=32,lr=.0003,data_sha256={str(f):sha(f) for f in files},base_sha256=sha(BASE),source_commit=os.environ.get('CODE_COMMIT'),loss='real-draft found repair + valid identity + support BCE; equal continuous geometry supervision on usable routes')
+    settings=dict(arm=arm,seed=seed,steps=steps,batch=32,lr=.0003,goal_tail=goal_tail,data_sha256={str(f):sha(f) for f in files},base_sha256=sha(BASE),source_commit=os.environ.get('CODE_COMMIT'),loss='real-draft found repair + valid identity + support BCE; equal continuous geometry supervision on usable routes')
     history=[];stream='';start=0;initial=tensor_state_digest(head.state_dict());tic=time.monotonic()
     def state(step):return dict(repair=head.state_dict(),center=center.state_dict() if arm=='recenter' else None,optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,history=history,stream=stream,initial_sha256=initial)
     if resume:
@@ -58,4 +58,4 @@ def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=
         atomic_checkpoint(out/'last.pt',state(step));write(out/'SUMMARY.json',dict(settings=settings,stream=stream,initial_sha256=initial,seconds=time.monotonic()-tic,trainable_parameters=sum(p.numel() for p in trainable),checkpoint_sha256=sha(out/'last.pt')))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--arm',choices=['selective','residual','recenter'],required=True);p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--data',default='prepared_v1');p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);train(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--arm',choices=['selective','residual','recenter'],required=True);p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--data',default='prepared_v1');p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--goal-tail',action='store_true');train(**vars(p.parse_args()))

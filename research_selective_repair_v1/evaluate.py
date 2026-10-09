@@ -8,7 +8,7 @@ from research_selective_repair_v1.local import features,observed_points,optimize
 from routeset.observed_probability import route_observation_features,load_scored_planner
 from scripts.research_v3_audit import coverage,average,mode
 
-def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None,role='DEV_MODEL'):
+def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None,role='DEV_MODEL',prototype=None):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False);data=data or DATA
     if role not in ('TRAIN','DEV_MODEL'):raise ValueError('Role boundary')
     if checkpoint:center,head,ck=load_repair(checkpoint)
@@ -16,6 +16,9 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
     center.requires_grad_(False)
     if head:head.requires_grad_(False)
     proposal=base_success();scorer=load_scored_planner(Q,'cuda').requires_grad_(False)
+    if prototype:
+        from scripts import observation_prototype_grounding as proto
+        prototype_model=read(prototype)
     rows=[r for r in lines(data/'export/observations.jsonl') if r['split']==role]
     labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']==role}
     results=[];pools={k:[] for k in ('ids','paths','drafts','events','q','modes','support','prob')};hashes={};times=[]
@@ -28,8 +31,19 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
             points=observed_points(inp)
             with np.load(labels[row['id']]['observation']) as z:observation={k:z[k] for k in ('depth','camera_intrinsics','camera_extrinsics')}
             local=features(d,points,observation)
+        if prototype:
+            (rgb,xyz,vm),_=proto.load_observation(data/'export',row,labels[row['id']]['observation'])
+            goal,detail=proto.predict(rgb,xyz,vm,row['instruction'],prototype_model);available=goal is not None
+            if goal is None:goal=runner.anchor[0].cpu().numpy()
+            gf=np.concatenate([np.broadcast_to((goal-d[:,-1])/.4,(24,8,3)).transpose(1,0,2),np.full((8,24,1),available)],-1).astype(np.float32)
+            if kind!='goal_rule':local=np.concatenate([local,gf],-1)
         if kind=='geometric':
             pp,support=optimize(d,points=points);p=torch.tensor(pp[None],device='cuda')
+        elif kind=='goal_rule':
+            diff=goal-d[:,-1];trigger=np.linalg.norm(diff,axis=-1)>=threshold if available else np.zeros(8,bool)
+            pp=d.copy();s=np.linspace(0,1,7)[1:];s=s*s*(3-2*s)
+            support[:,18:]=trigger[:,None]*s
+            pp+=scale*support[...,None]*diff[:,None];p=torch.tensor(pp[None],device='cuda',dtype=drafts.dtype)
         elif head is not None:
             with torch.no_grad():p,info=head(runner.context,m,drafts,torch.tensor(local[None],device='cuda'),hard=True,threshold=threshold,scale=scale)
             support=info['support'][0].cpu().numpy();prob=info['prob'][0].cpu().numpy()
@@ -50,4 +64,4 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
     report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),requests=len(rows),repaired=sum(r['repaired'] for r in results),damaged=sum(r['damaged'] for r in results),base_valid=sum(sum(r['base_valid']) for r in results),added=sum(len(r['added']) for r in results),lost=sum(len(r['lost']) for r in results),delta_U8=float(np.mean([r['delta_U8'] for r in results])),raw_mode_changed=sum(r['raw_mode_changed'] for r in results),cached_feature_repair_q_ms=float(np.mean(times)*1000),decode_sets=len(rows),generated_drafts=len(rows)*8,final_candidates=len(rows)*8,kind=kind,threshold=threshold,scale=scale,checkpoint_sha256=sha(checkpoint) if checkpoint else None,base_sha256=sha(BASE),base_head_sha256=sha(BASE_HEAD),scorer_sha256=sha(Q),data=str(data),role=role,locked_access=False,head_scope='Frozen base allocation head in screening; matching output-head controls required for formal acceptance',input_hashes=hashes)
     write(out/'METRICS.json',report);print({k:v for k,v in report.items() if k!='input_hashes'},flush=True)
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--kind',choices=['learned','geometric','zero'],default='learned');p.add_argument('--threshold',type=float,default=.5);p.add_argument('--scale',type=float,default=1.);p.add_argument('--data',type=Path);p.add_argument('--role',default='DEV_MODEL');evaluate(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--kind',choices=['learned','geometric','zero','goal_rule'],default='learned');p.add_argument('--threshold',type=float,default=.5);p.add_argument('--scale',type=float,default=1.);p.add_argument('--data',type=Path);p.add_argument('--role',default='DEV_MODEL');p.add_argument('--prototype',type=Path);evaluate(**vars(p.parse_args()))

@@ -51,3 +51,36 @@ and all-arm execution need measurement. Two targeted failed repairs to one
 explanation require a mechanism change, not weight search. Negative first results
 do not end this task. Preserve source, commands, failures, RNG/checkpoint state;
 continue a measured next step within authorized resources.
+
+
+## Measured pivot before new method evaluation
+
+The existing verified center DEV pool gives 26 strict same-mode/correct-goal
+local geometric opportunities in 288 requests: at most +0.09028 U8 even with
+perfect repair and zero damage, below the unchanged +0.15 gate. Of 197 failures,
+141 have wrong goals; 30 are requested/raw mode mismatch or unclassified, 26 are
+remaining geometry. Independent multi-label counts are 66 geometry failures and
+102 mode mismatches/unclassified. Collision-induced unclassified routes are not
+asserted to have the requested actual word. The current TRAIN prefix also has
+very few strict local-geometry examples. Therefore the authorized minimal pivot
+is goal-constraint correction, before examining new model scores.
+
+Goal error median is 14.54cm among failed endpoints, with 96/141 beyond8cm;
+a fixed8cm geometry displacement cannot correct most of these failures. New
+goal-tail correction permits40cm per-coordinate displacement, keeps start and
+nodes0–17 fixed, and uses a smooth6-node tail factor. All learned and simple
+controls receive identical current-observation TRAIN-fitted color/extent target
+proposals. No exact goal, target label or camera mask enters prediction. Nearest
+found supervised corrections are independently checked against unchanged full
+route validity, floor and operational words. When original words are defined,
+repair targets must preserve them. Originally unclassified routes are counted
+as new valid realizations, not proven same-mode preservation. Other failures stay
+in all overall denominators. Zero edits and same-data ordinary controls remain
+mandatory. The original strict geometry objective and failed opportunity ceiling
+are retained; the evaluation gate is unchanged.
+
+DEV permits registered goal-rule trigger thresholds0/1cm/2.5cm/5cm and global
+scales0/.25/.5/.75/1, including zero. Learned gate thresholds .25/.5/.7/.9/1.01.
+Repair–damage comparisons use the fixed1% valid-draft damage budget. Scores used
+for this pivot are historical/reused DEV evidence. Independent confirmation is
+still generated only after all remaining checkpoints/protocols are frozen.
