@@ -120,7 +120,7 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
     with np.load(POOL) as z:s={k:z[k] for k in z.files}
     assert np.array_equal(s['ids'],d['ids'])
     per_mode=[{VOCAB.index(w):np.flatnonzero(s['mask'][i] & (s['modes'][i]==w))
-        for w in set(s['modes'][i,s['mask'][i]])} for i in range(len(s['ids']))]
+        for w in sorted(set(s['modes'][i,s['mask'][i]]))} for i in range(len(s['ids']))]
     torch.manual_seed(seed);random.seed(seed);np.random.seed(seed);rng=np.random.default_rng(seed)
     model,options=new_model(torch,arm!='B',independent_decoder)
     with torch.no_grad():model.mode_embedding.weight.copy_(torch.as_tensor(d['mode_init'],device='cuda'))

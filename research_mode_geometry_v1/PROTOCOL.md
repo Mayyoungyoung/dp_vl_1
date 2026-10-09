@@ -99,3 +99,17 @@ Compare adaptive allocation for both old/new checkpoints. No target/weight sweep
 If repaired D has no useful advantage over C, accept lack of pair evidence;
 do not keep adding modules. If representation has a useful signal, replicate
 the relevant ordinary/C/D controls for seeds1,2, reporting all seeds.
+
+## Resume check catches target-order bug before structural repair launch
+
+The actual100 versus50+50 process-resume check fails: model, optimizer, RNG and
+target-stream hashes differ despite matching settings. Inspection finds a Python
+set-derived mode dictionary feeding spare-target rng.choice. This is randomized
+across processes. Therefore earlier pilot/full runs are exploratory, NOT verified
+paired target-stream comparisons. Preserve every output and failed audit.
+Canonicalize dictionary keys, then require actual exact-resume success before
+further scientific runs. The previously exported independent queue was NOT
+launched. New canonical seed0 queue runs B0/C/D and the single communication-off
+C/D repair,1200steps each, same adaptive allocation. Check their actual streams
+before comparison. These corrected comparisons supersede earlier causal readings;
+the within-checkpoint TRAIN companion intervention remains valid.
