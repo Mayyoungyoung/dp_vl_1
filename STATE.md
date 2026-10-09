@@ -1,3 +1,14 @@
+## Verified-set stages A/B: new explicit budget — 2026-10-09
+
+User authorized7200 ADDITIONAL experiment command seconds in this chat. New ledger
+runs/verified_set_v1; old7200 ledger remains unchanged. Implemented independent
+TRAIN verifier, certified local regions, ordinary/gate/project/replay controls.
+Protocol: research_v3/VERIFIED_SET_PROTOCOL_V1.md. Local synthetic tests9pass;
+Torch equivalence tests skipped locally because local Python lacks torch.
+Server tests, preparation and TRAIN diagnostic must pass before training. No new
+model has run yet, no advantage or paper-readiness claim. Use immutable exports
+and inspect new ledger/status before any launch. Existing resource/split rules hold.
+
 ## Research goal BLOCKED by verified resource limit — 2026-10-09
 
 Third consecutive goal-turn audit at2026-10-08T22:13:30.445236+00:00 confirms

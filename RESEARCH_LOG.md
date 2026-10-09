@@ -1135,3 +1135,7 @@ Do not repeat ended jobs, lower comparison fidelity, bypass caps, open TEST_LOCK
 or treat an automatic continuation as resource authorization. A later user resume
 starts a fresh blocked audit under the goal rules. Historical ACTIVE entries
 below are superseded by this confirmed blocked status.
+
+## Verified-set implementation and new authorization — 2026-10-09
+User authorized 7200 additional experiment command seconds for phases A/B. Protocol and implementation added; original V3 budget untouched. Local tests: 9 passed, Torch module skipped because local runtime lacks torch; earlier torch import failure retained in conversation. No new experiment result. Training-only target builder includes ordinary/gate/project/replay controls, independent checker audit, full recovery state and source-indexed additional ledger.
+

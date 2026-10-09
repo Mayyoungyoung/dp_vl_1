@@ -1,3 +1,12 @@
+## Verified-set stages A/B: new explicit budget — 2026-10-09
+
+New user-authorized7200 experiment command seconds, separate runs/verified_set_v1
+ledger. Follow research_v3/VERIFIED_SET_PROTOCOL_V1.md. Initial module and training
+entry implemented; local9tests pass,1Torch module skipped. No server experiment
+launched yet. Next freeze source then run server tests, prepare and first64TRAIN
+diagnostic before ordinary/gate/project training. Original budget closure remains
+historical; no permission to exceed the new7200 or access TEST_LOCKED.
+
 ## Research goal BLOCKED by verified resource limit — 2026-10-09
 
 Third consecutive goal-turn audit at2026-10-08T22:13:30.445236+00:00 confirms

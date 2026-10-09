@@ -306,14 +306,14 @@ def fixed_path_scores(planner, paths, events, inputs):
     return (logits/planner.temperature).sigmoid()
 
 
-def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False):
+def evaluate(name,fixed_q=False,anchor_mass=False,paired_score=False,generator_root=None):
     torch=torch_setup()
     from scripts.evaluate_paired_modes import inputs_for
     from routeset.observed_probability import load_scored_planner
     from scripts.paired_modes_reliability import reliability_metrics
     if anchor_mass and not fixed_q:raise ValueError('anchor intervention requires complete fixed scorer')
     if paired_score and (not fixed_q or anchor_mass):raise ValueError('Paired-domain q requires unchanged complete score encoder and no anchor intervention')
-    folder=RUN/name;out=folder/('evaluation_matched_q_v1' if paired_score else 'evaluation_anchor_mass_v1' if anchor_mass else 'evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
+    folder=(generator_root or RUN)/name;out=folder/('evaluation_matched_q_v1' if paired_score else 'evaluation_anchor_mass_v1' if anchor_mass else 'evaluation_fixed_q_v2' if fixed_q else 'evaluation');out.mkdir(exist_ok=False)
     bundle=OLD_RUN/'reliability/R1_seed0/deployment_seed0/planner.pt'
     if paired_score:
         bundle=RUN/'matched_q_paired_v1/reliability/mean_seed0/calibration_seed0/scorer_bundle.pt'
