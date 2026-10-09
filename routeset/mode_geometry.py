@@ -44,7 +44,7 @@ class ModeGeometryHead(ProbabilisticGeometryRouteHead):
         context = self.head.feature_encoder(features)+self.head.state_encoder(current)+geometry['context']
         return context, geometry['anchor_xyz']
 
-    def decode(self, context, anchor, current, mode_ids=None, sampling='adaptive'):
+    def decode(self, context, anchor, current, mode_ids=None, sampling='adaptive', variant_ids=None):
         logits = self.mode_predictor(context)
         if mode_ids is None:
             # Scores allocate a finite proposal budget, NOT calibrated existence.
@@ -64,6 +64,9 @@ class ModeGeometryHead(ProbabilisticGeometryRouteHead):
         if mode_ids.shape != (len(context),8): raise ValueError('Exactly eight mode queries required')
         if self.conditional:
             occurrence = torch.stack([(mode_ids[:,:i] == mode_ids[:,i:i+1]).sum(-1) for i in range(8)],1)
+            if variant_ids is not None:
+                if variant_ids.shape != mode_ids.shape: raise ValueError('Variant shape mismatch')
+                occurrence = variant_ids
             tokens = context[:,None]+self.mode_embedding(mode_ids)+self.variant_embedding(occurrence)
         else:
             tokens = context[:,None]+self.head.queries[None]
