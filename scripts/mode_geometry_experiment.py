@@ -171,9 +171,10 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.):
         loss=route+160*clear+.001*ml+(pair_weight*pl if arm in ('B','D') else 0)
         if not torch.isfinite(loss):raise FloatingPointError('nonfinite loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.);optimizer.step()
-        if step%100==0 or step==end:
+        if step%100==0 or step==steps:
             row=dict(step=step,loss=float(loss),route=float(route),clear=float(clear),mode=float(ml),pair=float(pl))
-            history.append(row);print(json.dumps(row),flush=True);atomic_checkpoint(out/'recovery.pt',state(step))
+            history.append(row);print(json.dumps(row),flush=True)
+        if step%100==0 or step==end:atomic_checkpoint(out/'recovery.pt',state(step))
     assert frozen==tensor_state_digest({k:v for k,v in model.state_dict().items() if k.startswith(('geometry.','head.feature_encoder.','head.state_encoder.'))})
     if end==steps:
         atomic_checkpoint(out/'last.pt',state(end))
