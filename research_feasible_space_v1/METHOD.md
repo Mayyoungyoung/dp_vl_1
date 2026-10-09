@@ -50,3 +50,23 @@ Potential contribution to establish: bounded peer-aware generation with boundari
 invariant to companion replacement, beyond sameinformation XYZ/relative/projection
 and centerline. It requires real coverage, returned-quality and adaptation gains;
 mathematical containment is not sufficient experimental evidence.
+
+## Final reachable-cell repair
+
+The final variant uses `C_j=conv(c_j+[-rho_j,rho_j]^3,
+c_{j+1}+[-rho_{j+1},rho_{j+1}]^3)`, with endpoint rho=0. This is precisely
+the convex region reachable by the constrained endpoint nodes, avoiding cubes
+around immovable endpoints. The route mapping is unchanged. For centerline
+`c(t)` and linearly interpolated radius rho(t), exact obstacle clearance is
+`min_t max_f affine_face_f(c(t))-rho(t)`. Enumerate interval endpoints and all
+15face intersections; no sampled-point proof. Floor clearance is the smaller of
+the two endpoint lower faces. TRAIN envelope loss uses rho/.8 to retain a margin.
+Uniform-cell results remain separately labeled; the new region is not substituted
+into old reported metrics.
+
+Unknown observation space is not inferred free. A separate current-depth/camera
+utility marks probes before the depth return free_at_probe, near the visible
+return observed_surface, and behind it/outside view/missing depth unknown.
+This diagnostic does not certify the intervening region or add a trained
+uncertainty head. It uses no true obstacle/segmentation information and changes
+no route selection. A full uncertainty-aware corridor estimator remains a gap.

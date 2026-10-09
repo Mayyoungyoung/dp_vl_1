@@ -4,6 +4,12 @@ from research_feasible_space_v1.geometry import segment_radii,node_radii_numpy
 from routeset.verified_route_set import signed_clearances
 
 class CertificateTests(unittest.TestCase):
+    def test_ray_evidence_preserves_unknown_occlusion(self):
+        from research_feasible_space_v1.observation_evidence import classify_probes
+        depth=np.ones((3,3));k=np.array([[-1,0,1],[0,-1,1],[0,0,1.]])
+        p=np.array([[0,0,.5],[0,0,1],[0,0,2],[0,0,-1],[10,0,.5]])
+        s=classify_probes(p,depth,k,np.eye(4))
+        self.assertEqual(s.tolist(),['free_at_probe','observed_surface','unknown','unknown','unknown'])
     def test_continuous_collision_between_clear_endpoints(self):
         p=np.linspace([-.2,0,.2],[.2,0,.2],24)[None]
         r,slack=segment_radii(p,[[0,0,.2]],[[.03,.03,.03]],0)
