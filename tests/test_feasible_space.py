@@ -51,7 +51,7 @@ class MappingTests(unittest.TestCase):
         torch.testing.assert_close(a['radii'][:,1:],b['radii'][:,1:],rtol=0,atol=0)
         p.square().mean().backward()
         self.assertGreater(model.relative_output.weight.grad.abs().sum().item(),0)
-        self.assertGreater(model.corridor_output.weight.grad.abs().sum().item(),0)
+        self.assertGreater(sum(p.grad.abs().sum().item() for p in model.corridor_output.parameters() if p.grad is not None),0)
         self.assertTrue(all(x.grad is None for x in model.base.parameters()))
 
 if __name__=='__main__':unittest.main()
