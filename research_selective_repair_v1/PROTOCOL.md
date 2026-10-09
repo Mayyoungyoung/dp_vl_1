@@ -157,3 +157,4 @@ and same-predicted-constraint ordinary optimization. No extra scoring method,
 truth/IK calls in deployed learned forward, or change to fixed executor.
 Before any body method evaluation, explicitly predeclare its execution gate
 and preservation requirements; original U8+.15 failure remains recorded.
+Bodypilot e0f0918 actual960probes:252knownsafe,6knowncolliding,702unknownIK. Canonicalreset at each distant waypoint makesJacobianlinearization unusable for73.1%points. One targeted teacher correction uses sequential previously FK-verified joints for each actualdraft node; raised probes use that node knownIK seed. Every route still starts from publiccanonicalq,unknownsremainunknown,240calls/parent,no dynamics/pathplanning. Static configurations are hypothetical even ifcolliding; this is not executorreplacement or a successfultrajectory. Evaluate labelcoverage/lift-resolvable pairs on same4TRAINparents before anyriskmodel.

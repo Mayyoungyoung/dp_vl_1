@@ -1,18 +1,20 @@
-## Selective repair ACTIVE - latest 2026-10-10
+## Selective repair ACTIVE - current 2026-10-10
 
-Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md first.
-Physical144scenes/432requests and calibrated3seed controls completed. NewDEV
-selective all7.24306; residual mean7.45833; strong shared goal+geometry7.74306.
-Stable center seed0 7.43750. Fixed18node prefix ceiling7.72917 is insufficient;
-local diffusion7.25694. No accepted method/confirmation. All previous queues
-TERMINAL. Prospectively implement learned post constraints with same-constraint
-64step global/mode-global/protected operators; freeze and run new constraint
-coordinator next. Mandatory own matching TRAIN heads/new independent confirmation
-and expanded fixed Panda validation remain if promising. Actual budget/results
-in research_selective_repair_v1/results/CALIBRATED_SCREEN.json. No wall quota.
-Only ssh wzy3090 GPU1 UUID/.35memory/CPU0-3. Local sole writer, immutableexports,
-source/RNG/failed receipts preserved, TEST_LOCKED unread, defaults unchanged.
-Historical sections below.
+Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md.
+Physical144scenes/432requests and three paired direct-repair seeds complete.
+Selective has no newDEV gain; learned-constraint global/protected/mode-global
+newU8=7.84028/7.92361/7.93056,zero damaged routes. Protection does not beat
+strongest matched optimizer;+.15 gate not met and current U8 headroom<.15.
+COMMON838transported C0words retained792/793/793,pointgeometry784,C0739.
+Actual Panda global8/16success despite16/16TipValid. Frozene5b4fcb coordinator
+session73967 continues protected/modeglobal execution. Earlier failed startup
+7b3c868 missingdynamiclibrary retained; recoveryusesexistingvalidatedsimstartup.
+Frozen e0f0918/session24122 waits for actual final executorRESULTS.json,then
+TRAIN-only4parent/960staticcanonicalbranchIK bodyprobe pilot. Unknown failures
+stayunknown,staticpose safety is not execution. No methodaccepted/finalconfirm.
+Latest sources pushednonforce. Only wzy3090 GPU1 UUID/.35memory/CPU0-3;
+local solewriter,immutableexports,actualsource/RNG/receipts,lockedTESTunread.
+No actual wall quota supplied. Historical sections below.
 ## Feasible-space v1 CLOSED — 2026-10-09
 
 All queues are terminal; no experiment or interrupted training is pending.
