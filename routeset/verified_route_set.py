@@ -140,3 +140,68 @@ No global nearest-feasible-solution or no-forgetting guarantee is made.
         target_words=checked_words, oversubscribed=union_count > len(p),
         known_modes=len(groups), union_modes=union_count,
         unmatched_modes=max(0, len(missing)-len(free)))
+
+
+def build_set_targets(paths, events, references, reference_events, tags, radii,
+                      valid, words, arm, rng, check):
+    """Joint representative choice: retain verified MODE support, not slot IDs.
+
+Current verified predictions are singleton witnesses. Their distinct modes are
+mandatory in the target set. Other known groups compete for remaining slots by
+correction cost. When groups exceed K, dummy slots can only absorb optional
+groups. This is standard constrained assignment, not a new solver or guarantee
+of neural-network retention. set_point is the essential no-region control.
+"""
+    if arm not in ('set_point', 'set_project'):
+        raise ValueError('Unknown joint-set arm')
+    p,e=np.asarray(paths),np.asarray(events)
+    r,re=np.asarray(references),np.asarray(reference_events)
+    tags=np.asarray(tags);valid=np.asarray(valid,dtype=bool)
+    known=sorted(set(tags.tolist()))
+    # Same consumption as existing arms; optional-group ranking here is by cost.
+    order=rng.permutation(len(known)); known=[known[j] for j in order]
+    accepted=np.array([i for i,(ok,w) in enumerate(zip(valid,words)) if ok and w is not None],dtype=int)
+    mandatory={words[i] for i in accepted}
+    all_r=np.concatenate((r,p[accepted])); all_e=np.concatenate((re,e[accepted]))
+    all_tags=np.concatenate((tags.astype(object),np.asarray([words[i] for i in accepted],dtype=object)))
+    candidates=np.broadcast_to(all_r[None],(len(p),)+all_r.shape).copy()
+    if arm=='set_project':
+        radius=np.asarray(radii)[None,:,:,None]
+        candidates[:,:len(r)]=np.clip(p[:,None],r[None]-radius,r[None]+radius)
+    costs=(np.square(p[:,None,1:]-candidates[:,:,1:]).sum((2,3))
+           +.04*np.square(e[:,None,1:]-all_e[None,:,1:]).sum(2))/(4*(p.shape[1]-1))
+    # Geometry-only boxes can straddle a mode boundary. A zero-distance proposal
+    # in the wrong mode is not a zero-cost admissible edge; use its valid witness.
+    for k in accepted:
+        wrong=(costs[k]<=1e-15)&(all_tags!=words[k])
+        candidates[k,wrong]=all_r[wrong]
+        costs[k,wrong]=(np.square(p[k,None,1:]-all_r[wrong,1:]).sum((1,2))
+            +.04*np.square(e[k,None,1:]-all_e[wrong,1:]).sum(1))/(4*(p.shape[1]-1))
+    groups=known+sorted(mandatory-set(known))
+    group_indices=[np.flatnonzero(all_tags==g) for g in groups]
+    choices=np.stack([idx[costs[:,idx].argmin(1)] for idx in group_indices],1)
+    group_cost=costs[np.arange(len(p))[:,None],choices]
+    choice=costs.argmin(1)
+    if len(groups)<=len(p):
+        fit=costs[np.arange(len(p)),choice]
+        gi,slots=linear_sum_assignment((group_cost-fit[:,None]).T)
+    else:
+        dummy=np.zeros((len(groups),len(groups)-len(p)))
+        dummy[[i for i,g in enumerate(groups) if g in mandatory]]=np.inf
+        gi,slots=linear_sum_assignment(np.concatenate((group_cost.T,dummy),axis=1))
+        real=slots<len(p);gi,slots=gi[real],slots[real]
+    choice[slots]=choices[slots,gi]
+    target=candidates[np.arange(len(p)),choice].copy(); targete=all_e[choice].copy()
+    assigned=all_tags[choice]
+    checked,final_words=check(target,targete)
+    fallback=(~checked)|(np.asarray(final_words,dtype=object)!=assigned)
+    if fallback.any():
+        target[fallback]=all_r[choice[fallback]];targete[fallback]=all_e[choice[fallback]]
+        checked,final_words=check(target,targete)
+    if not np.all(checked) or not mandatory.issubset(set(final_words)):
+        raise ValueError('Target validity or mandatory support violated')
+    preserved=valid&np.all(target==p,axis=(1,2))&np.all(targete==e,axis=1)
+    return target.astype(p.dtype),targete.astype(e.dtype),dict(
+        protected=preserved,fallback=fallback,reference_index=choice,target_words=final_words,
+        oversubscribed=len(groups)>len(p),known_modes=len(known),union_modes=len(groups),
+        unmatched_modes=len(set(groups)-set(final_words)))

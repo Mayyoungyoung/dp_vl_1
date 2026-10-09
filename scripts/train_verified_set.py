@@ -17,7 +17,7 @@ from scripts.run_observed_probability import ROOT, SOURCE, read, write, sha, lin
 from scripts import research_v3_frequency as old
 from scripts.research_v3_audit import mode, plain
 from scripts.evaluate_paired_modes import references, check_candidates
-from routeset.verified_route_set import certified_radii, verify_reach, build_targets
+from routeset.verified_route_set import certified_radii, verify_reach, build_targets, build_set_targets
 
 RUN = ROOT/'runs/verified_set_v1'
 POLICY = SOURCE/'configs/verified_set_v1.json'
@@ -191,7 +191,7 @@ def train(arm, seed, resume=False, stop_after=None):
         for name, value in replay_files.items(): assert sha(parent/name) == value
         replay = {k:np.load(parent/('replay_'+k+'.npy'), mmap_mode='r') for k in ('paths', 'events', 'words', 'ids')}
         settings['replay_source_sha256'] = replay_files
-    if arm == 'project':
+    if arm in ('project', 'set_point', 'set_project'):
         specs = dict(paths=((steps,batch,8,24,3),np.float32), events=((steps,batch,8,24),np.float32),
                      words=((steps,batch,8),'U40'), ids=((steps,batch),np.int64))
         archive = {k:np.lib.format.open_memmap(out/('replay_'+k+'.npy'), mode='r+' if resume else 'w+',
@@ -231,9 +231,10 @@ def train(arm, seed, resume=False, stop_after=None):
                 tags=np.r_[tags,replay['words'][step-1,j]]
                 if np.any(tags == ''): raise ValueError('Unclassified replay target cannot be invented as a mode')
             valid, words=checks[li](p[j],e[j]); count['verified_raw_slots']+=8
-            tp,te,a=build_targets(p[j],e[j],rp,re,tags,radii[li,:n],valid,words,
-                                  'ordinary' if arm=='replay' else arm,lrng,checks[li])
-            count['protected_slots']+=int(a['protected'].sum()) if arm in ('gate','project') else 0
+            builder=build_set_targets if arm in ('set_point','set_project') else build_targets
+            tp,te,a=builder(p[j],e[j],rp,re,tags,radii[li,:n],valid,words,
+                           'ordinary' if arm=='replay' else arm,lrng,checks[li])
+            count['protected_slots']+=int(a['protected'].sum()) if arm in ('gate','project','set_point','set_project') else 0
             count['fallback_slots']+=int(a['fallback'].sum()); count['oversubscribed_draws']+=int(a['oversubscribed'])
             count['verified_target_slots']+=8*(1+int(a['fallback'].any()))
             count['reference_slots_processed']+=len(rp)
@@ -277,7 +278,7 @@ def evaluate(arm, seed):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(); parser.add_argument('stage',choices=['prepare','diagnose','train','evaluate'])
-    parser.add_argument('--arm',choices=['ordinary','gate','project','replay']); parser.add_argument('--seed',type=int,default=0)
+    parser.add_argument('--arm',choices=['ordinary','gate','project','replay','set_point','set_project']); parser.add_argument('--seed',type=int,default=0)
     parser.add_argument('--resume',action='store_true'); parser.add_argument('--stop-after',type=int)
     parser.add_argument('--population',choices=['known_le8','all'],default='known_le8')
     a=parser.parse_args()
