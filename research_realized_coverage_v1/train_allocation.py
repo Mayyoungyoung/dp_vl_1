@@ -8,18 +8,19 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 from research_realized_coverage_v1.core import RUN,read,write,sha,torch_setup
-from research_realized_coverage_v1.allocator import SuccessHead,SetUtility
+from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,make_allocator
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 
 def pack(folder):
     summary=read(folder/'SUMMARY.json');assert summary['manifest']['split']=='TRAIN'
-    values={k:[] for k in ('context','modes','variants','utility','success','base_m','base_v','base_u','gain')};ids=[]
+    values={k:[] for k in ('context','modes','variants','utility','success','actual','base_m','base_v','base_u','gain')};ids=[]
     for row in summary['files']:
         f=folder/(row['id']+'.npz');assert sha(f)==row['file_sha256']
         with np.load(f) as z:
             n=len(z['modes']);values['context'].extend(np.repeat(z['context'][None],n,0))
             for key in ('modes','variants','utility','gain'):values[key].extend(z[key])
             values['success'].extend((z['valid']&(z['words']==z['modes'])).astype(np.float32))
+            values['actual'].extend(np.where(z['valid']&(z['words']>=0),z['words'],16))
             for key,source in [('base_m','modes'),('base_v','variants'),('base_u','utility')]:values[key].extend(np.repeat(z[source][:1],n,0))
             ids.extend([row['id']]*n)
     return {k:np.asarray(v) for k,v in values.items()},ids,summary['manifest']
@@ -32,7 +33,7 @@ def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
     assert all(c['generator_sha256']==manifest['generator_sha256'] for _,_,c in packs)
     rng=np.random.default_rng(seed)
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed)
-    model=(SuccessHead() if kind=='success' else SetUtility()).cuda()
+    model=make_allocator(kind).cuda()
     data={k:torch.as_tensor(v,device='cuda') for k,v in d.items()}
     opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
     settings=dict(kind=kind,feedback=feedback,feedback_sha256={f:sha(RUN/f/'SUMMARY.json') for f in feedback.split(',')},generator_sha256=manifest['generator_sha256'],
@@ -52,6 +53,9 @@ def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
             base=model(data['context'][ix],data['base_m'][ix],data['base_v'][ix])
             # Equal count-unit weights: all four outcomes matter, no oracle gradient.
             loss=F.mse_loss(pred,data['utility'][ix])+F.mse_loss(pred-base,data['gain'][ix])
+            if kind in ('dense','no_peer'):
+                _,logits=model.components(data['context'][ix],data['modes'][ix],data['variants'][ix])
+                loss=loss+F.cross_entropy(logits.reshape(-1,17),data['actual'][ix].reshape(-1))
         opt.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);opt.step()
         if step%100==0:
             history.append(dict(step=step,loss=float(loss)));print(history[-1],flush=True)
@@ -62,6 +66,6 @@ def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
             records=len(ids),parameters=sum(p.numel() for p in model.parameters()),last_sha256=sha(out/'last.pt'),stream=stream))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--kind',choices=['success','net'],required=True);p.add_argument('--name',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--kind',choices=['success','net','dense','no_peer'],required=True);p.add_argument('--name',required=True)
     p.add_argument('--feedback',default='feedback_C_train');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400)
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);a=p.parse_args();train(**vars(a))

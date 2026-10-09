@@ -4,7 +4,7 @@ import json
 import time
 import numpy as np
 from research_realized_coverage_v1.core import *
-from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,allocate
+from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,allocate,make_allocator
 from scripts.evaluate_paired_modes import inputs_for,references,check_candidates
 from scripts.research_v3_audit import coverage,average,plain
 
@@ -15,7 +15,7 @@ def evaluate(name,head=None,checkpoint=BASE,start_head=None):
     if head:
         saved=torch.load(RUN/head,map_location='cpu',weights_only=False);kind=saved['settings']['kind']
         assert saved['settings']['generator_sha256']==sha(checkpoint),'Stale feedback/head generator binding'
-        proposal=(SuccessHead() if kind=='success' else SetUtility()).cuda();proposal.load_state_dict(saved['model']);proposal.eval()
+        proposal=make_allocator(kind).cuda();proposal.load_state_dict(saved['model']);proposal.eval()
     starter=None
     if start_head:
         initial=torch.load(RUN/start_head,map_location='cpu',weights_only=False)

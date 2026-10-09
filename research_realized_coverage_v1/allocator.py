@@ -25,6 +25,31 @@ class SetUtility(nn.Module):
 def occurrence(modes):
     return torch.stack([(modes[:,:i]==modes[:,i:i+1]).sum(-1) for i in range(8)],1)
 
+class RealizationUtility(nn.Module):
+    """Dense actual-mode outcomes; product union is an approximation, no guarantee."""
+    def __init__(self,peers=True,width=128):
+        super().__init__();self.peers=peers
+        self.context=nn.Sequential(nn.LayerNorm(width),nn.Linear(width,64),nn.SiLU())
+        self.word=nn.Embedding(16,32);self.variant=nn.Embedding(8,8)
+        self.token=nn.Sequential(nn.Linear(104,64),nn.SiLU(),nn.Linear(64,32),nn.SiLU())
+        self.interaction=nn.MultiheadAttention(32,4,batch_first=True) if peers else nn.Sequential(nn.Linear(32,64),nn.SiLU(),nn.Linear(64,32))
+        self.outcome=nn.Linear(32,17)
+        self.returned=nn.Sequential(nn.Linear(128,64),nn.SiLU(),nn.Linear(64,2))
+    def components(self,context,modes,variants):
+        h=self.context(context);t=self.token(torch.cat((h[:,None].expand(-1,8,-1),self.word(modes),self.variant(variants)),-1))
+        t=t+(self.interaction(t,t,t,need_weights=False)[0] if self.peers else self.interaction(t))
+        logits=self.outcome(t);prob=logits.softmax(-1)[...,:16]
+        u=(1-(1-prob).prod(1)).sum(-1);v=prob.sum((1,2))
+        ret=self.returned(torch.cat((h,t.mean(1),t.amax(1)),-1)).sigmoid()*4
+        return torch.cat((u[:,None],v[:,None],ret),-1),logits
+    def forward(self,context,modes,variants):return self.components(context,modes,variants)[0]
+
+def make_allocator(kind):
+    if kind=='success':return SuccessHead()
+    if kind=='net':return SetUtility()
+    if kind in ('dense','no_peer'):return RealizationUtility(peers=kind=='dense')
+    raise ValueError(kind)
+
 def allocate(kind,head,context,base,variant,max_swaps=2):
     """Two token-only sweeps then caller decodes once. No route generation here."""
     if kind=='success':

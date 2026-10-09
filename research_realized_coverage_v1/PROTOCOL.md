@@ -68,3 +68,17 @@ success allocation, give BOTH heads the union and equal2400updates/three curve
 checkpoints. Start net refinement from the strong success query set, still no
 extra route decode. This is an on-policy-context repair, not new positives or
 additional information exclusive to the proposed arm. Keep initial failures.
+
+## Dense outcome factorization, motivated by measured misprediction
+
+Initial net2400 predicted safe improvements have only16.0%true-net precision on
+TRAIN and9.86%onDEV; sampled-neighborhood gain is−.005/0.000. This is already a
+training-side representation failure, not solely distribution shift. Replace the
+four-scalar U8regression with per-query17-way actual valid-word/invalid outcomes,
+using the same recorded feedback. Expected union gives approximate coverage,
+and returned quality still uses supervised aggregate heads. No independence or
+greedy guarantee is claimed. Compare dense peer-aware outcomes against same-size
+tokenwise(no-peer) outcomes and strongest success sorting; same pools/2400steps.
+Dense labels are available to every control. This factorization tests whether
+request/actual-word aliasing supplies identifiable supervision beyond scalar reward.
+It is a conventional structured predictor, not accepted innovation by construction.

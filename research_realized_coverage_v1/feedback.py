@@ -17,10 +17,10 @@ def collect(name,split,resume=False,limit=None,checkpoint=BASE,proposal=None):
         query_design='16 modes x two rotating slots; all seven companion pairs unchanged',source_commit=os.environ.get('CODE_COMMIT'))
     head=None
     if proposal:
-        from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,allocate
+        from research_realized_coverage_v1.allocator import SuccessHead,SetUtility,allocate,make_allocator
         saved=torch.load(RUN/proposal,map_location='cpu',weights_only=False)
         assert saved['settings']['generator_sha256']==sha(checkpoint)
-        kind=saved['settings']['kind'];head=(SuccessHead() if kind=='success' else SetUtility()).cuda()
+        kind=saved['settings']['kind'];head=make_allocator(kind).cuda()
         head.load_state_dict(saved['model']);head.eval();manifest['proposal_sha256']=sha(RUN/proposal)
     if resume:
         before=read(out/'manifest.json');assert {k:v for k,v in before.items() if k!='source_commit'}=={k:v for k,v in manifest.items() if k!='source_commit'}

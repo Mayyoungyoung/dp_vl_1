@@ -7,7 +7,7 @@ import time
 import numpy as np
 import torch
 from research_realized_coverage_v1.core import RUN,BASE,PREP,VOCAB,load_generator,read,write,sha,torch_setup,variants
-from research_realized_coverage_v1.allocator import SetUtility,SuccessHead,allocate
+from research_realized_coverage_v1.allocator import SetUtility,SuccessHead,allocate,make_allocator
 from scripts.mode_geometry_experiment import POOL
 from routeset.mode_geometry import mode_loss,shared_allocation_loss
 from routeset.segment_clearance import segment_clearance_loss
@@ -28,7 +28,7 @@ def train(name,arm,steps,seed,head=None,feedback='feedback_C_train',checkpoint=B
     if arm in ('gap','hard'):
         hs=torch.load(RUN/head,map_location='cpu',weights_only=False)
         assert hs['settings']['generator_sha256']==sha(checkpoint)
-        allocator=(SetUtility() if hs['settings']['kind']=='net' else SuccessHead()).cuda();allocator.load_state_dict(hs['model']);allocator.eval()
+        allocator=make_allocator(hs['settings']['kind']).cuda();allocator.load_state_dict(hs['model']);allocator.eval()
         summary=read(RUN/feedback/'SUMMARY.json');assert summary['manifest']['split']=='TRAIN' and summary['manifest']['generator_sha256']==sha(checkpoint)
         for i,ident in enumerate(d['ids']):
             with np.load(RUN/feedback/(str(ident)+'.npz')) as z:

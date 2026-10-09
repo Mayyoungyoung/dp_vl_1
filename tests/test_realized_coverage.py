@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from research_realized_coverage_v1.core import variants,replace_query
 from research_realized_coverage_v1.allocator import SetUtility,SuccessHead,allocate
+from research_realized_coverage_v1.allocator import RealizationUtility
 from routeset.mode_geometry import ModeGeometryHead
 
 def test_replace_preserves_all_companion_pairs():
@@ -33,3 +34,17 @@ def test_net_counts_losses_not_just_additions():
     before={0,1,2};after={2,3}
     added=after-before;lost=before-after
     assert len(added)==1 and len(after)-len(before)==len(added)-len(lost)==-1
+
+def test_realization_outcomes_and_no_peer_control():
+    for peers in (False,True):
+        model=RealizationUtility(peers=peers);c=torch.randn(2,128);m=torch.arange(8).repeat(2,1);v=torch.zeros_like(m)
+        utility,logits=model.components(c,m,v)
+        assert utility.shape==(2,4) and logits.shape==(2,8,17)
+        order=torch.tensor([7,2,4,5,1,0,6,3])
+        u,l=model.components(c,m[:,order],v[:,order])
+        torch.testing.assert_close(u,utility,rtol=1e-5,atol=1e-5)
+        torch.testing.assert_close(l,logits[:,order],rtol=1e-5,atol=1e-5)
+        if not peers:
+            altered=m.clone();altered[:,1:]+=8
+            _,other=model.components(c,altered,v)
+            torch.testing.assert_close(other[:,0],logits[:,0],rtol=0,atol=0)
