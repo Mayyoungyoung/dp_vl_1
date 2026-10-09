@@ -8,7 +8,7 @@ from research_selective_repair_v1.local import features,observed_points,optimize
 from routeset.observed_probability import route_observation_features,load_scored_planner
 from scripts.research_v3_audit import coverage,average,mode
 
-def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None,role='DEV_MODEL',prototype=None):
+def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None,role='DEV_MODEL',prototype=None,allocation_head=None):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False);data=data or DATA
     if role not in ('TRAIN','DEV_MODEL'):raise ValueError('Role boundary')
     if checkpoint:center,head,ck=load_repair(checkpoint)
@@ -16,6 +16,10 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
     center.requires_grad_(False)
     if head:head.requires_grad_(False)
     proposal=base_success();scorer=load_scored_planner(Q,'cuda').requires_grad_(False)
+    if allocation_head:
+        h=torch.load(allocation_head,map_location='cpu',weights_only=False)
+        assert h['settings']['generator_sha256']==sha(checkpoint)
+        proposal.load_state_dict(h['model']);proposal.eval()
     if prototype:
         from scripts import observation_prototype_grounding as proto
         prototype_model=read(prototype)
@@ -61,7 +65,7 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
         for k,val in dict(ids=row['id'],paths=p,drafts=d,events=ev,q=q,modes=m[0].cpu().numpy(),support=support,prob=prob).items():pools[k].append(val)
         if (j+1)%64==0:print(dict(requests=j+1),flush=True)
     np.savez_compressed(out/'pool.npz',**pools);write(out/'rows.json',results)
-    report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),requests=len(rows),repaired=sum(r['repaired'] for r in results),damaged=sum(r['damaged'] for r in results),base_valid=sum(sum(r['base_valid']) for r in results),added=sum(len(r['added']) for r in results),lost=sum(len(r['lost']) for r in results),delta_U8=float(np.mean([r['delta_U8'] for r in results])),raw_mode_changed=sum(r['raw_mode_changed'] for r in results),cached_feature_repair_q_ms=float(np.mean(times)*1000),decode_sets=len(rows),generated_drafts=len(rows)*8,final_candidates=len(rows)*8,kind=kind,threshold=threshold,scale=scale,checkpoint_sha256=sha(checkpoint) if checkpoint else None,base_sha256=sha(BASE),base_head_sha256=sha(BASE_HEAD),scorer_sha256=sha(Q),data=str(data),role=role,locked_access=False,head_scope='Frozen base allocation head in screening; matching output-head controls required for formal acceptance',input_hashes=hashes)
+    report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),requests=len(rows),repaired=sum(r['repaired'] for r in results),damaged=sum(r['damaged'] for r in results),base_valid=sum(sum(r['base_valid']) for r in results),added=sum(len(r['added']) for r in results),lost=sum(len(r['lost']) for r in results),delta_U8=float(np.mean([r['delta_U8'] for r in results])),raw_mode_changed=sum(r['raw_mode_changed'] for r in results),cached_feature_repair_q_ms=float(np.mean(times)*1000),decode_sets=len(rows),generated_drafts=len(rows)*8,final_candidates=len(rows)*8,kind=kind,threshold=threshold,scale=scale,checkpoint_sha256=sha(checkpoint) if checkpoint else None,base_sha256=sha(BASE),base_head_sha256=sha(BASE_HEAD),allocation_head_sha256=sha(allocation_head) if allocation_head else sha(BASE_HEAD),scorer_sha256=sha(Q),data=str(data),role=role,locked_access=False,head_scope='Own matching TRAIN head' if allocation_head else 'Frozen base allocation head in screening; matching output-head controls required for formal acceptance',input_hashes=hashes)
     write(out/'METRICS.json',report);print({k:v for k,v in report.items() if k!='input_hashes'},flush=True)
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--kind',choices=['learned','geometric','zero','goal_rule'],default='learned');p.add_argument('--threshold',type=float,default=.5);p.add_argument('--scale',type=float,default=1.);p.add_argument('--data',type=Path);p.add_argument('--role',default='DEV_MODEL');p.add_argument('--prototype',type=Path);evaluate(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--kind',choices=['learned','geometric','zero','goal_rule'],default='learned');p.add_argument('--threshold',type=float,default=.5);p.add_argument('--scale',type=float,default=1.);p.add_argument('--data',type=Path);p.add_argument('--role',default='DEV_MODEL');p.add_argument('--prototype',type=Path);p.add_argument('--allocation-head',type=Path);evaluate(**vars(p.parse_args()))
