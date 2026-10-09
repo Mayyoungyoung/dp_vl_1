@@ -96,3 +96,36 @@ Implement one explicit adaptation of the closest local-patching mechanism: obser
 
 ## Measured post-data structure and control stability,2026-10-10
 New144scene/432request data and all3paired seeds completed. Selective remainsidentity on newDEV; residual bestmeans old~7.34,new~7.46; common goal+geometry old7.66319/new7.74306,150/75repairs,0/1damage. Jointcenter control deteriorates when differentiating nearest-point features on moving drafts. One baseline repair freezes gradients through that observed preprocessing and uses10x smaller center LR,keeping head LR/data/2400updates fixed. It must be made competitive rather than cited as a weak baseline. Separately inspect the optimistic immutable18node prefix ceiling with the actual independent checker and maximum slot-to-word matching; unresolved tail words get all16possibilities. This tests expressiveness without calling finite solver failure infeasibility. No method accepted; no further gate-loss weight search.
+
+## Prospective learned-constraint pivot, before operator evaluation
+
+Actual fixed-prefix upper bounds old7.71528/new7.72917 leave at most+.05209
+over the old strong geometry control, and are below the new control7.74306.
+This is a bound on current queries and fixed prefixes, not all center models.
+Adapted local diffusion reaches old7.15625/new7.25694. Stable joint-center
+seed0 now reaches7.34375/7.43750 under the protection budget. Thus direct
+tail displacement does not address the measured representational bottleneck.
+
+The next single direction learns local post constraints from current visible
+neutral surfaces and cached legal context, then applies finite deterministic
+minimum-edit optimization. TRAIN boxes supervise a small completion model;
+four ordered posts, TRAIN-derived footprint/base/floor and sorting anchors
+are explicit domain assumptions. Missing surfaces remain missing features;
+predicted hidden extent is model inference, not known occupancy or calibrated
+confidence. No oracle data enter prediction or the operator. All controllers
+receive the identical predicted boxes and common observed goal proposals.
+
+Compare64-step Adam global geometry optimization, the same optimizer with
+mode constraints but no protection, and a protected operator: retain one
+predicted feasible representative per actual predicted operational word and
+release failed or redundant slots. Predicted words use completed geometry;
+actual evaluation still uses independently sealed predictions and truth labels.
+Release a contiguous <=16 interior-node window plus the existing smooth goal
+tail. Start stays fixed. Interior correction bounded12cm/coordinate, goal
+correction40cm/coordinate; equal bounds for all controllers. Changing a
+duplicate's mode is explicitly counted as mode correction, never same-mode
+repair. Existing geometry-only and original strict local results remain intact.
+No extra candidates: exactly8 drafts become8 finals. Main+.15/quality gates,
+1%damage budget, current-input contract, family statistics and mandatory matched
+TRAIN heads are unchanged. This screen tests expressiveness/constraint quality;
+publication novelty is not inferred from adding a neural box predictor.

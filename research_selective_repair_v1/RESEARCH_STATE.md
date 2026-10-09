@@ -1,4 +1,30 @@
-# Selective repair ACTIVE,2026-10-10
+# Selective repair ACTIVE,2026-10-10 — current update supersedes older entries
+
+Physical144scenes/432requests complete:16TRAIN/8DEVfamilies,6physicalvariants,
+all144initializationspassed. Sourcebc22d91; render3035.272command seconds.
+Old+new TRAIN3paired seeds (sharedC0) complete under14334bb. Selective newDEV
+all7.24306(identity); residual7.43750/7.41667/7.52083. Strong same-observation
+goal+geometry64step old7.66319/new7.74306,150/75repairs,0/1damage. No method
+accepted. Completion of a screen or draft is not research completion.
+
+ce2c71f structure queue TERMINAL: old/new optimistic fixed18node prefix U8
+7.71528/7.72917,55/29irreversible prefix failures. Stable center control fixes
+preprocessor gradient instability: old7.34375/new7.43750 with2/2damages;
+do not cite earlier unstable control as strong evidence. Adapted local diffusion
+control0b861da TERMINAL: old7.15625/new7.25694 under1%damage. These are reused
+development screens with original allocation head, not formal confirmation.
+
+Current implementation is the prospective learned-post-constraint pivot in
+PROTOCOL.md. Train only old1152+new288TRAIN, small four-post completion model,
+then compare same64step/samepredictedboxes global geometry, mode-global and
+protected contiguous-edit operators. Sources locally authored; next freeze
+and launch scripts/run_selective_constraints_v1.sh from immutable fullcommit.
+No live experiment at this prelaunch update. Actual3seed matching-head/fresh
+confirmation/execution expansion remain required if the mechanism is promising.
+Checkpoint and full result paths indexed in results/CALIBRATED_SCREEN.json.
+No TEST_LOCKED or historical defaults touched. No wall-time quota supplied.
+
+## Older chronological entries (superseded where stated)
 
 Sources6083e22 screen and674f53f followup are terminal. Seed0,2400step:
 B0 U8=7.14931; ordinary residual=7.28819(+.13889),40repairs/0damage;

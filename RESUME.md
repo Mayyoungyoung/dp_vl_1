@@ -1,14 +1,18 @@
-## Selective repair ACTIVE - 2026-10-10
+## Selective repair ACTIVE - latest 2026-10-10
 
-Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md. Initial
-screen terminal; selective hard gate gives0repairs,ordinary residual +.13889U8
-vs strong center. Common-baseline recenter +.10417 with2damages; prototype
-rule damages100validroutes. No method accepted. Early executor failed from
-Torch import in simulator; lightweight IO fix and targeted decoupled/balanced
-gate recovery queued next,then new physical TRAIN/DEV interventions. Current renderer sourcebc22d91 PID622165/SSH55334; successor14334bb
-PID630925/SSH13747 waits and runs calibrated3seed controls. Frozen launchers only,keep failed receipts. Same
-wzy3090 GPU1 UUID/.35/fourthreads,locked unread. Historical sections below.
-
+Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md first.
+Physical144scenes/432requests and calibrated3seed controls completed. NewDEV
+selective all7.24306; residual mean7.45833; strong shared goal+geometry7.74306.
+Stable center seed0 7.43750. Fixed18node prefix ceiling7.72917 is insufficient;
+local diffusion7.25694. No accepted method/confirmation. All previous queues
+TERMINAL. Prospectively implement learned post constraints with same-constraint
+64step global/mode-global/protected operators; freeze and run new constraint
+coordinator next. Mandatory own matching TRAIN heads/new independent confirmation
+and expanded fixed Panda validation remain if promising. Actual budget/results
+in research_selective_repair_v1/results/CALIBRATED_SCREEN.json. No wall quota.
+Only ssh wzy3090 GPU1 UUID/.35memory/CPU0-3. Local sole writer, immutableexports,
+source/RNG/failed receipts preserved, TEST_LOCKED unread, defaults unchanged.
+Historical sections below.
 ## Feasible-space v1 CLOSED — 2026-10-09
 
 All queues are terminal; no experiment or interrupted training is pending.
