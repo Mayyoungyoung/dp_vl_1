@@ -1,0 +1,61 @@
+# Mode-conditioned geometry generation — registered before first run
+
+The user requests a new generation mechanism. Historical R2/R3 aligned relative
+crossing descriptors of unconstrained output sets; they did not decode named
+modes. This experiment changes route tokens into semantic passage embeddings,
+retains the shared observation-conditioned decoder, and directly supervises
+nonzero source-to-destination path displacement under a witnessed shared mode.
+The mode vocabulary is controlled two-row passage words, not homotopy classes.
+
+Budget: use the verified-set additional-7200 ledger, confirmed 51 terminal jobs,
+2935.782764 s spent / 4264.217236 s left. No increase. GPU1 UUID and .35 memory,
+CPU affinity0-3, immutable local commits exported to wzy3090 only.
+
+B/C/D share safety_mean initialization, frozen visual-language and observed
+geometry encoders, 1152 TRAIN requests and all 56920 previously verified TRAIN
+positives. No new positive collection. Six of eight training targets per scene
+are positively witnessed same-mode pairs; remaining targets sample other modes
+from the full single-scene pool. No unknown mode is a binary negative.
+Closed inflated internal passages alone give certified negative word evidence.
+Proposal scores use positive normalized allocation likelihood plus masked BCE;
+low proposal score is not an absence certificate. Inference uses current inputs
+only and emits eight paths. Top-eight score-ranked words are the main deterministic
+allocation; categorical sampling with replacement is a fixed-model ablation.
+Thus top-eight is a budget heuristic, not a claim of eight feasible classes.
+
+B: original learned query set, ordinary Hungarian matching to the same sampled
+mode-balanced targets, same allocation head, same pair displacement objective.
+C: semantic mode embedding queries + shared decoder, single-scene objective only.
+D: C + supervised generated-path displacement between same-mode scene pairs.
+B is deliberately given D's pair information and objective, so D cannot win from
+receiving more pair labels. C shares all targets but omits the pair objective.
+Use fixed final checkpoints, AdamW .0003, batch32, lambda_mode .001,
+lambda_pair1, inherited clearance coefficient160. Encoders/scorer stay frozen.
+Mode embedding initialization averages nearest parent query embeddings on TRAIN,
+and is shared in all arms (unused for B). Decoder weights are the same parent.
+Loss_route includes XYZ/event fit and inherited TRAIN-only geometry penalty;
+only three loss groups, no uniform coordinate consistency or new scorer.
+
+Pilot: B/C/D seed0, 400 updates, all288 DEV and fixed2169 witnesses. Examine actual
+condition compliance, invalidated-old-coordinate same-mode repair and quality@4.
+If necessary permit one diagnosis-driven structural repair, change one factor,
+then full1200 steps and replication only after an improvement signal.
+Prospective useful-signal criteria: D over same-information B by >=.3 valid modes,
+validity no worse than1pp, returned4 validity no worse than1pp, fixed retention
+and same-mode adaptation improve; D over C must show a positive pair increment.
+These are DEV development gates, not inferential success or test generalization.
+No seed selection; group uncertainty by32 layout families. Keep every failed run.
+
+Adaptation denominator: original parent-valid routes that fail the destination
+checker AND have a valid destination reference with their original operational
+mode. Fixed independently of new models. Deduplicate by (source,destination,mode).
+Report valid same-mode repair, copied old coordinates (<1mm mean point distance),
+same-mode invalid output, other-mode-only valid output, and no valid output.
+These observed categories are proxies for behavior, not inferred model intent.
+Retention denominator remains2169, split into1872 previously retained and297
+previously absent opportunities. All comparisons use the same frozen source.
+
+No TEST_LOCKED access; no full-arm execution or independent generalization claim.
+Keep historical defaults. Publishability is contingent on evidence, not embedding
+or pair-loss implementation alone. All commands, checkpoints/RNG and actual source
+hashes saved. Never overwrite launched code, outputs or immutable launcher.
