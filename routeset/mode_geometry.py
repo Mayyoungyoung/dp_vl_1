@@ -106,3 +106,16 @@ def pair_displacement_loss(paths, target, mask):
     """
     error = ((paths[1::2,:,1:]-paths[0::2,:,1:])-(target[1::2,:,1:]-target[0::2,:,1:])).square().mean((-1,-2))
     return (error*mask).sum()/mask.sum().clamp_min(1)
+
+
+def shared_allocation_loss(logits, evidence):
+    """Symmetric KL over witnessed common words only; no unknown absence labels.
+
+    This ordinary correspondence term is NOT a novelty claim. It connects the
+    proposal module to selective pair supervision; displacement still trains XYZ.
+    """
+    common=(evidence[::2]==1)&(evidence[1::2]==1)
+    if not common.any(-1).all():raise ValueError('Pair needs a witnessed common mode')
+    la=logits[::2].masked_fill(~common,-1e9).log_softmax(-1)
+    lb=logits[1::2].masked_fill(~common,-1e9).log_softmax(-1)
+    return (.5*(la.exp()-lb.exp())*(la-lb)*common).sum(-1).mean()

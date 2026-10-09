@@ -1,7 +1,7 @@
 import copy
 import unittest
 import torch
-from routeset.mode_geometry import ModeGeometryHead,mode_loss,pair_displacement_loss
+from routeset.mode_geometry import ModeGeometryHead,mode_loss,pair_displacement_loss,shared_allocation_loss
 
 
 class ModeGeometryTests(unittest.TestCase):
@@ -78,6 +78,15 @@ class ModeGeometryTests(unittest.TestCase):
         changed=self.modes.clone();changed[:,1:]+=8
         q,_,_=model.decode(self.context,self.anchor,self.current,changed)
         torch.testing.assert_close(p[:,0],q[:,0],atol=1e-7,rtol=1e-7)
+
+    def test_pair_allocation_updates_proposals_but_masks_unknown(self):
+        l=torch.randn(4,16,requires_grad=True);e=torch.full((4,16),-1.)
+        e[:,:6]=1
+        loss=shared_allocation_loss(l,e);loss.backward()
+        self.assertGreater(float(l.grad[:,:6].abs().sum()),0)
+        self.assertEqual(float(l.grad[:,6:].abs().sum()),0)
+        altered=l.detach().clone();altered[:,6:]+=100
+        torch.testing.assert_close(loss,shared_allocation_loss(altered,e))
 
 
 if __name__=='__main__':unittest.main()

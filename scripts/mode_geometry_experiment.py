@@ -104,9 +104,9 @@ def prepare():
     print(json.dumps(dict(counts=counts,pairs=len(pairs))),flush=True)
 
 
-def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,independent_decoder=False,full_positive_set=False):
+def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,independent_decoder=False,full_positive_set=False,pair_allocation=False):
     torch=torch_setup()
-    from routeset.mode_geometry import mode_loss,pair_displacement_loss,VOCAB
+    from routeset.mode_geometry import mode_loss,pair_displacement_loss,shared_allocation_loss,VOCAB
     from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
     from routeset.observed_training_audit import tensor_state_digest
     from routeset.segment_clearance import segment_clearance_loss
@@ -138,7 +138,7 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
     settings=dict(arm=arm,seed=seed,steps=steps,pair_weight=pair_weight,prepared_sha256=manifest['data_sha256'],initial_sha256=sha(INITIAL),
         source_commit=os.environ.get('CODE_COMMIT'),source_hashes={str(p.relative_to(SOURCE)):sha(p) for p in [SOURCE/'routeset/mode_geometry.py',SOURCE/'scripts/mode_geometry_experiment.py']},
         batch_size=32,lambda_mode=.001,lambda_pair=pair_weight,lr=.0003,encoder_frozen=True,independent_decoder=independent_decoder,
-        full_positive_set=full_positive_set)
+        full_positive_set=full_positive_set,pair_allocation=pair_allocation)
     history=[];start=0;stream='';tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,history=history,
         stream=stream,settings=settings,config=dict(head_options=options,conditional=arm!='B',decoder_communication=not independent_decoder),initial_tensor_sha256=initial,frozen_sha256=frozen)
@@ -185,11 +185,13 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
         clear=segment_clearance_loss(xyz,tensors['centers'][ids],tensors['halves'][ids])+workspace_floor_loss(xyz,tensors['floors'][ids])
         ml=mode_loss(details['mode_logits'],tensors['evidence'][ids])
         pl=pair_displacement_loss(xyz,tx,torch.as_tensor(pairmask,device='cuda',dtype=torch.float32))
+        allocation_pair=shared_allocation_loss(details['mode_logits'],tensors['evidence'][ids]) if pair_allocation else ml*0
+        pl=pl+.001*allocation_pair
         loss=route+160*clear+.001*ml+(pair_weight*pl if arm in ('B','D') else 0)
         if not torch.isfinite(loss):raise FloatingPointError('nonfinite loss')
         optimizer.zero_grad(set_to_none=True);loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.);optimizer.step()
         if step%100==0 or step==steps:
-            row=dict(step=step,loss=float(loss),route=float(route),clear=float(clear),mode=float(ml),pair=float(pl))
+            row=dict(step=step,loss=float(loss),route=float(route),clear=float(clear),mode=float(ml),pair=float(pl),allocation_pair=float(allocation_pair))
             history.append(row);print(json.dumps(row),flush=True)
         if step%100==0 or step==end:atomic_checkpoint(out/'recovery.pt',state(step))
     assert frozen==tensor_state_digest({k:v for k,v in model.state_dict().items() if k.startswith(('geometry.','head.feature_encoder.','head.state_encoder.'))})
@@ -243,7 +245,8 @@ if __name__=='__main__':
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--pair-weight',type=float,default=1.)
     p.add_argument('--independent-decoder',action='store_true')
     p.add_argument('--full-positive-set',action='store_true')
+    p.add_argument('--pair-allocation',action='store_true')
     p.add_argument('--sampling',choices=['ordinary','balanced','adaptive'],default='balanced');a=p.parse_args()
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight,a.independent_decoder,a.full_positive_set)
+    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight,a.independent_decoder,a.full_positive_set,a.pair_allocation)
     else:evaluate(a.name,a.sampling)

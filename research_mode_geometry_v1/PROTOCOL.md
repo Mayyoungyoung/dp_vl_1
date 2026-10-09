@@ -137,3 +137,22 @@ acceptance of D. Do not select a seed or revert to400step checkpoints.
 After this bounded diagnosis/repair/replication cycle, report failure if selective
 pair supervision still lacks independent benefit. Remaining budget is not a
 reason to conduct unmotivated weight sweeps or add modules.
+
+## One final direct loss-connection repair, while replication runs
+
+Fixed D seed0 lost248 originally retained opportunities:194 words were not even
+proposed,53 were proposed but invalid,1 was proposed with a valid wrong-word
+route. None of these losses is attributable to the two vocabulary words with
+zero TRAIN positives (those words have no fixed survivor opportunity). Do not
+invent cold-class extrapolation as the cause.
+The current displacement loss updates decoder XYZ but the separate allocation
+head gets NO pair gradient. This is an implementation limitation of H2, not
+evidence that proposal stability was learned. Add a symmetric KL over ONLY
+positively witnessed common-word allocation probabilities to L_pair, scaled.001
+like the original classification term, retaining XYZ displacement. This is
+ordinary selective correspondence, explicitly NOT the innovative claim; new
+generation structure remains the proposed representation. No new module/data,
+no matching-weight or coefficient sweep. Call this D2, keep all D failures.
+Run1200seed0 after the active replication queue; expand D2 seeds1,2 only if
+retention/proposal stability improves without a serious route-quality loss.
+If it fails, stop this bounded repair cycle and report the limitations.
