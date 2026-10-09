@@ -1341,3 +1341,29 @@ seed1/2, fresh matching-head center/projection views, recovery/API/statistics/re
 figures prepared but NOT started. Main .15U8 and quality gates unchanged; none
 accepted yet. Three-seed continuation shares pretrainedC0, not independent pretraining.
 All TRAIN/DEV roles fixed, TEST_LOCKED unread, historical default unchanged.
+
+## 2026-10-09 Feasible-space: full paired replication and frozen fresh families
+
+Frozen8b6b19a queue SSH92739 completed, including all3paired XYZ/bounded2400step
+continuations, nine individually refitted center/projection controls, resume/API
+and fixed-witness analysis. U8 means: XYZ6.71759,bounded6.80324,refitted projection
+6.75231,refitted XYZ center7.10995,refitted bounded center7.10995. Bounded minus
+XYZ .08565, crossed95%CI[.03356,.14236], fails unchanged+.15practical gate; bounded
+minus refitted center-.30671,CI[-.42593,-.20139]. Main acceptance false. No default
+change. Fixed seed0 bounded retention1727/2169,repair224/270; boundcenter1760/2169,
+243/270. Thus retention and coordinate adaptation do not establish neural necessity.
+Saved analytic implication check: zero geometry failures for certified+inside
+routes;78bounded endpoint failures remain in those cells;59output raw words change
+from center. Post-checks c30b63f complete8tests, strict16request API/selected-index
+replay and actual tapered-region figures. Older figure v1 overlays are superseded.
+
+The user's requested fresh-scene diagnosis is frozen with16new families and336
+requests (5rendered geometry variants,2explicit observation corruptions); no tuning
+or training, same3frozen continuations/all strong controls. New hash-overlap gate
+reads existing paired TRAIN/DEV registration only. Source3674198 prepare_v1 failed
+before creating data: inherited registration checked repeated unmodified variants.
+Source326c57f expands new variants after base registration; prepare_v2 exit0. A
+mistyped release path in the post-check chained command failed before any fresh
+experiment; corrected with actual git rev-parse SHA. Active SSH23356 renders new
+families from immutable326c57f, one worker/software GL/four CPU cores. Retain all
+receipts/failures; no scene replacement, no TEST_LOCKED access or robot claim.

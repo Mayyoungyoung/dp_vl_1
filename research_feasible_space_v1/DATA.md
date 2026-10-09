@@ -33,7 +33,8 @@ Single-view unknown regions are not marked free. Initial model uses learned
 geometric priors rather than a ray-certified occupancy map; predicted corridor
 containment is an algebraic property, never physical safety or visibility proof.
 Observation noise/occlusion evaluation must expose this limitation before any
-independent/general robot claim. No new held-out family has been generated yet.
+independent/general robot claim. A frozen fresh-family diagnosis is now registered
+and collecting; completed evidence must be read from the final RESULTS.md.
 
 The visibility audit reads only depth/camera_intrinsics/camera_extrinsics from the
 permitted current observation file. It classifies shared-node cube-corner probes
@@ -42,3 +43,14 @@ out-of-frame and missing-depth probes are always unknown. Probe classification
 is distinct from whole-cell truth certification; neither is a deployable oracle.
 The audit changes no trained route or proposal, and makes no learned-confidence
 claim. All methods can use the same legal calibration/depth evidence.
+
+The evaluation-only fresh extension uses16families sampled once with seed641009,
+outside the old paired registered geometry hashes. Five physical variants per
+family are actually rendered from the pinned canonical robot state: open,shifted,
+closed,narrow,tall. Each has3language targets. Noise and central RGB/depth masking
+derive from the16open observations, with identical robot state and truth geometry.
+All336requests belong to evaluation-only DEV_MODEL; there are no TRAIN updates,
+no replacements and no reserved TEST_LOCKED reads. The new incomplete teacher
+references support sparse recall only; final metrics distinguish it from old
+all-mode support. Model/head weights are frozen before collection. Noise/masking
+are observation stressors, not claims about physical sensor noise or occlusion.
