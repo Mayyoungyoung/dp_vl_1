@@ -1139,3 +1139,7 @@ below are superseded by this confirmed blocked status.
 ## Verified-set implementation and new authorization — 2026-10-09
 User authorized 7200 additional experiment command seconds for phases A/B. Protocol and implementation added; original V3 budget untouched. Local tests: 9 passed, Torch module skipped because local runtime lacks torch; earlier torch import failure retained in conversation. No new experiment result. Training-only target builder includes ordinary/gate/project/replay controls, independent checker audit, full recovery state and source-indexed additional ledger.
 
+
+## Verified-set Stage A complete; ordinary training launched
+Source a6096e4: 17 server tests pass; 384 eligible TRAIN requests, 12480 witnesses and 1536 corruptions verified; first64 TRAIN raw487/512 valid, 2048 raw/target slots agree with independent checker. Nonzero direct reference pressure is measured, not causally established harm. Detail reports/verified_set_v1/STAGE_A.md. New budget spent112.036994s before first ordinary training. Actual ordinary_seed0_train job launched from same frozen source; inspect receipt before any restart.
+
