@@ -37,7 +37,9 @@ def main(names,output,figures=False):
         for word in sorted(set(original['words'])-{None}):
             slots=[j for j,(v,c,m) in enumerate(zip(w['source_valid'],w['cross_valid'],original['words'])) if v and not c and m==word]
             if slots and word in known[b]:
-                opportunities.append(dict(source_id=a,destination_id=b,family=w['family'],mode=word,old_slots=slots))
+                same=[j for j,(v,m) in enumerate(zip(w['source_valid'],original['words'])) if v and m==word]
+                opportunities.append(dict(source_id=a,destination_id=b,family=w['family'],mode=word,old_slots=slots,
+                    all_same_mode_source_routes_invalid=all(not w['cross_valid'][j] for j in same)))
     results={};allrecords={}
     for n,model in models.items():
         lost=recovered=retained=0;counts=Counter();records=[];family={}
@@ -61,11 +63,14 @@ def main(names,output,figures=False):
             elif valid.any():category='other_valid_modes_only'
             else:category='no_valid_output'
             counts[category]+=1;records.append(dict(o,category=category))
+            if o['all_same_mode_source_routes_invalid']:
+                counts['strict_opportunities']+=1;counts['strict_repairs']+=int(category=='valid_same_mode_repair')
             family[o['family']]['adaptation_denom']+=1;family[o['family']]['adapted']+=int(category=='valid_same_mode_repair')
         rr=list(model.values());f=folders[n];m=read(f/'metrics.json')
         results[n]=dict(raw=m['raw'],selected=m['selected'],condition_hit=m.get('condition_hit'),
             retained=retained,retention=retained/2169,lost_of_1872=lost,recovered_of_297=recovered,
-            adaptation_opportunities=len(opportunities),adaptation_counts=dict(counts),
+            adaptation_opportunities=len(opportunities),adaptation_counts={k:v for k,v in counts.items() if not k.startswith('strict_')},
+            strict_adaptation=dict(opportunities=counts['strict_opportunities'],repairs=counts['strict_repairs']),
             adaptation_fraction=counts['valid_same_mode_repair']/len(opportunities),families=family,
             invalid_reasons={key:sum(not c[key] for r in rr for c in r['candidates']) for key in ('semantic_goal_correct','tip_segments_clear','event_state_sequence_correct')})
         assert retained==1872-lost+recovered
