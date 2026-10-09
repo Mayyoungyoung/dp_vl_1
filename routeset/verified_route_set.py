@@ -152,7 +152,7 @@ correction cost. When groups exceed K, dummy slots can only absorb optional
 groups. This is standard constrained assignment, not a new solver or guarantee
 of neural-network retention. set_point is the essential no-region control.
 """
-    if arm not in ('set_point', 'set_project'):
+    if arm not in ('set_point', 'set_project', 'budget_match'):
         raise ValueError('Unknown joint-set arm')
     p,e=np.asarray(paths),np.asarray(events)
     r,re=np.asarray(references),np.asarray(reference_events)
@@ -161,6 +161,7 @@ of neural-network retention. set_point is the essential no-region control.
     # Same consumption as existing arms; optional-group ranking here is by cost.
     order=rng.permutation(len(known)); known=[known[j] for j in order]
     accepted=np.array([i for i,(ok,w) in enumerate(zip(valid,words)) if ok and w is not None],dtype=int)
+    if arm=='budget_match': accepted=np.array([],dtype=int)
     mandatory={words[i] for i in accepted}
     all_r=np.concatenate((r,p[accepted])); all_e=np.concatenate((re,e[accepted]))
     all_tags=np.concatenate((tags.astype(object),np.asarray([words[i] for i in accepted],dtype=object)))

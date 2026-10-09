@@ -139,3 +139,10 @@ def test_cross_mode_zero_distance_box_is_not_a_valid_zero_cost_edge():
     target,_,_=build_set_targets(p,ev,refs,ev,['left','right'],np.ones((2,3))*5,
         [True,True],['left','right'],'set_project',np.random.default_rng(0),check)
     np.testing.assert_array_equal(target,p)
+
+
+def test_budget_control_does_not_silently_receive_verified_predictions():
+    refs,ev,check=toy();p=refs.copy();p[:,1,1]=[-1.4,1.4]
+    target,_,_=build_set_targets(p,ev,refs,ev,['left','right'],np.zeros((2,3)),
+        [True,True],['left','right'],'budget_match',np.random.default_rng(0),check)
+    np.testing.assert_array_equal(target,refs)

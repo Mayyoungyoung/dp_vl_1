@@ -20,7 +20,11 @@ dummies. No full coverage is requested above the8-slot budget. Extra slots when
 groups<8 may choose any admissible positive. Existing reference-group RNG calls
 are still consumed so actual input and group RNG comparability can be audited.
 
-Two arms isolate geometry regions from assignment:
+Three arms isolate group selection, verified singleton support and geometry:
+- budget_match: ordinary original finite witnesses only, choose at most8 groups
+  by assignment cost rather than the previous random group subset. No current
+  predictions are added and no currently-valid modes are mandatory. This control
+  is necessary because joint assignment also changes over-budget group selection.
 - set_point: only original finite witnesses and verified current singleton routes.
 - set_project: same assignment and positives plus the same2cm-capped certified
   local geometry regions as v1/v2. Mode-invalid selected proposals fall back to

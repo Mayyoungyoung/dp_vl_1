@@ -233,7 +233,7 @@ def train(arm, seed, resume=False, stop_after=None, replay_from='project'):
                 tags=np.r_[tags,replay['words'][step-1,j]]
                 if np.any(tags == ''): raise ValueError('Unclassified replay target cannot be invented as a mode')
             valid, words=checks[li](p[j],e[j]); count['verified_raw_slots']+=8
-            builder=build_set_targets if arm in ('set_point','set_project') else build_targets
+            builder=build_set_targets if arm in ('set_point','set_project','budget_match') else build_targets
             tp,te,a=builder(p[j],e[j],rp,re,tags,radii[li,:n],valid,words,
                            'ordinary' if arm=='replay' else arm,lrng,checks[li])
             count['protected_slots']+=int(a['protected'].sum()) if arm in ('gate','project','set_point','set_project') else 0
@@ -281,7 +281,7 @@ def evaluate(arm, seed, replay_from='project'):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(); parser.add_argument('stage',choices=['prepare','diagnose','train','evaluate'])
-    parser.add_argument('--arm',choices=['ordinary','gate','project','replay','set_point','set_project']); parser.add_argument('--seed',type=int,default=0)
+    parser.add_argument('--arm',choices=['ordinary','gate','project','replay','set_point','set_project','budget_match']); parser.add_argument('--seed',type=int,default=0)
     parser.add_argument('--resume',action='store_true'); parser.add_argument('--stop-after',type=int)
     parser.add_argument('--population',choices=['known_le8','all'],default='known_le8')
     parser.add_argument('--replay-from',choices=['project','set_point','set_project'],default='project')
