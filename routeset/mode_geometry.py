@@ -38,11 +38,19 @@ class ModeGeometryHead(ProbabilisticGeometryRouteHead):
         context = self.head.feature_encoder(features)+self.head.state_encoder(current)+geometry['context']
         return context, geometry['anchor_xyz']
 
-    def decode(self, context, anchor, current, mode_ids=None, sampling='balanced'):
+    def decode(self, context, anchor, current, mode_ids=None, sampling='adaptive'):
         logits = self.mode_predictor(context)
         if mode_ids is None:
             # Scores allocate a finite proposal budget, NOT calibrated existence.
-            if sampling == 'balanced':
+            if sampling == 'adaptive':
+                allocations=[]
+                for scores in logits:
+                    order=torch.argsort(scores,descending=True,stable=True)
+                    active=order[scores[order]>=0][:8]
+                    if not len(active):active=order[:1]
+                    allocations.append(active[torch.arange(8,device=scores.device)%len(active)])
+                mode_ids=torch.stack(allocations)
+            elif sampling == 'balanced':
                 mode_ids = torch.argsort(logits,dim=-1,descending=True,stable=True)[:,:8]
             elif sampling == 'ordinary':
                 mode_ids = torch.multinomial(logits.softmax(-1),8,replacement=True)
@@ -64,7 +72,7 @@ class ModeGeometryHead(ProbabilisticGeometryRouteHead):
         return xyz,event,dict(mode_logits=logits,mode_ids=mode_ids)
 
     def forward(self, features, current, world_xyz, rgb, uv, depth, valid_mask, k=None,
-                sampling='balanced'):
+                sampling='adaptive'):
         if k not in (None,8): raise ValueError('Fixed candidate budget')
         context,anchor = self.encode(features,current,world_xyz,rgb,uv,depth,valid_mask)
         return self.decode(context,anchor,current,sampling=sampling)

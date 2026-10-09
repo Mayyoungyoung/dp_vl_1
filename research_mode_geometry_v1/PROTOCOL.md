@@ -70,3 +70,13 @@ ordinary weighted-set baseline; B retains the extra same-pair-objective control.
 Run B0/B/C/D for1200 fixed steps, seed0, no hyperparameter changes. The strongest
 ordinary arm determines comparison. D must improve over C to support H2/H3.
 This clarification is registered before D pilot metrics and full-step outcomes.
+
+## Inference interface correction before reading full-step outcomes
+
+The requested interface must allow fewer than8 proposed words. Add `adaptive`
+allocation: use at most8 words with logits>=0 (a .5 sigmoid proposal threshold),
+fill spare paths with within-mode variants; if none pass, use the highest-ranked
+word. This is not an absence certificate. Keep original `balanced` and `ordinary`
+results, evaluate adaptive on the SAME fixed checkpoints, and expose it as the
+model API default. This changes no training data, decoder weights or oracle use.
+Report strategy-dependent effects instead of attributing them to architecture.

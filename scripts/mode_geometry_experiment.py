@@ -224,7 +224,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','evaluate']);p.add_argument('--arm',choices=['B','C','D'])
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=1200);p.add_argument('--name')
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--pair-weight',type=float,default=1.)
-    p.add_argument('--sampling',choices=['ordinary','balanced'],default='balanced');a=p.parse_args()
+    p.add_argument('--sampling',choices=['ordinary','balanced','adaptive'],default='balanced');a=p.parse_args()
     if a.stage=='prepare':prepare()
     elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight)
     else:evaluate(a.name,a.sampling)

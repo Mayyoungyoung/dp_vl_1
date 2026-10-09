@@ -60,9 +60,17 @@ class ModeGeometryTests(unittest.TestCase):
         self.assertGreater(float((p[:,0]-p[:,1]).abs().max()),1e-6)
 
     def test_observation_only_allocation_both_samplers(self):
-        for sampler in ('ordinary','balanced'):
+        for sampler in ('ordinary','balanced','adaptive'):
             p,e,d=self.model.decode(self.context,self.anchor,self.current,sampling=sampler)
             self.assertEqual(p.shape,(2,8,24,3));self.assertEqual(d['mode_ids'].shape,(2,8))
+
+    def test_adaptive_does_not_force_eight_different_classes(self):
+        with torch.no_grad():
+            self.model.mode_predictor[-1].weight.zero_()
+            self.model.mode_predictor[-1].bias.fill_(-2)
+            self.model.mode_predictor[-1].bias[3]=2
+        _,_,d=self.model.decode(self.context,self.anchor,self.current)
+        self.assertTrue(torch.all(d['mode_ids']==3))
 
 
 if __name__=='__main__':unittest.main()
