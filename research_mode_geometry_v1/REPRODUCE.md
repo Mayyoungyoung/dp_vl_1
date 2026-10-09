@@ -123,3 +123,31 @@ They cannot substitute for the verified same-stream comparisons. Every loss-scal
 sampling-policy and architecture distinction is recorded in PROTOCOL.md. Runtime
 reports exclude online Qwen extraction because this study reuses frozen features;
 do not call cached head throughput full VLM inference speed or robot success.
+
+## Final closure, 2026-10-09
+
+D2 seed0 uses `a4e4d7ef114a521c570eca49e2a164ec6f8a8280`; seeds1,2 and final
+analysis use `a1f35e38f8cb7dddb1c44af653dc030657b31d04`. All15 main checkpoints
+are `runs/mode_geometry_v1/canonical_{B0,Bset,C,D,D2}_seed{0,1,2}/last.pt`.
+Recovery checkpoints, full prediction pools and source receipts are adjacent.
+Local copies of fixed inference assets are `runs/mode_geometry_v1/fixed_assets/`.
+They are copies, not replacements for the historical files.
+
+Python3.8.10, Torch2.4.1+cu121, NumPy1.24.4, CUDA12.1, RTX3090; four threads
+and0.35 memory fraction. The final13 mechanism/protocol tests passed; exact
+process resume and full scorer API replay passed separately.
+
+[CLOSURE.json](results/CLOSURE.json) records86 jobs (83 successful,3 preserved
+failures),28 research/resume checkpoints and all actual commands. This round
+charged1510.637398seconds, including failed jobs; cumulative4446.420162/7200,
+remaining2753.579838seconds. No job/active lock remained at closure. Stop reflects
+the bounded negative mechanism result, not exhausted budget or paper success.
+
+[ARTIFACT_AUDIT.json](results/ARTIFACT_AUDIT.json) binds weights, frozen encoders,
+data, scorer, environment and10 immutable source exports.
+[LOCAL_HASH_VERIFICATION.json](results/LOCAL_HASH_VERIFICATION.json) verifies all247
+indexed files after copying. Recheck locally with `python -m scripts.close_mode_geometry_local`.
+The copied archive is `runs/mode_geometry_v1/mode_geometry_v1_closure_20261009.tar`,
+SHA256 `f18be65d83d1d2d5f726388a395b2f7a925a4c705943eee058a0986e4a0b5825`.
+Its original path on the authorized server is
+`/home/wzy/dpvlm/route_set_v1/research_v2/incoming/mode_geometry_v1_closure_20261009.tar`.

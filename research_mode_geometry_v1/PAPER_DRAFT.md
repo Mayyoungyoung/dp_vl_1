@@ -86,6 +86,14 @@ C−B0 diversity is0.480, family-bootstrap95% interval[0.281,0.683]. D−C is
 not the best; uncertainty is conditional on these continuation runs and reused
 DEV families. See RESULTS for all controls and strict repair subsets.
 
+The final D2 connection repair reaches87.76% valid@8,6.725 valid modes,
+81.05% retention,78.89% same-mode repair and93.52% returned validity.
+Versus C, retention changes+0.49pp[−0.85,1.66] and repair+2.10pp[−1.54,5.72],
+while returned validity decreases0.72pp. The repair helps D's retention but
+does not establish the full-method claim. Ordinary sampling with the same
+weights markedly reduces coverage: gains belong to the conditional-generation
+and mode-allocation system, not demonstrably to decoder structure alone.
+
 Thus H1 receives support within this fitting protocol. Original H2 lacks support,
 and H3 is not established: conditional structure helps, but the full combination
 does not improve over C in retention/returned utility. C also fails to dominate

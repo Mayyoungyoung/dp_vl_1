@@ -107,3 +107,22 @@ matching do not implement semantic conditional decoding.
 The distinction is an implementation/mechanism distinction, not proof of novelty
 or superior performance. Mode/intention-conditioned multimodal trajectory
 generation is established prior art; see the bounded discussion in PAPER_DRAFT.
+
+## Bounded repairs and deployment
+
+Removing candidate self-attention eliminates companion-query interference but
+worsens DEV coverage/repair; this variant was rejected after seed0. D2 instead
+adds a proposal connection to the same pair-loss group:
+
+`L_pair_D2 = L_displacement + 0.001 * (KL(q_a||q_b)+KL(q_b||q_a))/2`.
+
+Here q is normalized only over positively witnessed common words. Unknown and
+unavailable words have no gradient from this term. XYZ displacement supervision
+remains active. This conventional consistency term repairs a missing training
+connection; it is not claimed as a new algorithm. D2 is reported separately for
+all three seeds. B_set strengthens the ordinary control by minimizing over all
+existing same-mode positives before assignment, without a conditional decoder.
+
+`load_fixed_scored_mode_planner` preserves the entire frozen scorer and its own
+encoder. Actual checkpoint replay exactly matches saved paths, events, scores
+and selected indices; see results/DEPLOYMENT_REPLAY.json.

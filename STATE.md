@@ -1,17 +1,22 @@
-## Mode geometry v1 ACTIVE — 2026-10-09
+## Mode geometry v1 CLOSED — limited representation gain, full method not accepted — 2026-10-09
 
-Current user requests mode-conditioned 3D generation. Read research_mode_geometry_v1/PROTOCOL.md.
-Semantic mode decoder, selective nonzero path displacement, ordinary B controls implemented.
-Existing1152TRAIN/288DEV, all56920 existing positive paths, no new collection/TEST_LOCKED.
-Early400/1200step results are exploratory: real resume audit found unordered-key target
-sampling. Fixed at902f545; actual100vs50+50 model/optimizer/RNG/stream now exactly match.
-TRAIN companion intervention motivates one repair: bypass candidate self-attention.
-SSH59781 runs frozen902f545 canonical B0/C/D and communication-off C/D1200 seed0.
-Check receipts in runs/verified_set_v1/jobs/mg_can_* before any new launch; do not duplicate.
-Same additional7200 ledger, no increase; last confirmed afterB0eval3459.841819spent,
-3740.158181remaining. Local source86c6897 adds stronger full-positive ordinary B_set,
-registered but NOT launched. Keep historical parent/default and all failed evidence.
-METHOD.md written; final results/reproduction/draft and multi-seed work still pending.
+Read research_mode_geometry_v1/RESULTS.md, FAILURE_ANALYSIS.md and REPRODUCE.md.
+Implemented semantic mode proposal, shared conditional3D decoder, real nonzero
+paired-coordinate gradients and complete frozen8-to4 scorer API. Existing legal
+1152TRAIN/288DEV,56920 positives; no new collection or TEST_LOCKED access.
+B0/Bset/C/D/D2 each completed1200steps for seeds0/1/2 (15 main runs), identical
+initial tensors and actual training streams within seed. C has6.770 valid modes
+versusB0 6.289, but D has no additional benefit. FinalD2 retention81.05%,
+adaptation78.89%, returned validity93.52%; does not establish benefit overC,
+and retention remains below parent86.31%. Communication-off repair also failed.
+Default parent unchanged; no top-conference algorithm/paper-success claim.
+86 jobs:83 successful,3 preserved failures;28 checkpoints. Actual100vs50+50
+resume and full inference replay exact;13 tests pass.247 copied files and10
+source exports hash-verified. Weights/pools/RNG in local+server runs/mode_geometry_v1.
+Six reports and true-output/RGB-D figures complete. No queue/lock active.
+Same7200 ledger: cumulative4446.420162spent,2753.579838remaining; this round
+1510.637398seconds. See results/CLOSURE.json before any future experiments.
+Stop follows bounded failed repairs; do not repeat DEV weight/seed searches.
 
 ## Verified-set A/B CLOSED — no accepted new mechanism — 2026-10-09
 

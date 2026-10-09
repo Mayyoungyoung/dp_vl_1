@@ -1234,3 +1234,34 @@ control, registered before canonical outcomes, not launched yet.
 Diagnostic serialization failure retained (mg_diag_train_intervention7.872s);
 wrong short-release-path pre-job attempt exited before wrapper and launched no
 experiment. No budget increase, TEST_LOCKED access or deployment-default change.
+
+## 2026-10-09 — Mode geometry v1 final closure
+
+Completed canonical B0/B_set/C/D/D2, seeds0/1/2, fixed1200steps (15 main runs),
+plus bounded communication-off and sampling diagnostics. Initial tensor hashes
+and actual target streams match within seed. Encoders/scorer frozen; actual
+generated routes checked on288DEV and fixed2169 survivors/270 repair opportunities.
+C valid88.8889%, distinct6.76968, retention80.5594%, repair76.7901%, returned94.2419%.
+B0 valid78.9497%, distinct6.28935, retention79.6373%, repair66.4198%, returned93.3449%.
+OriginalD fails againstC: distinct6.71065, retention79.6373%, returned93.2581%.
+TRAIN companion-interference repair improved forced-mode behavior but worsened DEV;
+rejected without extra seed search. Dseed0 lost248:194unproposed/53invalid/1wrong-mode.
+FinalD2 connects proposal pair gradients using conventional common-positive KL,
+retaining real coordinate displacement supervision. Three-seedD2 valid87.7604%,
+distinct6.72454, retention81.0512%, repair78.8889%, returned93.5185%.
+D2−C retention+.4918pp CI[-.8543,1.6599], repair+2.0988pp CI[-1.5352,5.7214];
+return−.7234pp. No stable complete-method advantage. Sampling strongly contributes
+to mode diversity; cannot attribute all coverage gains to the decoder alone.
+Limited representation/system evidence; H2/H3 and paper-level method not accepted.
+Historical parent default retained. No further loss sweeps under this protocol.
+
+13 relevant tests pass; actual100vs50+50 resume exact; deployed full q API produces
+exact saved paths/events/q and selection.28 checkpoints including4 resume artifacts;
+247 local files and10 immutable exports hash-verified.86jobs:83success/3preserved
+failures. Final audit sourcea1f35e38f8cb7dddb1c44af653dc030657b31d04.
+This round1510.637398command seconds; cumulative4446.420162/7200;
+2753.579838remaining. No active lock or queue. Local weights/pools/RNG and fixed
+asset copies in runs/mode_geometry_v1; six requested reports, all-seed tables,
+real3D/RGB-D figures in research_mode_geometry_v1. See results/CLOSURE.json for
+actual commands and budget, ARTIFACT_AUDIT.json for hashes/environment. Reserved
+TEST_LOCKED never opened, no environment/other-job changes, no historical overwrite.

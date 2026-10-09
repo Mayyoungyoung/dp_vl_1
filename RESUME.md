@@ -1,17 +1,19 @@
-## Mode geometry v1 ACTIVE — 2026-10-09
+## Mode geometry v1 CLOSED — 2026-10-09
 
-Follow STATE.md top and research_mode_geometry_v1/PROTOCOL.md. User requests actual
-new generator research; it is implemented. SSH59781 immutable902f545 canonical seed0
-queue is active. Do not duplicate. Earlier pilot/full results and3 failed experiment
-receipts retained; unordered-set sampling bug repaired with actual exact resume proof.
-Canonical B0/C/D and communication-off C/D use fixed1200steps and adaptive8-route
-inference. Source86c6897 additionally implements preregistered B_set strongest ordinary
-full-positive control, not launched yet. Inspect actual budgets/receipts before queueing.
-Next: finish canonical outcomes + TRAIN intervention, run B_set, assess signal and
-replicate relevant baseline/C/D seeds1,2; no seed selection or unlimited module search.
-Deliver six requested Markdown files, actual figures/weights/hashes and logs. Parent
-default unchanged, no paper-success claim; only existing legal TRAIN/DEV. Same7200
-additional ledger, latest3459.841819spent before remaining canonical jobs.
+No experiment is pending. Read research_mode_geometry_v1/RESULTS.md and
+FAILURE_ANALYSIS.md before extending this work. Main B0/Bset/C/D/D2 each have
+three seeds, fixed1200updates and all288DEV. C improves matched ordinary controls;
+original pairedD fails againstC. D2 fixes proposal-gradient connection but does
+not establish net benefit overC or parent. Communication-off repair rejected.
+All six requested reports, actual figures,28 checkpoints, recovery RNG and pools
+are delivered. Full source/file hashes and86 receipts are indexed in
+research_mode_geometry_v1/results/ARTIFACT_AUDIT.json and CLOSURE.json.
+Local runs/mode_geometry_v1 mirrors new server artifacts; historical files intact.
+Same7200 allowance:4446.420162spent,2753.579838remaining. No active lock/queue.
+Parent default unchanged; TEST_LOCKED unopened. Paper contribution not established.
+Avoid rerunning completed queues or treating exploratory pre902f545 samples as
+strict paired evidence. A new round needs a falsifiable proposal/geometry mechanism,
+not more loss-weight searches; independent frozen-method tests remain future work.
 
 ## Verified-set stage A/B closed — 2026-10-09
 
