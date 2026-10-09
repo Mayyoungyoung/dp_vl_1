@@ -33,7 +33,7 @@ def audit(output):
         d=read(p);assert sha(p.parent/'pool.npz')==d['pool_sha256']
         evaluated[p.parent.parent.name]={k:d[k] for k in ('raw','selected','condition_hit','cost')}
     files={str(p.relative_to(RUN)):dict(sha256=sha(p),bytes=p.stat().st_size) for p in RUN.rglob('*')
-           if p.is_file() and p.name!=output and p.suffix not in ('.tar','.log') and 'jobs' not in p.parts}
+           if p.is_file() and p.name!=output and p.suffix not in ('.tar','.log','.lock') and 'jobs' not in p.parts}
     result=dict(checkpoints=ckpts,feedback=feedback,evaluated=evaluated,files=files,source_exports=source,
         jobs=[{k:v for k,v in r.items() if k!='source_sha256'} for r in completed],
         job_receipt_sha256={r['id']:sha(RUN/'jobs'/r['id']/'receipt.json') for r in completed},

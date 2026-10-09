@@ -11,14 +11,14 @@ def sha(p):
 
 def main():
     root=Path(__file__).resolve().parents[1];run=root/'runs/realized_coverage_v1';report=root/'research_realized_coverage_v1/results'
-    audit=json.loads((run/'ARTIFACT_AUDIT.json').read_text());checked={}
+    audit=json.loads((run/'ARTIFACT_AUDIT_FINAL.json').read_text());checked={}
     for rel,spec in audit['files'].items():
         p=run/rel;assert p.stat().st_size==spec['bytes'],rel;assert sha(p)==spec['sha256'],rel;checked[rel]=spec['sha256']
     for job,digest in audit['job_receipt_sha256'].items():assert sha(run/'jobs'/job/'receipt.json')==digest,job
     for commit,digest in audit['source_exports'].items():assert sha(run/('source_'+commit+'.tar'))==digest,commit
     assert sha(root/'runs/mode_geometry_v1/canonical_C_seed0/last.pt')==audit['initial_sha256']
     assert sha(root/'runs/mode_geometry_v1/fixed_assets/scorer_bundle.pt')==audit['scorer_sha256']
-    final=json.loads((run/'jobs/rc_final_audit/receipt.json').read_text())
+    final=json.loads((run/'jobs/rc_artifact_audit_final/receipt.json').read_text())
     assert final['status']=='completed' and final['exit_code']==0
     jobs=audit['jobs']+[final]
     closure=dict(status='closed with negative mechanism evidence; strongest new system is ordinary success allocation',
@@ -28,11 +28,11 @@ def main():
         checkpoints=len(audit['checkpoints']),evaluations=len(audit['evaluated']),
         allocation_training_seeds=[0,1,2,3,4],geometry_replication_scope='exploratory seed0, not five geometry seeds',
         files_verified=len(checked),source_exports_verified=len(audit['source_exports']),
-        archive_sha256=sha(run/'realized_coverage_closure.tar'),environment=audit['environment'],
+        archive_sha256=sha(run/'realized_coverage_closure_v2.tar'),environment=audit['environment'],
         feedback_verified_routes=audit['feedback_verified_routes'],discarded_feedback_routes=audit['additional_discarded_feedback_routes'],
         reference_checker_queries=audit['reference_diagnostic_checker_queries'],deployment_routes=audit['deployment_routes'],
         deployment_replay_benchmark_routes=audit['deployment_replay_benchmark_routes'],
-        audit_sha256=sha(run/'ARTIFACT_AUDIT.json'),final_receipt_sha256=sha(run/'jobs/rc_final_audit/receipt.json'))
+        audit_sha256=sha(run/'ARTIFACT_AUDIT_FINAL.json'),final_receipt_sha256=sha(run/'jobs/rc_artifact_audit_final/receipt.json'))
     report.mkdir(exist_ok=True)
     (report/'CLOSURE.json').write_text(json.dumps(closure,indent=2)+'\n',encoding='utf-8')
     (report/'LOCAL_HASH_VERIFICATION.json').write_text(json.dumps(dict(all_match=True,files=checked),indent=2)+'\n',encoding='utf-8')
