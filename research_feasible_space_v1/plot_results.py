@@ -1,5 +1,5 @@
 """Static publication figures from completed, hashed result JSON only."""
-import argparse, hashlib, json
+import argparse, hashlib, json, sys, time
 from pathlib import Path
 import numpy as np
 import matplotlib
@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def main(root, output):
+    tic=time.monotonic()
     root, output = Path(root), Path(output)
     output.mkdir(parents=True, exist_ok=False)
     source = {}
@@ -79,7 +80,10 @@ def main(root, output):
     fig.savefig(output / 'repair_diagnostics.pdf')
     plt.close(fig)
     manifest = {'sources_sha256': source, 'scope': stats['scope'], 'locked_access': False,
-                'command': ['plot_results', '--root', str(root), '--output', str(output)]}
+                'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                'runtime': {'python':sys.version,'numpy':np.__version__,'matplotlib':matplotlib.__version__},
+                'elapsed_seconds':time.monotonic()-tic,
+                'command': [sys.executable]+sys.argv}
     (output / 'MANIFEST.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
 
 

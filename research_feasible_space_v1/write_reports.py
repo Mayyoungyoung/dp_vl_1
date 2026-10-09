@@ -1,5 +1,5 @@
 """Render research Markdown tables directly from delivered evidence JSON."""
-import json
+import json,hashlib,time,sys
 from pathlib import Path
 
 HERE=Path(__file__).resolve().parent
@@ -15,6 +15,7 @@ def metrics(v):
 
 
 def main():
+    tic=time.monotonic()
     stats=read('three_seed_statistics_v1');s=read('summary_v2' if (E/'summary_v2.json').exists() else 'summary_v1')
     witness=read('fixed_witness_v1');diag=read('saved_outcome_diagnostic_v1');visibility=read('observation_visibility_v2')
     names={'xyz':'Same-information free XYZ','bounded':'Proposed bounded mapping','projection':'Shared-head projection',
@@ -66,6 +67,18 @@ def main():
         report += ['', '|Bounded minus standalone control|Δ retention|95% CI|Δ same-mode repair|95% CI|','|---|---:|---|---:|---|']
         for k,c in ws['comparisons'].items():
             a,b=c['crossed_CI95'];report.append('|%s|%+.2f pp|[%+.2f, %+.2f] pp|%+.2f pp|[%+.2f, %+.2f] pp|'%(k,100*c['mean'][0],100*a[0],100*a[1],100*c['mean'][1],100*b[0],100*b[1]))
+    if (E/'parameter_transfer_v1.json').exists():
+        pt=read('parameter_transfer_v1')
+        report += ['', '## Fixed local-parameter transfer', '',
+                   'This additional diagnostic fixes the old bounded relative coordinates and maps them through the destination predicted corridor. All events come from the destination prediction. Eligibility requires a valid requested source word also requested at destination; these denominators differ from the fixed2,169/270witness sets. It uses saved predictions only, adds no model decode/update and is not an8-candidate deployment policy.', '',
+                   '|Seed|Eligible slots|Old XYZ failures|Copied XYZ success|Transferred relative success|Destination center success|Destination native success|',
+                   '|---|---:|---:|---:|---:|---:|---:|']
+        for seed,v in pt['seed_results'].items():
+            c=v['counts'];a=v['success_fraction'];report.append('|%s|%d|%d|%.2f%%|%.2f%%|%.2f%%|%.2f%%|'%(seed,c['eligible_matched_valid_source'],c['old_coordinates_invalid_same_mode'],100*a['copied_absolute'],100*a['transferred_relative'],100*a['destination_center'],100*a['destination_native']))
+        report += ['', '|Seed|Repair with transferred parameters|Repair with new center|Repair with native decoder|', '|---|---:|---:|---:|']
+        for seed,v in pt['seed_results'].items():
+            a=v['repair_fraction'];report.append('|%s|%.2f%%|%.2f%%|%.2f%%|'%(seed,100*a['transferred_relative'],100*a['destination_center'],100*a['destination_native']))
+        report += ['', 'Parameter portability can establish a coordinate representation effect, but its centerline control must still establish whether nonzero learned interior parameters are needed. The diagnostic does not override the failed candidate-set comparison.']
     report += ['', '## Frozen fresh-family diagnosis', '']
     if (E/'generalization_statistics_v1.json').exists():
         fresh=read('generalization_statistics_v1')
@@ -142,6 +155,11 @@ def main():
              '## Research decision','',
              'Do not extend interior-decoder loss searches or claim a new corridor-planning principle from these results. A further mechanism would need to solve observed region/goal/mode prediction errors and justify why simple centers cannot deliver the same ability. Fresh-family results are frozen diagnosis; they are not permission to optimize against a new development set. TEST_LOCKED and whole-arm validation remain unopened. The publication-potential goal is unmet.']
     (HERE/'FAILURE_ANALYSIS.md').write_text('\n'.join(fail)+'\n',encoding='utf-8')
+    provenance=dict(script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),python=sys.version,
+                    command=[sys.executable]+sys.argv,elapsed_seconds=time.monotonic()-tic,
+                    evidence_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in E.glob('*.json') if p.name!='REPORT_MANIFEST.json'},
+                    reports_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (HERE/'RESULTS.md',HERE/'ABLATIONS.md',HERE/'FAILURE_ANALYSIS.md')})
+    (E/'REPORT_MANIFEST.json').write_text(json.dumps(provenance,indent=2)+'\n',encoding='utf-8')
 
 
 if __name__=='__main__':main()

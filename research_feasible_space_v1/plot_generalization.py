@@ -1,5 +1,5 @@
 """Frozen fresh-family diagnostic figure; every seed and stressor is retained."""
-import argparse,hashlib,json
+import argparse,hashlib,json,sys,time
 from pathlib import Path
 import numpy as np
 import matplotlib
@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def main(source,output):
+    tic=time.monotonic()
     source=Path(source);output=Path(output);output.mkdir(parents=True,exist_ok=False)
     d=json.loads(source.read_text(encoding='utf-8'));variants=['open','shifted','closed','narrow','tall','noise','occluded']
     kinds=['xyz','bounded','refitted_projection','refitted_center','refitted_boundcenter']
@@ -31,7 +32,8 @@ def main(source,output):
     for ax in axes:ax.spines['top'].set_visible(False);ax.spines['right'].set_visible(False)
     fig.suptitle('16 new families / 336 requests; frozen checkpoints; no tuning',fontsize=11)
     fig.tight_layout();fig.savefig(output/'fresh_family_diagnosis.png',dpi=180);fig.savefig(output/'fresh_family_diagnosis.pdf');plt.close(fig)
-    (output/'MANIFEST.json').write_text(json.dumps(dict(source=str(source),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),scope=d['scope'],model_selection_use=False),indent=2)+'\n',encoding='utf-8')
+    (output/'MANIFEST.json').write_text(json.dumps(dict(source=str(source),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),scope=d['scope'],model_selection_use=False,
+            command=[sys.executable]+sys.argv,script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),runtime=dict(python=sys.version,numpy=np.__version__,matplotlib=matplotlib.__version__),elapsed_seconds=time.monotonic()-tic),indent=2)+'\n',encoding='utf-8')
 
 
 if __name__=='__main__':

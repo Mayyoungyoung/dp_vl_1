@@ -1,5 +1,5 @@
 """Local byte-for-byte verification of dedicated artifacts and source exports."""
-import argparse,hashlib,json,time
+import argparse,hashlib,json,time,sys
 from pathlib import Path
 
 
@@ -27,8 +27,8 @@ def main(root,index,output):
         archives[commit]=dict(expected=v['archive_sha256'],actual=actual,equal=actual==v['archive_sha256'])
         if not archives[commit]['equal']:errors.append(dict(file=str(p),reason='source_archive_mismatch'))
     report=dict(all_equal=not errors,files_verified=files,bytes_verified=total,source_archives=archives,errors=errors,
-                artifact_index_sha256=digest(index),elapsed_seconds=time.monotonic()-tic,
-                command=['verify_artifacts','--root',str(root),'--index',str(index),'--output',str(output)],locked_access=False)
+                artifact_index_sha256=digest(index),script_sha256=digest(Path(__file__)),python=sys.version,elapsed_seconds=time.monotonic()-tic,
+                command=[sys.executable]+sys.argv,locked_access=False)
     output.parent.mkdir(parents=True,exist_ok=True);output.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:v for k,v in report.items() if k not in ('source_archives','errors')}))
     if errors:raise RuntimeError(errors[:10])

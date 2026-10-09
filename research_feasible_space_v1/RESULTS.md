@@ -26,7 +26,7 @@ Historical references use different training protocols and are not paired causal
 
 |Historical method|V8|U8|V4|U4|
 |---|---:|---:|---:|---:|
-|C + ordinary success, five head seeds on C0|89.15%|6.9806|94.34%|3.7743|
+|C + ordinary success, five head seeds on C0|89.15%|6.9806|94.34%|3.7736|
 |Gate, three historical seeds|92.12%|7.2380|94.33%|3.7720|
 
 Bounded mapping remains below both historical references on raw coverage and returned quality. Even the stronger center-only control does not dominate Gate or recover the historical C return quality.
@@ -71,6 +71,8 @@ In the 1,024-route TRAIN reference-cell diagnostic, center interpolation, free X
 |refreshed_tapered_bounded_seed2:adaptive|1721|79.35%|218|67|221|
 
 The denominators are the unchanged parent-defined 2,169 surviving-mode and 270 invalid-old/same-mode-known-new opportunities. Bounded seed 0 repairs more opportunities than the parent but loses more surviving modes; the center control repairs still more. Requested query identity is not treated as actual realized mode identity.
+
+
 
 ## Frozen fresh-family diagnosis
 
