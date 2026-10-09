@@ -23,6 +23,7 @@ RUN = ROOT/'runs/verified_set_v1'
 POLICY = SOURCE/'configs/verified_set_v1.json'
 INITIAL = old.RUN/'safety_mean/last.pt'
 PREPARED = RUN/'prepared'
+CAPACITY_ONLY = True
 
 
 def open_support():
@@ -53,7 +54,7 @@ def prepare():
         assert label['split'] == 'TRAIN'
         n = int(support['mask'][i].sum()); tags = support['modes'][i, :n]
         counts['train_requests'] += 1
-        if len(set(tags)) > 8:
+        if CAPACITY_ONLY and len(set(tags)) > 8:
             counts['over_budget_teacher_requests'] += 1
             continue
         ref = references(label); p, e = support['paths'][i, :n], support['events'][i, :n]
@@ -80,7 +81,8 @@ def prepare():
     np.savez_compressed(out/'regions.npz', support_indices=np.asarray(ids), radii=np.asarray(radii))
     write(out/'manifest.json', dict(rows=rows, counts=dict(counts), support_sha256=sha(old.SUPPORT/'support.npz'),
         regions_sha256=sha(out/'regions.npz'), source_hashes=source_hashes,
-        policy_sha256=sha(POLICY), eligibility='TRAIN and original known_mode_count<=8, before model inference',
+        policy_sha256=sha(POLICY), eligibility=('TRAIN and original known_mode_count<=8, before model inference'
+            if CAPACITY_ONLY else 'All1152 original TRAIN requests; preserve open/closed/shifted exposure'),
         independent_checker_agreement=True, locked_access=False))
     print(json.dumps(dict(counts)), flush=True)
 
@@ -178,7 +180,8 @@ def train(arm, seed, resume=False, stop_after=None):
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step:1.)
     settings = dict(arm=arm, seed=seed, policy=cfg, initial_sha256=sha(INITIAL),
         regions_sha256=sha(PREPARED/'regions.npz'), source_sha256=source_identity(),
-        data_fingerprint=geo['fingerprint'], selected_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest())
+        data_fingerprint=geo['fingerprint'], selected_ids_sha256=hashlib.sha256(mapped.tobytes()).hexdigest(),
+        population='known_le8' if CAPACITY_ONLY else 'all_train')
     replay = None; replay_files = {}; archive = None
     if arm == 'replay':
         parent = RUN/('project_seed%d' % seed)
@@ -276,7 +279,10 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser(); parser.add_argument('stage',choices=['prepare','diagnose','train','evaluate'])
     parser.add_argument('--arm',choices=['ordinary','gate','project','replay']); parser.add_argument('--seed',type=int,default=0)
     parser.add_argument('--resume',action='store_true'); parser.add_argument('--stop-after',type=int)
+    parser.add_argument('--population',choices=['known_le8','all'],default='known_le8')
     a=parser.parse_args()
+    if a.population=='all':
+        RUN=RUN/'all_population_v2'; PREPARED=RUN/'prepared'; CAPACITY_ONLY=False
     if a.stage=='prepare': prepare()
     elif a.stage=='diagnose': diagnose()
     elif a.stage=='train': train(a.arm,a.seed,a.resume,a.stop_after)

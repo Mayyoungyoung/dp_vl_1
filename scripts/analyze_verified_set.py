@@ -8,6 +8,7 @@ from scripts.run_observed_probability import ROOT, read, write, sha
 from scripts.research_v3_frequency import SUPPORT
 
 RUN = ROOT/'runs/verified_set_v1'
+BUDGET_RUN = RUN
 OLD = ROOT/'runs/research_v3_v1'
 
 
@@ -58,7 +59,7 @@ def analyze(names, output):
             differences[name][control]={scope:{k:contrast(rows[name],rows[control],k,keep)
                 for k in ('distinct','valid_fraction','recall')}
                 for scope,keep in [('all_dev',None),('original_known_modes_le8',eligible)]}
-    jobs=[read(f) for f in (RUN/'jobs').glob('*/receipt.json')]
+    jobs=[read(f) for f in (BUDGET_RUN/'jobs').glob('*/receipt.json')]
     result=dict(names=names,metrics={k:dict(raw=v['raw'],selected=v['selected'],brier=v['reliability'].get('brier'))
         for k,v in summaries.items()},contrasts=differences,source_hashes=hashes,
         same_initial_parameters=True,paired_actual_sampler_streams=True,
@@ -79,7 +80,7 @@ def analyze(names, output):
         for n,v in summaries.items():writer.writerow([n,v['raw']['valid_fraction'],v['raw']['distinct'],v['raw']['recall'],v['selected']['distinct']])
     report=['# Verified-set development results','',
         'Same initial model and actual per-seed observation streams verified. Fixed final1200; all288 DEV requests retained.',
-        'Known-mode<=8 TRAIN eligibility uses384 of1152 requests; historical parent saw the original broader population.',
+        'TRAIN population: '+read(RUN/'prepared/manifest.json')['eligibility']+'.',
         'No TEST_LOCKED access, no robot execution claim, no automatic novelty claim.','',
         '| Arm | Valid@8 | Distinct@8 | Known recall@8 | Selected distinct@4 |','|---|---:|---:|---:|---:|']
     for n,v in summaries.items():
@@ -92,4 +93,7 @@ def analyze(names, output):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--names',nargs='+',required=True);p.add_argument('--output',required=True)
-    a=p.parse_args();analyze(a.names,a.output)
+    p.add_argument('--population',choices=['known_le8','all'],default='known_le8')
+    a=p.parse_args()
+    if a.population=='all': RUN=RUN/'all_population_v2'
+    analyze(a.names,a.output)
