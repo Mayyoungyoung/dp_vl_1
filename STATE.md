@@ -1,3 +1,20 @@
+## Verified-set A/B CLOSED — no accepted new mechanism — 2026-10-09
+
+All51 additional-budget jobs completed;18train/eval pairs (3restricted,15full).
+Spent2935.782764/7200 command seconds;4264.217236 remain. No active lock or live
+verified-set job at closure. SSH90581 and58860 exited0. Legacy budget untouched.
+Three continuation seeds, all288DEV: gate92.115%/7.2384/known65.797%; set_point
+91.580%/7.3218/68.452%; budget_match88.180%/6.6910/77.702%. Set_point minus gate
+distinct+.08333, family95CI[-.06019,.21528], below registered+.3 gate. Returned4
+mean diversity and fixed-edit retention do not improve over parent. No candidate
+method accepted as paper contribution; retain parent deployment default.
+25mechanism/equivalence tests plus2stats tests pass;15full checkpoint/RNG/replay
+artifacts audited from frozene468247. Source/data/scorer/sampler hashes retained.
+Final report reports/verified_set_v1/FINAL_REPORT.md; budget CLOSURE.json; full
+receipts under reports/verified_set_v1/jobs. No running/pending experiment.
+StageA/B complete, overall publishability NOT achieved. Follow final report for
+loss-scale and update-retention diagnostics before further mechanism expansion.
+
 ## Verified-set joint seed0 rejected; paired replication active — 2026-10-09
 
 Frozen2761bc1 full-population joint queue completed. set_point valid91.797% /

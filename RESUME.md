@@ -1,3 +1,16 @@
+## Verified-set stage A/B closed — 2026-10-09
+
+No queue is active. SSH90581 and58860 completed.51jobs exit0;18training runs;
+2935.782764s spent of7200 additional allowance,4264.217236s retained.
+Read reports/verified_set_v1/FINAL_REPORT.md and CLOSURE.json before new work.
+Joint point-set primary mechanism gate failed across all three paired seeds;
+geometry-region increment failed seed0 and was not expanded. Gate improves raw8
+but loses known/edit support; returned4 gains not established. No new mechanism
+or paper completion claim; default parent model unchanged. Do not repeat jobs.
+Next scientifically useful step is loss-scale/random-mask and actual-update
+retention diagnosis, not arbitrary LoRA/RFT or more region variants. New protocol
+must preserve all split/resource rules and remaining additional-budget ledger.
+
 ## Verified-set replication queue — 2026-10-09
 
 SSH90581: source2761 ordinary/gate/budget_match/set_point seeds1/2, followed by

@@ -37,6 +37,13 @@ AdamW and its weight decay also affect the update. The observed loss of fixed
 edit-mode retention is compatible with this gap, but does not isolate any one
 of those causes. Do not turn this explanation into a causal result.
 
+There is an additional loss-scale confound: zeroing regression for valid slots
+reduces the effective imitation term relative to the unchanged grounding and
+geometry terms. This round does not include matched-rate random masking or a
+matched-scale ordinary regression control. Even a reproducible gate improvement
+must not be attributed uniquely to correctness-aware suppression. Those controls
+would be required before promoting the simple gate into a mechanism contribution.
+
 For a CVPR main claim, the relevant question remains whether a fixed number of
 observation-conditioned routes preserves useful feasible alternatives under
 scene/instruction changes. The current positive raw-diversity result is a useful

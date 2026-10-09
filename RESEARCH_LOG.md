@@ -1151,6 +1151,31 @@ ordinary_seed0 trained1200steps exit0 (136.179s), evaluated all288DEV exit0 (11.
 ## Full-population seed0 result — 2026-10-09
 All three1200step arms completed from8ac68f9. Ordinary valid86.0677%/distinct6.7014; gate93.5330%/7.3611; hard-project77.0833%/5.1736. Gate-parent distinct+.68056 CI[.47569,.89236], valid+6.7274pp, known recall-6.9500pp CI[-10.2432,-3.7120]. Thus improvement includes a known-support tradeoff; do not report universal superiority. Hard-project all gates false. Same initializer/sampler hashes independently verified. Joint assignment2761bc1 controls actually launched, source unchanged after startup.
 
+# 2026-10-09 — Stage A/B final replication, replay and closure
+
+Source2761 completed all four arms over seeds0/1/2 and seed0 set_point-positive
+replay. Sourcee468 completed2stats tests, all15full-model paired analysis,
+fixed-seed family bootstrap, all-model fixed-edit diagnostic, and checkpoint/
+optimizer/scheduler/RNG/replay hashes. All51wrapper jobs exit0. Actual ledger
+2935.782764332835s,4264.217235667165s remain. No active lock/job at final process
+check.18total training/eval pairs include3confounded restricted-population runs.
+
+Mean raw distinct ordinary6.53819, gate7.23843, budget_match6.69097, set_point7.32176.
+Set_point minus gate+.08333, family95CI[-.06019,.21528]; validity-.005353. Primary
+gate not met. Gate versus parent improves validity+.053096 and distinct+.55787,
+but known recall-.103055. Fixed edit retention parent86.307%, gate70.201%,
+set_point71.615%, budget_match83.802% averaged over continuation seeds. Returned4
+distinct parent3.78125, gate3.77199, set_point3.75579: no stable product gain.
+Replay seed0 distinct6.98958/valid.874566; online point method exceeds replay but
+not simple gate. Do not claim either replay fully explains gain or new method wins.
+
+Stop expanding geometry-region mechanism. Additional limitation: masking valid
+regression also changes effective loss scale; matched random mask/scale control
+not run, so gate is an ordinary useful control, not causal novelty evidence.
+Final Chinese report and plot saved in reports/verified_set_v1. Python source
+compiles locally; figure rendered and visually inspected. No TEST_LOCKED access,
+new VLM training, environment mutation, or deployment default replacement.
+
 # 2026-10-09 — Joint assignment seed0 and secondary retention diagnostic
 
 Frozen2761bc1 completed budget_match/set_point/set_project1200step seed0 and

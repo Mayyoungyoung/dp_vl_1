@@ -15,6 +15,7 @@ four CPU threads and affinity0-3 remain in force.
 |2761bc1b60567b77e0583f665d9a43e8f6129b46|Joint controls, replication and acquired-positive replay|9c3296c045bb686a7a596c08757e0143d4f39675185d0e3f7ff62a6885877d2b|
 |5b0e0f6d21ab711f0f66874f15e4a6e2fa3b8c2c|Fixed-witness secondary diagnostic|57dde87fc0dc1627518eb43948fa9a0b2105c281b5f5fca600cc3bd81edb2650|
 |a2cab9c920878159f31ce59e97cce74af44561c0|Paired replication aggregation|bbba75c23ea290dc2d6c82ff048fd8be1432532a0e7cf242c734342f5a6d866f|
+|e4682476cbc0b8ffba2f9d93a7cd4dae771f156c|Final analysis, tests, checkpoint/RNG/replay audit|d30831e2ea12b09372be94a4efb31c98f5a9fcabd48e73be2983fb3605809b68|
 
 Exports contain tracked routeset/scripts/configs/tests. Releases live at
 `research_v2/releases/<full-commit>`. Actual imported source hashes and exact
