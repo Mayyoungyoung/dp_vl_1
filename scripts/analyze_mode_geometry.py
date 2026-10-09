@@ -123,8 +123,27 @@ def plot(out,names,results,records,pools,models,refs):
                 ax.set_xlabel('x (m)');ax.set_ylabel('y (m)');ax.set_zlabel('z (m)');ax.view_init(35,-65)
         fig.suptitle(o['source_id']+' → '+o['destination_id']+' | '+o['mode']+'\n'+o['category']+'; green: valid same mode; blue: other valid; red: invalid; dashed: invalidated old path',fontsize=10)
         fig.subplots_adjust(left=.01,right=.98,bottom=.05,top=.86,wspace=.08,hspace=.25)
-        fig.savefig(out/('case_%d.png'%fi),dpi=150);plt.close(fig)
+        fig.savefig(out/('case_%d.png'%fi),dpi=150,bbox_inches='tight');plt.close(fig)
     write(out/'figure_cases.json',chosen)
+    observations={r['id']:r for r in lines(DATA/'export/observations.jsonl') if r['split']=='DEV_MODEL'}
+    if chosen:
+        fig,axes=plt.subplots(len(chosen),4,figsize=(12,3.3*len(chosen)),squeeze=False)
+        hashes={}
+        for i,o in enumerate(chosen):
+            dep=[]
+            for j,key in enumerate(('source_id','destination_id')):
+                ident=o[key];path=observations[ident]['image'];axes[i,j].imshow(plt.imread(path));hashes[path]=sha(path)
+                observation=refs[ident]['label']['observation']
+                with np.load(observation) as z:dep.append(z['depth'])
+                hashes[observation]=sha(observation)
+                axes[i,j].set_title(('Source' if j==0 else 'Edited')+' RGB\n'+ident,fontsize=7)
+            limits=np.quantile(np.r_[dep[0].ravel(),dep[1].ravel()],[.02,.98])
+            for j in (0,1):
+                axes[i,2+j].imshow(dep[j],vmin=limits[0],vmax=limits[1],cmap='viridis')
+                axes[i,2+j].set_title(('Source' if j==0 else 'Edited')+' measured depth',fontsize=8)
+            for ax in axes[i]:ax.axis('off')
+        fig.tight_layout();fig.savefig(out/'actual_rgbd.png',dpi=150,bbox_inches='tight');plt.close(fig)
+        write(out/'observation_figure_hashes.json',hashes)
 
 
 ROOT_HIST=old.ROOT/'runs/verified_set_v1/all_population_v2'
