@@ -1199,3 +1199,20 @@ fresh5b0e0f6 extraction succeeded. No wrapper failure occurred.
 1539.678752981s new-ledger spent before paired replication. SSH90581 source2761
 runs ordinary/gate/budget_match/set_point seeds1/2 then equal-positive set_point
 replay seed0. No TEST_LOCKED, LoRA, RFT, resource escalation or default model change.
+
+## Mode geometry v1 pilot — 2026-10-09
+User requested semantic mode-conditioned generation, not renewed matching-weight research.
+Source c5a8f2a adds shared mode decoder, allocation prediction and witnessed nonzero
+path-displacement supervision; B receives identical pair information/objective.
+10 server tests pass. First prepare failed on positional argsort API; retained
+mg_v1_prepare receipt (18.447102s), fixed in new immutable release/prepared_v2.
+TRAIN:1152 requests,56920 existing positives,1536 directed pairs;1663 invalid-old/
+valid-new same-mode witnesses,10753 surviving-coordinate witnesses. No new data.
+400-step seed0: B74.826%/5.958 modes, C87.283%/6.653, D88.889%/6.813.
+Fixed retention B1628 C1775 D1797 /2169 versus parent1872; geometric repair
+B145 C204 D213 /270 versus parent200. All288 reused DEV, no TEST_LOCKED.
+Full1200-step B0(no pair),B(pair),C,D source a7814da currently running via SSH89006.
+Do not duplicate. TRAIN input/companion interventions and exact resume check are
+implemented at6231e3a, exported but NOT launched. Same additional7200 ledger;
+latest completed pilot cost3095.713511 cumulative seconds,4104.286489 remaining
+before full queue. No deployment change or paper-ready claim.
