@@ -109,3 +109,8 @@ All have the same actual feedback minibatch stream within seed. Report family-on
 and crossed seed/family bootstrap intervals, both conditional on fixedC0/preexisting
 TRAIN pool. This does not substitute for five geometry continuations if joint
 geometry later shows a positive mechanism signal. Do not add seeds adaptively.
+
+Added-only ablation: same original scalar-set architecture/data/2400updates,
+replace U8 net target by number of newly present valid words, ignoring lost words;
+quality targets remain real net counts. No dense classification auxiliary in
+either this ablation or original scalar-net comparator. Run once, no tuning.

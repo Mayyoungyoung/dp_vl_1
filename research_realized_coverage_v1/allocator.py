@@ -46,7 +46,7 @@ class RealizationUtility(nn.Module):
 
 def make_allocator(kind):
     if kind=='success':return SuccessHead()
-    if kind=='net':return SetUtility()
+    if kind in ('net','added_only'):return SetUtility()
     if kind in ('dense','no_peer'):return RealizationUtility(peers=kind=='dense')
     raise ValueError(kind)
 

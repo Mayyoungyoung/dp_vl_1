@@ -13,7 +13,7 @@ from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 
 def pack(folder):
     summary=read(folder/'SUMMARY.json');assert summary['manifest']['split']=='TRAIN'
-    values={k:[] for k in ('context','modes','variants','utility','success','actual','base_m','base_v','base_u','gain')};ids=[]
+    values={k:[] for k in ('context','modes','variants','utility','success','actual','base_m','base_v','base_u','gain','added_gain')};ids=[]
     for row in summary['files']:
         f=folder/(row['id']+'.npz');assert sha(f)==row['file_sha256']
         with np.load(f) as z:
@@ -21,6 +21,7 @@ def pack(folder):
             for key in ('modes','variants','utility','gain'):values[key].extend(z[key])
             values['success'].extend((z['valid']&(z['words']==z['modes'])).astype(np.float32))
             values['actual'].extend(np.where(z['valid']&(z['words']>=0),z['words'],16))
+            added=z['gain'].copy();added[:,0]=z['added'].sum(-1);values['added_gain'].extend(added)
             for key,source in [('base_m','modes'),('base_v','variants'),('base_u','utility')]:values[key].extend(np.repeat(z[source][:1],n,0))
             ids.extend([row['id']]*n)
     return {k:np.asarray(v) for k,v in values.items()},ids,summary['manifest']
@@ -52,7 +53,9 @@ def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
             pred=model(data['context'][ix],data['modes'][ix],data['variants'][ix])
             base=model(data['context'][ix],data['base_m'][ix],data['base_v'][ix])
             # Equal count-unit weights: all four outcomes matter, no oracle gradient.
-            loss=F.mse_loss(pred,data['utility'][ix])+F.mse_loss(pred-base,data['gain'][ix])
+            gain=data['added_gain'][ix] if kind=='added_only' else data['gain'][ix]
+            utility=data['base_u'][ix]+gain if kind=='added_only' else data['utility'][ix]
+            loss=F.mse_loss(pred,utility)+F.mse_loss(pred-base,gain)
             if kind in ('dense','no_peer'):
                 _,logits=model.components(data['context'][ix],data['modes'][ix],data['variants'][ix])
                 loss=loss+F.cross_entropy(logits.reshape(-1,17),data['actual'][ix].reshape(-1))
@@ -66,6 +69,6 @@ def train(kind,name,feedback,seed,steps,resume=False,stop_after=None):
             records=len(ids),parameters=sum(p.numel() for p in model.parameters()),last_sha256=sha(out/'last.pt'),stream=stream))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--kind',choices=['success','net','dense','no_peer'],required=True);p.add_argument('--name',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--kind',choices=['success','net','dense','no_peer','added_only'],required=True);p.add_argument('--name',required=True)
     p.add_argument('--feedback',default='feedback_C_train');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400)
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);a=p.parse_args();train(**vars(a))
