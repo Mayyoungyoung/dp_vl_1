@@ -1322,3 +1322,22 @@ failures, not training outcomes. Fixed methods carry no claimed novel advantage.
 Source8c8ee34 SSH55164 active: matched four-arm2400step observation-only screen.
 Next fresh decoder-bound TRAIN success feedback and strong projection/centerline
 comparisons. No TEST_LOCKED/raw-directory access, scorer fit or default switch.
+
+## 2026-10-09 Feasible-space: complete first screen, region and endpoint repairs
+
+Four source8c8ee34 2400step generators all exit0. XYZ U8=6.5729,V8=.86762;
+bounded6.6285/.87109; no-peer corridor boundary stable but task gains small.
+Oracle diagnostic1 (source6b35b5c) corrects prior JSON error: center,free,bounded
+all1024/1024TRAIN paths valid; correct requested words1024/1022/1023. Thus reference
+geometry does not establish a necessary learned-interior advantage.
+Uniform-cell envelope (6b35b5c) XYZ cell feasibility.07552->.71181, but goal
+failures137->172, geometric failures185->167; returned validity.93403->.92188.
+Whole cubes around fixed endpoint nodes impose extra floor/goal pressure.
+Prospectively registered reachable tapered endpoint cells; frozenb3703bc SSH86864
+active, both seed0 2400trains complete, matching feedback/refits still queued.
+Locked exactly3generator continuations before inspecting tapered seed0 results;
+seed0 explicitly remains reused screening evidence. Additional source8b6b19a
+seed1/2, fresh matching-head center/projection views, recovery/API/statistics/real
+figures prepared but NOT started. Main .15U8 and quality gates unchanged; none
+accepted yet. Three-seed continuation shares pretrainedC0, not independent pretraining.
+All TRAIN/DEV roles fixed, TEST_LOCKED unread, historical default unchanged.

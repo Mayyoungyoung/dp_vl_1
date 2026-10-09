@@ -1,12 +1,14 @@
 ## Feasible-space v1 ACTIVE — 2026-10-09
 
-Only active queue SSH55164, frozen8c8ee34, scripts/run_feasible_screen_v1.sh.
-Four2400step matched observed models, then center/projection controls. Read actual
-receipts before launching. Prior sourcef6180 oracle600step xyz/bounded completed;
-oracle diagnostic0 failed NumPy-int serialization after saved predictions. Fix
-exists locally; freeze it, run oracle_diagnostic1 after current queue, no retrain.
-Next fresh matching TRAIN feedback/success heads for xyz/bounded, frozen q4return,
-fixed2169/270analysis and perturbation/corridor diagnostics. No default changed.
+Only active queue SSH86864, frozenb3703bc, scripts/run_feasible_tapered_v1.sh.
+Earlier screen/envelope and corrected oracle_diagnostic1 queues CLOSED. Oracle
+center/XYZ/bounded all100%valid on1024TRAIN reference-cell paths; no neural gain.
+Tapered seed0 both2400step trains complete; inspect remaining feedback/evaluations.
+Then frozen8b6b19a run_feasible_three_seed_v1.sh (seed1/2full generator continuations),
+run_feasible_strong_controls_v1.sh (fresh feedback/heads for center/projection views),
+run_feasible_checks_v1.sh (tests,exact resume,API replay,witness/statistics/figures).
+All these are exported, NOT STARTED. Never duplicate a job or infer success.
+Locked3seeds, no adaptive extension; .15U8/quality gates unchanged. No default changed.
 Read research_feasible_space_v1/{PROTOCOL,DATA,METHOD,RESEARCH_STATE}. Existing
 TEST_LOCKED/source/hardware rules remain; old realized-coverage queue is closed.
 

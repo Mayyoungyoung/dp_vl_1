@@ -4,10 +4,15 @@ Current request moves to learned mode-conditioned feasible-space representation.
 Branch codex/multiroute-v2, new runs/feasible_space_v1 ledger. Hardware unchanged:
 wzy3090 GPU1 UUID/.35memory/four CPU threads; old total-time caps removed by brief.
 Read research_feasible_space_v1/PROTOCOL.md and RESEARCH_STATE.md. Source8c8ee34
-SSH55164 runs four matched2400step observation-only generators and evaluations.
+four-arm screen and6b35b5c envelope queues CLOSED. ACTIVE SSH86864 frozenb3703bc
+runs tapered cells, paired seed0 and matching success feedback. Prepared8b6b19a
+three-seed/strong-control/check queues are NOT STARTED; follow actual receipts.
 StageAall56920TRAIN witnesses certified;2prototype coverage89.970%;20336valid
 prototype centerlines. Oracle xyz/bounded600step trains complete, diagnostic
-serializer failed and awaits fixed NEW output. No positive method claim yet.
+serializer failure was corrected in NEW diagnostic1: all3methods100%valid,
+so oracle-neural advantage not established. Uniform-cell supervision increases
+cell feasibility7.55->71.18% but damages task endpoint/returned quality. Tapered
+repair addresses fixed-endpoint overconstraint. No positive method claim yet.
 Tests6pass after correcting a Sequential-gradient assertion; both failures retained.
 Historical realized-coverage family CLOSED at99fd106; old ACTIVE entries below
 are superseded. Unrelated existing untracked files preserved. TEST_LOCKED unread.
