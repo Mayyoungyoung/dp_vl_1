@@ -1216,3 +1216,21 @@ Do not duplicate. TRAIN input/companion interventions and exact resume check are
 implemented at6231e3a, exported but NOT launched. Same additional7200 ledger;
 latest completed pilot cost3095.713511 cumulative seconds,4104.286489 remaining
 before full queue. No deployment change or paper-ready claim.
+
+## Mode geometry full-step diagnostic and reproducibility repair — 2026-10-09
+Original1200 D underperforms C (valid86.85% vs89.24%, return4valid93.14% vs94.79%).
+TRAIN controlled companion swap shifts D coordinates7.675mm and intended-valid
+398->449/466; source-context swap reduces398->326. This justifies ONE new
+architecture factor: disable candidate communication while sharing context decoder.
+Actual process-resume comparison FAILED because unsorted Python set keys fed
+spare-mode random sampling. Canonical dictionary ordering at902f545 fixes it:
+actual100 vs50+50 now exact model/optimizer/RNG/stream/history/settings match.
+Previous pilot/full results remain exploratory (not verified identical target
+streams); do not use their pair differences as strict causal estimates.
+Canonical B0/C/D plus communication-off C/D1200 seed0 queue is active SSH59781.
+The prior independent queue1346cb6 was never launched. Shared source/launcher
+remain immutable. Added stronger B_set ordinary full-positive per-mode minimum
+control, registered before canonical outcomes, not launched yet.
+Diagnostic serialization failure retained (mg_diag_train_intervention7.872s);
+wrong short-release-path pre-job attempt exited before wrapper and launched no
+experiment. No budget increase, TEST_LOCKED access or deployment-default change.
