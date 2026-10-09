@@ -1,3 +1,17 @@
+## Verified-set full-population seed0 complete; joint controls active — 2026-10-09
+
+8ac68f9 full1152TRAIN ordinary/gate/project1200step runs all exit0. All288DEV:
+ordinary valid86.07%/distinct6.7014; gate93.53%/7.3611; project77.08%/5.1736.
+Gate improves raw coverage but known-mode recall69.15% versus parent76.10%; report
+the tradeoff. Hard-protected projection fails all primary gates; no replication.
+Actual paired initial parameters and input stream hashes match. Budget1052.147s
+spent before joint tests, out of additional7200; legacy budget untouched.
+Source2761bc1 now running serial budget_match/set_point/set_project seed0 train+eval,
+then joint analysis (SSH53979). Source and launcher frozen. Full-population data
+remain under runs/verified_set_v1/all_population_v2. See joint protocol; ordinary
+cost-selected group control prevents attributing group-selection effects to
+verified support. Do not duplicate any job or infer results from launch.
+
 ## Verified-set Stage A passed; closed-only confound found — 2026-10-09
 
 17server tests pass; sourcea6096e4 prepares384TRAIN closed requests, validates

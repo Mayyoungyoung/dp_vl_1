@@ -1,3 +1,15 @@
+## Verified-set latest queue — 2026-10-09
+
+Restricted and full-population ordinary/gate/hard-project seed0 runs complete.
+Reports/verified_set_v1/full_seed0 holds full results: gate improves validity and
+raw diversity, loses known recall against parent; hard projection rejected.
+Active frozen2761bc1 serial queue SSH53979: budget_match_seed0 train/eval,
+set_point_seed0 train/eval, set_project_seed0 train/eval, joint_seed0_analysis.
+Use actual receipts in runs/verified_set_v1/jobs before any action. New full outputs
+stay in all_population_v2. Same explicitly authorized additional7200s ledger.
+Next read joint results and only then choose same-information replay/paired
+continuation seeds. No LoRA/RFT/new collection or paper-success claim yet.
+
 ## Verified-set current queue — 2026-10-09
 
 Sourcea6096e4 tests/prepare/diagnose/ordinary_seed0 train+eval completed. Remaining

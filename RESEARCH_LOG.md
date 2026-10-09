@@ -1147,3 +1147,7 @@ Source a6096e4: 17 server tests pass; 384 eligible TRAIN requests, 12480 witness
 ## Restricted-population confound and prospective repair
 ordinary_seed0 trained1200steps exit0 (136.179s), evaluated all288DEV exit0 (11.045s). Valid64.2795%, distinct4.6007; by-variant confirms closed-only TRAIN eligibility. New full1152TRAIN protocol8ac68f9 registered before its models run. Existing gate/project restricted queue remains frozen; no population change to running jobs. Full-population methods must also exceed untouched safety_mean. No method advantage claimed.
 
+
+## Full-population seed0 result — 2026-10-09
+All three1200step arms completed from8ac68f9. Ordinary valid86.0677%/distinct6.7014; gate93.5330%/7.3611; hard-project77.0833%/5.1736. Gate-parent distinct+.68056 CI[.47569,.89236], valid+6.7274pp, known recall-6.9500pp CI[-10.2432,-3.7120]. Thus improvement includes a known-support tradeoff; do not report universal superiority. Hard-project all gates false. Same initializer/sampler hashes independently verified. Joint assignment2761bc1 controls actually launched, source unchanged after startup.
+
