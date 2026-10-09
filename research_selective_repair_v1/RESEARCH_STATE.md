@@ -51,3 +51,23 @@ prepared drafts. Local initial figures actualdata inspected; all initial
 receipts in runs/selective_repair_v1/initial_receipts,compact INITIAL.json
 and family bootstrap under research results. Actual terminal wrapper time
 2274.1603s (25completed,3failed),render ongoing excluded. No budget cap.
+
+Additional frozen control0b861da3c434e9896fbaf0edd0608614d9003b7a
+PID646582 /SSH56434 waits630925; then3localdiffusion tests and same-data
+2400step connected-local diffusion seed0 with12DDIMupdates,old/newDEV20
+trigger+scale settings. No original-paper reproduction claim. Its previous
+waiting aeac013 PID642848 was stopped before jobs to fix latent batch/RNG
+dependence; fixed16word latent bank ensures grid/single and companion
+invariance. Add own matching heads only before formal accepted comparisons.
+Postseal intervention_audit.py implemented; revalidates open routes in current
+geometry after predictions,counts surviving-current-word recall/relabelled
+valid transports,does not use old routes in inference or assume far irrelevant.
+It still needs to run on actual selected method pools. Source0b861da also
+forces variant0 in matching feedback to match deployed query contract.
+Core/freshconfirm/expandedexecution/fullonline/paper acceptance remain unmet.
+Next after actual new-data scores: test if newTRAIN repairs include large
+endpoint errors and if remaining geometry errors require edits before node18.
+If original/free-tail mechanism still fails,change hypothesis,not loss weights;
+one authorized alternative is observed-constraint correction,or execution
+constraints if simple geometry saturates opportunity. Do not end at this
+checkpoint; active renderer and successor queues continue.
