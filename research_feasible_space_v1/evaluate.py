@@ -43,7 +43,11 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
         _,cc=check_candidates(p,e,ref['label'],ref['current'],ref['truth'],ref['config']);assert a['valid'][0].tolist()==[x['TipValid'] for x in cc]
         valid=a['valid'][0];chosen=a['selected'][0];words=[VOCAB[w] if w>=0 else None for w in a['words'][0]]
         rr,slack=segment_radii(centers,ref['truth']['obstacle_centers'],ref['truth']['obstacle_halfsizes'],ref['config']['post_base_z']+.02,factor=1.,cap=1.)
-        corridor_safe=(slack>0).all(1)&(radii<rr).all(1)
+        if ck['settings'].get('tapered_cells',False):
+            from research_feasible_space_v1.tapered import tapered_clearance_numpy
+            ts=tapered_clearance_numpy(centers,node_radii_numpy(radii),ref['truth']['obstacle_centers'],ref['truth']['obstacle_halfsizes']+.02,ref['config']['post_base_z']+.02)
+            corridor_safe=(ts>0).all(1)
+        else:corridor_safe=(slack>0).all(1)&(radii<rr).all(1)
         constrained=(np.abs(p-centers)<=node_radii_numpy(radii)[...,None]+1e-6).all((1,2))
         results.append(dict(id=row['id'],family=row['parent_id'].rsplit('_',1)[0],variant=row['parent_id'].rsplit('_',1)[1],
             raw=coverage(words,valid,known[row['id']],range(8)),selected=coverage(words,valid,known[row['id']],chosen),
@@ -61,7 +65,7 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
                 valid_companions_lost=int((valid[1:]&~aa['valid'][0,1:]).sum()),mode_companions_changed=int((a['raw_words'][0,1:]!=aa['raw_words'][0,1:]).sum()),net_u8=float(aa['utility'][0,0]-a['utility'][0,0])))
     np.savez_compressed(out/'pool.npz',**pools);hook.remove();assert len(calls)==len(rows)*(2 if perturb else 1) and all(s[:2]==(1,8) for s in calls)
     report=dict(raw=average([r['raw'] for r in results]),selected=average([r['selected'] for r in results]),condition_hit=float(np.mean([r['condition_hit'] for r in results])),
-        generator_sha256=sha(checkpoint),head_sha256=sha(head) if head else None,scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),
+        generator_sha256=sha(checkpoint),head_sha256=sha(head) if head else None,scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),cell_form='tapered_endpoint_boxes' if ck['settings'].get('tapered_cells',False) else 'uniform_swept_boxes',
         corridor_feasibility=float(np.mean([r['corridor_certified_under_eval_truth'] for r in results])),containment=float(np.mean([r['inside_predicted_cells'] for r in results])),
         invalid_with_bad_corridor=sum(r['invalid_with_bad_corridor'] for r in results),invalid_with_certified_corridor=sum(r['invalid_with_certified_corridor'] for r in results),
         cost=dict(decoded_sets=len(rows),diagnostic_extra_decodes=len(rows) if perturb else 0,generated_routes=len(rows)*8,decode_q_ms_mean=float(np.mean(times)*1000)),input_hashes=hashes,locked_access=False)

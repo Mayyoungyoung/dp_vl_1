@@ -77,3 +77,19 @@ using TRAIN truth only. This is conventional feasibility supervision, not claime
 novelty. Record radius collapse, endpoint failures and final selected metrics.
 Run fresh matching feedback/success fit for both repaired decoders, not obsolete
 screen snapshots. Compare centerline and projection of each repaired snapshot.
+
+## Reachable-cell repair registered before tapered outcomes
+
+Uniform-cell supervision increases XYZ cell feasibility7.552%->71.181%, but
+semantic endpoint failures137->172 while collision/floor failures185->167.
+Whole swept cubes expand around fixed endpoints, although the generator cannot
+move those endpoint nodes. This introduces unnecessary endpoint/floor pressure.
+Replace the supervision region by its exactly reachable convex set:
+`conv(c_j+[-rho_j,rho_j]^3,c_{j+1}+[-rho_{j+1},rho_{j+1}]^3)`,rho endpoints0.
+Containment mapping stays identical; endpoint boxes now taper to a point.
+Exact continuous clearance is the minimum of max6affine faces minus a linearly
+varying radius, attained at endpoints or face intersections. This is analytic,
+not random point sampling. Keep all old uniform metrics and name the new geometry.
+Both XYZ/bounded receive the same tapered supervision, same C initialization,
+same2400draws/loss scale; collect new TRAIN feedback/heads. No independent novelty
+claim for tapering. Confirm whether endpoint tradeoff and true mode failures improve.

@@ -39,6 +39,15 @@ class MappingTests(unittest.TestCase):
         p=torch.zeros(1,8,24,3);r=torch.full((1,8,23),.02);z=torch.full_like(p,10)
         a=construct(p,r,z,'xyz');b=construct(p,r,z,'projection')
         self.assertGreater(a.abs().max().item(),.02);self.assertLessEqual(b.abs().max().item(),.020001)
+    def test_tapered_exactness_and_fixed_end_floor(self):
+        from research_feasible_space_v1.tapered import tapered_segment_clearance,tapered_clearance_numpy
+        p=np.linspace([-.2,.09,.2],[.2,.09,.02],24)[None];n=np.full((1,24),.005);n[:,[0,-1]]=0
+        cs=np.array([[0,0,.2]]);hs=np.array([[.05,.05,.05]])
+        expected=tapered_clearance_numpy(p,n,cs,hs,.02)
+        actual=tapered_segment_clearance(torch.tensor(p[:,:-1,None]),torch.tensor(p[:,1:,None]),torch.tensor(n[:,:-1,None]),torch.tensor(n[:,1:,None]),torch.tensor(cs),torch.tensor(hs)).min(-1).values.numpy()
+        floor=np.minimum(p[:,:-1,2]-n[:,:-1],p[:,1:,2]-n[:,1:])-.02
+        np.testing.assert_allclose(expected,np.minimum(actual,floor),atol=1e-10)
+        self.assertGreaterEqual(expected.min(),0)
     def test_companion_independent_boundary_and_nonzero_joint_gradients(self):
         from routeset.mode_geometry import ModeGeometryHead
         from research_feasible_space_v1.model import FeasibleSpaceHead

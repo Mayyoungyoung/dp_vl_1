@@ -19,7 +19,7 @@ def main(name):
     def family_metrics(n):
         return np.array([[np.mean([r['raw']['distinct'] for r in rows[n] if r['family']==f]),np.mean([r['raw']['valid_fraction'] for r in rows[n] if r['family']==f]),
             np.mean([r['selected']['distinct'] for r in rows[n] if r['family']==f]),np.mean([r['selected']['valid_fraction'] for r in rows[n] if r['family']==f])] for f in families])
-    for prefix in ('screen_','envelope_','refreshed_envelope_'):
+    for prefix in ('screen_','envelope_','refreshed_envelope_','tapered_','refreshed_tapered_'):
         a=prefix+'bounded_seed0';b=prefix+'xyz_seed0'
         if a not in rows or b not in rows:continue
         difference=family_metrics(a)-family_metrics(b);ci=np.quantile(difference[draw].mean(1),[.025,.975],axis=0)
