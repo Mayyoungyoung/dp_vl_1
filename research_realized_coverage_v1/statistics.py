@@ -1,4 +1,4 @@
-"""Paired continuation-seed and layout-family summaries, never seed selection."""
+"""Paired allocation-head seeds and layout-family summaries, never seed selection."""
 import argparse
 import json
 import numpy as np
@@ -29,7 +29,7 @@ def main(output):
     result=dict(metrics=['U8','V8','U4','V4','known_recall'],seed_results=seed_results,means=summary,
         dense_minus_success=differences.mean((0,1)).tolist(),family95=np.quantile(family_only,[.025,.975],axis=0).T.tolist(),
         seed_family95=np.quantile(both,[.025,.975],axis=0).T.tolist(),streams=streams,
-        scope='5 continuation seeds conditional on fixed C0 and shared TRAIN feedback; reusedDEV32, not independent final test')
+        scope='5 allocation-head training seeds conditional on fixed C0 and shared TRAIN feedback; decoder/VLM unchanged; reusedDEV32, not independent final test')
     write(RUN/output,result);print(json.dumps(result),flush=True)
 
 if __name__=='__main__':
