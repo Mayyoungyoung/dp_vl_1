@@ -17,7 +17,7 @@ class FeasibleSpacePlanner(RealizedCoveragePlanner):
             order=torch.argsort(l,descending=True,stable=True);active=order[l[order]>=0][:8]
             if not len(active):active=order[:1]
             modes.append(active[torch.arange(8,device=l.device)%len(active)])
-        m=torch.stack(modes);v=occurrence(m)
+        m=torch.stack(modes);v=occurrence(m)%2
         if self.proposal:
             from research_realized_coverage_v1.allocator import allocate
             m,v,cost=allocate('success',self.proposal,context,m,v)
