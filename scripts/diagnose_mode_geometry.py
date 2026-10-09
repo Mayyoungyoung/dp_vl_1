@@ -3,6 +3,7 @@ import argparse
 import json
 import numpy as np
 from scripts.mode_geometry_experiment import RUN,PREP,DATA,read,write,sha,lines,torch_setup
+from scripts.research_v3_audit import plain
 
 
 def diagnose(names,output):
@@ -52,6 +53,7 @@ def diagnose(names,output):
         report[name]=dict(counts,displacement_mse=float(np.mean(errors)),zero_displacement_mse=float(np.mean(static)),
             context_change_mean_m=float(np.mean(sensitivity)),predicted_change_mean_m=float(np.mean(pred_delta)),target_change_mean_m=float(np.mean(target_delta)))
         report[name]['companion_change_mean_m']=float(np.mean(companion_change))
+    report=plain(report)
     write(RUN/output,dict(models=report,scope='TRAIN forced-mode diagnostic only, source-context swap is an intervention not deployed inference',pairs=pairs.tolist(),prepared_sha256=sha(PREP/'train.npz')))
     print(json.dumps(report),flush=True)
 

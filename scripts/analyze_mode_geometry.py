@@ -100,7 +100,7 @@ def plot(out,names,results,records,pools,models,refs):
         candidates=[b for a,b in comparisons if predicate(a,b) and b not in chosen]
         if candidates:chosen.append(candidates[0])
     for fi,o in enumerate(chosen):
-        cols=['parent']+names[-3:];fig=plt.figure(figsize=(15,7.5))
+        cols=['parent']+names[-3:];fig=plt.figure(figsize=(16,10))
         for row,ident in enumerate((o['source_id'],o['destination_id'])):
             ref=refs[ident]
             for col,n in enumerate(cols):
@@ -117,7 +117,8 @@ def plot(out,names,results,records,pools,models,refs):
                 ax.set_title(n+' | '+('source' if row==0 else 'edited')+'\nvalid='+str(sum(r['valid']))+'/8')
                 ax.set_xlabel('x (m)');ax.set_ylabel('y (m)');ax.set_zlabel('z (m)');ax.view_init(35,-65)
         fig.suptitle(o['source_id']+' → '+o['destination_id']+' | '+o['mode']+'\n'+o['category']+'; green: valid same mode; blue: other valid; red: invalid; dashed: invalidated old path',fontsize=10)
-        fig.tight_layout(rect=(0,0,1,.93));fig.savefig(out/('case_%d.png'%fi),dpi=150);plt.close(fig)
+        fig.subplots_adjust(left=.01,right=.98,bottom=.05,top=.86,wspace=.08,hspace=.25)
+        fig.savefig(out/('case_%d.png'%fi),dpi=150);plt.close(fig)
     write(out/'figure_cases.json',chosen)
 
 
