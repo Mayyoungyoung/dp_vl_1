@@ -124,3 +124,16 @@ B_set's same-mode min followed by Hungarian is a conventional stronger ordinary
 control, not another proposed method. It receives the entire same56920-positive
 pool; extra per-step reference processing cost is disclosed. No new labels.
 Compare against the strongest ordinary baseline rather than only B0/B_pair.
+
+## Three-seed decision
+
+Canonical seed0 C89.11%/6.764 and D88.32%/6.726 exceed B_set77.43%/6.177;
+representation has a useful signal, but D does not outperform C in returned
+quality/retention. Communication-off C/D have lower aggregate DEV coverage and
+repair than communicating C/D, despite zero companion drift on TRAIN. Reject
+that repair for expansion. Replicate B0/B_set/C/D for seeds1,2, unchanged1200steps.
+This tests stability of H1 AND the negative H2 result; it is not provisional
+acceptance of D. Do not select a seed or revert to400step checkpoints.
+After this bounded diagnosis/repair/replication cycle, report failure if selective
+pair supervision still lacks independent benefit. Remaining budget is not a
+reason to conduct unmotivated weight sweeps or add modules.
