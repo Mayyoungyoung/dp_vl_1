@@ -34,6 +34,7 @@ def main(name,analysis,xyz,bounded):
             image=obs[ident]['image'];hashes[image]=sha(image)
             ax=fig.add_subplot(2,3,side*3+1);ax.imshow(plt.imread(image));ax.axis('off');ax.set_title(('Source' if side==0 else 'Edited')+' observed RGB\n'+ident,fontsize=8)
             ref=references(labels[ident]);cs=ref['truth']['obstacle_centers'];hs=ref['truth']['obstacle_halfsizes']
+            for key in ('route_config','verification_only'):hashes[ref['label'][key]]=sha(ref['label'][key])
             for col,n in enumerate((xyz,bounded)):
                 ax=fig.add_subplot(2,3,side*3+col+2,projection='3d');i=indices[n][ident];pool=pools[n];row=rows[n][ident]
                 ax.bar3d(*(cs-hs).T,*(2*hs).T,alpha=.15,color='gray',shade=False)
@@ -51,7 +52,7 @@ def main(name,analysis,xyz,bounded):
                         if max(r0,r1)>1e-8:
                             hull=ConvexHull(vertices);poly=Poly3DCollection(vertices[hull.simplices],facecolors='#4b95dd',edgecolors='none',alpha=.05);ax.add_collection3d(poly)
                     ax.plot(*center.T,'b--',lw=1)
-                ax.set_title(n+'\nvalid='+str(sum(row['valid']))+'/8; focus '+row['assigned_modes'][slot],fontsize=8)
+                ax.set_title(n+'\nvalid='+str(sum(row['valid']))+'/8; requested '+row['assigned_modes'][slot]+'\nactual '+str(row['words'][slot]),fontsize=7)
                 ax.set_xlabel('x m');ax.set_ylabel('y m');ax.set_zlabel('z m');ax.view_init(35,-65)
                 records.append(dict(case=ci,id=ident,model=n,focus_slot=slot,requested_mode=row['assigned_modes'][slot],valid=row['valid'][slot],actual_mode=row['words'][slot]))
         fig.suptitle(case['mode']+' | '+case['comparison_category']+'\nGray: evaluation truth posts; blue: predicted reachable cells; green/red: actual valid/invalid paths',fontsize=10)

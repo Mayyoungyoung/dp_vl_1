@@ -34,3 +34,11 @@ geometric priors rather than a ray-certified occupancy map; predicted corridor
 containment is an algebraic property, never physical safety or visibility proof.
 Observation noise/occlusion evaluation must expose this limitation before any
 independent/general robot claim. No new held-out family has been generated yet.
+
+The visibility audit reads only depth/camera_intrinsics/camera_extrinsics from the
+permitted current observation file. It classifies shared-node cube-corner probes
+as free_at_probe/observed_surface/unknown, preserving camera focal signs. Occluded,
+out-of-frame and missing-depth probes are always unknown. Probe classification
+is distinct from whole-cell truth certification; neither is a deployable oracle.
+The audit changes no trained route or proposal, and makes no learned-confidence
+claim. All methods can use the same legal calibration/depth evidence.

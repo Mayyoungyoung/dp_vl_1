@@ -10,6 +10,12 @@ def main(name):
         n=f.parents[1].name;metric=read(f);models[n]={k:v for k,v in metric.items() if k!='input_hashes'};rows[n]=read(f.parent/'rows.json')
         with np.load(f.parent/'pool.npz') as z:
             radii=z['radii'];models[n]['width_quantiles_m']=np.quantile(radii,[0,.1,.5,.9,1]).tolist();models[n]['cells_below_2mm']=float((radii<.002).mean())
+            paths=z['paths'];delta=np.diff(paths,axis=2);lengths=np.linalg.norm(delta,axis=-1);total=lengths.sum(-1)
+            denom=lengths[:,:,:-1]*lengths[:,:,1:];cos=(delta[:,:,:-1]*delta[:,:,1:]).sum(-1)/np.maximum(denom,1e-12)
+            angles=np.arccos(np.clip(cos,-1,1));valid=np.array([r['valid'] for r in rows[n]])
+            models[n]['shape']=dict(mean_length_all_m=float(total.mean()),mean_length_valid_m=float(total[valid].mean()) if valid.any() else None,
+                mean_turning_angle_rad=float(angles[denom>1e-10].mean()) if (denom>1e-10).any() else None,degenerate_segment_fraction=float((lengths<1e-6).mean()))
+        models[n]['scorer_missed_available_valid_count']=sum(max(0,min(4,sum(r['valid']))-sum(r['valid'][j] for j in r['selected_indices'])) for r in rows[n])
         st=read(f.parent/'stability.json')
         if st:stability[n]={k:float(np.mean([r[k] for r in st])) for k in st[0] if k!='id'}
     for f in sorted(RUN.glob('*/SUMMARY.json')):
