@@ -52,8 +52,10 @@ class SceneRunner:
             self.context,self.anchor=model.encode(**inp)
             self.qgeo=scorer.generator.geometry(**inp,return_point_features=True)
             self.qcontext=scorer.generator.head.feature_encoder(inp['features'])+scorer.generator.head.state_encoder(inp['current'])+self.qgeo['context']
-            _,_,d=model.decode(self.context,self.anchor,inp['current'])
-            self.base=d['mode_ids'][0].cpu().numpy();self.base_variants=variants(self.base)
+            logits=model.mode_predictor(self.context)[0]
+            order=torch.argsort(logits,descending=True,stable=True);active=order[logits[order]>=0][:8]
+            if not len(active):active=order[:1]
+            self.base=active[torch.arange(8,device=active.device)%len(active)].cpu().numpy();self.base_variants=variants(self.base)
     def run(self,modes,var):
         paths=[];events=[];scores=[]
         with torch.inference_mode():
