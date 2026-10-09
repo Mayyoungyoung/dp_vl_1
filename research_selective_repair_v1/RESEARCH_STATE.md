@@ -26,12 +26,22 @@ matched control. Even8.0 is only+.06944 above newmode-global; this current
 development8candidate metric cannot clear unchanged+.15 gate at that score.
 Actualscreen in results/CONSTRAINT_SCREEN.json. No finalconfirmation generated.
 
-Next immutable execution coordinator creates canonical post-seal rows, audits
-current-word survival across interventions for5controls and runs fixedPanda
-on3constraint variants,firsttwoDEVfamilies/open+closed/target0/allreturned4.
-It diagnoses actual IK/link-collision bottlenecks before any further direction.
-Next command scripts/run_selective_constraint_execution_v1.sh from newcommit.
-No live experiment at this prelaunch update. Actual3seed matching-head/fresh
+Executor7b3c868 startup failedmissinglibcoppeliaSim before any planning call;
+failed receipt retained0.5138sec. Recovere5b4fcb9ce2c9e7130462dc8d7b95b85cb00003b
+through validated render startup,session73967,currently actualPanda coordinator.
+Global complete187.44sec,8/16success despite16/16tip-valid; protected/mode-global
+are successors. Do not duplicate/alter frozen running source. Transport audits
+now use COMMON838surviving C0openwords: global792,protected793,mode-global793,
+oldpointgeometry784,C0 739. Own-open versions have different denominators and
+cannot support causal comparisons. Results inTRANSPORT_COMMON.json.
+
+Prospective body diagnostic code: static TRAIN-only canonical-branch IK labels
+from first2newTRAINfamilies/open+closed (4parentsx240probes). IK failures unknown,
+safe poses not successful executions. Next new immutable source runs
+scripts/run_selective_body_pilot_v1.sh,waiting for executor's final receipt,
+then body_ik_train_pilot_v1. No deployment truth/IK entry introduced. Only
+extend TRAIN data/learn small body constraints if pilot provides useful signal.
+Actual3seed matching-head/fresh
 confirmation/execution expansion remain required if the mechanism is promising.
 Checkpoint and full result paths indexed in results/CALIBRATED_SCREEN.json.
 No TEST_LOCKED or historical defaults touched. No wall-time quota supplied.

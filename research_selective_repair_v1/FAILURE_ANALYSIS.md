@@ -1,3 +1,29 @@
+# Latest measured failures and next falsification
+
+The calibrated shared proposal eliminates the100bad-proposal damages of the
+initial heuristic. It improves the simple geometry control much more than
+learned free displacements. Adding physical intervention data did not rescue
+selective gating: all three newDEV seeds remain identity. Local diffusion also
+does not recover the gap. This rejects further loss-weight adjustments to the
+same gate/direction hypothesis. Fixed18node prefix constraints have optimistic
+ceilings7.71528/7.72917, too low for+.15 over7.66319/7.74306.
+
+Joint-center dynamic nearest-point gradients caused a separate baseline failure.
+Detach the legal preprocessor and reduce only centerLR10x; actual seed0 recovers
+old7.34375/new7.43750 under1%damage, close to whole residual. This technical
+correction does not establish superiority of selective repair.
+
+Next falsification: learn post extents from visible surfaces, use identical
+completed boxes for global optimization and protected local mode correction.
+If ordinary optimization matches protection, attribute improvement to learned
+constraints, not a novel selective edit policy. If completion itself fails,
+analyze visible/missing-post cases; do not call finite optimizer failures
+infeasibility or predicted space certified free. Publication criteria unchanged.
+
+
+
+## Earlier diagnoses
+
 # Measured failures and active next experiment
 
 Strict correct-goal/same-actual-word local geometry offers26eligible DEV slots
@@ -34,26 +60,3 @@ Technical failures are preserved and repaired:goal manifest missing os at final
 write after complete arrays;simulator accidentally importing Torch;NumPy testing
 triggering localized lscpu ASCII decoding. Actual recovery uses existing runtimes,
 does not install anything,does not stop other jobs,and never edits running source.
-# Latest measured failures and next falsification
-
-The calibrated shared proposal eliminates the100bad-proposal damages of the
-initial heuristic. It improves the simple geometry control much more than
-learned free displacements. Adding physical intervention data did not rescue
-selective gating: all three newDEV seeds remain identity. Local diffusion also
-does not recover the gap. This rejects further loss-weight adjustments to the
-same gate/direction hypothesis. Fixed18node prefix constraints have optimistic
-ceilings7.71528/7.72917, too low for+.15 over7.66319/7.74306.
-
-Joint-center dynamic nearest-point gradients caused a separate baseline failure.
-Detach the legal preprocessor and reduce only centerLR10x; actual seed0 recovers
-old7.34375/new7.43750 under1%damage, close to whole residual. This technical
-correction does not establish superiority of selective repair.
-
-Next falsification: learn post extents from visible surfaces, use identical
-completed boxes for global optimization and protected local mode correction.
-If ordinary optimization matches protection, attribute improvement to learned
-constraints, not a novel selective edit policy. If completion itself fails,
-analyze visible/missing-post cases; do not call finite optimizer failures
-infeasibility or predicted space certified free. Publication criteria unchanged.
-
-## Earlier diagnoses

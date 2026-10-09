@@ -129,3 +129,31 @@ No extra candidates: exactly8 drafts become8 finals. Main+.15/quality gates,
 1%damage budget, current-input contract, family statistics and mandatory matched
 TRAIN heads are unchanged. This screen tests expressiveness/constraint quality;
 publication novelty is not inferred from adding a neural box predictor.
+
+## Body-constraint diagnostic, before learning a body correction
+
+Actual strongest geometry repair gives all16tip-valid returned routes but only
+8/16Panda executions on the previously fixed two-family/open+closed/target0
+subset. Seven failures are planning/path errors and one explicit arm collision;
+do not relabel planning failure as IK infeasibility. Protected/mode-global
+execution remains in progress. Fixed-return/body validation is a measured gap,
+while current DEV U8 is almost saturated; no publication acceptance is claimed.
+
+Next minimal direction is current-observation prediction of canonical-branch
+body constraints, beginning with a TRAIN-only diagnostic pilot. First2newTRAIN
+families,open/closed,each current C0 target0's8real drafts. Probe23nodes perroute
+plus7nodes perroute raised8cm:240explicit Jacobian IK calls perparent. Each
+starts from registered public canonical joints/quaternion, no dynamics or
+get_path during probing. Successful IK must have FK residual<=5mm; query actual
+arm/gripper collision for that configuration. Solver failure is unknown, excluded
+from any future known-collision classifier. Static safe poses are not trajectory
+execution certificates or guarantees another branch is collision-free.
+
+Pilot answers whether there is a learnable, nontrivial body-risk signal and
+whether lifting could resolve it; it is not a second broad failure audit.
+If useful, extend only registered TRAIN families, fit a small risk constraint
+model and compare with same-observation conservative inflation/constant-lift
+and same-predicted-constraint ordinary optimization. No extra scoring method,
+truth/IK calls in deployed learned forward, or change to fixed executor.
+Before any body method evaluation, explicitly predeclare its execution gate
+and preservation requirements; original U8+.15 failure remains recorded.

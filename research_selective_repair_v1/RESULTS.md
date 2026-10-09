@@ -1,10 +1,66 @@
+# Latest development screen,2026-10-10
+
+Learned constraint pivot is completed (source472c740,2400TRAINupdates):
+
+|Same learned boxes/64step operator|Old U8|New U8|New V8|Old/new lost words|
+|---|---:|---:|---:|---:|
+|Ordinary global geometry|7.72569|7.84028|1.00000|0/0|
+|Protected contiguous mode correction|7.82639|7.92361|.99913|0/0|
+|Mode constraints without protection|7.82986|7.93056|.99913|13/18|
+
+Allzero newly damaged routes,allnewreturnedV4=1.0. Protected adds195old/98new
+words; mode-global adds209/117 butloses13/18. Completionworst-coordinate95%
+3.91mm on newDEV; explicitly fixedfour-post domain,not universal hidden-space
+inference. Protection improves survival but not U8 over strongest matched
+control. At7.93056 the algebraic8candidate headroom is only.06944,less than
+unchanged+.15. This does not establish a publication mechanism; expanded
+task difficulty or body bottlenecks would require a prospective protocol,
+never retroactive acceptance. FixedPanda/transport diagnostic follows next.
+Exact counts inresults/CONSTRAINT_SCREEN.json; originalheadscreen limitation
+still applies. Earlier tables below retain negative learned-tail evidence.
+
+No accepted mechanism yet. New physical population has16TRAIN/8DEVfamilies,
+6variants,144renderedscenes,432requests (288TRAIN/144DEV),all144initializations
+passed. It is development evidence; final confirmation has not been generated.
+Legal common goal grounding uses a TRAIN-fitted workspace/surface offset.
+
+|Method|Old DEV U8|New DEV U8|
+|---|---:|---:|
+|C0 zero correction|7.14931|7.24306|
+|Shared observed goal + geometry64steps|7.66319|7.74306|
+|Selective seeds0/1/2|7.14931/7.16667/7.14931|7.24306/7.24306/7.24306|
+|Whole residual seeds0/1/2|7.35069/7.32986/7.32639|7.43750/7.41667/7.52083|
+|Stabilized joint-center seed0|7.34375|7.43750|
+|Adapted local diffusion seed0|7.15625|7.25694|
+|Optimistic fixed18node prefix ceiling|7.71528|7.72917|
+
+All neural seeds share C0 and have2400continuation updates,batch32,headLR.0003.
+Original joint-center runs were unstable, losing4–18%valid routes; they are
+preserved but are not competitive controls. Stable control detaches gradients
+through recomputed observed features and uses centerLR.00003; two damages
+on each population. Strong geometry controls repair150/75routes and damage0/1.
+Their V8=.97960/.98524; V4=.99913/.99653. Diffusion gains are negligible.
+
+The fixed-prefix ceiling is only for the actual screening queries. It allows
+unrestricted future tails and16possible words for unresolved prefixes; failed
+prefix geometry and fixed words cannot be repaired by an immutable tail.
+The new ceiling is lower than geometry optimization, which can edit earlier.
+This necessitates the prospective learned-constraint full-local operator,
+not another gate-weight search. All scores use the frozen C0 allocation head;
+per-decoder TRAIN head fitting is still required for formal acceptance.
+Compact exact results and current command budget:results/CALIBRATED_SCREEN.json.
+
+
+
+## Earlier initial screen (retained historical evidence)
+
 # Development results; research remains active
 
 The learned selective mechanism is not supported by the initial seed0 screen.
 The publication gate is +0.15 U8 relative to the strongest matched control,
 with family-paired positive uncertainty and the original quality protections.
 Simple residual improvement over centers does not establish this mechanism.
-Three paired seeds, new physical development layouts, complete matching heads,
+Initial snapshot: at that time three paired seeds, new physical development layouts, matching heads,
 independent frozen confirmation and expanded execution remain pending.
 
 Initial reused DEV:288requests/32families, shared frozen C0/center,2400updates.
@@ -63,56 +119,3 @@ inference and observation encoder work; it cannot establish online speedups.
 Compact evidence:[INITIAL.json](results/INITIAL.json). Initial figures under
 figures/initial are labelled developmental; they will be updated after the
 registered new-data experiments. Check RESEARCH_STATE.md for current queues.
-# Latest development screen,2026-10-10
-
-Learned constraint pivot is completed (source472c740,2400TRAINupdates):
-
-|Same learned boxes/64step operator|Old U8|New U8|New V8|Old/new lost words|
-|---|---:|---:|---:|---:|
-|Ordinary global geometry|7.72569|7.84028|1.00000|0/0|
-|Protected contiguous mode correction|7.82639|7.92361|.99913|0/0|
-|Mode constraints without protection|7.82986|7.93056|.99913|13/18|
-
-Allzero newly damaged routes,allnewreturnedV4=1.0. Protected adds195old/98new
-words; mode-global adds209/117 butloses13/18. Completionworst-coordinate95%
-3.91mm on newDEV; explicitly fixedfour-post domain,not universal hidden-space
-inference. Protection improves survival but not U8 over strongest matched
-control. At7.93056 the algebraic8candidate headroom is only.06944,less than
-unchanged+.15. This does not establish a publication mechanism; expanded
-task difficulty or body bottlenecks would require a prospective protocol,
-never retroactive acceptance. FixedPanda/transport diagnostic follows next.
-Exact counts inresults/CONSTRAINT_SCREEN.json; originalheadscreen limitation
-still applies. Earlier tables below retain negative learned-tail evidence.
-
-No accepted mechanism yet. New physical population has16TRAIN/8DEVfamilies,
-6variants,144renderedscenes,432requests (288TRAIN/144DEV),all144initializations
-passed. It is development evidence; final confirmation has not been generated.
-Legal common goal grounding uses a TRAIN-fitted workspace/surface offset.
-
-|Method|Old DEV U8|New DEV U8|
-|---|---:|---:|
-|C0 zero correction|7.14931|7.24306|
-|Shared observed goal + geometry64steps|7.66319|7.74306|
-|Selective seeds0/1/2|7.14931/7.16667/7.14931|7.24306/7.24306/7.24306|
-|Whole residual seeds0/1/2|7.35069/7.32986/7.32639|7.43750/7.41667/7.52083|
-|Stabilized joint-center seed0|7.34375|7.43750|
-|Adapted local diffusion seed0|7.15625|7.25694|
-|Optimistic fixed18node prefix ceiling|7.71528|7.72917|
-
-All neural seeds share C0 and have2400continuation updates,batch32,headLR.0003.
-Original joint-center runs were unstable, losing4–18%valid routes; they are
-preserved but are not competitive controls. Stable control detaches gradients
-through recomputed observed features and uses centerLR.00003; two damages
-on each population. Strong geometry controls repair150/75routes and damage0/1.
-Their V8=.97960/.98524; V4=.99913/.99653. Diffusion gains are negligible.
-
-The fixed-prefix ceiling is only for the actual screening queries. It allows
-unrestricted future tails and16possible words for unresolved prefixes; failed
-prefix geometry and fixed words cannot be repaired by an immutable tail.
-The new ceiling is lower than geometry optimization, which can edit earlier.
-This necessitates the prospective learned-constraint full-local operator,
-not another gate-weight search. All scores use the frozen C0 allocation head;
-per-decoder TRAIN head fitting is still required for formal acceptance.
-Compact exact results and current command budget:results/CALIBRATED_SCREEN.json.
-
-## Earlier initial screen (retained historical evidence)
