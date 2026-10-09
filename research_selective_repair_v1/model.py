@@ -12,7 +12,7 @@ class RepairHead(nn.Module):
         nn.init.zeros_(self.output.weight);nn.init.zeros_(self.output.bias)
         with torch.no_grad():self.output.bias[3]=-2
 
-    def forward(self,context,modes,drafts,local,hard=False,threshold=.5,scale=1.):
+    def forward(self,context,modes,drafts,local,hard=False,threshold=.5,scale=1.,decoupled_gate=False):
         b,k,h,_=drafts.shape
         ctx=self.context(context)[:,None,None].expand(-1,k,h,-1)
         mod=self.mode(modes)[:,:,None].expand(-1,-1,h,-1)
@@ -23,7 +23,7 @@ class RepairHead(nn.Module):
         if not self.goal_tail:endpoints[:,:,-1]=0
         if self.arm=='selective' and self.goal_tail:
             # Release one goal tail using evidence from the current observation.
-            gate=(prob[:,:,-1]>=threshold).float() if hard else prob[:,:,-1]
+            gate=(prob[:,:,-1]>=threshold).float() if hard else torch.ones_like(prob[:,:,-1]) if decoupled_gate else prob[:,:,-1]
             s=torch.linspace(0,1,7,device=prob.device)[1:];s=s*s*(3-2*s)
             support=torch.zeros_like(prob);support[:,:,18:]=gate[:,:,None]*s
         elif self.arm=='selective':support=masks(prob,threshold,12) if hard else prob

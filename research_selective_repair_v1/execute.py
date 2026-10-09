@@ -2,7 +2,7 @@
 import argparse,copy,os,random,time,traceback
 from pathlib import Path
 import numpy as np
-from research_selective_repair_v1.core import ROOT,SOURCE,RUN,DATA,read,write,sha,lines
+from research_selective_repair_v1.io import ROOT,SOURCE,RUN,DATA,read,write,sha,lines
 
 def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,external_shapes):
     from scripts import collect_observed_layout_variation as physical

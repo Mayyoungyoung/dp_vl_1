@@ -33,5 +33,21 @@ class RepairTests(unittest.TestCase):
         shift=np.array([.2,.3,.4]);obs['camera_extrinsics'][:3,3]=shift
         b=features(d+shift,points+shift,obs)
         np.testing.assert_allclose(a,b,atol=1e-6)
+    def test_actual_goal_tail_keeps_first_eighteen_nodes(self):
+        model=RepairHead(64,goal_tail=True).eval()
+        with torch.no_grad():model.output.bias[:3]=.4;model.output.bias[3]=2
+        c=torch.randn(1,64);m=torch.arange(8)[None];d=torch.randn(1,8,24,3);local=torch.randn(1,8,24,33)
+        p,info=model(c,m,d,local,hard=True)
+        self.assertTrue(torch.equal(p[:,:,:18],d[:,:,:18]))
+        self.assertGreater(float((p[:,:,-1]-d[:,:,-1]).abs().max()),0)
+    def test_decoupled_training_does_not_shrink_direction_with_gate(self):
+        model=RepairHead(64,goal_tail=True)
+        with torch.no_grad():model.output.bias[:3]=.4;model.output.bias[3]=-20
+        c=torch.randn(1,64);m=torch.arange(8)[None];d=torch.randn(1,8,24,3);local=torch.randn(1,8,24,33)
+        p,_=model(c,m,d,local,decoupled_gate=True)
+        closed,_=model(c,m,d,local,hard=True)
+        self.assertTrue(torch.equal(p[:,:,:18],d[:,:,:18]))
+        self.assertGreater(float((p[:,:,-1]-d[:,:,-1]).abs().max()),.1)
+        self.assertTrue(torch.equal(closed,d))
 
 if __name__=='__main__':unittest.main()

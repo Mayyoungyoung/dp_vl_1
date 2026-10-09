@@ -2,7 +2,7 @@
 import argparse,copy,os,subprocess,time
 from pathlib import Path
 from scripts import paired_modes_data as paired
-from research_selective_repair_v1.core import ROOT,SOURCE,RUN,read,write,sha,lines,plain
+from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha,lines,plain
 
 def locations(tag):return ROOT/('data/selective_repair_'+tag),RUN/('collection_'+tag)
 
