@@ -33,7 +33,10 @@ class LocalDiffusion(nn.Module):
         if scale==0 or not bool(support.any()):
             return drafts,dict(support=torch.zeros_like(support),prob=near,delta=torch.zeros_like(drafts),logits=torch.zeros_like(support))
         generator=torch.Generator(device=local.device);generator.manual_seed(self.seed)
-        x=torch.randn(drafts.shape,device=local.device,dtype=local.dtype,generator=generator)
+        # Fixed latent per requested word: identical online/single and grid/batch
+        # inference, without label IDs or a companion-dependent RNG stream.
+        bank=torch.randn((16,h,3),device=local.device,dtype=local.dtype,generator=generator)
+        x=bank[modes]
         steps=torch.linspace(999,0,12,device=local.device).long()
         for j,t in enumerate(steps):
             a=self.alpha[t];eps=self.epsilon(context,modes,local,x,t.expand(b));clean=((x-(1-a).sqrt()*eps)/a.sqrt()).clamp(-1,1)

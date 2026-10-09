@@ -17,7 +17,7 @@ class IntegratedRepair(torch.nn.Module):
         self.inp=inp;self.points=observed_points(inp)
         return self.center.encode(**inp)
     def decode(self,context,anchor,current,mode_ids,variant_ids=None):
-        drafts,events,info=self.center.decode(context,anchor,current,mode_ids,variant_ids)
+        drafts,events,info=self.center.decode(context,anchor,current,mode_ids,torch.zeros_like(mode_ids))
         p=drafts.detach().cpu().numpy();n=len(p)
         local=features(p.reshape(-1,24,3),self.points,self.observation).reshape(n,8,24,29)
         if self.repair.goal_tail:
