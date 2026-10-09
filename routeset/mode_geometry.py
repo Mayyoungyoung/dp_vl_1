@@ -119,3 +119,38 @@ def shared_allocation_loss(logits, evidence):
     la=logits[::2].masked_fill(~common,-1e9).log_softmax(-1)
     lb=logits[1::2].masked_fill(~common,-1e9).log_softmax(-1)
     return (.5*(la.exp()-lb.exp())*(la-lb)*common).sum(-1).mean()
+
+
+class FixedScoredModePlanner(nn.Module):
+    """Eight observation-only routes -> four, preserving the complete q encoder."""
+    def __init__(self, generator, frozen_scored_planner):
+        super().__init__()
+        self.generator=generator
+        self.fixed_q=frozen_scored_planner
+        self.fixed_q.requires_grad_(False)
+
+    def forward(self, features,current,world_xyz,rgb,uv,depth,valid_mask,return_k=4,sampling='adaptive'):
+        from routeset.observed_probability import route_observation_features,select_route_indices
+        inp=dict(features=features,current=current,world_xyz=world_xyz,rgb=rgb,uv=uv,depth=depth,valid_mask=valid_mask)
+        paths,events,details=self.generator(**inp,sampling=sampling)
+        qmodel=self.fixed_q
+        g=qmodel.generator.geometry(**inp,return_point_features=True)
+        context=qmodel.generator.head.feature_encoder(features)+qmodel.generator.head.state_encoder(current)+g['context']
+        nodes,ctx=route_observation_features(paths,events,current,world_xyz,rgb,valid_mask,g['point_features'],context,g['anchor_xyz'])
+        logits=qmodel.scorer((nodes-qmodel.nodes_mean)/qmodel.nodes_std,(ctx-qmodel.context_mean)/qmodel.context_std)
+        q=(logits/qmodel.temperature).sigmoid();selected=select_route_indices(paths,q,return_k)
+        rows=torch.arange(len(paths),device=paths.device)[:,None]
+        return dict(paths=paths,events=events,q=q,selected_indices=selected,selected_paths=paths[rows,selected],
+            selected_events=events[rows,selected],selected_q=q[rows,selected],mode_ids=details['mode_ids'],
+            internal_candidates=8,returned_candidates=return_k)
+
+
+def load_fixed_scored_mode_planner(checkpoint,scorer_bundle,device='cpu'):
+    """Load locally trusted artifacts; no parent/source-route input at inference."""
+    from routeset.observed_probability import load_scored_planner
+    saved=torch.load(checkpoint,map_location='cpu',weights_only=False)
+    generator=ModeGeometryHead(**saved['config']['head_options'],conditional=saved['config']['conditional'],
+        decoder_communication=saved['config'].get('decoder_communication',True))
+    generator.load_state_dict(saved['model'],strict=True)
+    planner=FixedScoredModePlanner(generator,load_scored_planner(scorer_bundle))
+    return planner.to(device).eval()
