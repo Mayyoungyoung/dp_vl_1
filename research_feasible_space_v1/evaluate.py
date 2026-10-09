@@ -34,7 +34,7 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
     for row in rows:
         inp=inputs_for(row,labels[row['id']],DATA/'export/qwen_cache',torch,hashes);runner=SceneRunner(model,scorer,inp)
         with torch.inference_mode():
-            m=torch.tensor(runner.base[None],device='cuda');v=torch.zeros_like(m)
+            m=torch.tensor(runner.base[None],device='cuda');v=torch.tensor((runner.base_variants%2)[None],device='cuda')
             if proposal:m,v,_=allocate('success',proposal,runner.context,m,v);v.zero_()
             torch.cuda.synchronize();tic=time.monotonic();p,e,q=runner.run(m.cpu().numpy(),v.cpu().numpy());torch.cuda.synchronize();times.append(time.monotonic()-tic)
         centers,radii=capture[-1];centers,radii=centers[0],radii[0]
