@@ -1,13 +1,14 @@
 ## Feasible-space v1 ACTIVE — 2026-10-09
 
-Only active queue SSH86864, frozenb3703bc, scripts/run_feasible_tapered_v1.sh.
+Only active queue SSH92739, frozen8b6b19a, three-seed/strong-control/check pipeline.
+All three full tapered XYZ/bounded continuations complete; strong controls active.
 Earlier screen/envelope and corrected oracle_diagnostic1 queues CLOSED. Oracle
 center/XYZ/bounded all100%valid on1024TRAIN reference-cell paths; no neural gain.
-Tapered seed0 both2400step trains complete; inspect remaining feedback/evaluations.
-Then frozen8b6b19a run_feasible_three_seed_v1.sh (seed1/2full generator continuations),
-run_feasible_strong_controls_v1.sh (fresh feedback/heads for center/projection views),
-run_feasible_checks_v1.sh (tests,exact resume,API replay,witness/statistics/figures).
-All these are exported, NOT STARTED. Never duplicate a job or infer success.
+Do not rerun scripts/run_feasible_three_seed_v1.sh or strong-controls/check jobs.
+After SSH92739 completes, frozen c30b63f run_feasible_post_checks_v2.sh (new API
+and exact selected-indices replay, corrected tapered paired figures, visibility),
+then fresh summary_v2 and artifact-only audit. These post-checks are NOT STARTED.
+Never duplicate a job or infer success.
 Locked3seeds, no adaptive extension; .15U8/quality gates unchanged. No default changed.
 Read research_feasible_space_v1/{PROTOCOL,DATA,METHOD,RESEARCH_STATE}. Existing
 TEST_LOCKED/source/hardware rules remain; old realized-coverage queue is closed.

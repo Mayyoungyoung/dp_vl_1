@@ -4,9 +4,11 @@ Current request moves to learned mode-conditioned feasible-space representation.
 Branch codex/multiroute-v2, new runs/feasible_space_v1 ledger. Hardware unchanged:
 wzy3090 GPU1 UUID/.35memory/four CPU threads; old total-time caps removed by brief.
 Read research_feasible_space_v1/PROTOCOL.md and RESEARCH_STATE.md. Source8c8ee34
-four-arm screen and6b35b5c envelope queues CLOSED. ACTIVE SSH86864 frozenb3703bc
-runs tapered cells, paired seed0 and matching success feedback. Prepared8b6b19a
-three-seed/strong-control/check queues are NOT STARTED; follow actual receipts.
+four-arm screen and6b35b5c envelope queues CLOSED. All three tapered XYZ/bounded
+generator continuations are complete. ACTIVE SSH92739 frozen8b6b19a runs strong
+controls with individually refitted feedback/heads, then the final check queue.
+Final statistics pending; follow actual receipts. Frozen c30b63f post-checks v2
+are exported but NOT STARTED. Do not restart either earlier queue.
 StageAall56920TRAIN witnesses certified;2prototype coverage89.970%;20336valid
 prototype centerlines. Oracle xyz/bounded600step trains complete, diagnostic
 serializer failure was corrected in NEW diagnostic1: all3methods100%valid,

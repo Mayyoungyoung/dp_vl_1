@@ -12,9 +12,13 @@ Four2400step screen arms complete; bounded U8+ .0556 versus XYZ but below histor
 C+success. Predicted full cells only~7.6%feasible despite bounded100%membership.
 Uniform-envelope repair completed two2400step generators/matching-head pipelines;
 cell feasibility~71%improves, semantic endpoint failures137->172 offset fewer
-collisions. ACTIVE SSH86864 frozenb3703bc runs tapered endpoint cells seed0.
-Prepared8b6b19a locked3paired full generator seeds, refitted center/projection
-controls and final recovery/API/witness/statistics queues, not yet started.
+collisions. Tapered seed0 and all four seed1/2 generator continuations completed.
+ACTIVE SSH92739 frozen8b6b19ae40702b10117e02e14dd84c51c3f349ca runs
+individually refitted center/projection controls, followed by recovery/API/witness
+statistics checks. Never restart or duplicate this queue. Final statistics pending.
+Frozen c30b63ffd74d2c9b03a89ac2e31e39e7cb91c024 is exported for subsequent
+post-checks v2 (explicit cells/exact selection API replay, corrected reachable-cell
+paired figures, depth-ray visibility), then summary_v2 and artifact-only closure.
 Initial sourcepath typo before launcher, local unittest module-discovery typo,
 failed assertion and serializer failure are preserved in audit/log; no success
 inferred from a launch. Followactual receipts before refreshed-head queue.
