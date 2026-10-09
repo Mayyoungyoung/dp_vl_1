@@ -123,3 +123,20 @@ Within-mode variance exists, but no measured feasibility conflict justifies a
 nearest-positive repair as the next main mechanism. Prepared optional repair code
 was removed without launching it. Do not relabel unrun alternatives as experiments.
 Geometry screens remain explicitly non-exact-stream exploratory comparisons.
+
+## Final decision (after completed evidence)
+
+Five registered allocation-head seeds completed with identical paired minibatch
+streams; dense-minus-success U8 is −0.0340, crossed95%CI[−0.0743,−0.0014].
+Retention/repair difference intervals cross zero. Geometry snapshot refresh
+also fails the returned-validity margin against frozen C+success. Therefore the
+initial conditional plan for five joint-generator continuation seeds was not
+activated; the actual five-head-seed result must not be described as five joint
+training replications. No new-family or full-arm expansion was activated.
+
+No budget cap or two-round rule determined this close. Tested alternatives
+addressed scalar credit, query-context shift, interactions, lost-mode accounting,
+geometry failure sampling, stale feedback and reference conflict. All10168mean
+reference paths also preserve word identity. Present evidence rejects this
+tested mechanism's independent gain; it is not a theorem against all possible
+joint generators. Final outputs include all negative results and strong controls.

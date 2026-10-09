@@ -21,6 +21,8 @@ def main():
     final=json.loads((run/'jobs/rc_artifact_audit_final/receipt.json').read_text())
     assert final['status']=='completed' and final['exit_code']==0
     jobs=audit['jobs']+[final]
+    archive_digest=sha(run/'realized_coverage_closure_v2.tar')
+    assert archive_digest=='797f5d02179a5172fe28ab95415b2ec36e2b58dbe0e067b7c445f442b7da9b86'
     closure=dict(status='closed with negative mechanism evidence; strongest new system is ordinary success allocation',
         paper_ready=False,default_changed=False,locked_access=False,end_utc=final['end_utc'],
         elapsed_seconds=sum(j['elapsed_seconds'] for j in jobs),time_limit=None,jobs=len(jobs),
@@ -28,7 +30,7 @@ def main():
         checkpoints=len(audit['checkpoints']),evaluations=len(audit['evaluated']),
         allocation_training_seeds=[0,1,2,3,4],geometry_replication_scope='exploratory seed0, not five geometry seeds',
         files_verified=len(checked),source_exports_verified=len(audit['source_exports']),
-        archive_sha256=sha(run/'realized_coverage_closure_v2.tar'),environment=audit['environment'],
+        archive_sha256=archive_digest,environment=audit['environment'],
         feedback_verified_routes=audit['feedback_verified_routes'],discarded_feedback_routes=audit['additional_discarded_feedback_routes'],
         reference_checker_queries=audit['reference_diagnostic_checker_queries'],deployment_routes=audit['deployment_routes'],
         deployment_replay_benchmark_routes=audit['deployment_replay_benchmark_routes'],

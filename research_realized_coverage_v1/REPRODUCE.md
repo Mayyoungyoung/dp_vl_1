@@ -1,4 +1,4 @@
-# Reproduction (active research; final artifact audit pending)
+# Reproduction: completed experiments and preserved artifacts
 
 Local code writer F:/dpvlm, branch codex/realized-coverage-v1. Remote
 git@github.com:Mayyoungyoung/dp_vl_1.git; never force push. Server ssh wzy3090,
@@ -78,3 +78,59 @@ training/diagnostic cost, never hidden within K=8deployment metrics. Initial
 collector3bc/723performed one extra discarded8-route decode per request; include
 those1440sets as cost. Later deployment/collector obtains base queries from logits.
 No final-test or real-robot success claims are made.
+
+## Actual completed evidence
+
+Frozen source f2f3e2414f6e9aa229b281effa215e479368dd1b completed the final 18-test
+suite, corrected-scope FIVE_SEED_FINAL.json and combined RESULTS.json/tables.
+An initial archive verifier mistakenly indexed its transient active.lock; local
+verification caught that after the completed job removed its lock. Source
+4b3e128 excludes lock files and writes a NEW ARTIFACT_AUDIT_FINAL.json, retaining
+the original audit. This is an artifact-index fix, not an experimental rerun.
+Exact full source IDs and tar hashes are in the final audit and job receipts.
+
+The completed five seeds are allocation-head training seeds on one fixed C0.
+Within each seed success/dense training sample-stream hashes match exactly.
+Actual100-step and50+50-step runs compare model, optimizer, RNG, stream, history,
+settings and step with exact equality (RESUME_HEAD.json, RESUME_GEOMETRY.json).
+Serialized file hashes differ normally; tensor/state equality is the criterion.
+
+Public deployment replay for simple/dense has zero path/event/q error, exact
+returned slots and one decoder call. Files *_DEPLOYMENT.json contain measured
+full-API cached-feature latency and input keys. To load the ordinary option:
+
+```python
+from research_realized_coverage_v1.deployment import load_planner
+model = load_planner(
+    'runs/mode_geometry_v1/canonical_C_seed0/last.pt',
+    'runs/mode_geometry_v1/fixed_assets/scorer_bundle.pt',
+    'runs/realized_coverage_v1/success_context_fit0/step2400.pt',
+    device='cuda')
+# Only current observed input tensors accepted; wrap calls in inference_mode().
+out = model(**observed_inputs)
+assert out['paths'].shape[1:] == (8, 24, 3)
+assert out['selected_paths'].shape[1:] == (4, 24, 3)
+```
+
+Seed0 is the predesignated example; seed1 is not substituted because its U8 is
+slightly larger. Dense alternative uses dense_context_fit0/step2400.pt and
+starter_checkpoint=success_context_fit0/step2400.pt. Checkpoint hashes prevent
+combining these heads with geometry continuations. The API is an opt-in research
+option; no original loader/default was redirected.
+
+For exact historical experiment commands consult copied jobs/*/receipt.json:
+initial feedback (including failure/resume), initial allocators, four geometry
+curves, shared-context allocators, joint snapshot refresh, five-seed followup,
+analysis, tests and final artifact audit. Fresh orchestration scripts are
+run_realized_*_v1.sh; they intentionally fail on existing output names. Do not
+blindly rerun them in the populated results directory. Rename outputs/IDs for a
+fresh reproduction or replay immutable exports in a separate project-root copy.
+
+Large feedback NPZ, all checkpoints (including optimizer/RNG), prediction pools,
+stdout/stderr and receipts are copied to local runs/realized_coverage_v1 and remain
+on wzy3090 at the corresponding project root. They are ignored by Git. Compact
+results and real figures are committed under this research directory. Source
+tar exports are locally saved alongside the closure archive. After extraction,
+`python scripts/close_realized_coverage_local.py` checks every indexed file,
+source export, fixed C/q asset and receipt, then writes results/CLOSURE.json and
+LOCAL_HASH_VERIFICATION.json. Costs have no historical remaining-time cap.

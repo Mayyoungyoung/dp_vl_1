@@ -1,35 +1,36 @@
-# Active research — actual coverage, 2026-10-09
+# Closed research stage — actual coverage, 2026-10-09
 
-Branch codex/realized-coverage-v1 based on c7acb8c. Old study complete; new user
-authorization removes historical total wall-time caps. Original hardware limits
-and immutable exports remain. Default deployed parent unchanged.
+Branch codex/realized-coverage-v1, based on prior final c7acb8c. Historical default,
+weights, results and split roles are unchanged. Latest user authorization removed
+old time caps; hardware stayed wzy3090 GPU1/.35memory/four threads.
 
-FrozenC feedback completed1152TRAIN/288DEV from723ec6f after serializer repair.
-Initial failed job and64reused records retained.18tests passed. Success head2400
-gives6.958valid modes, net2400 gives6.750; no mechanism acceptance. DEV370omitted
-recoverable words but77net-positive, nondegrading recoveries; sampled local best
-gain0.306is oracle diagnostic only. TRAIN35,754recorded8-query sets. First
-collector additionally decoded one discarded baseline set per request; include
-that cost. New deployment computes queries from logits, final8decoded only once.
+All planned runs, five head seeds, fixed-witness evaluation, actual API replay,
+18 tests and exact recovery checks completed. There are no active jobs in this
+research family. Do not relaunch existing fresh-output scripts.
 
-Geometry screen717e1ad completed four3600step curves; every adaptive continuation
-underperforms originalC. Context-refresh2d2abde completed; success6.98264/.891927/
-returned.943576; scalar-net still worse. Dense/no-peer screen13e22ce also complete;
-dense2400=6.88542/.893663/.943576; no independent set-mechanism gain yet.
-Initial net predicted-safe precision TRAIN16.0%/DEV9.86%, so dense17-way actual
-outcome feedback tests a specific scalar-credit failure. Five success/dense seeds
-locked in13f1b22; seeds1–4not launched yet, seed0reused,2400final,no cherry-picking.
+Best NEW research option: C0 + ordinary success_context_fit0/step2400.pt (seed0
+is the registered representative, not the best seed). Success five-seed mean:
+U8 6.9806, V8 89.149%, V4 94.340%, retained1779.6/2169, repair235.2/270.
+Dense U8 6.9465 loses by0.0340 with crossed95%CI[−0.0743,−0.0014].
+Neither candidate replaces the historical deployment default or dominates Gate.
 
-ACTIVE SSH40076 frozen13e22ce: run_realized_dense_v1.sh finished, followed by
-run_realized_joint_refresh_v1.sh. It refreshes TRAIN feedback and success/dense
-heads for ordinary/gap/hard600step checkpoints. Ordinary joint success6.8368,
-gap joint success6.9653; both returned.93663, below unchangedC+success. No new
-claim yet. Hard refresh is still pending/active; inspect actual receipts.
+Mechanism checks completed: scalar net, success-context feedback, dense outcomes,
+no-peer and added-only; four displacement-free3600-step geometry arms with curves;
+matching-snapshot feedback/refits for ordinary/gap/hard600step generators.
+Gap+dense matches frozen-simple U8 but violates returned-validity margin.
+Five seeds concern allocation heads on fixed C0, not five geometry models.
 
-Next frozenbbf9606 run_realized_followup_v1.sh (exported, NOT launched): TRAIN
-reference-conflict diagnosis, remaining4paired allocation seeds, added-only
-ablation, actual head/geometry100vs50+50resume checks, formal stats/progress.
-All actual receipts in runs/realized_coverage_v1/jobs. No old time cap applies.
-If reference means demonstrably conflict with feasibility, consider matched
-nearest-positive geometry repair; otherwise do not invent a target-conflict cause.
-TEST_LOCKED unread. All1152TRAIN and288DEV are existing legal development data.
+All10168TRAIN mean references are valid and preserve word identity. Unrun optional
+nearest-positive repair was removed. No extra rounds are justified by that cause.
+The closure is a negative mechanism finding under tested alternatives, not a
+budget stop or a claim that all possible joint generators are impossible.
+
+Immutable sources/commands and weights: runs/realized_coverage_v1. See
+results/CLOSURE.json, ARTIFACT_AUDIT_FINAL.json and LOCAL_HASH_VERIFICATION.json
+for copied artifact verification and measured costs. Original collector failure
+and subsequent audit-only transient-lock fix are retained.
+
+Recovery: no interrupted training remains. For future reproduction use NEW output
+names, the exact recorded source export and commands from job receipts.
+Do not reuse old output folders or stale proposal heads after changing a decoder.
+REPRODUCE.md gives API/training/feedback commands. No TEST_LOCKED was inspected.

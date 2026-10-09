@@ -1259,3 +1259,27 @@ TRAIN-only fixed historical RGB-D color prototype, gridstride2, all288DEV
 endpoint checks; no route update. Local stride test passed; server test queued.
 All three coordinators are frozen and sequential. Do not duplicate or infer
 results from launch. Goal active; no new-method or final-paper claim.
+
+## Realized coverage research closed — 2026-10-09
+
+The realized_coverage_v1 research family is closed; other research-family states
+above are untouched. Branch codex/realized-coverage-v1 preserves original defaults.
+25 main training runs plus 4 recovery-check runs, 45 full DEV evaluations and
+five paired allocation-head seeds on fixed C0 completed. Success U8=6.98056,
+dense=6.94653; crossed seed/family difference95%CI[-.07431,-.00139]. No independent
+mechanism win. Gap+dense geometry matches simple U8 but loses0.694pp returned
+validity. Survival/repair differences do not support the new coordination.
+
+All 101 research jobs closed:100 exit0, initial collector serializer failure
+retained/resumed. Serial job wall time2679.381s (no old cumulative cap), not an
+uncached VLM or total-user-time measurement. Local verification matches6415 files,
+10 source archives and fixed C/q weights.18 tests pass; actual head and geometry
+100vs50+50 recovery is exact. One decoder-call API replay matches paths/events/q
+and selected4 exactly. Final transient-lock index fix changes no experiments.
+
+Read research_realized_coverage_v1/{RESULTS,RESEARCH_STATE,REPRODUCE}.md and
+results/CLOSURE.json before any future work. No active job or interrupted training
+remains in this family; do not relaunch existing fresh-output scripts. Use new
+output names/source exports for reproduction. All new weights, feedback and
+predictions are copied to runs/realized_coverage_v1. Default unchanged; no
+TEST_LOCKED/new-distribution/whole-arm claim. Paper-ready=false.

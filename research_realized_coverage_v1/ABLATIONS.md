@@ -1,23 +1,39 @@
-# Mechanism controls — active results
+# Mechanism ablations and their limits
 
-1. Historical adaptive/balanced/ordinary on fixed C are reused from the previous
-   study. Diversity depends strongly on allocation; no needless reproduction.
-2. Ordinary actual-success labels improve realized coverage. They predict sampled
-   realization capability, not physical mode existence. This is the main control.
-3. Scalar set-net regression fails even on sampled TRAIN neighborhoods. Success-
-   centered feedback is shared by both models; additional queries are not unique
-   information granted to the proposed method.
-4. Dense actual-word/invalid classification makes the target decomposition explicit.
-   Peer-aware and matched tokenwise/no-peer models separate query interaction from
-   ordinary mode-confusion prediction. Seed0does not establish peer benefit.
-5. Added-only scalar-set regression removes lost-word penalties while keeping
-   quality targets, data, steps and architecture fixed. Registered, results pending.
-6. Ordinary, KL-only, gap-context and ordinary-hard geometry controls all remove
-   displacement. KL-only does not rescue the previous D2idea. Hard training is a
-   control for failure sampling; geometry screen results remain exploratory.
-7. Matching snapshot feedback is refreshed after geometry changes. Each new
-   generator is evaluated with ordinary and set proposals trained on its current
-   outputs. Gap+dense matches frozenC+success U8but reduces returned validity.
+Actual seed0 final-2400 results unless marked otherwise. Complete metrics and
+fixed witnesses are in results/RESULTS_TABLES.md.
 
-Five paired success/dense continuation seeds are locked before expanding beyond
-seed0; report every seed, including failures. No test-based method selection.
+|Controlled change|Control U8|Variant U8|Interpretation|
+|---|---:|---:|---|
+|C adaptive → ordinary realized-success proposal|6.7639|6.9826|Ordinary allocation improvement, unchanged decoder|
+|Initial → shared success-context feedback, success head|6.9583|6.9826|Small gain from deployment-context feedback|
+|Success → scalar net, same two-context pool|6.9826|6.7743|Aggregate net regression loses|
+|Scalar net → dense actual outcomes|6.7743|6.8854|Helps this screen, not the strong control|
+|No-peer dense → peer-aware dense|6.9444|6.8854|No evidence for peer benefit|
+|Scalar net → added-only target|6.7743|6.9201|Net subtraction is not an empirical win|
+|Frozen success → gap geometry + refreshed dense|6.9826|6.9826|V4 falls 94.358% → 93.663%|
+
+Added-only preserves architecture, quality targets, feedback, steps and seed;
+only U8 ignores lost words. It beats the weak scalar-net fit, so accounting for
+losses is not established as the effective innovation. Both lose to success.
+
+Peer/no-peer receive the same 17-way labels and data. Attention is replaced with
+a similarly sized tokenwise MLP; set-level quality pooling remains in both.
+Five registered head seeds give dense U8=6.9465 versus success=6.9806, with no
+U8 win. These are fixed-C head seeds, not geometry seeds.
+
+Ordinary, KL-only, gap and hard arms remove displacement and share positives,
+start, learning rate and budget. Hard is the failure-sampling control. Every
+600/1800/3600 curve is saved. Branch-specific RNG differs; no exact-stream causal
+or multiseed geometry claim. Snapshot feedback is recollected after changing
+each generator and both proposal types are refitted, avoiding stale labels.
+
+Fixed-C ordinary/adaptive/balanced sampling was already tested in the preceding
+mode_geometry study and is reused. New success and set proposals also use the
+same fixed C, isolating proposal computation from geometry training. Dense
+token search takes extra work, with no demonstrated returned-quality gain.
+
+All 10168 TRAIN reference means are valid and preserve the intended word.
+This rejects the measured averaging-conflict explanation. Optional nearest-
+positive repair was never launched and is not counted. New-scene and full-arm
+studies were not expanded after the mechanism failed these controls.
