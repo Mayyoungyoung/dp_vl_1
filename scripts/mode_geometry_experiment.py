@@ -16,7 +16,7 @@ from scripts.research_v3_counterfactual import EDGES
 from scripts.analyze_paired_selection import select
 
 RUN=ROOT/'runs/mode_geometry_v1'
-PREP=RUN/'prepared'
+PREP=RUN/'prepared_v2'
 INITIAL=old.RUN/'safety_mean/last.pt'
 POOL=old.RUN/'verified_edit_all_modes_support_v1/support.npz'
 Q=old.RUN/'matched_q_paired_v1/reliability/mean_seed0/calibration_seed0/scorer_bundle.pt'

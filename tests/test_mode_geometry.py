@@ -59,5 +59,10 @@ class ModeGeometryTests(unittest.TestCase):
         p,_,_=self.model.decode(self.context,self.anchor,self.current,torch.zeros(2,8,dtype=torch.long))
         self.assertGreater(float((p[:,0]-p[:,1]).abs().max()),1e-6)
 
+    def test_observation_only_allocation_both_samplers(self):
+        for sampler in ('ordinary','balanced'):
+            p,e,d=self.model.decode(self.context,self.anchor,self.current,sampling=sampler)
+            self.assertEqual(p.shape,(2,8,24,3));self.assertEqual(d['mode_ids'].shape,(2,8))
+
 
 if __name__=='__main__':unittest.main()

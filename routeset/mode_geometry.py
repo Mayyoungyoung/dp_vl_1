@@ -43,7 +43,7 @@ class ModeGeometryHead(ProbabilisticGeometryRouteHead):
         if mode_ids is None:
             # Scores allocate a finite proposal budget, NOT calibrated existence.
             if sampling == 'balanced':
-                mode_ids = logits.argsort(-1, descending=True, stable=True)[:,:8]
+                mode_ids = torch.argsort(logits,dim=-1,descending=True,stable=True)[:,:8]
             elif sampling == 'ordinary':
                 mode_ids = torch.multinomial(logits.softmax(-1),8,replacement=True)
             else: raise ValueError(sampling)
