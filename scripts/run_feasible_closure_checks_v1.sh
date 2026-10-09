@@ -11,5 +11,6 @@ done
 bash "$L" --id fixed_witness_refitted_v2 -- "$P" -m research_feasible_space_v1.analyze --names "${names[@]}" --output fixed_witness_refitted_v2
 bash "$L" --id fixed_witness_statistics_v2 -- "$P" -m research_feasible_space_v1.witness_statistics --name fixed_witness_statistics_v2
 bash "$L" --id parameter_transfer_v1 -- "$P" -m research_feasible_space_v1.parameter_transfer --name parameter_transfer_v1
+bash "$L" --id benchmark_online_v1 -- /home/wzy/dpvlm/route_set_v1/.venv-qwen/bin/python -m research_feasible_space_v1.benchmark_online --name benchmark_online_v1
 bash "$L" --id summary_v2 -- "$P" -m research_feasible_space_v1.summarize --name summary_v2
 bash "$L" --id dependency_snapshot_v1 -- "$P" -m research_feasible_space_v1.dependency_snapshot --name dependencies_v1
