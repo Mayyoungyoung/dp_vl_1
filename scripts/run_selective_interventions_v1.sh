@@ -6,8 +6,7 @@ L="$S/scripts/launch_selective_repair_v1.sh"
 R="$P/runs/selective_repair_v1"
 D="$P/data/selective_repair_interventions_v1"
 # Wait for the exact already-started screen coordinator, not gaps between jobs.
-while [[ ! -e "$R/goal_rule_.05_v1/METRICS.json" ]]; do sleep 5; done
-while [[ -e "$R/active.lock" ]]; do sleep 5; done
+while kill -0 609961 2>/dev/null; do sleep 5; done
 [[ -e "$R/goal_rule_.05_v1/METRICS.json" ]] || { echo 'Screen stopped; inspect failures before new queue'; exit 1; }
 for arm in selective residual recenter; do
  bash "$L" --id screen_grid_${arm}_v1 -- "$P/.venv/bin/python" -m research_selective_repair_v1.grid --name screen_grid_${arm}_v1 --checkpoint "$R/screen_${arm}_seed0/last.pt"
