@@ -5,8 +5,8 @@ screen terminal; selective hard gate gives0repairs,ordinary residual +.13889U8
 vs strong center. Common-baseline recenter +.10417 with2damages; prototype
 rule damages100validroutes. No method accepted. Early executor failed from
 Torch import in simulator; lightweight IO fix and targeted decoupled/balanced
-gate recovery queued next,then new physical TRAIN/DEV interventions. No
-remaining old queue/lock. Frozen launchers only,keep failed receipts. Same
+gate recovery queued next,then new physical TRAIN/DEV interventions. Current renderer sourcebc22d91 PID622165/SSH55334; successor14334bb
+PID630925/SSH13747 waits and runs calibrated3seed controls. Frozen launchers only,keep failed receipts. Same
 wzy3090 GPU1 UUID/.35/fourthreads,locked unread. Historical sections below.
 
 ## Feasible-space v1 CLOSED — 2026-10-09

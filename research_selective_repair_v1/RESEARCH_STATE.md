@@ -36,3 +36,18 @@ anddamages30. Grounding diagnostic: all100rule damages belong to18bad current
 proposals;270accurate proposals give91repairs/0damage. Shared TRAIN envelope
 and surface-bias proposal baseline implemented locally; not launched yet.
 Do not alter/duplicate running collector or its registration hashes.
+
+Frozen successor14334bb664fe04900b6c5e27fd8ce2eceb3e06f7,PID630925
+/SSH13747 waits for622165 and completed interventions_goal_v1 manifest.
+Then7structuraltests,TRAIN shared spatial/surface prototype fit,exact observed
+point/camera caches,old+new goal labels and simple rule+geometry controls,
+three paired seeds selective/residual/joint-center (2400steps),all old/new
+DEV grids. This is developmental,not finalconfirmation; own matching heads
+still required before formal acceptance. Earlier waiting coordinator13a780c
+PID628141 was stopped before any child job because cache initially used
+all pixels rather than deployed stride2; no running source/job changed.
+14334bb caches exact read_geometry stride2 and verifies first8features match
+prepared drafts. Local initial figures actualdata inspected; all initial
+receipts in runs/selective_repair_v1/initial_receipts,compact INITIAL.json
+and family bootstrap under research results. Actual terminal wrapper time
+2274.1603s (25completed,3failed),render ongoing excluded. No budget cap.
