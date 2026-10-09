@@ -104,7 +104,7 @@ def prepare():
     print(json.dumps(dict(counts=counts,pairs=len(pairs))),flush=True)
 
 
-def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,independent_decoder=False):
+def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,independent_decoder=False,full_positive_set=False):
     torch=torch_setup()
     from routeset.mode_geometry import mode_loss,pair_displacement_loss,VOCAB
     from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
@@ -121,6 +121,13 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
     assert np.array_equal(s['ids'],d['ids'])
     per_mode=[{VOCAB.index(w):np.flatnonzero(s['mask'][i] & (s['modes'][i]==w))
         for w in sorted(set(s['modes'][i,s['mask'][i]]))} for i in range(len(s['ids']))]
+    if full_positive_set and (arm!='B' or pair_weight!=0):raise ValueError('Full-positive ordinary baseline only')
+    if full_positive_set:
+        allpaths=torch.as_tensor(s['paths'],device='cuda')
+        groupmask=np.zeros((len(s['ids']),len(VOCAB),s['paths'].shape[1]),bool)
+        for i,bm in enumerate(per_mode):
+            for m,indices in bm.items():groupmask[i,m,indices]=True
+        groupmask=torch.as_tensor(groupmask,device='cuda')
     torch.manual_seed(seed);random.seed(seed);np.random.seed(seed);rng=np.random.default_rng(seed)
     model,options=new_model(torch,arm!='B',independent_decoder)
     with torch.no_grad():model.mode_embedding.weight.copy_(torch.as_tensor(d['mode_init'],device='cuda'))
@@ -130,7 +137,8 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
     tensors={k:torch.as_tensor(d[k],device='cuda',dtype=torch.float32) for k in ('context','anchor','current','evidence','centers','halves','floors')}
     settings=dict(arm=arm,seed=seed,steps=steps,pair_weight=pair_weight,prepared_sha256=manifest['data_sha256'],initial_sha256=sha(INITIAL),
         source_commit=os.environ.get('CODE_COMMIT'),source_hashes={str(p.relative_to(SOURCE)):sha(p) for p in [SOURCE/'routeset/mode_geometry.py',SOURCE/'scripts/mode_geometry_experiment.py']},
-        batch_size=32,lambda_mode=.001,lambda_pair=pair_weight,lr=.0003,encoder_frozen=True,independent_decoder=independent_decoder)
+        batch_size=32,lambda_mode=.001,lambda_pair=pair_weight,lr=.0003,encoder_frozen=True,independent_decoder=independent_decoder,
+        full_positive_set=full_positive_set)
     history=[];start=0;stream='';tic=time.monotonic()
     def state(step):return dict(model=model.state_dict(),optimizer=optimizer.state_dict(),rng=rng_state(rng),step=step,history=history,
         stream=stream,settings=settings,config=dict(head_options=options,conditional=arm!='B',decoder_communication=not independent_decoder),initial_tensor_sha256=initial,frozen_sha256=frozen)
@@ -160,8 +168,17 @@ def train(arm,seed,steps,name,resume=False,stop_after=None,pair_weight=1.,indepe
         xyz,event,details=model.decode(tensors['context'][ids],tensors['anchor'][ids],tensors['current'][ids],mi)
         if arm=='B':
             # Same positive paths, labels, pairs and displacement; only output parameterization differs.
-            cost=(xyz[:,:,None]-tx[:,None]).square().mean((-1,-2)).detach().cpu().numpy()
+            if full_positive_set:
+                with torch.no_grad():
+                    distance=(xyz[:,:,None]-allpaths[ids,None]).square().mean((-1,-2))
+                    mask=groupmask[torch.as_tensor(ids,device='cuda')[:,None],mi]
+                    groupcost,best=distance[:,:,None,:].masked_fill(~mask[:,None],float('inf')).min(-1)
+                cost=groupcost.cpu().numpy()
+            else:cost=(xyz[:,:,None]-tx[:,None]).square().mean((-1,-2)).detach().cpu().numpy()
             assignment=np.array([linear_sum_assignment(c.T)[1] for c in cost])
+            if full_positive_set:
+                matched=best[torch.arange(32,device='cuda')[:,None],torch.as_tensor(assignment,device='cuda'),torch.arange(8,device='cuda')[None]]
+                tx=allpaths[torch.as_tensor(ids,device='cuda')[:,None],matched]
             xyz=xyz[torch.arange(32,device='cuda')[:,None],torch.as_tensor(assignment,device='cuda')]
             event=event[torch.arange(32,device='cuda')[:,None],torch.as_tensor(assignment,device='cuda')]
         route=(xyz[:,:,1:]-tx[:,:,1:]).square().mean()+.01*(event-tensors['current'][ids,None,None,7]).square().mean()
@@ -225,7 +242,8 @@ if __name__=='__main__':
     p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=1200);p.add_argument('--name')
     p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--pair-weight',type=float,default=1.)
     p.add_argument('--independent-decoder',action='store_true')
+    p.add_argument('--full-positive-set',action='store_true')
     p.add_argument('--sampling',choices=['ordinary','balanced','adaptive'],default='balanced');a=p.parse_args()
     if a.stage=='prepare':prepare()
-    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight,a.independent_decoder)
+    elif a.stage=='train':train(a.arm,a.seed,a.steps,a.name,a.resume,a.stop_after,a.pair_weight,a.independent_decoder,a.full_positive_set)
     else:evaluate(a.name,a.sampling)

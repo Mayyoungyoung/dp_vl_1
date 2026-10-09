@@ -113,3 +113,14 @@ launched. New canonical seed0 queue runs B0/C/D and the single communication-off
 C/D repair,1200steps each, same adaptive allocation. Check their actual streams
 before comparison. These corrected comparisons supersede earlier causal readings;
 the within-checkpoint TRAIN companion intervention remains valid.
+
+## Strong ordinary full-positive baseline
+
+Before reading canonical full-step results, add B_set: same parent, modes,
+observations,1200updates and8outputs, but minimize matching over ALL previously
+available positive coordinates within each sampled mode. B0's sampled single
+pair representative could be unnecessarily restrictive for an ordinary set.
+B_set's same-mode min followed by Hungarian is a conventional stronger ordinary
+control, not another proposed method. It receives the entire same56920-positive
+pool; extra per-step reference processing cost is disclosed. No new labels.
+Compare against the strongest ordinary baseline rather than only B0/B_pair.
