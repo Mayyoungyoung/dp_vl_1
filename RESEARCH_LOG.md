@@ -1151,3 +1151,26 @@ ordinary_seed0 trained1200steps exit0 (136.179s), evaluated all288DEV exit0 (11.
 ## Full-population seed0 result — 2026-10-09
 All three1200step arms completed from8ac68f9. Ordinary valid86.0677%/distinct6.7014; gate93.5330%/7.3611; hard-project77.0833%/5.1736. Gate-parent distinct+.68056 CI[.47569,.89236], valid+6.7274pp, known recall-6.9500pp CI[-10.2432,-3.7120]. Thus improvement includes a known-support tradeoff; do not report universal superiority. Hard-project all gates false. Same initializer/sampler hashes independently verified. Joint assignment2761bc1 controls actually launched, source unchanged after startup.
 
+# 2026-10-09 — Joint assignment seed0 and secondary retention diagnostic
+
+Frozen2761bc1 completed budget_match/set_point/set_project1200step seed0 and
+all288DEV evaluation with fixed complete q. Actual input streams and starting
+parameter hashes match ordinary/gate. Distinct7.34375 (set_point) and7.42014
+(set_project) fail registered+.3 gate against gate7.36111; region loses known
+recall to62.53%. No new mechanism accepted. Results committed under
+reports/verified_set_v1/joint_seed0. Replication v4 was registered before region
+evaluation and stops region expansion while replicating simple tradeoffs.
+
+Secondary source5b0e0f6 verifies frozen parent witness SHA and2169 denominator.
+Retained parent1872, ordinary1638, gate1595, budget_match1814, set_point1659,
+set_project1415. Gate collision failures40/2304 vs parent207, but known hits1600
+vs1771 and fixed-edit retention decreases. These are route-tip oracle checks,
+not real robot execution or perception-driven safety certificates.
+
+One deployment hash-check shell command failed before extraction because local
+PowerShell interpreted a remote substitution. No experiment or release was
+modified; repeated sha256sum without substitution matched57dde87f..., then
+fresh5b0e0f6 extraction succeeded. No wrapper failure occurred.
+1539.678752981s new-ledger spent before paired replication. SSH90581 source2761
+runs ordinary/gate/budget_match/set_point seeds1/2 then equal-positive set_point
+replay seed0. No TEST_LOCKED, LoRA, RFT, resource escalation or default model change.

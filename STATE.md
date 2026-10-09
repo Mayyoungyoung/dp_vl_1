@@ -1,3 +1,16 @@
+## Verified-set joint seed0 rejected; paired replication active — 2026-10-09
+
+Frozen2761bc1 full-population joint queue completed. set_point valid91.797% /
+distinct7.34375 / known72.484%; set_project92.795% /7.42014 /62.533%. Neither
+clears distinct+.3 versus simple gate. Do not replicate region variant.
+Secondary5b0e0f6 fixed2169 parent edit witnesses: parent1872 retained, gate1595,
+budget_match1814, set_point1659, set_project1415. This is secondary evidence,
+not a new acceptance gate. Reports/verified_set_v1/joint_seed0 and secondary_seed0.
+Command budget1539.679s used before replication (additional7200 ledger).
+SSH90581 serial queue: ordinary/gate/budget_match/set_point seeds1,2 train/eval,
+then replay_set_point_seed0 train/eval. Frozen2761 source; check receipts before
+any new launch. Registry/log include seed0 failures of scientific hypotheses.
+
 ## Verified-set full-population seed0 complete; joint controls active — 2026-10-09
 
 8ac68f9 full1152TRAIN ordinary/gate/project1200step runs all exit0. All288DEV:

@@ -1,3 +1,13 @@
+## Verified-set replication queue — 2026-10-09
+
+SSH90581: source2761 ordinary/gate/budget_match/set_point seeds1/2, followed by
+replay_set_point_seed0. This is the only active queue. Prior53979 is complete.
+Source5b0e0f6 secondary_seed0 complete, fixed witness hash and denominator agree.
+No joint mechanism clears the primary gate. Follow replication protocol v4;
+do not launch more region models or arbitrary hyperparameter variants.
+After completion run final analyzer for all arms and aggregate paired seeds,
+secondary diagnostics, sync receipts/manifests, actual budget, report and push.
+
 ## Verified-set latest queue — 2026-10-09
 
 Restricted and full-population ordinary/gate/hard-project seed0 runs complete.
