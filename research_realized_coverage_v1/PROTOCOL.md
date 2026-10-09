@@ -114,3 +114,12 @@ Added-only ablation: same original scalar-set architecture/data/2400updates,
 replace U8 net target by number of newly present valid words, ignoring lost words;
 quality targets remain real net counts. No dense classification auxiliary in
 either this ablation or original scalar-net comparator. Run once, no tuning.
+
+## Reference diagnostic rejects the proposed averaging-conflict cause
+
+All10168TRAIN mode-wise mean reference paths pass the existing checker; none
+of8613valid baseline requested-route cases is pulled toward an invalid mean.
+Within-mode variance exists, but no measured feasibility conflict justifies a
+nearest-positive repair as the next main mechanism. Prepared optional repair code
+was removed without launching it. Do not relabel unrun alternatives as experiments.
+Geometry screens remain explicitly non-exact-stream exploratory comparisons.

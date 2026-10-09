@@ -39,7 +39,9 @@ def audit(output):
         job_receipt_sha256={r['id']:sha(RUN/'jobs'/r['id']/'receipt.json') for r in completed},
         spent_excluding_this_audit=sum(r['elapsed_seconds'] for r in completed),time_limit=None,
         feedback_verified_routes=cost,additional_discarded_feedback_routes=discarded,
+        reference_diagnostic_checker_queries=read(RUN/'REFERENCE_DIAGNOSTIC.json')['checker_queries'],
         deployment_routes=sum(d['cost']['generated_routes'] for d in evaluated.values()),
+        deployment_replay_benchmark_routes=sum(8*(1+read(p)['additional_benchmark_decodes']) for p in RUN.glob('*_DEPLOYMENT.json')),
         environment=dict(python=platform.python_version(),torch=torch.__version__,numpy=np.__version__,threads=torch.get_num_threads(),memory_fraction=.35),
         initial_sha256=sha(BASE),scorer_sha256=sha(Q),locked_access=False,default_changed=False)
     write(RUN/output,result);print(json.dumps({k:len(result[k]) for k in ('checkpoints','feedback','evaluated','files','jobs')}),flush=True)
