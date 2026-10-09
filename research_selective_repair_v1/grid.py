@@ -16,7 +16,8 @@ def grid(name,checkpoint,data_name='goal_prepared_v1',data=None):
     with torch.no_grad():
         drafts=t['drafts']
         if ck['settings']['arm']=='recenter':drafts=center.corridor(t['context'],t['anchor'],t['current'],t['modes'],torch.zeros_like(t['modes']))[0]
-        if ck['settings']['arm']=='selective':settings=[dict(threshold=x,scale=1.) for x in read(POLICY)['thresholds']]
+        if ck['settings']['arm']=='local_diffusion':settings=[dict(threshold=x,scale=s) for x in (0,.01,.025,.05) for s in read(POLICY)['scales']]
+        elif ck['settings']['arm']=='selective':settings=[dict(threshold=x,scale=1.) for x in read(POLICY)['thresholds']]
         else:settings=[dict(threshold=.5,scale=x) for x in read(POLICY)['scales']]
         generated=[head(t['context'],t['modes'],drafts,t['local'],hard=True,**s)[0].cpu().numpy() for s in settings]
     # Above uses legal cached observed intermediates only. Truth starts below.

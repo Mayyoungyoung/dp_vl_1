@@ -34,7 +34,11 @@ class RepairHead(nn.Module):
 
 def load_repair(path,device='cuda'):
     ck=torch.load(path,map_location='cpu',weights_only=False)
-    center,_=center_model();head=RepairHead(center.base.mode_embedding.embedding_dim,ck['settings']['arm'],ck['settings'].get('goal_tail',False))
+    center,_=center_model()
+    if ck['settings']['arm']=='local_diffusion':
+        from research_selective_repair_v1.patch_diffusion import LocalDiffusion
+        head=LocalDiffusion(center.base.mode_embedding.embedding_dim,ck['settings']['seed'])
+    else:head=RepairHead(center.base.mode_embedding.embedding_dim,ck['settings']['arm'],ck['settings'].get('goal_tail',False))
     head.load_state_dict(ck['repair']);head=head.to(device).eval()
     if ck.get('center') is not None:center.load_state_dict(ck['center'])
     return center,head,ck
