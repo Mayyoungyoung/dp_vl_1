@@ -1439,3 +1439,5 @@ not yet evaluated. Local test import failed because local Python lacks torch;
 no package/environment change, will use existing server runtime. Pending screen
 checks deploy zero repair, same-data center update, ordinary residual, selective
 correction and observed geometry/goal-rule controls. Continue actual experiments.
+
+Selective prepare_v1 completed1345.2006s: TRAIN11found/1152requests,DEV26found/288; observed geometry22added/0lost DEV words. Goal preparation cf0447b failed only at final manifest (missing os import),75.2509s; complete samples/prototypes/proposals retained. Fix import and validate/restore metadata under a new recovery job, preserving failed receipt. Dependent queue stopped before experiments, not a model failure.

@@ -8,7 +8,7 @@ R="$P/runs/selective_repair_v1"
 # overwrites it. Each child is independently receipted and has a fresh output.
 while [[ -e "$R/active.lock" ]]; do sleep 5; done
 [[ -e "$R/prepared_v1/MANIFEST.json" ]] || { echo 'Opportunity preparation did not finish'; exit 1; }
-bash "$L" --id goal_prepare_v1 -- "$P/.venv/bin/python" -m research_selective_repair_v1.goal_data
+bash "$L" --id goal_prepare_recovery_v1 -- "$P/.venv/bin/python" -c "from research_selective_repair_v1.goal_data import recover; recover()"
 bash "$L" --id structural_tests_v1 -- "$P/.venv/bin/python" -m unittest discover -s tests -p test_selective_repair_v1.py
 for arm in selective residual recenter; do
   bash "$L" --id screen_${arm}_seed0 -- "$P/.venv/bin/python" -m research_selective_repair_v1.train --name screen_${arm}_seed0 --arm "$arm" --goal-tail --data goal_prepared_v1
