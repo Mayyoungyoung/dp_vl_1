@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from research_selective_repair_v1.core import *
 from scripts import observation_prototype_grounding as proto
+from research_selective_repair_v1.grounding import predict
 from scripts.research_v3_audit import mode
 
 def build(name='goal_prepared_v1',source='prepared_v1',data=None,prototype=None):
@@ -17,7 +18,7 @@ def build(name='goal_prepared_v1',source='prepared_v1',data=None,prototype=None)
     for i,ident in enumerate(d['ids']):
         ident=str(ident);row=rb[ident];label=labels[ident]
         (rgb,xyz,valid),_=proto.load_observation(data/'export',row,label['observation'])
-        endpoint,details=proto.predict(rgb,xyz,valid,row['instruction'],model)
+        endpoint,details=predict(rgb,xyz,valid,row['instruction'],model)
         if endpoint is None:endpoint=d['anchor'][i];available=0
         else:available=1
         # Same proposed target evidence goes to every learned and geometric arm.

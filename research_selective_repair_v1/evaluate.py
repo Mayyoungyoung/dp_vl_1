@@ -1,6 +1,7 @@
 """Fixed 8->8->4 evaluation, with actual added/lost word sets and damage."""
 import argparse,time
 import numpy as np
+from research_selective_repair_v1.grounding import predict
 import torch
 from research_selective_repair_v1.core import *
 from research_selective_repair_v1.model import load_repair
@@ -42,10 +43,10 @@ def evaluate(name,checkpoint=None,kind='learned',threshold=.5,scale=1.,data=None
             local=features(d,points,observation)
         if prototype:
             (rgb,xyz,vm),_=proto.load_observation(data/'export',row,labels[row['id']]['observation'])
-            goal,detail=proto.predict(rgb,xyz,vm,row['instruction'],prototype_model);available=goal is not None
+            goal,detail=predict(rgb,xyz,vm,row['instruction'],prototype_model);available=goal is not None
             if goal is None:goal=runner.anchor[0].cpu().numpy()
             gf=np.concatenate([np.broadcast_to((goal-d[:,-1])/.4,(24,8,3)).transpose(1,0,2),np.full((8,24,1),available)],-1).astype(np.float32)
-            if kind!='goal_rule':local=np.concatenate([local,gf],-1)
+            if kind=='geometric' or head is not None:local=np.concatenate([local,gf],-1)
         if kind=='geometric':
             initial=d.copy()
             if prototype:

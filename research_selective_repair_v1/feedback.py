@@ -5,6 +5,7 @@ import torch
 from research_selective_repair_v1.core import *
 from research_selective_repair_v1.model import load_repair
 from research_selective_repair_v1.local import features,observed_points
+from research_selective_repair_v1.grounding import predict
 from research_realized_coverage_v1 import feedback as oldfeedback,train_allocation
 
 class IntegratedRepair(torch.nn.Module):
@@ -31,14 +32,17 @@ def collect(name,checkpoint,prototype,threshold=.5,scale=1.):
     model=None;pm=read(prototype)
     def load(path):
         nonlocal model
-        center,repair,ck=load_repair(path);model=IntegratedRepair(center,repair,pm,threshold,scale).cuda().eval();return model,ck
+        center,repair,ck=load_repair(path)
+        if ck.get('view'):
+            assert ck['view']['prototype_sha256']==sha(prototype) and ck['view']['threshold']==threshold and ck['view']['scale']==scale
+        model=IntegratedRepair(center,repair,pm,threshold,scale).cuda().eval();return model,ck
     original=oldfeedback.inputs_for
     def inputs(row,label,cache,torch,hashes):
         from scripts import observation_prototype_grounding as proto
         inp=original(row,label,cache,torch,hashes)
         with np.load(label['observation']) as z:model.observation={k:z[k] for k in ('depth','camera_intrinsics','camera_extrinsics')}
         (rgb,xyz,valid),_=proto.load_observation(DATA/'export',row,label['observation'])
-        model.goal,_=proto.predict(rgb,xyz,valid,row['instruction'],pm)
+        model.goal,_=predict(rgb,xyz,valid,row['instruction'],pm)
         return inp
     oldfeedback.RUN=RUN;oldfeedback.load_generator=load;oldfeedback.inputs_for=inputs
     oldfeedback.collect(name,'TRAIN',checkpoint=checkpoint)

@@ -25,3 +25,14 @@ No explicit wall quota. Only wzy3090 GPU1 UUID GPU-7506746b-d0ba-f6fe-44ce-8a1f9
 .35memory,CPU0-3. Local writer F:/dpvlm,branch codex/selective-route-repair-v1.
 Immutable commit exports,actual imported hashes,commands/RNG/checkpoints kept.
 No locked TEST access/default change. Old published fresh16 is development.
+
+Current immutable coordinator bc22d916027d5e9309e60a7517e855298f7f5a65
+PID622165 /SSH55334 running physical render144registered scenes. Early B0_v3
+7/16 and goal-rule_v3 8/16 actual Panda success; all failures preserved. v2
+failed only numpy.testing import locale/lscpu decode after successful restore;
+no get_path call. Fix native allclose and child C locale; actual v3 complete.
+Decoupled gate seed0 best under1%damage is identity; threshold.5 repairs6
+anddamages30. Grounding diagnostic: all100rule damages belong to18bad current
+proposals;270accurate proposals give91repairs/0damage. Shared TRAIN envelope
+and surface-bias proposal baseline implemented locally; not launched yet.
+Do not alter/duplicate running collector or its registration hashes.

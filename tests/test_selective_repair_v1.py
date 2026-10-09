@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from research_selective_repair_v1.model import RepairHead
 from research_selective_repair_v1.core import masks
-from research_selective_repair_v1.local import features
+from research_selective_repair_v1.local import features,features_torch
 
 class RepairTests(unittest.TestCase):
     def setUp(self):torch.set_num_threads(4);torch.manual_seed(2)
@@ -49,5 +49,14 @@ class RepairTests(unittest.TestCase):
         self.assertTrue(torch.equal(p[:,:,:18],d[:,:,:18]))
         self.assertGreater(float((p[:,:,-1]-d[:,:,-1]).abs().max()),.1)
         self.assertTrue(torch.equal(closed,d))
+    def test_refreshed_center_features_match_observation_features(self):
+        d=np.broadcast_to(np.array([.2,.3,2.],np.float32),(8,24,3)).copy();d[:,:,0]+=np.linspace(0,.02,24)
+        points=np.array([[.3,.3,2.],[.2,.4,2.]],np.float32)
+        obs=dict(depth=np.ones((5,5),np.float32)*3,camera_intrinsics=np.eye(3,dtype=np.float32),camera_extrinsics=np.eye(4,dtype=np.float32))
+        padded=np.zeros((768,3),np.float32);padded[:2]=points;mask=np.zeros(768,bool);mask[:2]=True
+        x=torch.tensor(d[None],requires_grad=True)
+        actual=features_torch(x,torch.tensor(padded[None]),torch.tensor(mask[None]),torch.tensor(obs['depth'][None]),torch.tensor(obs['camera_intrinsics'][None]),torch.tensor(obs['camera_extrinsics'][None]))
+        np.testing.assert_allclose(actual.detach().numpy()[0],features(d,points,obs),atol=2e-5)
+        actual[...,0].sum().backward();self.assertTrue(torch.isfinite(x.grad).all())
 
 if __name__=='__main__':unittest.main()

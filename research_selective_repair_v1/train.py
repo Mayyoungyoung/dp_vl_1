@@ -7,6 +7,7 @@ from research_selective_repair_v1.model import RepairHead
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
 from routeset.segment_clearance import path_segment_clearances
+from research_selective_repair_v1.local import features_torch
 
 def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=None,goal_tail=False,decoupled_gate=False):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
@@ -42,8 +43,16 @@ def train(name,arm,seed=0,steps=2400,data='prepared_v1',resume=False,stop_after=
     for step in range(start+1,min(steps,stop_after or steps)+1):
         ix=rng.integers(len(d['ids']),size=32);stream=hashlib.sha256(stream.encode()+ix.tobytes()).hexdigest()
         drafts=t['drafts'][ix]
-        if arm=='recenter':drafts=center.corridor(t['context'][ix],t['anchor'][ix],t['current'][ix],t['modes'][ix],torch.zeros_like(t['modes'][ix]))[0]
-        path,info=head(t['context'][ix],t['modes'][ix],drafts,t['local'][ix],decoupled_gate=decoupled_gate)
+        local=t['local'][ix]
+        if arm=='recenter':
+            drafts=center.corridor(t['context'][ix],t['anchor'][ix],t['current'][ix],t['modes'][ix],torch.zeros_like(t['modes'][ix]))[0]
+            if 'visible_points' in t:
+                local=features_torch(drafts,t['visible_points'][ix],t['visible_mask'][ix],t['depth'][ix],t['intrinsics'][ix],t['extrinsics'][ix])
+                if goal_tail:
+                    goal=t['drafts'][ix,:,-1]+t['local'][ix,:,0,29:32]*.4
+                    relative=((goal-drafts[:,:,-1])/.4)[:,:,None].expand(-1,-1,24,-1)
+                    local=torch.cat([local,relative,t['local'][ix,...,32:33]],-1)
+        path,info=head(t['context'][ix],t['modes'][ix],drafts,local,decoupled_gate=decoupled_gate)
         usable=t['usable'][ix].float();valid=t['valid'][ix].float();weight=usable*(3-2*valid)
         error=(path-t['targets'][ix]).square().mean((-1,-2))
         route=(weight*error).sum()/weight.sum().clamp_min(1)
