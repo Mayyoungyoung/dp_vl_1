@@ -2,7 +2,7 @@
 
 Research draft. This is not a claim of an accepted novel algorithm. The quantitative
 main comparison is populated from recorded experiments in RESULTS.md and
-results/three_seed_statistics_v1/RESULTS.json, after the fixed replication closes.
+results/three_seed_statistics_v1.json. The bounded decoder fails the locked gate.
 
 ## Abstract
 
@@ -21,9 +21,14 @@ retain the complete frozen four-route return interface. Reference labels represe
 all56,920valid paths individually and89.97%within two mode-specific prototype
 corridors. Centerline, free and bounded oracle-corridor diagnostics all attain
 100%task validity on1,024TRAIN paths, showing that containment alone does not
-establish a need for learned interior generation. The final conclusions are
-conditioned on three paired generator continuations and repeatedly used development
-families; independent generalization and robot execution require additional evidence.
+establish a need for learned interior generation. On288reused development requests,
+three paired generator continuations yield6.803valid modes@8for bounded mapping,
+versus6.718for same-information XYZ and7.110for independently refitted centerline
+controls. The0.086gain over XYZ is below the registered0.15meaningful-gain gate,
+and the deficit to centerlines excludes zero in conditional bootstrap intervals.
+This study therefore separates a correct conditional containment property from
+a useful neural interior-generation mechanism. Frozen new-family diagnosis is
+reported separately; no full-arm or real-robot capability is claimed.
 
 ## 1. Introduction
 
@@ -146,10 +151,16 @@ The first predicted-cell screen also separates containment from physical safety:
 bounded membership is100%but complete uniform-cell feasibility is about7.6%.
 Uniform-cell supervision raises region feasibility to about71%, yet introduces an
 endpoint tradeoff. The tapered repair explicitly targets reachable endpoint regions.
-Final inferential claims require the unchanged practical-gain and returned-quality
-gates, plus individually refreshed center/projection controls. No positive algorithm
-contribution may be inferred from a smaller gain, a cell metric alone, or a few
-successful visual examples.
+The final bounded mean is87.01%route validity@8,6.8032actual valid modes@8,
+93.20%validity@4and3.7280returned valid modes@4. Same-information XYZ gives6.7176
+modes@8; the paired difference is0.08565,95%crossed interval[0.03356,0.14236].
+This smaller effect fails the0.15gate. Fresh-head center controls give7.1100,
+with bounded-minus-center difference-0.30671,interval[-0.42593,-0.20139].
+The bounded decoder also trails historical C+success and Gate references.
+On2,169fixed surviving-mode opportunities,boundedseed0retains1,727versus1,872
+for the parent; its224/270same-mode repairs are below center-only243/270.
+No positive algorithm contribution follows from these results. The paired plots
+show both improvement and loss cases and do not replace the aggregate comparisons.
 
 ## 6. Limitations
 
@@ -162,6 +173,8 @@ a centerline, creating a strong explanation for why interior neural generation m
 be unnecessary. Modes can change inside a geometrically safe region. The fixed
 scorer may limit returned gains and is not recalibrated. No independent new-family,
 full-arm, dynamics or real-robot conclusion follows from these experiments.
+The fresh-family extension uses frozen weights and an explicitly registered
+evaluation-only protocol; it cannot erase repeated selection on the old DEV set.
 
 The study should be considered a research draft. Submission-readiness depends on
 the measured comparison, a defensible distinction from corridor-learning/planning

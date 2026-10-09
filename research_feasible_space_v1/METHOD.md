@@ -70,3 +70,31 @@ return observed_surface, and behind it/outside view/missing depth unknown.
 This diagnostic does not certify the intervening region or add a trained
 uncertainty head. It uses no true obstacle/segmentation information and changes
 no route selection. A full uncertainty-aware corridor estimator remains a gap.
+
+## Allocation and interpretation limits
+
+The ordinary success head ranks the 16 words and requests the top eight distinct
+words. Consequently, all final fresh-head evaluations use variant 0. Both geometric
+variants receive TRAIN supervision and the decoder supports either variant, but
+the deployed allocation does not search or claim coverage over both channels.
+The oracle/screen diagnostics use their recorded variant assignments. This is a
+deliberately preserved simple allocator, rather than a new multi-channel planner.
+
+Mode supervision is provided by verified, word-indexed corridor and route targets.
+The discrete passage checker is used for labels and evaluation, never treated as
+a differentiable loss. Geometric cells are not constrained to a single passage
+word; mode consistency must be measured from the final continuous path. Likewise,
+the learned anchor and bounded endpoint residual do not guarantee semantic goal
+correctness. Structural connectedness cannot turn a colliding prediction into a
+valid corridor, and predicted widths do not provide calibrated confidence.
+
+The centerline controls use the same trained corridor snapshot and exactly the
+same observed information. Their auxiliary decoder is still computed by this
+experimental implementation and then ignored. Thus reported centerline latency
+is conservative; it is not an optimized traditional planner benchmark. Separate
+fresh heads ensure this strong control is not penalized by stale realization labels.
+
+The final tested representation fails the locked practical-benefit gate. This
+supports a conclusion about the implemented architecture, supervision and budget;
+it is not a theorem that every feasible-space representation must fail. The useful
+conditional containment proof and the negative neural-necessity result are separate.

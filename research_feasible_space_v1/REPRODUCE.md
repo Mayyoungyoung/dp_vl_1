@@ -21,7 +21,7 @@ never modify a running export or launcher. Absolute launcher:
 ```bash
 bash RELEASE/scripts/launch_feasible_space_v1.sh --id NEW_JOB -- \
  /home/wzy/dpvlm/route_set_v1/.venv/bin/python -m research_feasible_space_v1.train \
- --name NEW_OUTPUT --arm bounded --steps 2400 --seed 0 --cell-loss
+ --name NEW_OUTPUT --arm bounded --steps 2400 --seed 0 --cell-loss --tapered-cells
 ```
 
 All trainers protect completed outputs. Checkpoints preserve model, AdamW,
@@ -51,3 +51,36 @@ Job scripts are fresh-output orchestration examples; they intentionally fail on
 existing names. Rename all outputs/jobIDs for reproduction; do not blindly rerun
 scripts in the populated root. All DEV results are repeatedly used development
 evidence. New scene/general robot claims require separate frozen protocols.
+
+## Frozen evaluation-only extension
+
+Immutable source `326c57f271c8b64b147380429226b85e3f04388e` runs
+`scripts/run_feasible_generalization_v1.sh`. Its prepare_v2 job follows a preserved
+failed prepare_v1 from36741984feeb30ca5902c2a1bd9d31e66023ceba; no data existed at
+that failure. The config fixes16fresh families /336requests before collection.
+Outputs live only in data/feasible_space_generalization_v1 and the new RUN ledger.
+One sequential worker uses the existing .venv-sim, softwareGL and its own Xvfb.
+The launcher stops only that helper on exit. No simulator package is installed or
+modified. Observation features use the existing pinned .venv-qwen/model snapshot,
+GPU1/.35memory/four threads. Cached input contract/revision/dtype/max_pixels match
+the inherited paired cache. No raw collector directory or TEST_LOCKED is evaluated.
+
+Fresh inference is `evaluate --data-root NEW_DATA --expected-requests336` using
+the same frozen generator/head hashes. A guard accepts only the registered new
+data root and the expected evaluation-only protocol. Known-mode recall is based
+on incomplete newly verified geometric teachers, not old all-mode support.
+`generalization_stats` reports all3seeds and all7variants, without model selection.
+
+After all jobs finish, run summary_v2 from an immutable export, then `audit`
+outside the job wrapper (the audit rejects an active lock). ARTIFACT_INDEX.json
+hashes every dedicated RUN/new-data file and checks actual receipt source hashes
+against immutable exports. The archive contains both dedicated roots. Verify its
+SHA and every indexed file after copying locally; preserve failed receipts and
+partial artifacts. Source tar archives remain in ignored source_exports.
+
+Compact JSON and figures are delivered under research_feasible_space_v1/results;
+weights, full prediction/outcome pools, receipts and new rendered observations
+remain in ignored runs/feasible_space_v1 and data/feasible_space_generalization_v1.
+Local scientific plots and Markdown tables read those actual JSONs only. Scripts
+plot_results.py,plot_generalization.py andwrite_reports.py record their inputs;
+the closure manifest records local rendering/archive verification separately.

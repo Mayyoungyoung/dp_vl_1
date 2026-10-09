@@ -5,10 +5,11 @@ Branch codex/multiroute-v2, new runs/feasible_space_v1 ledger. Hardware unchange
 wzy3090 GPU1 UUID/.35memory/four CPU threads; old total-time caps removed by brief.
 Read research_feasible_space_v1/PROTOCOL.md and RESEARCH_STATE.md. Source8c8ee34
 four-arm screen and6b35b5c envelope queues CLOSED. All three tapered XYZ/bounded
-generator continuations are complete. ACTIVE SSH92739 frozen8b6b19a runs strong
-controls with individually refitted feedback/heads, then the final check queue.
-Final statistics pending; follow actual receipts. Frozen c30b63f post-checks v2
-are exported but NOT STARTED. Do not restart either earlier queue.
+generator continuations, refitted controls and final checks are CLOSED. Bounded
+U8=6.80324 vs XYZ6.71759 and refitted center7.10995; mechanism gate FAILS.
+c30b63f post-checks v2 CLOSED. ACTIVE SSH23356 frozen326c57f collects16fresh
+evaluation-only families/336requests, then runs frozen models without tuning.
+Do not restart completed queues. Final archive/report closure remains pending.
 StageAall56920TRAIN witnesses certified;2prototype coverage89.970%;20336valid
 prototype centerlines. Oracle xyz/bounded600step trains complete, diagnostic
 serializer failure was corrected in NEW diagnostic1: all3methods100%valid,

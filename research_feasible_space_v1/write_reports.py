@@ -34,7 +34,7 @@ def main():
         report.append('|'+names[k]+metrics(stats['means'][k]))
     report += ['', 'Historical references use different training protocols and are not paired causal controls:', '',
                '|Historical method|V8|U8|V4|U4|', '|---|---:|---:|---:|---:|',
-               '|C + ordinary success, five head seeds on C0|89.15%|6.9806|94.34%|3.7743|',
+               '|C + ordinary success, five head seeds on C0|89.15%|6.9806|94.34%|3.7736|',
                '|Gate, three historical seeds|92.12%|7.2380|94.33%|3.7720|', '',
                'Bounded mapping remains below both historical references on raw coverage and returned quality. Even the stronger center-only control does not dominate Gate or recover the historical C return quality.', '',
                '|Bounded minus control|ΔU8|Crossed 95% CI|Practical gain passes|Quality guards pass|',
@@ -56,7 +56,17 @@ def main():
     for k,v in witness['models'].items():
         report.append('|%s|%d|%.2f%%|%d|%d|%d|'%(k,v['retained'],100*v['retention'],v['lost_of_1872'],v['recovered_of_297'],v['adaptation_counts'].get('valid_same_mode_repair',0)))
     report += ['', 'The denominators are the unchanged parent-defined 2,169 surviving-mode and 270 invalid-old/same-mode-known-new opportunities. Bounded seed 0 repairs more opportunities than the parent but loses more surviving modes; the center control repairs still more. Requested query identity is not treated as actual realized mode identity.', '',
-               '## Frozen fresh-family diagnosis', '']
+               '']
+    if (E/'fixed_witness_statistics_v2.json').exists():
+        ws=read('fixed_witness_statistics_v2')
+        report += ['The final standalone controls are additionally evaluated on all three frozen generator continuations with unchanged witnesses:', '',
+                   '|Three-seed mean|Retention|Same-mode repair|New losses|Recovered|','|---|---:|---:|---:|---:|']
+        for k,v in ws['means'].items():
+            report.append('|%s|%.2f%%|%.2f%%|%.2f|%.2f|'%(names[k],100*v['retention'],100*v['repair'],v['lost'],v['recovered']))
+        report += ['', '|Bounded minus standalone control|Δ retention|95% CI|Δ same-mode repair|95% CI|','|---|---:|---|---:|---|']
+        for k,c in ws['comparisons'].items():
+            a,b=c['crossed_CI95'];report.append('|%s|%+.2f pp|[%+.2f, %+.2f] pp|%+.2f pp|[%+.2f, %+.2f] pp|'%(k,100*c['mean'][0],100*a[0],100*a[1],100*c['mean'][1],100*b[0],100*b[1]))
+    report += ['', '## Frozen fresh-family diagnosis', '']
     if (E/'generalization_statistics_v1.json').exists():
         fresh=read('generalization_statistics_v1')
         report += [fresh['scope']+'.', '',

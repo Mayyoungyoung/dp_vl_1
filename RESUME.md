@@ -1,13 +1,15 @@
 ## Feasible-space v1 ACTIVE — 2026-10-09
 
-Only active queue SSH92739, frozen8b6b19a, three-seed/strong-control/check pipeline.
-All three full tapered XYZ/bounded continuations complete; strong controls active.
+Only active queue SSH23356, frozen326c57f, run_feasible_generalization_v1.sh.
+All three full tapered XYZ/bounded continuations and fresh-head controls complete.
 Earlier screen/envelope and corrected oracle_diagnostic1 queues CLOSED. Oracle
 center/XYZ/bounded all100%valid on1024TRAIN reference-cell paths; no neural gain.
 Do not rerun scripts/run_feasible_three_seed_v1.sh or strong-controls/check jobs.
-After SSH92739 completes, frozen c30b63f run_feasible_post_checks_v2.sh (new API
-and exact selected-indices replay, corrected tapered paired figures, visibility),
-then fresh summary_v2 and artifact-only audit. These post-checks are NOT STARTED.
+Frozen c30b63f post-checks v2 completed. New generalization326c57f prepares/renders/
+exports/caches336observations, evaluates all3frozen continuations +fresh-head
+controls, then statistics. First prepare failed before data creation and is retained.
+After SSH23356 completes: fresh summary_v2, artifact-only audit, archive/local hash
+verification, final reports/figures/paper and non-force branch push.
 Never duplicate a job or infer success.
 Locked3seeds, no adaptive extension; .15U8/quality gates unchanged. No default changed.
 Read research_feasible_space_v1/{PROTOCOL,DATA,METHOD,RESEARCH_STATE}. Existing
