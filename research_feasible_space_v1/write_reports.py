@@ -16,7 +16,7 @@ def metrics(v):
 
 def main():
     tic=time.monotonic()
-    stats=read('three_seed_statistics_v1');s=read('summary_v2' if (E/'summary_v2.json').exists() else 'summary_v1')
+    stats=read('three_seed_statistics_v1');s=read(next(n for n in ('summary_v3','summary_v2','summary_v1') if (E/(n+'.json')).exists()))
     witness=read('fixed_witness_v1');diag=read('saved_outcome_diagnostic_v1');visibility=read('observation_visibility_v2')
     names={'xyz':'Same-information free XYZ','bounded':'Proposed bounded mapping','projection':'Shared-head projection',
            'center':'Shared-head XYZ center','boundcenter':'Shared-head bounded center','refitted_projection':'Projection, fresh head',
@@ -81,7 +81,7 @@ def main():
         report += ['', 'Parameter portability can establish a coordinate representation effect, but its centerline control must still establish whether nonzero learned interior parameters are needed. The diagnostic does not override the failed candidate-set comparison.']
     report += ['', '## Frozen fresh-family diagnosis', '']
     if (E/'generalization_statistics_v1.json').exists():
-        fresh=read('generalization_statistics_v1')
+        fresh=read('generalization_statistics_v2' if (E/'generalization_statistics_v2.json').exists() else 'generalization_statistics_v1')
         report += [fresh['scope']+'.', '',
                    'All model/head checkpoints were frozen before collecting these observations. No model selection, update or weight search uses them. All 16 families are new; their physical geometry hashes were checked against the old paired TRAIN/DEV registration. Eighty scenes were actually rendered; 32 additional observation variants are explicitly synthetic RGB/depth corruptions of the open scenes. This is task-level simulation evidence, not whole-arm or real-robot execution.', '',
                    '|Frozen method, three-seed mean|V8|U8|V4|U4|Sparse teacher recall|', '|---|---:|---:|---:|---:|---:|']
@@ -94,12 +94,14 @@ def main():
         report += ['', '|Bounded minus control, fresh families|ΔU8|Conditional crossed 95% CI|', '|---|---:|---|']
         for k,c in fresh['comparisons'].items():
             lo,hi=c['crossed_CI95'][0];report.append('|%s|%+.4f|[%+.4f, %+.4f]|'%(k,c['mean'][0],lo,hi))
-        report += ['', 'The fresh reference set is incomplete geometric teacher evidence; its recall must not be compared directly to the old all-mode-support recall. Noise and masking diagnose robustness, not calibrated confidence. This extension does not retroactively relax or replace the failed original mechanism gate.']
+        report += ['', 'The fresh reference set is incomplete geometric teacher evidence; its recall must not be compared directly to the old all-mode-support recall. Initial fresh recall mixed legacy full-portal reference strings with operational prediction words and incorrectly returned zero. The v2 statistics reclassify the same verified reference paths with the prediction definition, without changing or re-decoding any prediction; v1 recall is superseded. Noise and masking diagnose robustness, not calibrated confidence. This extension does not retroactively relax or replace the failed original mechanism gate.']
     else:report += ['The fixed16-family/7-variant/336-request collection is running. No fresh-generalization success is claimed before receipt closure.']
     report += ['', '## Verification, uncertainty and cost', '',
                'Server tests cover membership, fixed endpoints, candidate-boundary independence, relative decoder gradients, exact tapered clearance and visibility unknown handling. Actual 100-step versus 50+50 recovery has identical model, optimizer, RNG, history, sample stream and settings. The public API reproduces saved paths/events/q and selected indices exactly on 16 requests, with one decoder call per request. Cached-feature API timing excludes online VLM feature extraction.', '']
     for k in ('deployment_xyz_v2','deployment_bounded_v2'):
         a=read(k);report.append('- %s: %.2f ms/request, maximum replay error %.1g; selected indices exact.'%(k,a['api_cached_feature_ms_mean'],a['maximum_path_event_q_error']))
+    if (E/'benchmark_online_v1.json').exists():
+        a=read('benchmark_online_v1');report += ['', 'Actual coupled RGB-D/language-to-four-route timing is %.2f ms mean / %.2f ms median over eight DEV requests after one excluded warmup. It includes disk reads, tokenization, frozen Qwen feature extraction, point backprojection, both observation encoders, one8-route decode, full frozen q and selection; it excludes the independent checker and %.2f-second model load. Joint peak allocated GPU memory is %.3f GB. Online features match the cached features within1e-5. This small timing sample is not a throughput or real-robot claim.'%(a['online_ms_mean'],a['online_ms_median'],a['load_seconds'],a['peak_allocated_bytes']/1e9)]
     a=visibility['models']['refreshed_tapered_bounded_seed0']
     report += ['', 'Depth-only calibrated corner probes classify %.2f%% as unknown. Mean unknown fraction is %.2f%% on valid routes and %.2f%% on invalid routes. These sparse probes are not whole-cell certificates and do not constitute a learned uncertainty predictor.'%(100*a['probe_fractions']['unknown'],100*a['unknown_mean_valid'],100*a['unknown_mean_invalid']), '']
     if (E/'CLOSURE.json').exists():
@@ -150,7 +152,7 @@ def main():
              'Adjacent regions share a node cube and are structurally connected, including zero-width endpoint nodes. This avoids a separate empty-intersection construction failure but cannot make a colliding or wrong-mode corridor physically valid. The23degree-one Bézier pieces are precisely the24-node public polyline; they provide positional continuity only. No smoothness/dynamics/full-arm guarantee is inferred.', '',
              'The frozen scorer may miss available valid routes; the ablation table records this separately. It cannot repair a weak candidate pool and was not retrained using evaluation truth. The API timing uses cached frozen VLM features, not full online RGB-D-to-result latency.', '',
              '## Failures retained','',
-             'Failed server test on Sequential.weight access (test bug); failed oracle diagnostic JSON serialization (saved paths retained); failed fresh-family prepare before data creation (inherited uniqueness check before new geometry edits). Each correction uses new source/output/job IDs. Pre-launch release path typos and local test-discovery/rg glob errors are command mistakes, not model outcomes. No failed experiment is relabeled successful.', '',
+             'Failed server test on Sequential.weight access (test bug); failed oracle diagnostic JSON serialization (saved paths retained); failed fresh-family prepare before data creation (inherited uniqueness check before new geometry edits). Fresh recall initially compared legacy full-portal labels with operational prediction words; corrected v2 statistics reclassify the same verified references, with no changed decode/update or primary-quality metric. Each correction uses new source/output/job IDs. Pre-launch release path typos, local test-discovery/rg glob errors and a report writer using a newer shape field against old summary are command/artifact mistakes, not model outcomes. No failed experiment is relabeled successful.', '',
              'Older figure v1 renders an oversized uniform envelope and picks a different comparison seed. The delivered actual_reachable_figures_v2 uses true tapered reachable cells and actual paired seed0 XYZ/bounded outcomes, retaining both improvement and loss cases. Visual examples never replace aggregate gates.', '',
              '## Research decision','',
              'Do not extend interior-decoder loss searches or claim a new corridor-planning principle from these results. A further mechanism would need to solve observed region/goal/mode prediction errors and justify why simple centers cannot deliver the same ability. Fresh-family results are frozen diagnosis; they are not permission to optimize against a new development set. TEST_LOCKED and whole-arm validation remain unopened. The publication-potential goal is unmet.']

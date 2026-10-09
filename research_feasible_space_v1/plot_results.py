@@ -19,7 +19,7 @@ def main(root, output):
         return json.loads(p.read_text(encoding='utf-8'))
 
     stats = read('three_seed_statistics_v1/RESULTS.json')
-    summary = read('summary_v2/RESULTS.json')
+    summary = read('summary_v3/RESULTS.json')
     plt.rcParams.update({'font.size': 10, 'axes.spines.top': False,
                          'axes.spines.right': False, 'savefig.dpi': 180})
     kinds = ['xyz', 'bounded', 'refitted_projection', 'refitted_center', 'refitted_boundcenter']

@@ -7,7 +7,9 @@ from scripts.run_observed_probability import read,write,sha
 def main(name):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False);models={};rows={};streams={};stability={}
     for f in sorted(RUN.glob('*/eval_adaptive/metrics.json')):
-        n=f.parents[1].name;metric=read(f);models[n]={k:v for k,v in metric.items() if k!='input_hashes'};rows[n]=read(f.parent/'rows.json')
+        n=f.parents[1].name;view=RUN/'generalization_recall_corrected_v2'/n
+        metric=read(view/'metrics.json') if (view/'metrics.json').exists() else read(f)
+        models[n]={k:v for k,v in metric.items() if k!='input_hashes'};rows[n]=read((view if (view/'rows.json').exists() else f.parent)/'rows.json')
         with np.load(f.parent/'pool.npz') as z:
             radii=z['radii'];models[n]['width_quantiles_m']=np.quantile(radii,[0,.1,.5,.9,1]).tolist();models[n]['cells_below_2mm']=float((radii<.002).mean())
             paths=z['paths'];delta=np.diff(paths,axis=2);lengths=np.linalg.norm(delta,axis=-1);total=lengths.sum(-1)
@@ -35,7 +37,7 @@ def main(name):
     report=dict(models=models,stability=stability,paired_family_comparisons=comparisons,training_streams=streams,
         ledger=dict(jobs=len(receipts),completed=sum(r['status']=='completed' for r in receipts),failed=sum(r['status']=='failed' for r in receipts),
             elapsed_command_seconds=sum(r.get('elapsed_seconds',0) for r in receipts),unfinished=[r['id'] for r in receipts if r['status'] not in ('completed','failed')]),
-        scope='Repeated DEV_MODEL32families; seed0 exploratory unless formal seeds explicitly recorded; not independent test',locked_access=False)
+        scope='Old repeated DEV_MODEL32families plus registered16fresh evaluation-only families; fresh recall corrected if view exists; no untouched reserved test',locked_access=False)
     write(out/'RESULTS.json',report)
     table=['|Model|V8|U8|V4|U4|Predicted-cell feasibility|','|---|---:|---:|---:|---:|---:|']
     for n,m in models.items():table.append('|%s|%.2f%%|%.4f|%.2f%%|%.4f|%.2f%%|'%(n,100*m['raw']['valid_fraction'],m['raw']['distinct'],100*m['selected']['valid_fraction'],m['selected']['distinct'],100*m['corridor_feasibility']))

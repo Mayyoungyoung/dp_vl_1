@@ -21,7 +21,7 @@ def main(name):
     report=dict(files=files,data_files=data_files,data_root=str(fresh),sources=sources,receipt_count=len(receipts),completed=sum(r['status']=='completed' for r in receipts.values()),failed=sum(r['status']=='failed' for r in receipts.values()),
         command_seconds=sum(r['elapsed_seconds'] for r in receipts.values()),locked_access=False,experiment_queue_terminal=True,
         artifact_only_command=sys.argv,artifact_only_elapsed_seconds=time.monotonic()-tic,created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
-    write(out,report);print(json.dumps({k:v for k,v in report.items() if k not in ('files','sources')}),flush=True)
+    write(out,report);print(json.dumps({k:v for k,v in report.items() if k not in ('files','data_files','sources')}),flush=True)
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',default='ARTIFACT_INDEX.json');main(**vars(p.parse_args()))
