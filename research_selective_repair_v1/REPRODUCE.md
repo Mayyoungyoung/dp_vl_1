@@ -47,3 +47,16 @@ python -m research_selective_repair_v1.figures --receipts runs/selective_repair_
 This initial figure input contains actual sealed grids and fixed executor data.
 Weights,prediction pools and full receipts stay in dedicated runs/selective_repair_v1.
 No whole raw collector directory or reserved TEST_LOCKED payload is evaluated.
+## Latest stages (previous coordinator descriptions below are historical)
+
+All rendering/calibrated3seed/diffusion/structure queues are terminal.
+Source472c7407b1a5b0c00fd06a486c73b528b681188d ran
+scripts/run_selective_constraints_v1.sh: three targeted structural tests,
+2400TRAINconstraint updates, samebox global/protected/mode-global screens.
+Do not rerun into its existing output names. See CONSTRAINT_SCREEN.json.
+Next immutable export runs scripts/run_selective_constraint_execution_v1.sh:
+post-seal canonical metadata, transport audits, fixedPanda diagnostic. It uses
+existing predictions; no reconstruction/16candidate rescoring is performed.
+Check actual terminal receipts, not the launch command, before proceeding.
+Constraint trainer also preserves optimizer/allRNG/stream in recovery.pt;
+--stop-after/--resume requires exact same immutable source/config/data/seed.

@@ -65,6 +65,25 @@ figures/initial are labelled developmental; they will be updated after the
 registered new-data experiments. Check RESEARCH_STATE.md for current queues.
 # Latest development screen,2026-10-10
 
+Learned constraint pivot is completed (source472c740,2400TRAINupdates):
+
+|Same learned boxes/64step operator|Old U8|New U8|New V8|Old/new lost words|
+|---|---:|---:|---:|---:|
+|Ordinary global geometry|7.72569|7.84028|1.00000|0/0|
+|Protected contiguous mode correction|7.82639|7.92361|.99913|0/0|
+|Mode constraints without protection|7.82986|7.93056|.99913|13/18|
+
+Allzero newly damaged routes,allnewreturnedV4=1.0. Protected adds195old/98new
+words; mode-global adds209/117 butloses13/18. Completionworst-coordinate95%
+3.91mm on newDEV; explicitly fixedfour-post domain,not universal hidden-space
+inference. Protection improves survival but not U8 over strongest matched
+control. At7.93056 the algebraic8candidate headroom is only.06944,less than
+unchanged+.15. This does not establish a publication mechanism; expanded
+task difficulty or body bottlenecks would require a prospective protocol,
+never retroactive acceptance. FixedPanda/transport diagnostic follows next.
+Exact counts inresults/CONSTRAINT_SCREEN.json; originalheadscreen limitation
+still applies. Earlier tables below retain negative learned-tail evidence.
+
 No accepted mechanism yet. New physical population has16TRAIN/8DEVfamilies,
 6variants,144renderedscenes,432requests (288TRAIN/144DEV),all144initializations
 passed. It is development evidence; final confirmation has not been generated.

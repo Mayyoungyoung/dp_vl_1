@@ -14,11 +14,23 @@ do not cite earlier unstable control as strong evidence. Adapted local diffusion
 control0b861da TERMINAL: old7.15625/new7.25694 under1%damage. These are reused
 development screens with original allocation head, not formal confirmation.
 
-Current implementation is the prospective learned-post-constraint pivot in
-PROTOCOL.md. Train only old1152+new288TRAIN, small four-post completion model,
-then compare same64step/samepredictedboxes global geometry, mode-global and
-protected contiguous-edit operators. Sources locally authored; next freeze
-and launch scripts/run_selective_constraints_v1.sh from immutable fullcommit.
+Constraint pivot source472c7407b1a5b0c00fd06a486c73b528b681188d TERMINAL,
+3structural checks pass; small four-post completion2400updates completed.
+Same predicted boxes/64steps: newDEV global7.84028,protected7.92361,
+mode-global7.93056 (old7.72569/7.82639/7.82986). Allzero damaged routes.
+Protected loses0oldvalidwords; mode-global loses13old/18new whileaddingmore.
+New global has V8=1.0,protected/mode-global=.99913; all V4=1.0.
+Completion95%worst-coordinate error3.91mm,under closed four-post assumptions.
+This is useful constraint learning but no selective advantage over strongest
+matched control. Even8.0 is only+.06944 above newmode-global; this current
+development8candidate metric cannot clear unchanged+.15 gate at that score.
+Actualscreen in results/CONSTRAINT_SCREEN.json. No finalconfirmation generated.
+
+Next immutable execution coordinator creates canonical post-seal rows, audits
+current-word survival across interventions for5controls and runs fixedPanda
+on3constraint variants,firsttwoDEVfamilies/open+closed/target0/allreturned4.
+It diagnoses actual IK/link-collision bottlenecks before any further direction.
+Next command scripts/run_selective_constraint_execution_v1.sh from newcommit.
 No live experiment at this prelaunch update. Actual3seed matching-head/fresh
 confirmation/execution expansion remain required if the mechanism is promising.
 Checkpoint and full result paths indexed in results/CALIBRATED_SCREEN.json.
