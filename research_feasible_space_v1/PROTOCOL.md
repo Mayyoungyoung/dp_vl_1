@@ -136,3 +136,17 @@ controls. No checkpoint selection. Fresh recall uses incomplete geometric teache
 witnesses, so is not directly comparable to old all-mode-support recall. Geometry
 variants are actually rendered; noise/occlusion are explicitly synthetic current
 observation corruptions, not physical sensor experiments or robot execution.
+
+## Saved-parameter portability diagnosis, before measuring its outcome
+
+For each of the3frozen bounded continuation pools, use all existing directed
+parent-witness edit edges. Eligible slots have an actual valid requested source
+word and that word requested at destination. Keep source bounded relative node
+coordinates `(p_source-c_source)/rho_source` fixed; reconstruct with destination
+predicted centers/widths. Compare copied absolute coordinates, transferred relative
+coordinates, destination centerline and destination native route, all with the
+same destination predicted events. Check task-valid/same-word outcomes and repairs
+among copied-coordinate failures. These are matched-slot diagnostic denominators,
+not replacements for2169survival/270adaptation opportunities. No new decode, oracle
+repair, learned-head fit or deployment selection is introduced. Report everyseed
+and the center control even if it makes neural portability unnecessary.
