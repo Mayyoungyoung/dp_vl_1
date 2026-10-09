@@ -33,8 +33,9 @@ Single-view unknown regions are not marked free. Initial model uses learned
 geometric priors rather than a ray-certified occupancy map; predicted corridor
 containment is an algebraic property, never physical safety or visibility proof.
 Observation noise/occlusion evaluation must expose this limitation before any
-independent/general robot claim. A frozen fresh-family diagnosis is now registered
-and collecting; completed evidence must be read from the final RESULTS.md.
+independent/general robot claim. The frozen fresh-family diagnosis is completed: all 80 physical scenes rendered,
+all 336 request features cached, and all five methods / three seeds evaluated.
+Completed evidence is in RESULTS.md and generalization_statistics_v2.json.
 
 The visibility audit reads only depth/camera_intrinsics/camera_extrinsics from the
 permitted current observation file. It classifies shared-node cube-corner probes
@@ -54,3 +55,8 @@ no replacements and no reserved TEST_LOCKED reads. The new incomplete teacher
 references support sparse recall only; final metrics distinguish it from old
 all-mode support. Model/head weights are frozen before collection. Noise/masking
 are observation stressors, not claims about physical sensor noise or occlusion.
+
+Fresh recall v1 used incompatible full-portal reference strings and operational
+prediction words, incorrectly giving zero. A new immutable correction reclassified
+the same verified reference paths into the same operational words; v2 supersedes
+v1 recall only. Predictions, primary metrics and model weights did not change.

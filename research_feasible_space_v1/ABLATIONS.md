@@ -49,3 +49,13 @@ Shared views isolate the path construction for identical queries. Fresh-head vie
 
 One slot is changed while the other seven query/variant identities stay fixed. Net U8 includes the deliberately changed slot and must not be interpreted as companion-only harm. Independent boundaries remain invariant; peer-aware interior parameters can still change geometry and realized words. Returning independent centerlines eliminates these interior changes by construction.
 
+## Width, shape and frozen scorer
+
+|Arm|Width p10/median/p90 mm|Cells below2mm|Mean valid length m|Mean turn rad|Degenerate segments|Missed available valid slots|
+|---|---|---:|---:|---:|---:|---:|
+|refreshed_tapered_xyz_seed0|17.90 / 37.14 / 56.37|0.00%|0.8288|0.2663|0.0000%|24|
+|refreshed_tapered_bounded_seed0|17.98 / 37.11 / 56.35|0.00%|0.8285|0.2743|0.0000%|19|
+|refitted_control_center_seed0|17.90 / 37.12 / 56.41|0.00%|0.8558|0.3045|0.0000%|16|
+|refitted_control_boundcenter_seed0|17.97 / 37.09 / 56.36|0.00%|0.8556|0.3056|0.0000%|15|
+
+Turning angle describes the delivered polyline, not smooth robot motion. Missed available valid slots uses the checker only after selection; it is an analysis upper bound, never an oracle return rule.

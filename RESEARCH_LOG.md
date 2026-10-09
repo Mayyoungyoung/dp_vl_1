@@ -1367,3 +1367,47 @@ mistyped release path in the post-check chained command failed before any fresh
 experiment; corrected with actual git rev-parse SHA. Active SSH23356 renders new
 families from immutable326c57f, one worker/software GL/four CPU cores. Retain all
 receipts/failures; no scene replacement, no TEST_LOCKED access or robot claim.
+
+## 2026-10-09 Feasible-space: frozen fresh evidence and verified closure
+
+All 151 jobs terminal: 148 completed, three preserved failures, 5988.67308384
+actual command seconds including CPU rendering. Fourteen research generator
+trains (30000 updates) and seventeen matching heads (40800 updates) complete.
+No active queue, no interrupted job and no default switch. Final acceptance false;
+publication-potential goal unmet after matched controls, repairs and replication.
+
+Fresh source326c57f: 80 physical scenes rendered, 112 observations /336requests,
+16 new families, five physical and two explicitly synthetic observation variants.
+All five frozen methods /three generator continuation seeds evaluated without
+training or selection. Corrected fresh U8 means XYZ6.264881,bounded6.402778,
+refitted XYZ center6.832341. Bounded-minus-center CI[-.597222,-.276786]. Fresh
+recall v1 mistakenly mixed full-portal and operational word definitions; source
+e9dbb75 reclassified identical verified references in new corrected v2 views.
+No model decode/update or primary metric changed; obsolete v1 preserved.
+
+Source84b6fdd: all-seed fixed witnesses, fixed local-parameter transfer, real
+coupled online benchmark and dependency snapshot. Bounded retention79.42% and
+repair81.98%, versus refitted XYZ center80.94%/89.01%. Transfer improves copied
+old coordinates but remains below centers in every seed. Full VLM-to-four-route
+online mean120.3226ms/median138.4134ms on8requests+1warmup, peak4.322031GB;
+checker and model loading excluded, not a real-robot/throughput claim. Exact
+16request API replay, 100vs50+50 checkpoint/RNG recovery and eight server tests
+passed. Scorer/calibration roles and reserved TEST_LOCKED remain protected.
+
+Final summary_v3/audit source1ac5977fdf60871d37bbdefecac6ca602c15434d verifies
+all receipt source hashes and immutable tar SHA. Remote archive2502586877bytes,
+SHA3fed768a0c1b5191b84e31a8392936ce3da422a20820564a75d5001ed6cc2a8e,
+contains only dedicated RUN/new-data roots. Local path guards then extracted;
+24806 indexed files /2975246783bytes and source exports all hash-equal.
+Copy/hash/guard/extract289.7597s, local verification156.3900s; archive creation
+wall time unmeasured, not estimated. Local C0/q/TRAIN dependencies hash-verified.
+All failed receipts, optimizer/RNG checkpoints, outcome pools, observations,
+actual commands and source manifests preserved. Archive/model data stay ignored.
+
+Actual paired tapered figure v3 source2c42e5749c9c4a7f0cc691a8bd378580459208ef
+rendered outside RUN, with explicit provenance and evaluation-only truth overlays;
+v1 incorrect envelope/seed obsolete, v2 correct-data old layout retained.
+Clean aggregate three-seed and fresh plots use actual corrected JSON. Final
+RESULTS/ABLATIONS/FAILURE_ANALYSIS, METHOD/DATA/REPRODUCE, research paper draft,
+closure and report manifests delivered. No claimed novel benefit or paper success.
+Historical defaults/runs/main/d0d97eb and unrelated untracked files preserved.

@@ -1,19 +1,28 @@
-## Feasible-space v1 ACTIVE — 2026-10-09
+## Feasible-space v1 CLOSED — 2026-10-09
 
-Only active queue SSH23356, frozen326c57f, run_feasible_generalization_v1.sh.
-All three full tapered XYZ/bounded continuations and fresh-head controls complete.
-Earlier screen/envelope and corrected oracle_diagnostic1 queues CLOSED. Oracle
-center/XYZ/bounded all100%valid on1024TRAIN reference-cell paths; no neural gain.
-Do not rerun scripts/run_feasible_three_seed_v1.sh or strong-controls/check jobs.
-Frozen c30b63f post-checks v2 completed. New generalization326c57f prepares/renders/
-exports/caches336observations, evaluates all3frozen continuations +fresh-head
-controls, then statistics. First prepare failed before data creation and is retained.
-After SSH23356 completes: fresh summary_v2, artifact-only audit, archive/local hash
-verification, final reports/figures/paper and non-force branch push.
-Never duplicate a job or infer success.
-Locked3seeds, no adaptive extension; .15U8/quality gates unchanged. No default changed.
-Read research_feasible_space_v1/{PROTOCOL,DATA,METHOD,RESEARCH_STATE}. Existing
-TEST_LOCKED/source/hardware rules remain; old realized-coverage queue is closed.
+All queues are terminal; no experiment or interrupted training is pending.
+Branch codex/multiroute-v2. Read research_feasible_space_v1/RESULTS.md,
+FAILURE_ANALYSIS.md, REPRODUCE.md and results/CLOSURE.json before continuing.
+Implemented observed mode/variant cells and bounded route parameters; completed
+14 research generator trains, 17 matching head fits, two cause-driven repairs,
+three paired generator continuation seeds and fresh-head strong controls.
+Bounded valid modes@8: 6.80324 on reused DEV versus XYZ 6.71759 and centers
+7.10995; frozen 16 fresh families / 336 requests: 6.40278 versus 6.26488 and
+6.83234. The mechanism gate fails; publication-potential goal remains unmet.
+No accepted new method or deployment-default switch. Centers also outperform
+bounded fixed-witness repair and parameter transfer. Full online mean 120.32 ms
+on eight requests, not a robot-execution result. Eight server tests, exact API
+replay and checkpoint/RNG recovery passed. Fresh recall v2 corrects incompatible
+reference words without changing predictions; v1 is preserved and superseded.
+151 terminal jobs (148 completed, three failed), 5988.6731 command seconds,
+including CPU rendering. Archive/local verification completed: 24806 files,
+2975246783 bytes, all hashes equal; archive SHA and commands in ARCHIVE_COPY.
+Weights/pools/receipts/RNG and new rendered data are under dedicated ignored
+runs/feasible_space_v1 and data/feasible_space_generalization_v1. Source audit
+1ac5977; paired actual tapered figure v3 source 2c42e57. No queues to restart.
+Only ssh wzy3090, GPU1 UUID/.35memory/four threads; historical d0d97eb and
+runs/main preserved. TEST_LOCKED unread. Old ACTIVE entries below are historical
+and superseded. Unrelated untracked workspace files remain untouched.
 
 ## Realized coverage v1 ACTIVE — 2026-10-09
 

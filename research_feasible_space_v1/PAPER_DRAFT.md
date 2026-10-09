@@ -6,29 +6,25 @@ results/three_seed_statistics_v1.json. The bounded decoder fails the locked gate
 
 ## Abstract
 
-Generating a finite set of useful end-effector routes from a single RGB-D view and
-language requires both geometric feasibility and coverage of different passage
-patterns. We study whether an explicit output parameterization can improve these
-properties while limiting interference between candidate queries. A mode-conditioned
-network predicts an ordered chain of bounded convex cells independently of other
-queries. A second decoder coordinates the eight candidates through attention and
-maps its parameters into shared endpoint cubes. Their connecting segments remain
-inside the corresponding cells. This property is algebraic; an incorrectly
-predicted cell does not certify scene safety. We construct TRAIN-only corridor
-labels, compare matched free-coordinate and bounded decoders, and include relative,
-projection and centerline controls with the same observed information. All methods
-retain the complete frozen four-route return interface. Reference labels represent
-all56,920valid paths individually and89.97%within two mode-specific prototype
-corridors. Centerline, free and bounded oracle-corridor diagnostics all attain
-100%task validity on1,024TRAIN paths, showing that containment alone does not
-establish a need for learned interior generation. On288reused development requests,
-three paired generator continuations yield6.803valid modes@8for bounded mapping,
-versus6.718for same-information XYZ and7.110for independently refitted centerline
-controls. The0.086gain over XYZ is below the registered0.15meaningful-gain gate,
-and the deficit to centerlines excludes zero in conditional bootstrap intervals.
-This study therefore separates a correct conditional containment property from
-a useful neural interior-generation mechanism. Frozen new-family diagnosis is
-reported separately; no full-arm or real-robot capability is claimed.
+Generating a finite set of useful end-effector routes from a single RGB-D view
+and language requires geometric feasibility and coverage of different passage
+patterns. We test a mode-conditioned network that predicts bounded convex cells
+independently of companion queries, followed by a peer-aware decoder mapping
+parameters into those cells. Connecting segments satisfy an algebraic containment
+property; incorrect predicted cells do not certify scene safety. TRAIN-only oracle
+labels represent all 56,920 positive routes individually, with 89.97% covered by
+two per-mode prototypes. All three oracle controls attain 100% task validity on
+1,024 reference-cell paths, offering no evidence that a learned interior decoder
+is needed. Three matched generator continuations on 288 reused development
+requests produce 6.803 valid modes@8 for bounded mapping, versus 6.718 for free
+XYZ and 7.110 for independently refitted centerline controls. The 0.086 gain over
+XYZ fails the registered 0.15 meaningful-gain threshold. Frozen diagnosis on
+336 requests from 16 newly rendered families yields 6.403, 6.265 and 6.832,
+respectively, preserving the deficit to centers. Fixed-parameter transfer improves
+on copying old coordinates, but also trails new centers. We therefore separate
+a correct containment property and a measurable representation effect from an
+unestablished neural interior-generation contribution. No full-arm or real-robot
+capability is claimed.
 
 ## 1. Introduction
 
@@ -145,37 +141,97 @@ substitute for untouched evaluation.
 
 ## 5. Results and interpretation
 
-See the recorded tables and every seed in RESULTS.md. StageAalready shows that
-reference-cell expressivity is adequate while neural oracle necessity is absent.
-The first predicted-cell screen also separates containment from physical safety:
-bounded membership is100%but complete uniform-cell feasibility is about7.6%.
-Uniform-cell supervision raises region feasibility to about71%, yet introduces an
-endpoint tradeoff. The tapered repair explicitly targets reachable endpoint regions.
-The final bounded mean is87.01%route validity@8,6.8032actual valid modes@8,
-93.20%validity@4and3.7280returned valid modes@4. Same-information XYZ gives6.7176
-modes@8; the paired difference is0.08565,95%crossed interval[0.03356,0.14236].
-This smaller effect fails the0.15gate. Fresh-head center controls give7.1100,
-with bounded-minus-center difference-0.30671,interval[-0.42593,-0.20139].
-The bounded decoder also trails historical C+success and Gate references.
-On2,169fixed surviving-mode opportunities,boundedseed0retains1,727versus1,872
-for the parent; its224/270same-mode repairs are below center-only243/270.
-No positive algorithm contribution follows from these results. The paired plots
-show both improvement and loss cases and do not replace the aggregate comparisons.
+All results below are actual saved-output checks, with three generator
+continuations sharing the pretrained C0. The complete per-seed tables, intervals,
+stressors and historical references appear in RESULTS.md. The existing DEV set
+was repeatedly reused for research; the fresh set was collected after all model
+and head weights were frozen and was used only for diagnosis.
 
-## 6. Limitations
+| Population / method | Validity@8 | Valid modes@8 | Validity@4 | Valid modes@4 |
+|---|---:|---:|---:|---:|
+| Reused DEV, same-information XYZ | 85.89% | 6.7176 | 92.88% | 3.7130 |
+| Reused DEV, bounded mapping | 87.01% | 6.8032 | 93.20% | 3.7280 |
+| Reused DEV, refitted XYZ center | 90.93% | 7.1100 | 93.69% | 3.7477 |
+| Fresh families, same-information XYZ | 79.22% | 6.2649 | 89.78% | 3.5883 |
+| Fresh families, bounded mapping | 81.08% | 6.4028 | 90.33% | 3.6111 |
+| Fresh families, refitted XYZ center | 86.69% | 6.8323 | 92.06% | 3.6796 |
 
-The task is controlled and its words are not generic topological classes. Learned
-cells do not certify free space behind a single-view occlusion. A ray utility
-distinguishes probes before a visible surface, near that surface and unknown
-behind/outside the observation, but neither sparse probes nor a realization head
-provide a whole-cell uncertainty certificate. The representation already predicts
-a centerline, creating a strong explanation for why interior neural generation may
-be unnecessary. Modes can change inside a geometrically safe region. The fixed
-scorer may limit returned gains and is not recalibrated. No independent new-family,
-full-arm, dynamics or real-robot conclusion follows from these experiments.
-The fresh-family extension uses frozen weights and an explicitly registered
-evaluation-only protocol; it cannot erase repeated selection on the old DEV set.
+On reused DEV, bounded minus XYZ is +0.08565 valid modes, with conditional
+crossed 95% interval [+0.03356, +0.14236]. This is smaller than the fixed +0.15
+practical gate. Bounded minus refitted XYZ centers is -0.30671, interval
+[-0.42593, -0.20139]. On fresh families the corresponding differences are
++0.13790 [+0.07837, +0.19742] and -0.42956 [-0.59722, -0.27679]. A positive
+small effect against XYZ does not establish superiority to the strongest control.
+The fresh diagnosis also exposes a large masking sensitivity. Its sparse teacher
+recall uses incomplete references and must not be compared directly with old
+all-mode recall. Initial fresh recall used incompatible word definitions; a new
+v2 analysis corrects reference words without changing predictions or primary
+metrics. The original v1 is retained as superseded evidence.
 
-The study should be considered a research draft. Submission-readiness depends on
-the measured comparison, a defensible distinction from corridor-learning/planning
-prior art, and evidence beyond the reused development population.
+The first predicted-cell screen has 100% bounded membership but only about
+7.6% complete-cell geometric feasibility. Uniform envelope supervision raises
+feasibility to about 71%, while endpoint failures increase from 137 to 172 and
+returned validity decreases. Tapered reachable endpoint cells address the
+identified overconstraint, yet do not eliminate the deficit to centers. On saved
+seed-0 bounded predictions, certified-and-contained regions have zero geometric
+implication violations, while 78 task endpoint failures remain within certified
+cells. Physical containment does not ensure goal or passage semantics.
+
+On the unchanged 2,169 survival and 270 repair opportunities, the three-seed
+bounded means are 79.42% retention and 81.98% same-mode repair. Refitted XYZ
+centers attain 80.94% and 89.01%. The historical parent retains 86.31% and repairs
+74.07%, so increased repair comes with lost surviving alternatives. These
+aggregate measurements prevent selecting favorable examples as evidence of
+selective preservation. Actual paired XYZ/bounded gain, loss and remaining-failure
+figures show the same source/destination observations and predicted tapered cells.
+Gray obstacle overlays are evaluation-only truth.
+
+A distinct saved-prediction diagnostic holds old relative parameters fixed and
+maps them through destination cells. Its matched-slot denominators differ from
+the fixed survival/repair sets. Across seeds, copied-coordinate success is
+87.89–88.40%, transferred-parameter success is 90.27–91.25%, and new-center
+success is 92.26–93.24%. Transfer repairs 75.28–77.82% of failed old coordinates,
+versus 80.52–82.67% for centers. Parameter portability is measurable; learned
+nonzero interior coordinates remain unjustified.
+
+The actual online RGB-D/language-to-four-route pipeline averages 120.32 ms over
+eight requests after one excluded warmup, with 138.41 ms median and 4.322 GB
+joint peak allocated GPU memory. It includes the frozen VLM, point backprojection,
+observation encoders, one eight-route decode, full scorer and selection, excluding
+the independent checker and 2.55-second model load. This small timing sample
+supports neither throughput nor robot execution claims. Cached API replay is
+exact on 16 requests; 100-step versus 50+50 recovery is exact for model,
+optimizer, RNG, actual sample stream and settings.
+
+There are 151 terminal jobs: 148 completed and three preserved failures. The
+measured command ledger totals 5,988.67 seconds including CPU rendering. It
+contains 14 research generator trains and 17 matching head fits. Source exports,
+actual commands, checkpoint states and predictions are archived; all 24,806
+indexed local files pass hash verification. No reserved TEST_LOCKED payload or
+metric was inspected. This accounting establishes reproducibility, not a
+positive algorithm contribution.
+
+## 6. Limitations and research decision
+
+The task is controlled; its operational words are not generic homotopy classes.
+Single-view learned cells do not certify occluded free space. Sparse depth probes
+classify unknown regions but do not provide calibrated whole-cell confidence.
+The representation already predicts a centerline, explaining why interior
+neural generation may be unnecessary. Modes and goals can fail inside a safe
+geometric region. The two trained geometry channels are supported, but the final
+eight-word allocator chooses only variant zero. The frozen scorer limits returned
+gains and is not recalibrated. Centers still compute the unused relative branch,
+so timing is conservative and is not an optimized conventional-planner baseline.
+
+Fresh-family simulation evidence supports the negative center-control comparison;
+it does not erase repeated selection on the old DEV population. The three seeds
+are generator continuations of one pretrained model, not independent pretraining
+replications. Synthetic noise/masking are explicit observation stressors rather
+than calibrated real sensor perturbations. No whole-arm, dynamics, real-robot or
+untouched-test conclusion follows.
+
+The publication-potential goal remains unmet. These results do not justify more
+interior-decoder loss searches or a new corridor-planning principle. A subsequent
+mechanism must address observed region/goal/mode errors and demonstrate an ability
+that same-information centers cannot deliver. The present paper is a documented
+research draft, not a submission-ready positive method claim.

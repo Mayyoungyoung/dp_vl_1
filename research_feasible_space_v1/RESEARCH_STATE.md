@@ -1,27 +1,30 @@
-# Feasible-space v1 ACTIVE,2026-10-09
+## Feasible-space v1 CLOSED — 2026-10-09
 
-Inherited start99fd106. Local codex/multiroute-v2 fast-forwarded from prior branch.
-Historical defaults/results preserved. No reserved TEST_LOCKED access.
-StageAall56920TRAIN witnesses admit certified swept-box corridors. Two prototypes
-cover51211(89.970%)witnesses; all20336centerlines valid/correct-mode. No proof that
-learned internal generation is needed. Six server tests pass after correcting a
-test's Sequential.weight assumption; preserved failed test receipt.
-Oracle xyz/bounded600step both complete. Diagnostic0 failed serializer; corrected
-NEW diagnostic1 allcenter/free/bounded1024routes100%valid, so no neural oracle gain.
-Four2400step screen arms complete; bounded U8+ .0556 versus XYZ but below historical
-C+success. Predicted full cells only~7.6%feasible despite bounded100%membership.
-Uniform-envelope repair completed two2400step generators/matching-head pipelines;
-cell feasibility~71%improves, semantic endpoint failures137->172 offset fewer
-collisions. Tapered seed0 and all four seed1/2 generator continuations completed.
-Frozen8b6b19ae40702b10117e02e14dd84c51c3f349ca complete strong controls/checks.
-Bounded U8=6.80324 vs XYZ6.71759 and refitted center7.10995, gate FAILS. c30b63f
-post-checks v2 completed (explicit cells/exact selection API replay, corrected
-reachable-cell paired figures, depth-ray visibility). Never rerun closed queues.
-ACTIVE SSH23356 frozen326c57f271c8b64b147380429226b85e3f04388e runs fresh336request
-evaluation-only collection and all3frozen model continuations/strong controls.
-No selection use or new training. Then summary_v2/artifact-only audit/local copy/
-hash verification/final reports and non-force push. No publication success claim.
-Initial sourcepath typo before launcher, local unittest module-discovery typo,
-failed assertion and serializer failure are preserved in audit/log; no success
-inferred from a launch. Followactual receipts before refreshed-head queue.
-Only wzy3090 GPU1/.35memory/four CPU threads; no old wall-time limit.
+All queues are terminal; no experiment or interrupted training is pending.
+Branch codex/multiroute-v2. Read research_feasible_space_v1/RESULTS.md,
+FAILURE_ANALYSIS.md, REPRODUCE.md and results/CLOSURE.json before continuing.
+Implemented observed mode/variant cells and bounded route parameters; completed
+14 research generator trains, 17 matching head fits, two cause-driven repairs,
+three paired generator continuation seeds and fresh-head strong controls.
+Bounded valid modes@8: 6.80324 on reused DEV versus XYZ 6.71759 and centers
+7.10995; frozen 16 fresh families / 336 requests: 6.40278 versus 6.26488 and
+6.83234. The mechanism gate fails; publication-potential goal remains unmet.
+No accepted new method or deployment-default switch. Centers also outperform
+bounded fixed-witness repair and parameter transfer. Full online mean 120.32 ms
+on eight requests, not a robot-execution result. Eight server tests, exact API
+replay and checkpoint/RNG recovery passed. Fresh recall v2 corrects incompatible
+reference words without changing predictions; v1 is preserved and superseded.
+151 terminal jobs (148 completed, three failed), 5988.6731 command seconds,
+including CPU rendering. Archive/local verification completed: 24806 files,
+2975246783 bytes, all hashes equal; archive SHA and commands in ARCHIVE_COPY.
+Weights/pools/receipts/RNG and new rendered data are under dedicated ignored
+runs/feasible_space_v1 and data/feasible_space_generalization_v1. Source audit
+1ac5977; paired actual tapered figure v3 source 2c42e57. No queues to restart.
+Only ssh wzy3090, GPU1 UUID/.35memory/four threads; historical d0d97eb and
+runs/main preserved. TEST_LOCKED unread. Old ACTIVE entries below are historical
+and superseded. Unrelated untracked workspace files remain untouched.
+
+For future reproduction, use new job/output names and immutable commit exports.
+Do not rerun populated orchestration scripts or optimize against the frozen fresh
+diagnosis. The prior realized-coverage family is also closed. Consult actual
+receipts and preserved failures rather than old launch commands.

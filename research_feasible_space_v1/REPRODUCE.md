@@ -71,7 +71,7 @@ data root and the expected evaluation-only protocol. Known-mode recall is based
 on incomplete newly verified geometric teachers, not old all-mode support.
 `generalization_stats` reports all3seeds and all7variants, without model selection.
 
-After all jobs finish, run summary_v2 from an immutable export, then `audit`
+After all jobs finish, run summary_v3 from an immutable export, then `audit`
 outside the job wrapper (the audit rejects an active lock). ARTIFACT_INDEX.json
 hashes every dedicated RUN/new-data file and checks actual receipt source hashes
 against immutable exports. The archive contains both dedicated roots. Verify its
@@ -84,3 +84,38 @@ remain in ignored runs/feasible_space_v1 and data/feasible_space_generalization_
 Local scientific plots and Markdown tables read those actual JSONs only. Scripts
 plot_results.py,plot_generalization.py andwrite_reports.py record their inputs;
 the closure manifest records local rendering/archive verification separately.
+
+
+## Delivered closure
+
+All 151 ledger jobs are terminal: 148 completed and three failed, with every
+failure retained. Exact aggregate command time is 5,988.6731 seconds, including
+CPU scene rendering; it is not active GPU time. The corrected reference recall
+uses `correct_fresh_recall` followed by `generalization_stats` v2, without a new
+model decode. `witness_statistics`, `parameter_transfer`, `benchmark_online`,
+`dependency_snapshot` and final `summarize`/`audit` receipts are preserved.
+Final summary/audit source: `1ac5977fdf60871d37bbdefecac6ca602c15434d`.
+Real paired tapered figures v3 were rendered outside the RUN from immutable
+`2c42e5749c9c4a7f0cc691a8bd378580459208ef`; their own manifest records inputs,
+command and source hash. plots_v2 and fresh_plot_v1 are the final aggregate plots.
+Older compact results/figures remain explicit superseded evidence.
+
+The archive is `runs/feasible_space_v1/artifacts/feasible_space_v1_closure_1ac5977.tar.gz`:
+2,502,586,877 bytes, SHA256
+`3fed768a0c1b5191b84e31a8392936ce3da422a20820564a75d5001ed6cc2a8e`.
+After path guards and extraction, 24,806 indexed files totaling 2,975,246,783 bytes
+and immutable source exports passed hash verification. ARCHIVE_COPY.json records
+actual commands; LOCAL_HASH_VERIFICATION.json records the local verification.
+Archive creation wall time was not separately measured; no estimate is substituted.
+`dependencies_v1` includes verified C0, complete frozen q and TRAIN support/context
+copies. Generic frozen Qwen and simulator assets are existing pinned server
+resources, not installed or altered by this study.
+
+To verify the delivered local mirror without rerunning experiments:
+
+```powershell
+python research_feasible_space_v1/verify_artifacts.py --root F:/dpvlm --index F:/dpvlm/runs/feasible_space_v1/ARTIFACT_INDEX.json --output F:/dpvlm/research_feasible_space_v1/results/LOCAL_HASH_VERIFICATION_NEW.json
+```
+
+Use a fresh output name for any future reproduction. The publication-potential
+goal is unmet; completed queues must not be relaunched as if pending.

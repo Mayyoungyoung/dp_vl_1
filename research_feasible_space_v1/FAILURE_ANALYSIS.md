@@ -37,9 +37,9 @@ The frozen scorer may miss available valid routes; the ablation table records th
 
 ## Failures retained
 
-Failed server test on Sequential.weight access (test bug); failed oracle diagnostic JSON serialization (saved paths retained); failed fresh-family prepare before data creation (inherited uniqueness check before new geometry edits). Each correction uses new source/output/job IDs. Pre-launch release path typos and local test-discovery/rg glob errors are command mistakes, not model outcomes. No failed experiment is relabeled successful.
+Failed server test on Sequential.weight access (test bug); failed oracle diagnostic JSON serialization (saved paths retained); failed fresh-family prepare before data creation (inherited uniqueness check before new geometry edits). Fresh recall initially compared legacy full-portal labels with operational prediction words; corrected v2 statistics reclassify the same verified references, with no changed decode/update or primary-quality metric. Each correction uses new source/output/job IDs. Pre-launch release path typos, local test-discovery/rg glob errors and a report writer using a newer shape field against old summary are command/artifact mistakes, not model outcomes. No failed experiment is relabeled successful.
 
-Older figure v1 renders an oversized uniform envelope and picks a different comparison seed. The delivered actual_reachable_figures_v2 uses true tapered reachable cells and actual paired seed0 XYZ/bounded outcomes, retaining both improvement and loss cases. Visual examples never replace aggregate gates.
+Older figure v1 renders an oversized uniform envelope and picks a different comparison seed. The delivered actual_reachable_figures_v3 uses true tapered reachable cells and actual paired seed0 XYZ/bounded outcomes, retaining both improvement and loss cases. Version v2 retains correct data with an older layout; v3 fixes layout only. Visual examples never replace aggregate gates.
 
 ## Research decision
 
