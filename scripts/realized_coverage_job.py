@@ -16,7 +16,7 @@ def main():
     policy=SOURCE/'configs/realized_coverage_v1.json';tic=time.monotonic()
     r=dict(id=a.id,command=command,pid=os.getpid(),start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         source_commit=os.environ.get('CODE_COMMIT'),policy_sha256=sha(policy),cwd=str(SOURCE),status='starting',
-        source_sha256={str(f.relative_to(SOURCE)):sha(f) for name in ('routeset','scripts','configs','tests')
+        source_sha256={str(f.relative_to(SOURCE)):sha(f) for name in ('routeset','scripts','configs','tests','research_realized_coverage_v1')
                       for f in (SOURCE/name).rglob('*') if f.is_file() and f.suffix in ('.py','.sh','.json')})
     try:
         gpu=subprocess.check_output(['nvidia-smi','-i','1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()

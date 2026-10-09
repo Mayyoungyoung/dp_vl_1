@@ -7,6 +7,7 @@ import time
 import numpy as np
 from research_realized_coverage_v1.core import *
 from scripts.evaluate_paired_modes import inputs_for,references
+from scripts.research_v3_audit import plain
 
 def collect(name,split,resume=False,limit=None,checkpoint=BASE):
     torch_setup();model,_=load_generator(checkpoint);model.requires_grad_(False)
@@ -14,7 +15,9 @@ def collect(name,split,resume=False,limit=None,checkpoint=BASE):
     out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     manifest=dict(generator_sha256=sha(checkpoint),scorer_sha256=sha(Q),split=split,seed=91009,
         query_design='16 modes x two rotating slots; all seven companion pairs unchanged',source_commit=os.environ.get('CODE_COMMIT'))
-    if resume:assert read(out/'manifest.json')==manifest
+    if resume:
+        before=read(out/'manifest.json');assert {k:v for k,v in before.items() if k!='source_commit'}=={k:v for k,v in manifest.items() if k!='source_commit'}
+        write(out/('resume_'+manifest['source_commit']+'.json'),dict(original=before,current=manifest))
     else:write(out/'manifest.json',manifest)
     rows=[r for r in lines(DATA/'export/observations.jsonl') if r['split']==split]
     labels={r['id']:r for r in lines(DATA/'export/supervision.jsonl') if r['split']==split}
@@ -54,11 +57,12 @@ def collect(name,split,resume=False,limit=None,checkpoint=BASE):
         deltas.extend(d['gain'][1:].tolist())
         records.append(dict(id=row['id'],family=row['parent_id'].rsplit('_',1)[0],baseline_utility=d['utility'][0].tolist(),recoverable=recovered,
             best_local_gain=float(d['gain'][:,0].max()),file_sha256=sha(path)))
-        if (index+1)%64==0:print(json.dumps(dict(requests=index+1,counts=dict(counts))),flush=True)
+        if (index+1)%64==0:print(json.dumps(plain(dict(requests=index+1,counts=dict(counts)))),flush=True)
     summary=dict(counts=dict(counts),baseline_mean=np.mean([r['baseline_utility'] for r in records],0).tolist(),
         sampled_best_local_gain=float(np.mean([r['best_local_gain'] for r in records])),mean_replacement_delta=np.mean(deltas,0).tolist(),
         elapsed_seconds=time.monotonic()-tic,scope='Actual single-slot diagnostic, not deployment or global reachable bound',
         input_hashes=hashes,manifest=manifest,files=records,locked_access=False)
+    summary=plain(summary)
     write(out/'SUMMARY.json',summary);print(json.dumps({k:v for k,v in summary.items() if k not in ('files','input_hashes')}),flush=True)
 
 if __name__=='__main__':
