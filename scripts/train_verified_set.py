@@ -157,7 +157,7 @@ def diagnose():
     write(out/'summary.json', plain(summary)); print(json.dumps({k:v for k,v in summary.items() if k != 'rows'}), flush=True)
 
 
-def train(arm, seed, resume=False, stop_after=None):
+def train(arm, seed, resume=False, stop_after=None, replay_from='project'):
     torch = torch_setup()
     from routeset.observed_probability import ProbabilisticGeometryRouteHead
     from routeset.observed_geometry import positive_endpoint_attention_loss
@@ -168,7 +168,8 @@ def train(arm, seed, resume=False, stop_after=None):
     from routeset.observed_training_audit import tensor_state_digest, new_stream_audit, append_indices
     from scripts.train_paired_modes import source_identity
     cfg = read(POLICY); steps = cfg['steps']; batch = cfg['batch_size']
-    out = RUN/('%s_seed%d' % (arm, seed)); out.mkdir(parents=True, exist_ok=resume)
+    run_arm=('replay_'+replay_from) if arm=='replay' and replay_from!='project' else arm
+    out = RUN/('%s_seed%d' % (run_arm, seed)); out.mkdir(parents=True, exist_ok=resume)
     if (out/'last.pt').exists(): raise FileExistsError('Completed arm cannot be resumed')
     s, selected, radii, data, geo, configs, cs, hs, mapped, refs, checks = load_training()
     saved = torch.load(INITIAL, map_location='cpu', weights_only=False)
@@ -184,13 +185,14 @@ def train(arm, seed, resume=False, stop_after=None):
         population='known_le8' if CAPACITY_ONLY else 'all_train')
     replay = None; replay_files = {}; archive = None
     if arm == 'replay':
-        parent = RUN/('project_seed%d' % seed)
+        parent = RUN/('%s_seed%d' % (replay_from,seed))
         parent_summary = read(parent/'summary.json')
         assert parent_summary['steps'] == steps
         replay_files = parent_summary['replay_sha256']
         for name, value in replay_files.items(): assert sha(parent/name) == value
         replay = {k:np.load(parent/('replay_'+k+'.npy'), mmap_mode='r') for k in ('paths', 'events', 'words', 'ids')}
         settings['replay_source_sha256'] = replay_files
+        settings['replay_from'] = replay_from
     if arm in ('project', 'set_point', 'set_project'):
         specs = dict(paths=((steps,batch,8,24,3),np.float32), events=((steps,batch,8,24),np.float32),
                      words=((steps,batch,8),'U40'), ids=((steps,batch),np.int64))
@@ -271,9 +273,10 @@ def train(arm, seed, resume=False, stop_after=None):
             peak_allocated_bytes=torch.cuda.max_memory_allocated(),seed_scope='paired continuation randomness, shared historical seed0 initialization'))
 
 
-def evaluate(arm, seed):
+def evaluate(arm, seed, replay_from='project'):
     # Preserve old evaluator, full DEV denominator and complete fixed q encoder.
-    old.evaluate('%s_seed%d' % (arm, seed), fixed_q=True, paired_score=True, generator_root=RUN)
+    run_arm=('replay_'+replay_from) if arm=='replay' and replay_from!='project' else arm
+    old.evaluate('%s_seed%d' % (run_arm, seed), fixed_q=True, paired_score=True, generator_root=RUN)
 
 
 if __name__ == '__main__':
@@ -281,10 +284,11 @@ if __name__ == '__main__':
     parser.add_argument('--arm',choices=['ordinary','gate','project','replay','set_point','set_project']); parser.add_argument('--seed',type=int,default=0)
     parser.add_argument('--resume',action='store_true'); parser.add_argument('--stop-after',type=int)
     parser.add_argument('--population',choices=['known_le8','all'],default='known_le8')
+    parser.add_argument('--replay-from',choices=['project','set_point','set_project'],default='project')
     a=parser.parse_args()
     if a.population=='all':
         RUN=RUN/'all_population_v2'; PREPARED=RUN/'prepared'; CAPACITY_ONLY=False
     if a.stage=='prepare': prepare()
     elif a.stage=='diagnose': diagnose()
-    elif a.stage=='train': train(a.arm,a.seed,a.resume,a.stop_after)
-    else: evaluate(a.arm,a.seed)
+    elif a.stage=='train': train(a.arm,a.seed,a.resume,a.stop_after,a.replay_from)
+    else: evaluate(a.arm,a.seed,a.replay_from)

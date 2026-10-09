@@ -69,7 +69,7 @@ def analyze(names, output):
     gates={}
     for name in names:
         if not name.startswith(('project_seed','set_point_seed','set_project_seed')):continue
-        controls=['parent']+[n for n in names if n!=name and n.startswith(('ordinary_seed','gate_seed','replay_seed','set_point_seed'))
+        controls=['parent']+[n for n in names if n!=name and n.startswith(('ordinary_seed','gate_seed','replay_','set_point_seed'))
                                and n.rsplit('_seed',1)[1]==name.rsplit('_seed',1)[1]]
         gates[name]={c:bool(differences[name][c]['all_dev']['distinct']['difference']>=.3
             and differences[name][c]['all_dev']['valid_fraction']['difference']>=-.01) for c in controls}
