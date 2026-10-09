@@ -1,3 +1,13 @@
+## Verified-set current queue — 2026-10-09
+
+Sourcea6096e4 tests/prepare/diagnose/ordinary_seed0 train+eval completed. Remaining
+serial queue in SSH45455: gate_seed0 train/eval, project_seed0 train/eval. Do not
+duplicate; receipts in runs/verified_set_v1/jobs. Region restriction selects only
+384closed TRAIN requests, yielding a distribution confound. Before replication,
+run preregistered full1152TRAIN controls from deployed8ac68f9 into fresh
+runs/verified_set_v1/all_population_v2 using --population all. None of these v2
+jobs launched yet. Same additional7200s budget, original V3 ledger untouched.
+
 ## Verified-set stages A/B: new explicit budget — 2026-10-09
 
 New user-authorized7200 experiment command seconds, separate runs/verified_set_v1

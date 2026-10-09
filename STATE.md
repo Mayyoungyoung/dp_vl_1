@@ -1,3 +1,14 @@
+## Verified-set Stage A passed; closed-only confound found — 2026-10-09
+
+17server tests pass; sourcea6096e4 prepares384TRAIN closed requests, validates
+12480witnesses/1536corruptions and2048diagnostic slots. Ordinary seed0 completed
+1200steps but all-DEV validity64.28%/distinct4.6007: restricting known_modes<=8
+removed all open/shifted TRAIN. Do not claim gain against this weak control alone.
+Frozena6096 serial gate_seed0 train/eval then project_seed0 train/eval is running
+under SSHsession45455; inspect receipts before any launch. Full-population repair
+8ac68f9 is already exported/deployed but NOT started; protocol
+research_v3/VERIFIED_SET_FULL_POPULATION_V2.md. Same additional7200 ledger.
+
 ## Verified-set stages A/B: new explicit budget — 2026-10-09
 
 User authorized7200 ADDITIONAL experiment command seconds in this chat. New ledger

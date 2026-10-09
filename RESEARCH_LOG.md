@@ -1143,3 +1143,7 @@ User authorized 7200 additional experiment command seconds for phases A/B. Proto
 ## Verified-set Stage A complete; ordinary training launched
 Source a6096e4: 17 server tests pass; 384 eligible TRAIN requests, 12480 witnesses and 1536 corruptions verified; first64 TRAIN raw487/512 valid, 2048 raw/target slots agree with independent checker. Nonzero direct reference pressure is measured, not causally established harm. Detail reports/verified_set_v1/STAGE_A.md. New budget spent112.036994s before first ordinary training. Actual ordinary_seed0_train job launched from same frozen source; inspect receipt before any restart.
 
+
+## Restricted-population confound and prospective repair
+ordinary_seed0 trained1200steps exit0 (136.179s), evaluated all288DEV exit0 (11.045s). Valid64.2795%, distinct4.6007; by-variant confirms closed-only TRAIN eligibility. New full1152TRAIN protocol8ac68f9 registered before its models run. Existing gate/project restricted queue remains frozen; no population change to running jobs. Full-population methods must also exceed untouched safety_mean. No method advantage claimed.
+
