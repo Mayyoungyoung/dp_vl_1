@@ -18,11 +18,18 @@ def prepare():
         value = original(path)
         if Path(path) == paired.POLICY:
             value.update(seed=policy['seed'], train_families=0, dev_families=policy['families'],
-                         variants=policy['physical_variants'])
+                         variants=['open','closed','shifted'])
         return value
     paired.read = scoped_read
     try: value = paired.registration()
     finally: paired.read = original
+    original_plans=value['parent_plan'];expanded=[]
+    for family in range(policy['families']):
+        templates={p['variant']:p for p in original_plans[3*family:3*family+3]}
+        for variant in policy['physical_variants']:
+            p=copy.deepcopy(templates.get(variant,templates['open']))
+            p.update(index=len(expanded),variant=variant);expanded.append(p)
+    value['parent_plan']=expanded
     old_hashes = {p['registered_geometry_1mm_sha256'] for p in read(paired.DATA / 'registration.json')['parent_plan']}
     for p in value['parent_plan']:
         family = p['index'] // len(policy['physical_variants'])
