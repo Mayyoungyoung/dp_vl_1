@@ -1,3 +1,18 @@
+## Mode geometry v1 ACTIVE — 2026-10-09
+
+Follow STATE.md top and research_mode_geometry_v1/PROTOCOL.md. User requests actual
+new generator research; it is implemented. SSH59781 immutable902f545 canonical seed0
+queue is active. Do not duplicate. Earlier pilot/full results and3 failed experiment
+receipts retained; unordered-set sampling bug repaired with actual exact resume proof.
+Canonical B0/C/D and communication-off C/D use fixed1200steps and adaptive8-route
+inference. Source86c6897 additionally implements preregistered B_set strongest ordinary
+full-positive control, not launched yet. Inspect actual budgets/receipts before queueing.
+Next: finish canonical outcomes + TRAIN intervention, run B_set, assess signal and
+replicate relevant baseline/C/D seeds1,2; no seed selection or unlimited module search.
+Deliver six requested Markdown files, actual figures/weights/hashes and logs. Parent
+default unchanged, no paper-success claim; only existing legal TRAIN/DEV. Same7200
+additional ledger, latest3459.841819spent before remaining canonical jobs.
+
 ## Verified-set stage A/B closed — 2026-10-09
 
 No queue is active. SSH90581 and58860 completed.51jobs exit0;18training runs;

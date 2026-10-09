@@ -1,3 +1,18 @@
+## Mode geometry v1 ACTIVE — 2026-10-09
+
+Current user requests mode-conditioned 3D generation. Read research_mode_geometry_v1/PROTOCOL.md.
+Semantic mode decoder, selective nonzero path displacement, ordinary B controls implemented.
+Existing1152TRAIN/288DEV, all56920 existing positive paths, no new collection/TEST_LOCKED.
+Early400/1200step results are exploratory: real resume audit found unordered-key target
+sampling. Fixed at902f545; actual100vs50+50 model/optimizer/RNG/stream now exactly match.
+TRAIN companion intervention motivates one repair: bypass candidate self-attention.
+SSH59781 runs frozen902f545 canonical B0/C/D and communication-off C/D1200 seed0.
+Check receipts in runs/verified_set_v1/jobs/mg_can_* before any new launch; do not duplicate.
+Same additional7200 ledger, no increase; last confirmed afterB0eval3459.841819spent,
+3740.158181remaining. Local source86c6897 adds stronger full-positive ordinary B_set,
+registered but NOT launched. Keep historical parent/default and all failed evidence.
+METHOD.md written; final results/reproduction/draft and multi-seed work still pending.
+
 ## Verified-set A/B CLOSED — no accepted new mechanism — 2026-10-09
 
 All51 additional-budget jobs completed;18train/eval pairs (3restricted,15full).
