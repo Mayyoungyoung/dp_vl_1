@@ -1,0 +1,43 @@
+import unittest
+import numpy as np
+from research_feasible_space_v1.geometry import segment_radii,node_radii_numpy
+from routeset.verified_route_set import signed_clearances
+
+class CertificateTests(unittest.TestCase):
+    def test_continuous_collision_between_clear_endpoints(self):
+        p=np.linspace([-.2,0,.2],[.2,0,.2],24)[None]
+        r,slack=segment_radii(p,[[0,0,.2]],[[.03,.03,.03]],0)
+        self.assertLess(slack.min(),0);self.assertTrue((r[slack<=0]==0).all())
+    def test_box_certificate_protects_extreme_shared_nodes(self):
+        p=np.linspace([-.2,.09,.2],[.2,.09,.2],24)[None]
+        r,slack=segment_radii(p,[[0,0,.2]],[[.03,.03,.03]],0)
+        n=node_radii_numpy(r);self.assertGreater(r.min(),0)
+        # Every coordinate independently reaches an extreme, including towards box.
+        offset=np.zeros_like(p);offset[...,1]=-n;offset[...,2]=-n
+        moved=p+offset
+        self.assertGreater(signed_clearances(moved,[[0,0,.2]],[[.05,.05,.05]]).min(),0)
+        self.assertTrue((moved[...,2]>=0).all())
+    def test_final_segment_certificate_includes_shared_connectors(self):
+        r=np.array([[.03,.002]+[.04]*21]);n=node_radii_numpy(r)
+        self.assertEqual(n[0,0],0);self.assertEqual(n[0,-1],0)
+        self.assertEqual(n[0,1],.002);self.assertEqual(n[0,2],.002)
+
+try:
+    import torch
+    from research_feasible_space_v1.mapping import construct,node_radii
+except ImportError:torch=None
+
+@unittest.skipIf(torch is None,'Torch tests run in unchanged authorized server environment')
+class MappingTests(unittest.TestCase):
+    def test_bound_gradient_and_endpoints(self):
+        p=torch.randn(3,8,24,3);r=torch.rand(3,8,23)*.06
+        z=torch.randn_like(p,requires_grad=True);q=construct(p,r,z)
+        self.assertTrue(((q-p).abs()<=node_radii(r)[...,None]+1e-6).all())
+        torch.testing.assert_close(q[...,[0,-1],:],p[...,[0,-1],:])
+        q.square().mean().backward();self.assertGreater(z.grad[...,1:-1,:].abs().sum().item(),0)
+    def test_same_info_projection(self):
+        p=torch.zeros(1,8,24,3);r=torch.full((1,8,23),.02);z=torch.full_like(p,10)
+        a=construct(p,r,z,'xyz');b=construct(p,r,z,'projection')
+        self.assertGreater(a.abs().max().item(),.02);self.assertLessEqual(b.abs().max().item(),.020001)
+
+if __name__=='__main__':unittest.main()
