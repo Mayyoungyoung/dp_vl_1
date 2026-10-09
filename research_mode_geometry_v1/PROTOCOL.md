@@ -156,3 +156,10 @@ no matching-weight or coefficient sweep. Call this D2, keep all D failures.
 Run1200seed0 after the active replication queue; expand D2 seeds1,2 only if
 retention/proposal stability improves without a serious route-quality loss.
 If it fails, stop this bounded repair cycle and report the limitations.
+
+D2seed0 retained1734 vsD1715, repair214/270 vs210, validity88.11% vs88.32%;
+thus it meets the registered small-repair continuation condition relative to D,
+but remains below C's return/retention and far below parent retention. Complete
+D2seeds1,2, then no further loss or architecture search this round. Preserve the
+originalD negative three-seed result. Final acceptance still requires all quality
+dimensions and comparison to C/strong ordinary controls, not this modest signal.
