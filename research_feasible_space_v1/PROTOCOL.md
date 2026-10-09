@@ -117,3 +117,22 @@ hashes. For each3seeds collect identical TRAIN16word/two-slot outcome design and
 fit success2400 on that actual decoder. Retain shared-head ablations separately.
 Main acceptance must pass both shared and independently refitted controls; no
 claim from a postprocessor inheriting mismatched success labels.
+
+## Frozen fresh-family diagnostic extension, before collection
+
+The user's requested new-scene evaluation is completed even if the representation
+fails the old DEV acceptance gate. This supersedes only the conditional collection
+clause above. It does not authorize another tuning round, a relaxed gate or a
+deployment/robot claim. All generator/head checkpoints already exist and stay fixed.
+Config configs/feasible_space_generalization_v1.json fixes seed641009,16new families,
+80physical scenes (open,shifted,closed,narrow,tall),32derived observation-only noisy
+or centrally occluded scenes,336requests. Every family is assigned DEV_MODEL and
+evaluation-only; none enters TRAIN. Check geometry hashes against existing paired
+TRAIN/DEV registration, without reading any reserved payload. One rendering worker,
+software GL, existing simulator/Qwen environments, GPU1/.35memory and CPU0–3 only.
+Retain rendering failures and denominator shortfalls; never substitute scenes.
+Compare all3frozen continuations of XYZ,bounded and three independently refitted
+controls. No checkpoint selection. Fresh recall uses incomplete geometric teacher
+witnesses, so is not directly comparable to old all-mode-support recall. Geometry
+variants are actually rendered; noise/occlusion are explicitly synthetic current
+observation corruptions, not physical sensor experiments or robot execution.

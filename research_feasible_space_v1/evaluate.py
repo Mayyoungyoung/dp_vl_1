@@ -11,7 +11,7 @@ from scripts.evaluate_paired_modes import inputs_for,references,check_candidates
 from scripts.research_v3_audit import coverage,average,plain
 from routeset.observed_probability import load_scored_planner
 
-def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
+def evaluate(name,checkpoint,head=None,kind=None,perturb=False,data_root=None,expected_requests=288):
     torch_setup();model,ck=load_model(checkpoint);model.requires_grad_(False)
     if kind:model.kind=kind
     scorer=load_scored_planner(Q,'cuda').requires_grad_(False);proposal=None
@@ -19,9 +19,20 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
         saved=torch.load(head,map_location='cpu',weights_only=False);assert saved['settings']['generator_sha256']==sha(checkpoint),'Stale success head'
         proposal=SuccessHead().cuda();proposal.load_state_dict(saved['model']);proposal.eval()
     out=RUN/name/'eval_adaptive';out.mkdir(parents=True,exist_ok=False)
-    rows=[r for r in lines(DATA/'export/observations.jsonl') if r['split']=='DEV_MODEL'];assert len(rows)==288
-    labels={r['id']:r for r in lines(DATA/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
-    with np.load(old.SUPPORT/'support.npz') as z:known={str(k):set(z['modes'][i,z['mask'][i]]) for i,k in enumerate(z['ids']) if z['splits'][i]=='DEV_MODEL'}
+    data=data_root or DATA
+    if data_root is not None:
+        assert data.resolve()==(DATA.parent/'feasible_space_generalization_v1').resolve()
+        registration=read(data/'registration.json');manifest=read(data/'export/manifest.json')
+        assert registration['protocol']==manifest['protocol']=='feasible_space_frozen_generalization_v1'
+        assert registration['evaluation_only'] and manifest['evaluation_only'] and expected_requests==336
+        assert manifest['failed_parents']==[] and manifest['observations']==336
+    rows=[r for r in lines(data/'export/observations.jsonl') if r['split']=='DEV_MODEL'];assert len(rows)==expected_requests
+    labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
+    if data_root is None:
+        with np.load(old.SUPPORT/'support.npz') as z:known={str(k):set(z['modes'][i,z['mask'][i]]) for i,k in enumerate(z['ids']) if z['splits'][i]=='DEV_MODEL'}
+    else:
+        # Incomplete geometric teachers supply evaluation recall only, never inputs.
+        known={k:set(w for w in references(r)['words'] if w is not None) for k,r in labels.items()}
     results=[];pools={k:[] for k in ('paths','events','q','ids','mode_ids','variant_ids','centers','radii')};hashes={};times=[];stability=[]
     calls=[];capture=[]
     hook=model.relative_output.register_forward_hook(lambda module,args,result:calls.append(tuple(result.shape)))
@@ -32,7 +43,7 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
         p,e,info=original(*args,**kwargs);capture.append((info['centers'].detach().cpu().numpy(),info['radii'].detach().cpu().numpy()));return p,e,info
     model.decode=decoded
     for row in rows:
-        inp=inputs_for(row,labels[row['id']],DATA/'export/qwen_cache',torch,hashes);runner=SceneRunner(model,scorer,inp)
+        inp=inputs_for(row,labels[row['id']],data/'export/qwen_cache',torch,hashes);runner=SceneRunner(model,scorer,inp)
         with torch.inference_mode():
             m=torch.tensor(runner.base[None],device='cuda');v=torch.tensor((runner.base_variants%2)[None],device='cuda')
             if proposal:m,v,_=allocate('success',proposal,runner.context,m,v);v.zero_()
@@ -68,10 +79,12 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False):
         generator_sha256=sha(checkpoint),head_sha256=sha(head) if head else None,scorer_sha256=sha(Q),pool_sha256=sha(out/'pool.npz'),cell_form='tapered_endpoint_boxes' if ck['settings'].get('tapered_cells',False) else 'uniform_swept_boxes',
         corridor_feasibility=float(np.mean([r['corridor_certified_under_eval_truth'] for r in results])),containment=float(np.mean([r['inside_predicted_cells'] for r in results])),
         invalid_with_bad_corridor=sum(r['invalid_with_bad_corridor'] for r in results),invalid_with_certified_corridor=sum(r['invalid_with_certified_corridor'] for r in results),
-        cost=dict(decoded_sets=len(rows),diagnostic_extra_decodes=len(rows) if perturb else 0,generated_routes=len(rows)*8,decode_q_ms_mean=float(np.mean(times)*1000)),input_hashes=hashes,locked_access=False)
+        cost=dict(decoded_sets=len(rows),diagnostic_extra_decodes=len(rows) if perturb else 0,generated_routes=len(rows)*8,decode_q_ms_mean=float(np.mean(times)*1000)),input_hashes=hashes,locked_access=False,
+        data_root=str(data),expected_requests=expected_requests,recall_scope='Sparse fresh geometric teachers' if data_root else 'Existing all-mode support')
     write(out/'rows.json',plain(results));write(out/'metrics.json',plain(report));write(out/'stability.json',stability)
     print(json.dumps(plain({k:v for k,v in report.items() if k!='input_hashes'})),flush=True)
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint',required=True,type=type(RUN));p.add_argument('--head',type=type(RUN))
-    p.add_argument('--kind',choices=['bounded','relative','xyz','center','projection']);p.add_argument('--perturb',action='store_true');evaluate(**vars(p.parse_args()))
+    p.add_argument('--kind',choices=['bounded','relative','xyz','center','projection']);p.add_argument('--perturb',action='store_true')
+    p.add_argument('--data-root',type=type(RUN));p.add_argument('--expected-requests',type=int,default=288);evaluate(**vars(p.parse_args()))

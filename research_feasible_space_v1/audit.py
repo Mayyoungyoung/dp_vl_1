@@ -16,7 +16,9 @@ def main(name):
         if commit in sources:continue
         for n,h in r['source_sha256'].items():assert sha(folder/n)==h,(commit,n)
         archive=ROOT/'research_v2/incoming'/(commit+'.tar');sources[commit]=dict(archive_sha256=sha(archive),source_files=r['source_sha256'])
-    report=dict(files=files,sources=sources,receipt_count=len(receipts),completed=sum(r['status']=='completed' for r in receipts.values()),failed=sum(r['status']=='failed' for r in receipts.values()),
+    fresh=ROOT/'data/feasible_space_generalization_v1'
+    data_files={str(f.relative_to(fresh)):dict(bytes=f.stat().st_size,sha256=sha(f)) for f in sorted(fresh.rglob('*')) if f.is_file()} if fresh.exists() else {}
+    report=dict(files=files,data_files=data_files,data_root=str(fresh),sources=sources,receipt_count=len(receipts),completed=sum(r['status']=='completed' for r in receipts.values()),failed=sum(r['status']=='failed' for r in receipts.values()),
         command_seconds=sum(r['elapsed_seconds'] for r in receipts.values()),locked_access=False,experiment_queue_terminal=True,
         artifact_only_command=sys.argv,artifact_only_elapsed_seconds=time.monotonic()-tic,created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
     write(out,report);print(json.dumps({k:v for k,v in report.items() if k not in ('files','sources')}),flush=True)
