@@ -1,5 +1,5 @@
 """Real predicted cells/paths and corresponding RGB in a registered edit pair."""
-import argparse,itertools,json
+import argparse,itertools,json,time,sys,os
 import numpy as np
 from scipy.spatial import ConvexHull
 import matplotlib
@@ -12,6 +12,7 @@ from scripts.evaluate_paired_modes import references
 from research_feasible_space_v1.geometry import node_radii_numpy
 
 def main(name,analysis,xyz,bounded):
+    tic=time.monotonic()
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     all_records=read(RUN/analysis/'adaptation_rows.json');left=all_records[xyz+':adaptive'];right=all_records[bounded+':adaptive'];cases=[]
     for condition,label in ((lambda a,b:a['category']!='valid_same_mode_repair' and b['category']=='valid_same_mode_repair','actual_same_mode_repair_improvement'),
@@ -29,7 +30,7 @@ def main(name,analysis,xyz,bounded):
     hashes={};records=[]
     if not cases:raise RuntimeError('No actual diagnostic cases')
     for ci,case in enumerate(cases[:3]):
-        fig=plt.figure(figsize=(15,10))
+        fig=plt.figure(figsize=(15,11.5))
         for side,ident in enumerate((case['source_id'],case['destination_id'])):
             image=obs[ident]['image'];hashes[image]=sha(image)
             ax=fig.add_subplot(2,3,side*3+1);ax.imshow(plt.imread(image));ax.axis('off');ax.set_title(('Source' if side==0 else 'Edited')+' observed RGB\n'+ident,fontsize=8)
@@ -52,12 +53,14 @@ def main(name,analysis,xyz,bounded):
                         if max(r0,r1)>1e-8:
                             hull=ConvexHull(vertices);poly=Poly3DCollection(vertices[hull.simplices],facecolors='#4b95dd',edgecolors='none',alpha=.05);ax.add_collection3d(poly)
                     ax.plot(*center.T,'b--',lw=1)
-                ax.set_title(n+'\nvalid='+str(sum(row['valid']))+'/8; requested '+row['assigned_modes'][slot]+'\nactual '+str(row['words'][slot]),fontsize=7)
+                ax.set_title(('Free XYZ' if col==0 else 'Bounded mapping')+' | '+('Source' if side==0 else 'Edited')+'\nvalid='+str(sum(row['valid']))+'/8; requested '+row['assigned_modes'][slot]+'\nactual '+str(row['words'][slot]),fontsize=9,pad=8)
                 ax.set_xlabel('x m');ax.set_ylabel('y m');ax.set_zlabel('z m');ax.view_init(35,-65)
                 records.append(dict(case=ci,id=ident,model=n,focus_slot=slot,requested_mode=row['assigned_modes'][slot],valid=row['valid'][slot],actual_mode=row['words'][slot]))
-        fig.suptitle(case['mode']+' | '+case['comparison_category']+'\nGray: evaluation truth posts; blue: predicted reachable cells; green/red: actual valid/invalid paths',fontsize=10)
-        fig.tight_layout(rect=(0,0,1,.95));fig.savefig(out/('predicted_corridors_case%d.png'%ci),dpi=150);plt.close(fig)
-    write(out/'MANIFEST.json',dict(cases=cases,records=records,images_sha256=hashes,source_pools_sha256={n:sha(RUN/n/'eval_adaptive/pool.npz') for n in pools},locked_access=False))
+        fig.suptitle(case['mode']+' | '+case['comparison_category'].replace('actual_','').replace('_',' ')+'\nGray: evaluation truth posts; blue: predicted reachable cells; green/red: actual valid/invalid paths',fontsize=11)
+        fig.subplots_adjust(left=.03,right=.97,bottom=.06,top=.87,hspace=.4,wspace=.08)
+        fig.savefig(out/('predicted_corridors_case%d.png'%ci),dpi=150);plt.close(fig)
+    write(out/'MANIFEST.json',dict(cases=cases,records=records,images_sha256=hashes,source_pools_sha256={n:sha(RUN/n/'eval_adaptive/pool.npz') for n in pools},locked_access=False,
+        artifact_only_command=[sys.executable]+sys.argv,source_script_sha256=sha(__file__),source_commit=os.environ.get('CODE_COMMIT'),elapsed_seconds=time.monotonic()-tic))
     print(json.dumps(dict(cases=min(3,len(cases)),records=len(records))),flush=True)
 
 if __name__=='__main__':

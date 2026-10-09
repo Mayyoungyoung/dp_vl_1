@@ -24,7 +24,7 @@ def main(root, output):
                          'axes.spines.right': False, 'savefig.dpi': 180})
     kinds = ['xyz', 'bounded', 'refitted_projection', 'refitted_center', 'refitted_boundcenter']
     labels = ['Free XYZ', 'Bounded', 'Projection', 'XYZ center', 'Bounded center']
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5.3))
     for seed in range(3):
         values = [stats['seed_results'][k][seed]['U8'] for k in kinds]
         axes[0].plot(range(5), values, 'o-', alpha=.75, lw=1, label='Continuation seed %d' % seed)
@@ -32,7 +32,6 @@ def main(root, output):
     axes[0].axhline(7.238, color='.6', ls=':', lw=1, label='Historical Gate (reference)')
     axes[0].set_xticks(range(5), labels, rotation=18)
     axes[0].set_ylabel('Distinct actual valid modes @8')
-    axes[0].legend(fontsize=7, loc='lower left')
     axes[0].set_title('All three full generator continuations')
     comparisons = ['xyz', 'refitted_projection', 'refitted_center', 'refitted_boundcenter']
     for i, k in enumerate(comparisons):
@@ -48,7 +47,9 @@ def main(root, output):
     axes[1].legend(fontsize=8)
     axes[1].set_title('Conditional seed × family bootstrap 95% intervals')
     fig.suptitle('288 reused DEV_MODEL requests / 32 families; shared pretrained C0', fontsize=11)
-    fig.tight_layout()
+    handles,legend_labels=axes[0].get_legend_handles_labels()
+    fig.legend(handles,legend_labels,fontsize=8,loc='lower center',ncol=3,bbox_to_anchor=(.5,.01))
+    fig.tight_layout(rect=(0,.13,1,1))
     fig.savefig(output / 'three_seed_comparison.png')
     fig.savefig(output / 'three_seed_comparison.pdf')
     plt.close(fig)
