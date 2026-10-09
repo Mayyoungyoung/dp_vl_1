@@ -1,0 +1,21 @@
+{
+  "protocol": "selective_route_repair_v1",
+  "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab",
+  "gpu_memory_fraction": 0.35,
+  "threads": 4,
+  "base": "runs/feasible_space_v1/control_center_seed0/last.pt",
+  "base_head": "runs/feasible_space_v1/success_control_center_seed0/last.pt",
+  "steps": 2400,
+  "batch": 32,
+  "lr": 0.0003,
+  "maximum_edit_nodes": 12,
+  "maximum_displacement_m": 0.08,
+  "teacher_steps": 64,
+  "geometric_steps": 64,
+  "damage_budget": 0.01,
+  "thresholds": [0.25, 0.5, 0.7, 0.9, 1.01],
+  "scales": [0.0, 0.25, 0.5, 0.75, 1.0],
+  "seeds": [0, 1, 2],
+  "gate": {"delta_U8": 0.15, "delta_V8": -0.01, "delta_V4": -0.005, "delta_U4": -0.03},
+  "confirmation": "Generate only after method, thresholds and all control checkpoints are frozen"
+}
