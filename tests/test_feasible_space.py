@@ -39,5 +39,19 @@ class MappingTests(unittest.TestCase):
         p=torch.zeros(1,8,24,3);r=torch.full((1,8,23),.02);z=torch.full_like(p,10)
         a=construct(p,r,z,'xyz');b=construct(p,r,z,'projection')
         self.assertGreater(a.abs().max().item(),.02);self.assertLessEqual(b.abs().max().item(),.020001)
+    def test_companion_independent_boundary_and_nonzero_joint_gradients(self):
+        from routeset.mode_geometry import ModeGeometryHead
+        from research_feasible_space_v1.model import FeasibleSpaceHead
+        base=ModeGeometryHead(feature_dim=16,width=32,max_candidates=8)
+        model=FeasibleSpaceHead(base);ctx=torch.randn(2,32);anchor=torch.randn(2,3);current=torch.randn(2,8)
+        m=torch.arange(8)[None].repeat(2,1);v=torch.zeros_like(m)
+        p,e,a=model.decode(ctx,anchor,current,m,v);mm=m.clone();mm[:,0]=15
+        _,_,b=model.decode(ctx,anchor,current,mm,v)
+        torch.testing.assert_close(a['centers'][:,1:],b['centers'][:,1:],rtol=0,atol=0)
+        torch.testing.assert_close(a['radii'][:,1:],b['radii'][:,1:],rtol=0,atol=0)
+        p.square().mean().backward()
+        self.assertGreater(model.relative_output.weight.grad.abs().sum().item(),0)
+        self.assertGreater(model.corridor_output.weight.grad.abs().sum().item(),0)
+        self.assertTrue(all(x.grad is None for x in model.base.parameters()))
 
 if __name__=='__main__':unittest.main()
