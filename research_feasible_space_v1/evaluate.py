@@ -32,7 +32,12 @@ def evaluate(name,checkpoint,head=None,kind=None,perturb=False,data_root=None,ex
         with np.load(old.SUPPORT/'support.npz') as z:known={str(k):set(z['modes'][i,z['mask'][i]]) for i,k in enumerate(z['ids']) if z['splits'][i]=='DEV_MODEL'}
     else:
         # Incomplete geometric teachers supply evaluation recall only, never inputs.
-        known={k:set(w for w in references(r)['words'] if w is not None) for k,r in labels.items()}
+        from scripts.research_v3_audit import mode
+        known={}
+        for k,r in labels.items():
+            ref=references(r)
+            known[k]={mode(p,ref['config']) for p,valid in zip(ref['paths'],ref['reference_valid']) if valid}
+            known[k].discard(None)
     results=[];pools={k:[] for k in ('paths','events','q','ids','mode_ids','variant_ids','centers','radii')};hashes={};times=[];stability=[]
     calls=[];capture=[]
     hook=model.relative_output.register_forward_hook(lambda module,args,result:calls.append(tuple(result.shape)))
