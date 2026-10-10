@@ -3,7 +3,7 @@ import argparse,datetime,os,sys,time,traceback,subprocess
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(name,api=False):
+def run(name,api=False,amplitude=False):
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     lock=RUN/'prefix_pilot_gpu.lock';fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(command=sys.argv,start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
@@ -31,6 +31,13 @@ def run(name,api=False):
             code=0
             return
         from research_selective_repair_v1.body_screen import screen
+        if amplitude:
+            rnn=RUN/'body_event_pilot_recurrent_seed0_v2/last.pt';mlp=RUN/'body_event_pilot_nonrecurrent_seed0_v2/last.pt';binary=RUN/'body_binary_pilot_seed0_v2/last.pt'
+            for label,kind,forecast,checkpoint in [('actual','actual','event',rnn),('planned','planned','event',rnn),('actual_nonrecurrent','actual','event',mlp),('binary_planned','planned','binary',binary)]:
+                screen('body_amplitude_%s_TRAIN_screen_seed0_v1'%label,kind,checkpoint,word_safe=True,forecast=forecast,role='TRAIN',continuous=True,all_goals=True,family_start=6,families=2,dataset_scope='half')
+            receipt['scope']='Bounded32step amplitude interpolation on two event-held TRAIN families,all3goals;4matched controls; not DEV or actual execution'
+            code=0
+            return
         rnn=RUN/'body_event_pilot_recurrent_seed0_v1/last.pt';mlp=RUN/'body_event_pilot_nonrecurrent_seed0_v1/last.pt';binary=RUN/'body_binary_pilot_seed0_v1/last.pt'
         arms=[('actual','actual','event',rnn),('coordinate','coordinate','event',rnn),('actual_nonrecurrent','actual','event',mlp),
             ('planned','planned','event',rnn),('success','success','event',rnn),('binary_planned','planned','binary',binary),('binary_success','success','binary',binary)]
@@ -44,4 +51,4 @@ def run(name,api=False):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--api',action='store_true');run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--api',action='store_true');p.add_argument('--amplitude',action='store_true');run(**vars(p.parse_args()))
