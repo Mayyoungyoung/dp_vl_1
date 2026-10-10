@@ -3,10 +3,22 @@ import numpy as np
 import torch
 from research_selective_repair_v1.body_event_forecast import compose
 from research_selective_repair_v1.body_forecast import features
-from research_selective_repair_v1.body_predictive_repair import compose_tensor,tensor_features,amplitude_caps
+from research_selective_repair_v1.body_predictive_repair import compose_tensor,tensor_features,amplitude_caps,input_gradient_mode
 from research_selective_repair_v1.execution_semantics import word
 
 class PredictiveTests(unittest.TestCase):
+    def test_input_gradients_keep_frozen_weights_and_eval_dropout(self):
+        from research_selective_repair_v1.body_binary_forecast import BinaryHead
+        model=BinaryHead().eval().requires_grad_(False);x=torch.randn(2,24,26,requires_grad=True);context=torch.randn(2,128)
+        expected=model(x,context).detach()
+        with input_gradient_mode(model):
+            actual=model(x,context)
+            self.assertTrue(all(not m.training for m in model.modules() if isinstance(m,torch.nn.Dropout)))
+            actual.sum().backward()
+        self.assertTrue(torch.allclose(expected,actual.detach(),atol=1e-6,rtol=1e-6))
+        self.assertFalse(model.sequence.training)
+        self.assertTrue(torch.isfinite(x.grad).all())
+        self.assertTrue(all(p.grad is None for p in model.parameters()))
     def test_tensor_feature_contract_and_gradient(self):
         rng=np.random.default_rng(9);path=rng.normal(size=(8,24,3)).astype('float32');c=rng.normal(size=(8,4,3)).astype('float32')
         p=torch.tensor(path,requires_grad=True);t=tensor_features(p,torch.tensor(c),prefix=False)

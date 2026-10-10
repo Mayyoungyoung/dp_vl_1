@@ -6,6 +6,7 @@ optimizer; it cannot turn a learned preservation prediction into a certificate.
 """
 import numpy as np
 import torch
+from contextlib import contextmanager
 from research_selective_repair_v1.body_options import options
 from research_selective_repair_v1.body_feedback_data import WORDS
 from research_selective_repair_v1.execution_semantics import word
@@ -56,7 +57,24 @@ def amplitude_caps(paths,completed,cfg):
             if delta>1e-9:cap[i]=min(cap[i],max(0,(top-z-1e-6)/delta))
     return basis,cap,np.asarray(planned,np.int64)
 
-def repair(model,ck,paths,completed,context,cfg,forecast='event',kind='actual',steps=32):
+@contextmanager
+def input_gradient_mode(model):
+    # cuDNN requires its GRU reserve workspace to backpropagate into an input.
+    # Enable only the zero-dropout GRU flag. Frozen weights and every Dropout
+    # layer remain in evaluation mode; no learner update occurs.
+    sequence=getattr(model,'sequence',None);gru=isinstance(sequence,torch.nn.GRU)
+    previous=sequence.training if gru else None
+    if gru:
+        assert sequence.dropout==0
+        sequence.train(True)
+    try:yield
+    finally:
+        if gru:sequence.train(previous)
+
+def repair(model,*args,**kwargs):
+    with input_gradient_mode(model):return _repair(model,*args,**kwargs)
+
+def _repair(model,ck,paths,completed,context,cfg,forecast='event',kind='actual',steps=32):
     assert forecast in ('event','binary') and kind in ('actual','planned','success')
     assert steps==32,'Frozen pilot budget; no optimizer sweep'
     basis,cap,planned=amplitude_caps(paths,completed,cfg)

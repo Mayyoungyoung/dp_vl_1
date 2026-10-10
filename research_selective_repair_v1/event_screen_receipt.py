@@ -3,13 +3,16 @@ import argparse,datetime,os,sys,time,traceback,subprocess
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(name,api=False,amplitude=False):
+def run(name,api=False,amplitude=False,version='v1'):
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     lock=RUN/'prefix_pilot_gpu.lock';fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(command=sys.argv,start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
         source_sha256={str(p.relative_to(SOURCE)):sha(p) for directory in ('research_selective_repair_v1','routeset','scripts') for p in (SOURCE/directory).rglob('*.py')},
         affinity=sorted(os.sched_getaffinity(0)),threads=1,memory_fraction=.35,status='running',scope='Frozen event pilot DEV_MODEL target0; geometric screening,not actual execution')
     write(out/'receipt.json',receipt);tic=time.monotonic();code=1
+    if amplitude:receipt['scope']='Held TRAIN two-family32step amplitude screening; no DEV or actual execution'
+    if api:receipt['scope']='Bounded one TRAIN observation integrated RGB-D API feedback'
+    write(out/'receipt.json',receipt)
     try:
         assert receipt['affinity']==[3] and os.environ['CUDA_VISIBLE_DEVICES']=='1'
         assert subprocess.check_output(['nvidia-smi','-i','1','--query-gpu=uuid','--format=csv,noheader'],text=True).strip()=='GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab'
@@ -27,14 +30,15 @@ def run(name,api=False,amplitude=False):
             decoder='body_event_halfgoal_api_decoder_v1'
             bind(decoder,RUN/'body_event_pilot_recurrent_seed0_v2/last.pt',RUN/'constraints_seed0_v1/last.pt',RUN/'calibrated_prototype_v1/PROTOTYPES.json',forecast='event',word_safe=True)
             feedback('body_event_halfgoal_API_feedback_v1',RUN/decoder/'last.pt',ROOT/'data/selective_repair_interventions_v1',limit=1)
-            receipt['scope']='Bounded one TRAIN observation integrated RGB-D API feedback;33query sets,8finals each; not formal heads or actual execution'
+            receipt['decoded_query_sets']=read(RUN/'body_event_halfgoal_API_feedback_v1/SUMMARY.json')['counts']['decoded_sets']
+            receipt['scope']='Bounded one TRAIN observation integrated RGB-D API feedback; actual query count recorded,8finals each; not formal heads or actual execution'
             code=0
             return
         from research_selective_repair_v1.body_screen import screen
         if amplitude:
             rnn=RUN/'body_event_pilot_recurrent_seed0_v2/last.pt';mlp=RUN/'body_event_pilot_nonrecurrent_seed0_v2/last.pt';binary=RUN/'body_binary_pilot_seed0_v2/last.pt'
             for label,kind,forecast,checkpoint in [('actual','actual','event',rnn),('planned','planned','event',rnn),('actual_nonrecurrent','actual','event',mlp),('binary_planned','planned','binary',binary)]:
-                screen('body_amplitude_%s_TRAIN_screen_seed0_v1'%label,kind,checkpoint,word_safe=True,forecast=forecast,role='TRAIN',continuous=True,all_goals=True,family_start=6,families=2,dataset_scope='half')
+                screen('body_amplitude_%s_TRAIN_screen_seed0_%s'%(label,version),kind,checkpoint,word_safe=True,forecast=forecast,role='TRAIN',continuous=True,all_goals=True,family_start=6,families=2,dataset_scope='half')
             receipt['scope']='Bounded32step amplitude interpolation on two event-held TRAIN families,all3goals;4matched controls; not DEV or actual execution'
             code=0
             return
@@ -51,4 +55,4 @@ def run(name,api=False,amplitude=False):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--api',action='store_true');p.add_argument('--amplitude',action='store_true');run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--api',action='store_true');p.add_argument('--amplitude',action='store_true');p.add_argument('--version',default='v1');run(**vars(p.parse_args()))
