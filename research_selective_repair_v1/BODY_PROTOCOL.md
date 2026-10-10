@@ -119,3 +119,22 @@ controls get the identical mask. All24signature computations count. Retain the
 unrestricted v1 results and finish its already-running actual returned4 suite.
 No v1 method is accepted on a body gain with the failed U4 guard. Only this
 single measured operator defect is changed; no refit/loss/threshold search.
+
+Prospective full-task TRAIN coverage,2026-10-10: the categorical outcome pilot
+uses only6fitting families/target0 and generalizes poorly to2TRAIN held families.
+V1 actual-word allocation E4=1.0/5successful-clear versus planned-word2.75/12;
+coordinate selection uses the same executor inputs/results,so this gap is not
+fixed by a better optimizer. V2 fixes only the independently measured planned
+geometry guard;finish it before choosing a new learning mechanism. No extra
+categorical-loss/attention/threshold sweep is authorized by this diagnosis.
+All-goal feedback is necessary for the original three-goal task and any formal
+matching-head stage. After v2 suite completes,collect remaining registered TRAIN
+feedback: first8families targets1,2 and last8families targets0,1,2,open/closed,
+all8routes,three separate recipes.1920additional controller trials,reuse384
+completed labels,total2304. Same public canonical joints/quaternion/default
+executor/retry0/184get_pathmax per request. All actual prefix/joint/tip traces
+are retained for a possible prefix-state/structured crossing constraint learner;
+new learner objective must be stated before its fitting/evaluation. Existing
+point/recurrent categorical failure stays recorded. No new DEV/finalconfirmation
+or TEST_LOCKED is accessed by this data collection. Do not infer completion or
+publication readiness from starting this long immutable TRAIN collector.
