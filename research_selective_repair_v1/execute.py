@@ -39,8 +39,8 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
             if record['success']:counts['accepted_routes']+=1
             records.append(record)
         if fatal:break
-    write(output/'EXECUTION.json',dict(request=plan['execution_id'],actual_returned_indices=selected,records=records,requested=4,attempted=len(records),success=sum(x['success'] for x in records),full_arm_simulation=True,held_object=False,scope='Reach gripper task; actual collision-aware planner/controller and explicit arm/gripper collision monitoring. No held-object or continuous collision certificate.'))
-    return witnesses,[dict(id=plan['execution_id'],accepted=sum(r['success'] for r in records),requested=4)],fatal
+    write(output/'EXECUTION.json',dict(request=plan['execution_id'],actual_returned_indices=selected,records=records,requested=len(selected),attempted=len(records),success=sum(x['success'] for x in records),full_arm_simulation=True,held_object=False,scope='Reach gripper task; actual collision-aware planner/controller and explicit arm/gripper collision monitoring. No held-object or continuous collision certificate.'))
+    return witnesses,[dict(id=plan['execution_id'],accepted=sum(r['success'] for r in records),requested=len(selected))],fatal
 
 def run(name,pool,rows,data=None,limit=4):
     from scripts import paired_modes_data as paired

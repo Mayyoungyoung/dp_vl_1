@@ -18,7 +18,10 @@ cleanup() { kill "$OWN_XVFB" 2>/dev/null || true; wait "$OWN_XVFB" 2>/dev/null |
 trap cleanup EXIT
 for attempt in {1..40}; do [[ -s "$D/displaynum" ]] && break; sleep .25; done
 export DISPLAY=":$(cat "$D/displaynum")"
-if [[ "${1:-}" == planner ]];then
+if [[ "${1:-}" == execution ]];then
+ shift
+ taskset -c 0-3 "$P/.venv-sim/bin/python" -m research_selective_repair_v1.body_execution_teacher "$@"
+elif [[ "${1:-}" == planner ]];then
  shift
  taskset -c 0-3 "$P/.venv-sim/bin/python" -m research_selective_repair_v1.planning_teacher "$@"
 else
