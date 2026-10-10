@@ -1,9 +1,13 @@
 import unittest
 import numpy as np
 import torch
-from research_selective_repair_v1.body_forecast import features,OutcomeHead
+from research_selective_repair_v1.body_forecast import features,OutcomeHead,natural_probabilities
 
 class ObservedExecutionForecast(unittest.TestCase):
+    def test_class_weight_prior_is_undone_before_expected_coverage(self):
+        posterior=torch.tensor([[.6,.3,.1]]);weights=torch.tensor([1.,2.,5.])
+        weighted=posterior*weights;weighted/=weighted.sum(-1,keepdim=True)
+        torch.testing.assert_close(natural_probabilities(weighted.log(),weights),posterior)
     def test_joint_translation_invariance_and_sequence_gradient(self):
         rng=np.random.default_rng(42);p=rng.normal(size=(3,24,3)).astype(np.float32);c=rng.normal(size=(3,4,3)).astype(np.float32)
         x=features(p,c);shift=np.array([.14,-.05,.02],np.float32)

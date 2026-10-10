@@ -11,6 +11,11 @@ from routeset.observed_training_audit import tensor_state_digest
 
 WORDS=['|'.join(x) for x in itertools.product(('gap0','gap1','gap2','over'),repeat=2)]
 
+def natural_probabilities(logits,weights):
+    # Weighted CE estimates w_y*p(y|x)/Z. Undo that known training reweighting
+    # before using mass for expected coverage. This is not calibration evidence.
+    return (logits-torch.as_tensor(weights,device=logits.device,dtype=logits.dtype).log()).softmax(-1)
+
 def features(paths,completed):
     """26 relative features at24waypoints; no labels/true boxes/old route input."""
     p=np.asarray(paths,np.float32);c=np.asarray(completed,np.float32)
@@ -65,7 +70,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
     atomic_checkpoint(out/'recovery.pt',state(step))
     if step==steps:
         atomic_checkpoint(out/'last.pt',state(step));model.eval()
-        with torch.no_grad():prob=model(tx,tc).softmax(-1).cpu().numpy()
+        with torch.no_grad():prob=natural_probabilities(model(tx,tc),weights).cpu().numpy()
         np.savez_compressed(out/'TRAIN_diagnostic_predictions.npz',probabilities=prob,labels=y,heldout=test,ids=d['ids'],slots=d['slots'],options=d['options'],families=d['families'])
         write(out/'SUMMARY.json',dict(settings=settings,seconds=time.monotonic()-tic,checkpoint_sha256=sha(out/'last.pt'),TRAIN_fit_accuracy=float((prob[train].argmax(-1)==y[train]).mean()),TRAIN_heldout_accuracy=float((prob[test].argmax(-1)==y[test]).mean()),TRAIN_heldout_success_brier=float(np.square((1-prob[test,0])-(y[test]>0)).mean()),TRAIN_heldout_rows=int(test.sum()),class_counts=count.tolist(),stream=stream,scope='TRAIN family heldout diagnostic only; not DEV or fixed returned-four execution'))
 
@@ -76,7 +81,7 @@ def predict(model,ck,paths,completed,context):
     x=features(paths,completed);s=ck['settings']
     tx=torch.tensor((x-np.asarray(s['mean']))/np.asarray(s['std']),device='cuda',dtype=torch.float32)
     tc=torch.tensor(context,device='cuda',dtype=torch.float32)
-    with torch.no_grad():return model(tx,tc).softmax(-1).cpu().numpy()
+    with torch.no_grad():return natural_probabilities(model(tx,tc),s['class_weights']).cpu().numpy()
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--kind',choices=['recurrent','nonrecurrent'],default='recurrent');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);fit(**vars(p.parse_args()))

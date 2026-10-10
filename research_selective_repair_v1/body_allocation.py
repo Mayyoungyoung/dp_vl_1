@@ -12,7 +12,7 @@ def coverage(p):return 1-np.prod(1-p[...,1:],axis=-2)
 def objectives(prob,choices,protected=True):
     p=prob[np.arange(8)[None],choices];cov=coverage(p);original=coverage(prob[:,0])
     # Same hard predicted preservation constraint for exact and ordinary controls.
-    eligible=(cov>=original-.01).all(-1) if protected else np.ones(len(choices),bool)
+    eligible=((cov>=original-.01).all(-1)&(p[...,0]<=prob[:,0,0][None]+.01).all(-1)) if protected else np.ones(len(choices),bool)
     utility=cov.sum(-1)+.05*(1-p[...,0]).sum(-1)-.01*(choices!=0).sum(-1)
     return np.where(eligible,utility,-np.inf)
 

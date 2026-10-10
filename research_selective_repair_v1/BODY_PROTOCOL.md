@@ -80,3 +80,14 @@ ordinary coordinate search is given the identical probabilities/objective/floor.
 Teacher rank seeds are a nuisance: eight-route TRAIN outcomes do not certify the
 different ranks selected in actual returned-four execution. All claims depend
 on new actual fixed returned-four trials,not replaying subset labels.
+
+Prelaunch implementation correction,before any forecast fit or DEV method
+evaluation: subtract log TRAIN class weights from weighted-CE logits before
+softmax. This removes the known prior reweighting; it is not empirical probability
+calibration. Expected word coverage uses conditional independence as an
+approximation,not a proof of joint execution safety. Protected assignments also
+require each slot's predicted noncompletion mass <=identity mass+.01,alongside
+word coverage floors. Actual <=1%damage must still be tested by real fixed
+controller trials. The two own sleeping forecast/execution coordinators were
+stopped before any child experiment,then refrozen; active physical data collection
+was not changed. All training hyperparameters/data/evaluation gates stay fixed.
