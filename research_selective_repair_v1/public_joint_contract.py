@@ -24,7 +24,8 @@ def capture(name):
     physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry
     physical.PROTOCOL='public_fixed_robot_joint_contract_v1'
     file=out/'plan.json';write(file,plan)
-    result=physical.physical_worker(registration,{},plan,file,out/'initialization')
+    source_hashes={str(f.relative_to(SOURCE)):sha(f) for directory in ('scripts','research_selective_repair_v1') for f in (SOURCE/directory).rglob('*.py')}
+    result=physical.physical_worker(registration,dict(source_sha256=source_hashes),plan,file,out/'initialization')
     assert result['status']=='collection_finished' and result['route_attempts']==0
     write(out/'SUMMARY.json',dict(status='completed',route_attempts=0,contract_sha256=sha(out/'PUBLIC_JOINT_CONTRACT.json'),
         actual_initialization_seconds=result['elapsed_seconds'],locked_access=False))
