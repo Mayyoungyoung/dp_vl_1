@@ -30,7 +30,7 @@ class NativeBranchHead(nn.Module):
         b=len(x);k=self.hypotheses;z=self.input(x);cx=self.context(context);start=torch.cat([z[:,0],cx],-1)
         h=self.initial(start)[:,None].expand(-1,k,-1).reshape(b*k,64)
         mid=(self.upper+self.lower)/2;half=(self.upper-self.lower)/2
-        q=self.q0.expand(b,7) if initial_q is None else initial_q
+        q=self.q0.expand(b,7) if initial_q is None else initial_q.to(device=x.device,dtype=x.dtype)
         assert q.shape==(b,7)
         qn=((q-mid)/half).clamp(-1+1e-5,1-1e-5)[:,None].expand(-1,k,-1).reshape(b*k,7)
         qstart=qn;latent=self.latent(torch.arange(k,device=x.device))[None].expand(b,-1,-1).reshape(b*k,16)

@@ -37,5 +37,11 @@ class NativeBranchTests(unittest.TestCase):
         altered=likelihood(p,d,model.lower,model.upper)
         torch.testing.assert_close(original,altered,rtol=0,atol=0)
         self.assertTrue(bool(torch.isfinite(original)))
+    def test_public_native_double_state_is_valid_input(self):
+        model=NativeBranchHead(ROBOT)
+        public=torch.tensor([ROBOT['q0']]*2,dtype=torch.float64)
+        p=model(self.x,self.c,self.paths,self.posts,public)
+        self.assertEqual(p['joint_mean'].dtype,torch.float32)
+        torch.testing.assert_close(p['joint_mean'],self.forward(model)['joint_mean'],rtol=0,atol=0)
 
 if __name__=='__main__':unittest.main()
