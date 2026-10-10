@@ -5,4 +5,5 @@ export CUDA_VISIBLE_DEVICES=1 CODE_COMMIT="$(basename "$PWD")"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 LC_ALL=C LANG=C
 R=/home/wzy/dpvlm/route_set_v1/runs/selective_repair_v1
-exec taskset -c 3 /home/wzy/dpvlm/route_set_v1/.venv/bin/python -m research_selective_repair_v1.prefix_pilot_receipt >"$R/prefix_dense_pilot_v1.stdout.log" 2>&1
+name="${1:-body_prefix_dense_pilot_v2}"
+exec taskset -c 3 /home/wzy/dpvlm/route_set_v1/.venv/bin/python -m research_selective_repair_v1.prefix_pilot_receipt --name "$name" >"$R/${name}.stdout.log" 2>&1

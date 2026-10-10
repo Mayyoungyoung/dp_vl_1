@@ -1,10 +1,10 @@
 """One-thread TRAIN-only pilot while our CPU-only physical collection runs."""
-import datetime,json,os,subprocess,sys,time,traceback
+import argparse,datetime,json,os,subprocess,sys,time,traceback
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run():
-    out=RUN/'jobs/body_prefix_dense_pilot_v1';out.mkdir(parents=True,exist_ok=False)
+def run(name):
+    out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     auxiliary=RUN/'prefix_pilot_gpu.lock';fd=os.open(auxiliary,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
         source_sha256={str(p.relative_to(SOURCE)):sha(p) for directory in ('research_selective_repair_v1','routeset','scripts') for p in (SOURCE/directory).rglob('*.py')},
@@ -21,10 +21,11 @@ def run():
         # one-thread CPU physical teacher. Never overlap another GPU learner.
         lock=RUN/'active.lock'
         if lock.exists():
-            active=[p for p in (RUN/'jobs').glob('*/receipt.json') if read(p).get('status')=='running']
-            assert len(active)==1 and active[0].parent.name.startswith('body_execution_train_')
-            command=read(active[0])['command'];assert 'execution' in command and any('render_selective_body_v1.sh' in v for v in command)
-            receipt['overlapping_CPU_teacher']=active[0].parent.name
+            pid=int(lock.read_text());args=(Path('/proc')/str(pid)/'cmdline').read_bytes().decode().split('\0')
+            job=args[args.index('--id')+1];active=read(RUN/'jobs'/job/'receipt.json')
+            assert job.startswith('body_execution_train_') and active['status']=='running'
+            command=active['command'];assert 'execution' in command and any('render_selective_body_v1.sh' in v for v in command)
+            receipt['overlapping_CPU_teacher']=job
         from research_selective_repair_v1.body_prefix_forecast import fit
         from research_selective_repair_v1.body_binary_forecast import fit as binary_fit
         for kind in ('recurrent','nonrecurrent'):
@@ -38,4 +39,5 @@ def run():
         write(out/'receipt.json',receipt);auxiliary.unlink()
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
-if __name__=='__main__':run()
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);run(**vars(p.parse_args()))
