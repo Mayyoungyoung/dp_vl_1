@@ -3,8 +3,9 @@ import datetime,os,subprocess,sys,time,traceback
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(amplitude=False):
-    name='body_amplitude_TRAIN_execution_suite_seed0_v2' if amplitude else 'body_event_DEV_execution_suite_seed0_v1';out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
+def run(amplitude=False,zero_repeat=False):
+    assert not(amplitude and zero_repeat)
+    name='body_zero_edit_TRAIN_repeat_suite_v1' if zero_repeat else 'body_amplitude_TRAIN_execution_suite_seed0_v2' if amplitude else 'body_event_DEV_execution_suite_seed0_v1';out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     lock=RUN/'body_aux_cpu.lock';fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(command=sys.argv,start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
         source_sha256={str(p.relative_to(SOURCE)):sha(p) for directory in ('research_selective_repair_v1','scripts') for p in (SOURCE/directory).rglob('*') if p.suffix in ('.py','.sh')},
@@ -12,8 +13,9 @@ def run(amplitude=False):
     write(out/'receipt.json',receipt);tic=time.monotonic();code=1
     try:
         assert receipt['affinity']==[2] and os.environ['SELECTIVE_BODY_CPU_SET']=='2'
-        assert read(RUN/'jobs'/('body_amplitude_TRAIN_screen_seed0_v2' if amplitude else 'body_event_DEV_screen_seed0_v1')/'receipt.json')['status']=='completed'
+        assert read(RUN/'jobs'/('body_amplitude_TRAIN_execution_suite_seed0_v2' if zero_repeat else 'body_amplitude_TRAIN_screen_seed0_v2' if amplitude else 'body_event_DEV_screen_seed0_v1')/'receipt.json')['status']=='completed'
         if amplitude:receipt['scope']='Held TRAIN two-family all8 interpolation diagnostic; no DEV/returned4/native-repeat proof'
+        if zero_repeat:receipt['scope']='Two unchanged TRAIN all8 native-repeat diagnostics; no learned intervention'
         for family in ('feasible_space_v1','realized_coverage_v1','mode_geometry_v1'):assert not (ROOT/'runs'/family/'active.lock').exists()
         main=RUN/'active.lock'
         if main.exists():
@@ -21,8 +23,8 @@ def run(amplitude=False):
             active=read(RUN/'jobs'/job/'receipt.json');assert job.startswith('body_execution_train_') and active['status']=='running'
             assert 'execution' in active['command'] and any('render_selective_body_v1.sh' in v for v in active['command'])
             receipt['overlapping_one_thread_CPU_teacher']=job
-        command=['bash',str(SOURCE/'scripts/render_selective_body_v1.sh'),'amplitude_suite' if amplitude else 'suite','--name',name]
-        if not amplitude:command+=['--event']
+        command=['bash',str(SOURCE/'scripts/render_selective_body_v1.sh'),'repeat_suite' if zero_repeat else 'amplitude_suite' if amplitude else 'suite','--name',name]
+        if not(amplitude or zero_repeat):command+=['--event']
         with (out/'stdout.log').open('w') as log:
             child=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT);receipt['child_pid']=child.pid;receipt['actual_command']=command;write(out/'receipt.json',receipt);code=child.wait()
     except BaseException as error:receipt['error']=repr(error);receipt['traceback']=traceback.format_exc()
@@ -32,4 +34,4 @@ def run(amplitude=False):
 
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser();p.add_argument('--amplitude',action='store_true');run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--amplitude',action='store_true');p.add_argument('--zero-repeat',action='store_true');run(**vars(p.parse_args()))
