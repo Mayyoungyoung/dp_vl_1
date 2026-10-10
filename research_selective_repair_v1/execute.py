@@ -51,7 +51,7 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
     write(output/'EXECUTION.json',dict(request=plan['execution_id'],actual_returned_indices=selected,records=records,requested=len(selected),attempted=len(records),success=sum(x['success'] for x in records),full_arm_simulation=True,held_object=False,scope='Reach gripper task; actual collision-aware planner/controller and explicit arm/gripper collision monitoring. No held-object or continuous collision certificate.'))
     return witnesses,[dict(id=plan['execution_id'],accepted=sum(r['success'] for r in records),requested=len(selected))],fatal
 
-def run(name,pool,rows,data=None,limit=4,all_candidates=False):
+def run(name,pool,rows,data=None,limit=4,all_candidates=False,role='DEV_MODEL',family_start=0):
     from scripts import paired_modes_data as paired
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
@@ -59,7 +59,9 @@ def run(name,pool,rows,data=None,limit=4,all_candidates=False):
     with np.load(pool) as z:arrays={k:z[k] for k in ('ids','paths')}
     metrics=read(rows);byid={r['id']:r for r in metrics};index={str(x):i for i,x in enumerate(arrays['ids'])}
     # Prospectively fixed: first two DEV families, open/closed target0; all actual returned4.
-    families=sorted({p['family_id'] for p in plans.values() if p['role']=='DEV_MODEL'})[:2]
+    assert role in ('TRAIN','DEV_MODEL')
+    if role=='TRAIN':assert read(pool.parent/'SEAL.json')['role']=='TRAIN'
+    families=sorted({p['family_id'] for p in plans.values() if p['role']==role})[family_start:family_start+2]
     ids=[p['parent_id']+'_target0' for p in plans.values() if p['family_id'] in families and p['variant'] in ('open','closed')][:limit]
     out=RUN/name;out.mkdir(parents=True,exist_ok=False);source={str(f.relative_to(SOURCE)):sha(f) for d in ('scripts','configs','research_selective_repair_v1') for f in (SOURCE/d).rglob('*') if f.is_file() and f.suffix in ('.py','.json','.sh')}
     physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='selective_repair_fixed_executor_v1'
@@ -70,7 +72,7 @@ def run(name,pool,rows,data=None,limit=4,all_candidates=False):
         r=physical.physical_worker(registration,dict(source_sha256=source),plan,cfg,dest)
         if r['status']=='error':raise RuntimeError('Technical execution failure, preserve and recover: '+str(r['fatal_error']))
         results.append(read(dest/'EXECUTION.json'))
-    write(out/'RESULTS.json',dict(requests=len(ids),requested_routes=(8 if all_candidates else 4)*len(ids),success=sum(r['success'] for r in results),records=results,pool_sha256=sha(pool),rows_sha256=sha(rows),source_commit=os.environ.get('CODE_COMMIT'),locked_access=False,all_candidate_damage_cohort=all_candidates,subset='First two DEV families,open/closed,target0; fixed8slot common body-damage cohort,not returned4' if all_candidates else 'first two DEV families, open/closed target0, actual returned4; frozen before looking at execution outcomes'))
+    write(out/'RESULTS.json',dict(requests=len(ids),requested_routes=(8 if all_candidates else 4)*len(ids),success=sum(r['success'] for r in results),records=results,pool_sha256=sha(pool),rows_sha256=sha(rows),source_commit=os.environ.get('CODE_COMMIT'),locked_access=False,all_candidate_damage_cohort=all_candidates,role=role,family_start=family_start,subset=('TRAIN-held families6/7,open/closed,target0,actual returned4 diagnostic,not DEV' if role=='TRAIN' else 'First two DEV families,open/closed,target0; fixed8slot common body-damage cohort,not returned4' if all_candidates else 'first two DEV families, open/closed target0, actual returned4; frozen before looking at execution outcomes')))
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--rows',required=True,type=Path);p.add_argument('--data',type=Path);p.add_argument('--limit',type=int,default=4);p.add_argument('--all-candidates',action='store_true');run(**vars(p.parse_args()))

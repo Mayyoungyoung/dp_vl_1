@@ -45,3 +45,9 @@ Original and prospective body acceptance gates remain unchanged.
 
 Probability models, mixtures, survival likelihood and continuous repair all have
 prior art. No paper novelty or mechanism advantage is inferred from architecture.
+Before further all8collection, execute the actual ordered returned4 on the four
+held TRAIN requests for analytic GRU/MLP, categorical MLP, planned GRU and binary
+control. Use initial C0 fullq,not teacherall8subsetting; rank changes native
+execution order. This diagnostic cannot establish body damage or formal winning
+with unmatched heads. Shared historical baseline singleepisodes and the two
+zero-edit repeats remain separate. No DEV or acceptance gate changes.
