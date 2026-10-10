@@ -1,3 +1,23 @@
+## Native branch ACTIVE — source71fb5a0, 2026-10-10
+
+Native fit-family feedback source8673c2f/PID1269501 remains running128 attempts.
+Old own e687f93 queued coordinator1276790 verified do_wait/no dataset job and
+stopped BEFORE any fit/data child, solely to correct empirical-control identity
+fallback pooling and prefix compute accounting. Active teacher unchanged.
+New frozen71fb5a0 queued PID1285244, native_branch_study_v2.stdout.log.
+It builds2496row NEW native-joint-label TRAIN contract, checks28+ CPU tests and
+exact120vs60+60 checkpoint/RNG, fits state/aux/route/binary seed0 at2400updates,
+empirical nominal-mode/effective-recipe control,9 shared-prefix TRAIN screens,
+then bounded current-RGBD API state/confusion checks. Do not relaunch duplicate
+output names; inspect receipts and correct only missing failed stages.
+Source71fb5a0 also integrates prefix recipes into current-observation deployment
+without stored drafts/old scene/checker/native query, counts24 internal curves,
+48 predicted word calls/24 predicted tip calls,final8/fullq4. API and fits pending.
+Two identity-fallback equivalence tests pass locally(.053s); earlier3 native
+state meaningful CPU tests pass server(1.522s). Figure finalPNG visually verified.
+No accepted method. Full own matching heads/three seeds/fresh layouts remain
+required; never convert these pilot predictions or prefix q changes into them.
+
 ## 2026-10-10 native branch pilot ACTIVE
 
 Fit-family null/loop native feedback source8673c2f PID1269501 running128
