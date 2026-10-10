@@ -22,10 +22,11 @@ def proposals(paths,completed,post_base):
     for i in range(8):
         old=word(p[i],cfg)
         bounded=all(np.linalg.norm(candidate-p[i],axis=-1).max()<=.08+1e-7 for candidate in (null[i],loop[i]))
-        same=old is not None and all(word(candidate,cfg)==old for candidate in (null[i],loop[i]))
-        clear=all(tip_clear(candidate,cfg) for candidate in (p[i],null[i],loop[i]))
+        proposed_words=[word(candidate,cfg) for candidate in (null[i],loop[i])]
+        same=old is not None and all(w==old for w in proposed_words)
+        clear=all([tip_clear(candidate,cfg) for candidate in (p[i],null[i],loop[i])])
         eligible=bool(bounded and same and clear);ok.append(eligible)
-        reasons.append(dict(bounded=bool(bounded),same_predicted_word=bool(same),predicted_clear=bool(clear)))
+        reasons.append(dict(bounded=bool(bounded),same_predicted_word=bool(same),predicted_clear=bool(clear),predicted_word_queries=3,predicted_tip_queries=3))
         if not eligible:null[i]=loop[i]=p[i]
     assert np.array_equal(null[:,0],p[:,0]) and np.array_equal(loop[:,0],p[:,0])
     assert np.array_equal(null[:,4:],p[:,4:]) and np.array_equal(loop[:,4:],p[:,4:])

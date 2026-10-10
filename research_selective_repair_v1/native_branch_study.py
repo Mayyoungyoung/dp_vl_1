@@ -26,18 +26,21 @@ def run(name):
     route='body_native_route_seed0_pilot_v1';route_fit(route,dataset,kind='recurrent',threads=4);diagnostics(route,dataset)
     binary='body_native_binary_seed0_pilot_v1';binary_fit(binary,dataset,threads=4)
     table,nom=empirical_fit(dataset,'body_native_mode_recipe_confusion_v1')
-    with np.load(dataset) as z:d={k:z[k] for k in ('labels','families','options')}
+    with np.load(dataset) as z:d={k:z[k] for k in ('labels','families','options','ids','slots','paths')}
     with np.load(RUN/binary/'TRAIN_diagnostic_predictions.npz') as z:success=z['success'];held=z['heldout']
-    from research_selective_repair_v1.mode_recipe_confusion import compose
-    prob=compose(success,nom,d['options'],table)
+    from research_selective_repair_v1.mode_recipe_confusion import compose,effective_training_recipes
+    prob=compose(success,nom,effective_training_recipes(d),table)
     write(RUN/'body_native_mode_recipe_confusion_v1/DIAGNOSTICS.json',dict(fit=metrics(prob,d['labels'],~held),held_TRAIN=metrics(prob,d['labels'],held),locked_access=False))
     arms=[('state','actual','native',folders[0]),('aux','actual','native',folders[1]),('route','actual','crossing',route),
           ('planned','planned','native',folders[0]),('binary','planned','binary',binary),('confusion','actual','confusion',binary)]
     for label,kind,forecast,folder in arms:
         screen('body_native_%s_TRAIN_screen_seed0_v1'%label,kind,RUN/folder/'last.pt',word_safe=True,forecast=forecast,role='TRAIN',all_goals=True,
                family_start=14,families=2,dataset_scope='native_pilot',recipe_support='prefix')
+    for label in ('identity','null','loop'):
+        screen('body_native_%s_TRAIN_screen_seed0_v1'%label,label,word_safe=True,role='TRAIN',all_goals=True,
+            family_start=14,families=2,dataset_scope='native_pilot',recipe_support='prefix')
     write(out/'SUMMARY.json',dict(status='completed',unit_tests=result.testsRun,exact_checkpoint_optimizer_RNG_recovery=True,
-        fits=folders+[route,binary],screen_labels=[a[0] for a in arms],scope='TRAIN-held pilot; no DEV/fresh/native returned4/matched SuccessHead claim',locked_access=False))
+        fits=folders+[route,binary],screen_labels=[a[0] for a in arms]+['identity','null','loop'],scope='TRAIN-held pilot; no DEV/fresh/native returned4/matched SuccessHead claim',locked_access=False))
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);run(**vars(p.parse_args()))

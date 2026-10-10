@@ -48,3 +48,21 @@ source check, not a new survey project. Static IK unknowns and root-planning
 successes in BODY_DIAGNOSTICS.json cannot be substituted for full execution.
 
 [Optimizing Sequences of Probabilistic Manipulation Skills Learned from Demonstration](https://proceedings.mlr.press/v100/schwenkel20a.html) learns probabilistic skills/confidence and optimizes continuous parameters in 7DoF manipulation. Probability forecasting plus continuous parameter repair is established prior art; any proposed contribution must come from measured cross-scene mode preservation and actual execution distribution, with same-feedback controls.
+
+## Native joint branch rationale, checked2026-10-10
+
+[Continuous Pseudoinversion of a Multivariate Function: Application to Global
+Redundancy Resolution](https://motion.cs.illinois.edu/redundancyresolution/)
+(author primary project page, WAFR2016) explicitly discusses nonunique inverse
+kinematics, cycles returning to different joint configurations, joint limits
+and self-collision; its solution is a global resolution with discontinuity
+mapping. Thus task-space cycle/noncyclic joint response is established, not
+a novelty claim for the present fixed-controller prefix experiment.
+
+The present empirical question is narrower: can TRAIN execution-state labels
+improve observation-conditioned bounded route repair under the unchanged
+finite native executor, beyond an identical auxiliary-label route model?
+The observed sub-mm return / large joint-change probe is mechanism motivation
+only; reliable actual E4 improvement and independent confirmation remain absent.
+MDPI2021 and ENSAM2021 source fetches returned429/timeout in this check; do not
+claim their full technical algorithms have been inspected or implemented.

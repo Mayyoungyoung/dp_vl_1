@@ -35,7 +35,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         legal=(z['splits']==role)&(np.ones(len(z['ids']),bool) if all_goals else np.array([str(i).endswith('_target0') for i in z['ids']]));ctx={str(i):c for i,c in zip(z['ids'][legal],z['context'][legal])}
     assert set(map(str,d['ids'])).issubset(ctx),'Every source request must match the explicitly registered role/current observation'
     with np.load(source/'pool.npz') as z:base_q={str(i):q for i,q in zip(z['ids'],z['q'])}
-    static=kind in ('identity','lift','preserved','lower');model=ck=None
+    static=kind in ('identity','lift','preserved','lower','null','loop');model=ck=None
     if not static:
         assert checkpoint is not None
         if forecast=='prefix':
@@ -102,10 +102,10 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
             elif forecast in ('event','crossing','native'):
                 prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
             elif forecast=='confusion':
-                from research_selective_repair_v1.mode_recipe_confusion import compose as empirical_compose
+                from research_selective_repair_v1.mode_recipe_confusion import compose as empirical_compose,effective_inference_recipes
                 table=read(RUN/'body_native_mode_recipe_confusion_v1/MODEL.json')
                 assert table['dataset_sha256']==ck['settings']['dataset_sha256']
-                prob=empirical_compose(prediction.reshape(8,3),planned,[0,4,5],table['conditional_mass'])
+                prob=empirical_compose(prediction.reshape(8,3),planned,effective_inference_recipes(candidates),table['conditional_mass'])
             elif forecast=='binary':
                 success=prediction.reshape(8,3);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1-success
                 for slot in range(8):
@@ -115,7 +115,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         choice,count=allocate(prob,kind,protected,planned,allowed);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count);forecast_queries.append(detail)
     torch.cuda.synchronize();seconds=time.monotonic()-tic;paths=np.asarray(paths)
     np.savez_compressed(out/'sealed_predictions.npz',ids=d['ids'],paths=paths,events=d['events'],modes=d['modes'],drafts=d['paths'],completed=d['completed'],choices=choices,probabilities=probabilities)
-    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role=role,current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,dataset_scope=dataset_scope,recipe_support=recipe_support,lowering_amplitude_m=lowering_m if recipe_support=='signed' else None,continuous=continuous,spatial=spatial,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=272 if spatial else 40 if continuous else 24 if word_safe or kind=='planned' or forecast in ('prefix','event','crossing','binary') else 0,internal_alternatives_per_request=0 if spatial else 24,critic_route_forwards_per_request=272 if spatial else 264 if continuous else 0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
+    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role=role,current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,dataset_scope=dataset_scope,recipe_support=recipe_support,lowering_amplitude_m=lowering_m if recipe_support=='signed' else None,continuous=continuous,spatial=spatial,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=(272 if spatial else 40 if continuous else 24 if word_safe or kind=='planned' or forecast in ('prefix','event','crossing','native','binary','confusion') else 0)+(24 if recipe_support=='prefix' else 0),predicted_tip_clearance_calls_per_request=24 if recipe_support=='prefix' else 0,internal_alternatives_per_request=0 if spatial else 24,critic_route_forwards_per_request=272 if spatial else 264 if continuous else 0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
     # Independent geometry labels only after all predictions and choices are sealed.
     observations={r['id']:r for r in lines(data/'export/observations.jsonl') if r['split']==role}
     labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']==role}

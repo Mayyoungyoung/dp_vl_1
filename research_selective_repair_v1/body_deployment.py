@@ -18,11 +18,12 @@ from scripts.research_v3_audit import mode
 from routeset.train_v2 import atomic_checkpoint
 
 class IntegratedBody(torch.nn.Module):
-    def __init__(self,center,completion,completion_ck,outcome,outcome_ck,kind,protected=True,forecast='categorical',word_safe=False,continuous=False):
+    def __init__(self,center,completion,completion_ck,outcome,outcome_ck,kind,protected=True,forecast='categorical',word_safe=False,continuous=False,recipe_support='positive',confusion=None):
         super().__init__();self.center=center;self.completion=completion;self.outcome=outcome
         self.completion_ck=completion_ck;self.outcome_ck=outcome_ck;self.kind=kind;self.protected=protected
         self.goal=None;self.query_counts=[]
         self.forecast=forecast;self.word_safe=word_safe;self.continuous=continuous
+        self.recipe_support=recipe_support;self.confusion=confusion
     @property
     def mode_predictor(self):return self.center.mode_predictor
     def encode(self,**inp):
@@ -44,12 +45,16 @@ class IntegratedBody(torch.nn.Module):
             p,geo=repair(drafts.detach().clone(),mode_ids.detach().clone(),goal.detach().clone(),available.clone(),centers.detach().clone(),halves.detach().clone(),settings,'global')
         paths=[]
         for i in range(n):
-            c=completed[i].detach().cpu().numpy();candidate=options(p[i].cpu().numpy(),c)
+            c=completed[i].detach().cpu().numpy()
+            if self.recipe_support=='prefix':
+                from research_selective_repair_v1.prefix_conditioning import proposals
+                candidate,_,_=proposals(p[i].cpu().numpy(),c,settings['post_base'])
+            else:candidate=options(p[i].cpu().numpy(),c)
             probabilities=np.zeros((8,3,17),np.float32);probabilities[:,:,0]=1
-            static=self.kind in ('identity','lift','preserved')
+            static=self.kind in ('identity','lift','preserved','null','loop')
             cfg=configuration(centers[i].detach().cpu().numpy(),halves[i].detach().cpu().numpy(),settings)
             planned=None;detail={}
-            if self.kind=='planned' or self.word_safe or self.forecast in ('event','crossing','binary'):
+            if self.kind=='planned' or self.word_safe or self.forecast in ('event','crossing','native','binary','confusion'):
                 words=[mode(q,cfg) for q in candidate.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
             if self.continuous:
                 from research_selective_repair_v1.body_predictive_repair import repair as predictive_repair
@@ -62,12 +67,18 @@ class IntegratedBody(torch.nn.Module):
                     from research_selective_repair_v1.body_event_forecast import predict as forecast_predict,compose
                 elif self.forecast=='crossing':
                     from research_selective_repair_v1.body_crossing_measure import predict as forecast_predict,compose
-                elif self.forecast=='binary':
+                elif self.forecast=='native':
+                    from research_selective_repair_v1.body_native_branch import predict as forecast_predict,compose
+                elif self.forecast in ('binary','confusion'):
                     from research_selective_repair_v1.body_binary_forecast import predict as forecast_predict
                 else:forecast_predict=predict
                 prediction=forecast_predict(self.outcome,self.outcome_ck,candidate.reshape(24,24,3),np.broadcast_to(c,(24,4,3)),np.broadcast_to(context[i].detach().cpu().numpy(),(24,128)))
-                if self.forecast in ('event','crossing'):
+                if self.forecast in ('event','crossing','native'):
                     probabilities,detail=compose(prediction,candidate.reshape(24,24,3),cfg);probabilities=probabilities.reshape(8,3,17)
+                elif self.forecast=='confusion':
+                    from research_selective_repair_v1.mode_recipe_confusion import compose as empirical_compose,effective_inference_recipes
+                    assert self.recipe_support=='prefix' and self.confusion is not None
+                    probabilities=empirical_compose(prediction.reshape(8,3),planned,effective_inference_recipes(candidate),self.confusion['conditional_mass'])
                 elif self.forecast=='binary':
                     success=prediction.reshape(8,3);probabilities[:,:,0]=1-success
                     for slot in range(8):
@@ -75,13 +86,19 @@ class IntegratedBody(torch.nn.Module):
                 else:probabilities=prediction.reshape(8,3,17)
             allowed=planned==planned[:,:1] if self.word_safe else None
             choice,count=allocate(probabilities,self.kind,self.protected,planned,allowed)
-            paths.append(candidate[np.arange(8),choice]);self.query_counts.append(dict(final_candidates=8,internal_options=24,critic_route_forwards=0 if static else 24,allocation_objectives=count,geometry_steps=geo['steps'],forecast_counts=detail,predicted_signature_calls=24 if planned is not None else 0))
+            paths.append(candidate[np.arange(8),choice]);self.query_counts.append(dict(final_candidates=8,internal_options=24,critic_route_forwards=0 if static else 24,allocation_objectives=count,geometry_steps=geo['steps'],forecast_counts=detail,predicted_signature_calls=(24 if planned is not None else 0)+(24 if self.recipe_support=='prefix' else 0),predicted_tip_clearance_calls=24 if self.recipe_support=='prefix' else 0))
         return t(np.asarray(paths)),events,info
 
-def bind(name,outcome,completion,prototype,kind='actual',protected=True,forecast='categorical',word_safe=False,continuous=False):
+def bind(name,outcome,completion,prototype,kind='actual',protected=True,forecast='categorical',word_safe=False,continuous=False,recipe_support='positive',confusion=None):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     if continuous:assert protected and word_safe and forecast in ('event','crossing','binary') and kind in ('actual','planned','success')
+    assert recipe_support in ('positive','prefix')
+    if recipe_support=='prefix':assert not continuous
     view=dict(center_path=str(BASE),center_sha256=sha(BASE),completion_path=str(completion),completion_sha256=sha(completion),outcome_path=str(outcome),outcome_sha256=sha(outcome),prototype_path=str(prototype),prototype_sha256=sha(prototype),kind=kind,protected=protected,forecast=forecast,word_safe=word_safe,continuous=continuous,internal_options=24,final_candidates=8,geometry_steps=64)
+    view['recipe_support']=recipe_support
+    if forecast=='confusion':
+        assert confusion is not None and recipe_support=='prefix'
+        view.update(confusion_path=str(confusion),confusion_sha256=sha(confusion))
     atomic_checkpoint(out/'last.pt',dict(body_view=view));write(out/'VIEW.json',dict(**view,decoder_sha256=sha(out/'last.pt')))
 
 def load_view(path):
@@ -93,11 +110,17 @@ def load_view(path):
         from research_selective_repair_v1.body_event_forecast import load as load_forecast
     elif v.get('forecast')=='crossing':
         from research_selective_repair_v1.body_crossing_measure import load as load_forecast
-    elif v.get('forecast')=='binary':
+    elif v.get('forecast')=='native':
+        from research_selective_repair_v1.body_native_branch import load as load_forecast
+    elif v.get('forecast') in ('binary','confusion'):
         from research_selective_repair_v1.body_binary_forecast import load as load_forecast
     else:load_forecast=load_outcomes
     outcome,o=load_forecast(Path(v['outcome_path']))
-    return IntegratedBody(center,completion,c,outcome,o,v['kind'],v['protected'],v.get('forecast','categorical'),v.get('word_safe',False),v.get('continuous',False)).cuda().eval(),ck
+    empirical=None
+    if v.get('forecast')=='confusion':
+        assert sha(Path(v['confusion_path']))==v['confusion_sha256'];empirical=read(v['confusion_path'])
+        assert empirical['dataset_sha256']==o['settings']['dataset_sha256']
+    return IntegratedBody(center,completion,c,outcome,o,v['kind'],v['protected'],v.get('forecast','categorical'),v.get('word_safe',False),v.get('continuous',False),v.get('recipe_support','positive'),empirical).cuda().eval(),ck
 
 def feedback(name,checkpoint,data,limit=None,resume=False):
     from research_realized_coverage_v1 import feedback as original

@@ -21,17 +21,30 @@ def nominal(paths,completed,base):
 def fit(dataset,name):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     manifest=read(dataset.parent/'MANIFEST.json');assert manifest['no_DEV_feedback'] and manifest['samples_sha256']==sha(dataset)
-    with np.load(dataset) as z:d={k:z[k] for k in ('paths','completed','labels','families','roles','options')}
+    with np.load(dataset) as z:d={k:z[k] for k in ('paths','completed','labels','families','roles','options','ids','slots')}
     assert set(d['roles'])=={'TRAIN'};families=sorted(set(d['families']));use=~np.isin(d['families'],families[-2:])
     base=read(RUN/'constraints_seed0_v1/config.json')['post_base'];nom=nominal(d['paths'],d['completed'],base)
+    recipes=effective_training_recipes(d)
     table=np.full((int(d['options'].max())+1,17,16),.5,dtype=np.float64);counts=np.zeros(table.shape[:2],int)
     for i in np.flatnonzero(use&(d['labels']>0)):
-        table[d['options'][i],nom[i],d['labels'][i]-1]+=1;counts[d['options'][i],nom[i]]+=1
+        table[recipes[i],nom[i],d['labels'][i]-1]+=1;counts[recipes[i],nom[i]]+=1
     table/=table.sum(-1,keepdims=True)
     write(out/'MODEL.json',dict(conditional_mass=table.tolist(),counts=counts.tolist(),post_base=base,dataset_sha256=sha(dataset),
         fit_families=list(map(str,families[:-2])),diagnostic_TRAIN_families=list(map(str,families[-2:])),
-        smoothing=.5,condition='Current inferred nominal word and internal proposal recipe',native_queries=0,locked_access=False))
+        smoothing=.5,condition='Current inferred nominal word and effective internal proposal recipe; exact identity fallbacks pooled into recipe0',native_queries=0,locked_access=False))
     return table,nom
+
+def effective_training_recipes(d):
+    original={(str(i),int(s)):p for i,s,o,p in zip(d['ids'],d['slots'],d['options'],d['paths']) if o==0}
+    recipes=d['options'].copy()
+    for j,(ident,slot,path) in enumerate(zip(d['ids'],d['slots'],d['paths'])):
+        if np.array_equal(path,original[(str(ident),int(slot))]):recipes[j]=0
+    return recipes
+
+def effective_inference_recipes(candidates):
+    recipes=np.broadcast_to([0,4,5],(8,3)).copy()
+    recipes[(candidates==candidates[:,:1]).all((-1,-2))]=0
+    return recipes
 
 def compose(success,planned,recipes,table):
     planned=np.asarray(planned);recipes=np.broadcast_to(np.asarray(recipes),planned.shape)

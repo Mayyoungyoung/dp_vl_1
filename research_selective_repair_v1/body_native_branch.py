@@ -11,7 +11,7 @@ import torch
 from torch import nn
 from research_selective_repair_v1.io import RUN,read,write,sha
 from research_selective_repair_v1.body_prefix_forecast import prefix_features
-from research_selective_repair_v1.body_crossing_measure import anchors,likelihood as event_loss,compose,compose_tensor
+from research_selective_repair_v1.body_crossing_measure import anchors,likelihood as event_loss,compose as event_compose,compose_tensor
 from scripts.run_observed_probability import torch_setup
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
@@ -112,6 +112,13 @@ def predict(model,ck,paths,completed,context):
     x=prefix_features(paths,completed);s=ck['settings'];t=lambda v:torch.tensor(v,device='cuda',dtype=torch.float32)
     with torch.no_grad():p=model(t((x-np.asarray(s['mean']))/np.asarray(s['std'])),t(context),t(paths),t(completed))
     return {key:v.cpu().numpy() for key,v in p.items() if not key.startswith('joint_')}
+
+def compose(p,paths,cfg):
+    prob,counts=event_compose(p,paths,cfg)
+    counts.update(native_joint_hypothesis_endpoints=len(paths)*p['mean'].shape[1]*23,
+        actual_future_joint_inputs=0,public_FK_or_IK_queries=0,
+        scope='Bounded native-joint feedback forecast, actual state is TRAIN label only')
+    return prob,counts
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--aux-only',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);a=vars(p.parse_args());a['feedback']=not a.pop('aux_only');fit(**a)
