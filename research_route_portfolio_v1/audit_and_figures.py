@@ -87,6 +87,9 @@ def main():
     ax[0].legend(loc='upper center',bbox_to_anchor=(1.05,-.13),ncol=2,frameon=False)
     fig.tight_layout();fig.savefig(out/'preference_tradeoff.png',dpi=180,bbox_inches='tight');fig.savefig(out/'preference_tradeoff.svg',bbox_inches='tight');plt.close(fig)
     make_case(out)
+    for path in out.glob('*.svg'):
+        # Matplotlib emits trailing spaces in path data; normalize export text.
+        path.write_bytes(b'\n'.join(line.rstrip(b' \t\r') for line in path.read_bytes().splitlines())+b'\n')
     figure_manifest=dict(source_sha256=sha(Path(__file__)),
         files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.png','.svg')},
         actual_example_id='fresh_fs_family_641000_open_target0',selection_rule='First registered query and C0; no favorable-case selection',
