@@ -156,3 +156,17 @@ First two reusedDEV families,open/closed,target0;16actual returned routes per ar
 |actual_nonrecurrent|1.50|6|1.75|9|
 
 V2allarms U8=7.79167,V8=V4=1,U4=4 except nonrecurrent3.97917; no planned word changes. Protection repairs the operator aliasing but not actual body prediction. The categorical mechanism is rejected; no acceptance and originalU8+.15 remains failed. Two targeted falsifications require changing the learning object. See PREFIX_PROTOCOL.md.
+
+
+## Dense state/event TRAIN pilots (not DEV results)
+
+Same384actual feedback,6fit/2TRAIN-held families,2400updates/seed0. PublicFK audit7611complete segments max3.007mm,mean.518mm. Exactcrossing events avoid uniform-mesh alias.
+
+|Model/objective|Held prefix tip RMSE[m]|Held crossing tip RMSE[m]|Completion proxy vs successful-clear Brier|
+|---|---:|---:|---:|
+|Length-averaged v1 RNN|0.06678|0.06512|0.42558|
+|Length-averaged v1 memoryless transition|0.06123|0.05584|0.68560|
+|Summed censored v2 RNN|0.07374|0.07583|0.23806|
+|Summed censored v2 memoryless transition|0.09095|0.07803|0.42579|
+
+Independent binary heldBrier=.25223. Sum of observed conditional log factors is mathematically required by deployed survival products; oldaveraged likelihood retained as failed implementation evidence. Neither trial establishes usable word forecasts or method advantage. Current conditioned state pilot addresses predicted segmentendpoint meanerror.11036m versusactual.000990m(p99.002007,max.084663). Fixed4step public-FK pose/plane conditioning shared with memoryless control is underway; no newmodel DEV inference or body gain claimed. Query counts39840publicFKstates/8832terminalsolves/17664scalarupdates per request are included,never scored as extra finals.
