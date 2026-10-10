@@ -63,3 +63,20 @@ The pilot and these controls have no accepted method yet. If same-probability
 ordinary selection explains the entire improvement,drop a selective-architecture
 claim and assess the narrow learned execution-word target honestly. A model
 fit,script,screen,opportunity upper bound or paper text does not complete the task.
+
+Frozen first fit: first six collected TRAIN families for fitting,last two
+collected TRAIN families for a diagnostic holdout;never DEV for training or
+classifier calibration.2400AdamW updates,batch32,LR.0003,seeds0/1/2;class weights
+sqrt inverse TRAIN frequency capped5,dropout.1,gradient norm1. Recurrent GRU64
+versus approximately parameter-matched point MLP144/96/64 followed by mean
+pooling,both with identical26relative waypoint features and128current context.
+17-way cross entropy;no additional loss grid. These six seed fits are paired
+continuations of fixed observed features,not independent VLM pretraining.
+Coverage optimizer uses hard predicted coverage floors: every word's predicted
+probability of appearing in the committed set must be at least identity minus
+.01. Utility is expected distinct coverage+.05expected successes-.01edited
+slots. All6561three-way/eight-slot assignments count as internal objectives;
+ordinary coordinate search is given the identical probabilities/objective/floor.
+Teacher rank seeds are a nuisance: eight-route TRAIN outcomes do not certify the
+different ranks selected in actual returned-four execution. All claims depend
+on new actual fixed returned-four trials,not replaying subset labels.

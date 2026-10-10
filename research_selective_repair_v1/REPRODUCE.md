@@ -61,3 +61,5 @@ python -m research_selective_repair_v1.figures --receipts runs/selective_repair_
 This initial figure input contains actual sealed grids and fixed executor data.
 Weights,prediction pools and full receipts stay in dedicated runs/selective_repair_v1.
 No whole raw collector directory or reserved TEST_LOCKED payload is evaluated.
+
+Execution-word stage: BODY_PROTOCOL.md freezes target0 pilot scope, 6TRAIN-family fit/2TRAIN diagnostic holdout,2400updates and three seeds. scripts/run_selective_body_feedback_expand_v1.sh is already running from immutable0a0e202f695de2e4fe14a20ba6abaf3ccd69bd4d,session38624. scripts/run_selective_body_forecast_v1.sh waits for its terminal audits,tests/builds384actual TRAIN examples,fits paired recurrent/nonrecurrent heads,then seals all48DEV target0 predictions before independent geometry/fullq scoring. Actual returned4 execution is a separate pending stage; no accepted method.

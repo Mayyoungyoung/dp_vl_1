@@ -1,0 +1,63 @@
+"""Seal one body correction per slot,then run unchanged full q and select four."""
+import argparse,time,itertools
+from pathlib import Path
+import numpy as np
+import torch
+from research_selective_repair_v1.core import *
+from research_selective_repair_v1.body_options import options
+from research_selective_repair_v1.body_forecast import load,predict,WORDS
+from research_selective_repair_v1.body_allocation import allocate
+from research_selective_repair_v1.constraints import boxes
+from research_selective_repair_v1.constraint_operator import configuration
+from routeset.observed_probability import load_scored_planner,route_observation_features
+from scripts.research_v3_audit import mode
+
+def screen(name,kind,checkpoint=None,protected=True):
+    torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False)
+    source=RUN/'constraints_global_interventions_v1';data=ROOT/'data/selective_repair_interventions_v1'
+    receipt=read(source/'SEAL.json')
+    assert receipt['current_observation_only'] and sha(source/'sealed_predictions.npz')==receipt['prediction_sha256']
+    with np.load(source/'sealed_predictions.npz') as z:
+        mask=np.array([str(i).endswith('_target0') for i in z['ids']]);d={k:z[k][mask] for k in ('ids','paths','events','completed','modes')}
+    with np.load(RUN/'interventions_calibrated_targets_v1/samples.npz') as z:
+        legal=(z['splits']=='DEV_MODEL')&np.array([str(i).endswith('_target0') for i in z['ids']]);ctx={str(i):c for i,c in zip(z['ids'][legal],z['context'][legal])}
+    assert set(map(str,d['ids'])).issubset(ctx),'Every source request must match an explicitly registered DEV_MODEL current observation'
+    with np.load(source/'pool.npz') as z:base_q={str(i):q for i,q in zip(z['ids'],z['q'])}
+    static=kind in ('identity','lift','preserved');model=ck=None
+    if not static:assert checkpoint is not None;model,ck=load(checkpoint)
+    boxck=torch.load(RUN/'constraints_seed0_v1/last.pt',map_location='cpu',weights_only=False)
+    t=lambda x:torch.tensor(x,device='cuda',dtype=torch.float32)
+    paths=[];choices=[];probabilities=[];queries=[];torch.cuda.synchronize();tic=time.monotonic()
+    for i,ident in enumerate(d['ids']):
+        candidates=options(d['paths'][i],d['completed'][i]);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1
+        if not static:
+            prob=predict(model,ck,candidates.reshape(24,24,3),np.broadcast_to(d['completed'][i],(24,4,3)),np.broadcast_to(ctx[str(ident)],(24,128))).reshape(8,3,17)
+        planned=None
+        if kind=='planned':
+            c,h=boxes(t(d['completed'][i:i+1]),boxck['settings']);cfg=configuration(c[0].cpu().numpy(),h[0].cpu().numpy(),boxck['settings'])
+            words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
+        choice,count=allocate(prob,kind,protected,planned);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count)
+    torch.cuda.synchronize();seconds=time.monotonic()-tic;paths=np.asarray(paths)
+    np.savez_compressed(out/'sealed_predictions.npz',ids=d['ids'],paths=paths,events=d['events'],modes=d['modes'],drafts=d['paths'],completed=d['completed'],choices=choices,probabilities=probabilities)
+    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role='DEV_MODEL',current_observation_only=True,kind=kind,protected=protected,internal_alternatives_per_request=24,critic_route_forwards_per_request=0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
+    # Independent geometry labels only after all predictions and choices are sealed.
+    observations={r['id']:r for r in lines(data/'export/observations.jsonl') if r['split']=='DEV_MODEL'}
+    labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
+    scorer=load_scored_planner(Q,'cuda').requires_grad_(False);center,_=center_model();rows=[];qs=[];valids=[];selected=[];hashes={}
+    for i,ident in enumerate(d['ids']):
+        ident=str(ident);inp=inputs_for(observations[ident],labels[ident],data/'export/qwen_cache',torch,hashes);runner=SceneRunner(center,scorer,inp)
+        with torch.no_grad():
+            p=t(paths[i:i+1]);ev=t(d['events'][i:i+1]);nodes,cx=route_observation_features(p,ev,inp['current'],inp['world_xyz'],inp['rgb'],inp['valid_mask'],runner.qgeo['point_features'],runner.qcontext,runner.qgeo['anchor_xyz'])
+            q=(scorer.scorer((nodes-scorer.nodes_mean)/scorer.nodes_std,(cx-scorer.context_mean)/scorer.context_std)/scorer.temperature).sigmoid().cpu().numpy()
+        ref=references(labels[ident]);a=assess(paths[i:i+1],d['events'][i:i+1],q,ref);b=assess(d['paths'][i:i+1],d['events'][i:i+1],base_q[ident][None],ref)
+        old=wordset(d['paths'][i],b['valid'][0],ref['config']);new=wordset(paths[i],a['valid'][0],ref['config'])
+        rows.append(dict(id=ident,family=ident.split('_')[2],utility=a['utility'][0].tolist(),base_utility=b['utility'][0].tolist(),added=len(new-old),lost=len(old-new),repaired=int((~b['valid'][0]&a['valid'][0]).sum()),damaged=int((b['valid'][0]&~a['valid'][0]).sum()),base_valid=int(b['valid'][0].sum()),raw_mode_changed=int((a['raw_words'][0]!=b['raw_words'][0]).sum()),selected_indices=a['selected'][0].tolist(),valid=a['valid'][0].tolist()))
+        qs.append(q[0]);valids.append(a['valid'][0]);selected.append(a['selected'][0])
+    assert sha(out/'sealed_predictions.npz')==seal
+    np.savez_compressed(out/'pool.npz',ids=d['ids'],paths=paths,events=d['events'],drafts=d['paths'],modes=d['modes'],q=qs,valid=valids,selected=selected)
+    write(out/'ROWS.json',rows);write(out/'rows.json',rows)
+    report=dict(kind=kind,protected=protected,mean_utility=np.mean([r['utility'] for r in rows],0).tolist(),requests=len(rows),damaged=sum(r['damaged'] for r in rows),raw_mode_changed=sum(r['raw_mode_changed'] for r in rows),correction_seconds=seconds,head_scope='Initial C0 allocation head screen; own matched TRAIN heads required before formal acceptance',learned_task_scope='target0 only at this stage; other targets not silently excluded from general task claim',actual_body_execution='Not run by this geometry screen',locked_access=False)
+    write(out/'SUMMARY.json',report);print(report,flush=True)
+
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--kind',choices=['identity','lift','preserved','success','planned','actual','coordinate'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--unprotected',dest='protected',action='store_false');screen(**vars(p.parse_args()))
