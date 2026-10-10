@@ -30,9 +30,15 @@ def run(name):
             assert np.array_equal(z['ids'],d['ids']) and np.array_equal(z['slots'],d['slots']) and np.array_equal(z['options'],d['options'])
             p={k:z[k] for k in ('mean','scale','hazard','events','log_weights','clear')};held=z['heldout']
         for geometry in ('current_NN','oracle_TRAIN_config'):
-            for signal in ('predicted','oracle_TRAIN_timing','oracle_TRAIN_timing_and_positions'):
+            for signal in ('predicted','current_requested_crossing_timing','oracle_TRAIN_timing','oracle_TRAIN_timing_and_positions'):
                 q=copy.deepcopy(p)
-                if signal!='predicted':q['events']=np.broadcast_to(np.where(d['event_present'][:,None],40.,-40.),p['events'].shape).copy()
+                if signal.startswith('oracle_'):q['events']=np.broadcast_to(np.where(d['event_present'][:,None],40.,-40.),p['events'].shape).copy()
+                if signal=='current_requested_crossing_timing':
+                    rowx=d['completed'].reshape(-1,2,2,3)[...,0].mean(2)
+                    hit=(d['paths'][:,:-1,None,0]<rowx[:,None])&(d['paths'][:,1:,None,0]>=rowx[:,None])
+                    index=hit.argmax(1);present=np.zeros_like(d['event_present'])
+                    for row in range(2):present[np.arange(len(present)),index[:,row],row]=hit[:,:,row].any(1)
+                    q['events']=np.broadcast_to(np.where(present[:,None],40.,-40.),p['events'].shape).copy()
                 if signal=='oracle_TRAIN_timing_and_positions':
                     q['mean']=np.broadcast_to(d['event_tip'][:,None,...,1:],p['mean'].shape).copy()
                     q['scale']=np.full_like(p['scale'],1e-5)
