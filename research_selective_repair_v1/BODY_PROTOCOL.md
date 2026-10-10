@@ -70,8 +70,8 @@ classifier calibration.2400AdamW updates,batch32,LR.0003,seeds0/1/2;class weight
 sqrt inverse TRAIN frequency capped5,dropout.1,gradient norm1. Recurrent GRU64
 versus approximately parameter-matched point MLP144/96/64 followed by mean
 pooling,both with identical26relative waypoint features and128current context.
-17-way cross entropy;no additional loss grid. These six seed fits are paired
-continuations of fixed observed features,not independent VLM pretraining.
+17-way cross entropy;no additional loss grid. These six seed fits are paired outcome-head fits with a shared frozen C0
+and observed features,not independent VLM pretraining or C0 fine-tuning.
 Coverage optimizer uses hard predicted coverage floors: every word's predicted
 probability of appearing in the committed set must be at least identity minus
 .01. Utility is expected distinct coverage+.05expected successes-.01edited
@@ -104,3 +104,18 @@ cohort audits candidate-level new body damage; actual returned-four/rank0--3
 trials remain the primary E4 evidence. Selected-four comparisons cannot label
 unexecuted original slots. Do not change native solver/environment to improve
 one arm or silently reinterpret random finite failures as infeasibility.
+
+Prospective word-safe correction v2,after sealed v1 geometry screen and before
+v2 prediction/evaluation: v1 actual-word allocation reaches U4=3.72917 versus
+identity4.0 on48target0DEV requests,violating unchanged-.03 protection. All
+final curves are geometrically valid; the loss is planned-word aliasing under
+uniform lifts. Keep all six outcome checkpoints and all class/risk/coverage
+settings unchanged. For every arm compute24 planned signatures using CURRENT
+NN-completed posts,allow only alternatives matching that slot's identity planned
+word. This is an observation-predicted constraint,not a truth-certified mode
+preservation guarantee. Identity is always admissible. Static lift abstains to
+identity on forbidden slots; success/actual/planned/coordinate/nonrecurrent
+controls get the identical mask. All24signature computations count. Retain the
+unrestricted v1 results and finish its already-running actual returned4 suite.
+No v1 method is accepted on a body gain with the failed U4 guard. Only this
+single measured operator defect is changed; no refit/loss/threshold search.

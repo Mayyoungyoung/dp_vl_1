@@ -16,13 +16,15 @@ def objectives(prob,choices,protected=True):
     utility=cov.sum(-1)+.05*(1-p[...,0]).sum(-1)-.01*(choices!=0).sum(-1)
     return np.where(eligible,utility,-np.inf)
 
-def allocate(prob,kind='actual',protected=True,planned=None):
+def allocate(prob,kind='actual',protected=True,planned=None,allowed=None):
     p=np.asarray(prob,np.float64);assert p.shape==(8,3,17)
     assert np.isfinite(p).all() and np.allclose(p.sum(-1),1,atol=1e-5)
+    allowed=np.ones((8,3),bool) if allowed is None else np.asarray(allowed,bool)
+    assert allowed.shape==(8,3) and allowed[:,0].all(),'Identity must remain feasible'
     if kind=='identity':return np.zeros(8,np.int64),0
-    if kind=='lift':return np.ones(8,np.int64),0
-    if kind=='preserved':return np.full(8,2,np.int64),0
-    if kind=='success':return (1-p[...,0]-.002*np.array([0,1,1])).argmax(-1),24
+    if kind=='lift':return np.where(allowed[:,1],1,0),0
+    if kind=='preserved':return np.where(allowed[:,2],2,0),0
+    if kind=='success':return np.where(allowed,1-p[...,0]-.002*np.array([0,1,1]),-np.inf).argmax(-1),24
     if kind=='planned':
         assert planned is not None and np.asarray(planned).shape==(8,3)
         p=np.zeros_like(p);p[...,0]=prob[...,0]
@@ -30,14 +32,16 @@ def allocate(prob,kind='actual',protected=True,planned=None):
             for j in range(3):
                 w=int(planned[i,j]);p[i,j,w if w>0 else 0]+=1-prob[i,j,0]
     if kind in ('actual','planned'):
-        score=objectives(p,COMBINATIONS,protected);return COMBINATIONS[int(score.argmax())].copy(),len(COMBINATIONS)
+        score=objectives(p,COMBINATIONS,protected);score[~allowed[np.arange(8)[None],COMBINATIONS].all(-1)]=-np.inf
+        return COMBINATIONS[int(score.argmax())].copy(),len(COMBINATIONS)
     assert kind=='coordinate'
     choice=np.zeros(8,np.int64);queries=0
     for _ in range(5):
         changed=False
         for slot in range(8):
             trials=np.broadcast_to(choice,(3,8)).copy();trials[:,slot]=np.arange(3)
-            best=int(objectives(p,trials,protected).argmax());queries+=3
+            score=objectives(p,trials,protected);score[~allowed[np.arange(8)[None],trials].all(-1)]=-np.inf
+            best=int(score.argmax());queries+=3
             changed|=choice[slot]!=best;choice=trials[best]
         if not changed:break
     return choice,queries

@@ -4,6 +4,12 @@ from research_selective_repair_v1.body_allocation import allocate,coverage
 from research_selective_repair_v1.body_options import options
 
 class FiniteBodyCorrection(unittest.TestCase):
+    def test_word_filter_blocks_only_unsafe_action_and_is_shared(self):
+        p=np.zeros((8,3,17));p[:,:,0]=1;p[:,1,0]=0;p[:,1,16]=1
+        allowed=np.ones((8,3),bool);allowed[::2,1]=False
+        for kind in ('lift','success','actual','coordinate'):
+            choice,_=allocate(p,kind,protected=False,allowed=allowed)
+            self.assertTrue(allowed[np.arange(8),choice].all())
     def test_success_only_loses_diversity_actual_forecast_recovers(self):
         p=np.zeros((8,3,17));p[:,:,0]=1
         # Original slots0--3 preserve four different successful modes.

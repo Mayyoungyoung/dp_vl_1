@@ -12,7 +12,7 @@ from research_selective_repair_v1.constraint_operator import configuration
 from routeset.observed_probability import load_scored_planner,route_observation_features
 from scripts.research_v3_audit import mode
 
-def screen(name,kind,checkpoint=None,protected=True):
+def screen(name,kind,checkpoint=None,protected=True,word_safe=False):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     source=RUN/'constraints_global_interventions_v1';data=ROOT/'data/selective_repair_interventions_v1'
     receipt=read(source/'SEAL.json')
@@ -33,13 +33,14 @@ def screen(name,kind,checkpoint=None,protected=True):
         if not static:
             prob=predict(model,ck,candidates.reshape(24,24,3),np.broadcast_to(d['completed'][i],(24,4,3)),np.broadcast_to(ctx[str(ident)],(24,128))).reshape(8,3,17)
         planned=None
-        if kind=='planned':
+        if kind=='planned' or word_safe:
             c,h=boxes(t(d['completed'][i:i+1]),boxck['settings']);cfg=configuration(c[0].cpu().numpy(),h[0].cpu().numpy(),boxck['settings'])
             words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
-        choice,count=allocate(prob,kind,protected,planned);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count)
+        allowed=(planned==planned[:,:1]) if word_safe else None
+        choice,count=allocate(prob,kind,protected,planned,allowed);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count)
     torch.cuda.synchronize();seconds=time.monotonic()-tic;paths=np.asarray(paths)
     np.savez_compressed(out/'sealed_predictions.npz',ids=d['ids'],paths=paths,events=d['events'],modes=d['modes'],drafts=d['paths'],completed=d['completed'],choices=choices,probabilities=probabilities)
-    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role='DEV_MODEL',current_observation_only=True,kind=kind,protected=protected,internal_alternatives_per_request=24,critic_route_forwards_per_request=0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
+    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role='DEV_MODEL',current_observation_only=True,kind=kind,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=24 if word_safe or kind=='planned' else 0,internal_alternatives_per_request=24,critic_route_forwards_per_request=0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
     # Independent geometry labels only after all predictions and choices are sealed.
     observations={r['id']:r for r in lines(data/'export/observations.jsonl') if r['split']=='DEV_MODEL'}
     labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
@@ -56,8 +57,8 @@ def screen(name,kind,checkpoint=None,protected=True):
     assert sha(out/'sealed_predictions.npz')==seal
     np.savez_compressed(out/'pool.npz',ids=d['ids'],paths=paths,events=d['events'],drafts=d['paths'],modes=d['modes'],q=qs,valid=valids,selected=selected)
     write(out/'ROWS.json',rows);write(out/'rows.json',rows)
-    report=dict(kind=kind,protected=protected,mean_utility=np.mean([r['utility'] for r in rows],0).tolist(),requests=len(rows),damaged=sum(r['damaged'] for r in rows),raw_mode_changed=sum(r['raw_mode_changed'] for r in rows),correction_seconds=seconds,head_scope='Initial C0 allocation head screen; own matched TRAIN heads required before formal acceptance',learned_task_scope='target0 only at this stage; other targets not silently excluded from general task claim',actual_body_execution='Not run by this geometry screen',locked_access=False)
+    report=dict(kind=kind,protected=protected,word_safe=word_safe,mean_utility=np.mean([r['utility'] for r in rows],0).tolist(),requests=len(rows),damaged=sum(r['damaged'] for r in rows),raw_mode_changed=sum(r['raw_mode_changed'] for r in rows),correction_seconds=seconds,head_scope='Initial C0 allocation head screen; own matched TRAIN heads required before formal acceptance',learned_task_scope='target0 only at this stage; other targets not silently excluded from general task claim',actual_body_execution='Not run by this geometry screen',locked_access=False)
     write(out/'SUMMARY.json',report);print(report,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--kind',choices=['identity','lift','preserved','success','planned','actual','coordinate'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--unprotected',dest='protected',action='store_false');screen(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--kind',choices=['identity','lift','preserved','success','planned','actual','coordinate'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--unprotected',dest='protected',action='store_false');p.add_argument('--word-safe',action='store_true');screen(**vars(p.parse_args()))

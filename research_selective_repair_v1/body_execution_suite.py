@@ -22,14 +22,17 @@ def expected(folder,data):
         p=dict(parents[ident.rsplit('_target',1)[0]]);p.update(execution_id=ident,execution_target=0,execution_paths=paths[ident].tolist(),execution_selected=rows[ident]['selected_indices']);plans.append(p)
     return plans
 
-def suite(name):
+def suite(name,version='v1'):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False);data=ROOT/'data/selective_repair_interventions_v1';known={};records=[]
     existing=RUN/'constraints_global_interventions_v1_executor_v2'
     if (existing/'RESULTS.json').exists():
         plans=[read(f) for f in sorted(existing.glob('plan*.json'))];known[signature(plans)]=existing.name
+    prior=RUN/'body_DEV_execution_suite_seed0_v1/SUMMARY.json'
+    if version!='v1' and prior.exists():
+        for r in read(prior)['records']:known[r['executor_input_sha256']]=r['execution']
     for kind in METHODS:
-        folder=RUN/('body_%s_DEV_screen_seed0_v1'%kind);plans=expected(folder,data);fingerprint=signature(plans)
-        reused=fingerprint in known;execution=known.get(fingerprint,'body_%s_DEV_executor_seed0_v1'%kind)
+        folder=RUN/('body_%s_DEV_screen_seed0_%s'%(kind,version));plans=expected(folder,data);fingerprint=signature(plans)
+        reused=fingerprint in known;execution=known.get(fingerprint,'body_%s_DEV_executor_seed0_%s'%(kind,version))
         if not reused:
             run(execution,folder/'pool.npz',folder/'rows.json',data,4)
             actual=[read(f) for f in sorted((RUN/execution).glob('plan*.json'))]
@@ -43,4 +46,4 @@ def suite(name):
     write(out/'SUMMARY.json',dict(records=records,complete=True,scope='Reused two DEV families,open/closed,target0,actual frozen returned4. Initial paired screen,not fresh confirmation/three-seed evidence.',locked_access=False))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);suite(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--version',default='v1');suite(**vars(p.parse_args()))
