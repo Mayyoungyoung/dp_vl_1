@@ -28,19 +28,28 @@ Actualscreen in results/CONSTRAINT_SCREEN.json. No finalconfirmation generated.
 
 Executor7b3c868 startup failedmissinglibcoppeliaSim before any planning call;
 failed receipt retained0.5138sec. Recovere5b4fcb9ce2c9e7130462dc8d7b95b85cb00003b
-through validated render startup,session73967,currently actualPanda coordinator.
-Global complete187.44sec,8/16success despite16/16tip-valid; protected/mode-global
-are successors. Do not duplicate/alter frozen running source. Transport audits
+through validated render startup,session73967 TERMINAL actualPanda coordinator.
+Global complete187.44sec,8/16success despite16/16tip-valid; protected7/16,
+mode-global8/16,allterminal. Transport audits
 now use COMMON838surviving C0openwords: global792,protected793,mode-global793,
 oldpointgeometry784,C0 739. Own-open versions have different denominators and
 cannot support causal comparisons. Results inTRANSPORT_COMMON.json.
 
-Prospective body diagnostic code: static TRAIN-only canonical-branch IK labels
-from first2newTRAINfamilies/open+closed (4parentsx240probes). IK failures unknown,
-safe poses not successful executions. Next new immutable source runs
-scripts/run_selective_body_pilot_v1.sh,waiting for executor's final receipt,
-then body_ik_train_pilot_v1. No deployment truth/IK entry introduced. Only
-extend TRAIN data/learn small body constraints if pilot provides useful signal.
+Body proxy diagnostics TERMINAL: canonicalIK252safe/6collision/702unknown;
+continuationIK141safe/0collision/819unknown; rootplanner474/480foundpaths,
+160liftpairs4recover/0lose,no executions. Do not train an infeasibility
+classifier from these unknowns or claim that singlepoint planning certifies
+continuous execution. Exact receipts inBODY_DIAGNOSTICS.json.
+
+ACTIVE source7668980cc2b00b381b0090126002e8a76c1dbeea/session51172,
+scripts/run_selective_body_execution_teacher_v1.sh. Legal288TRAIN corrected
+draft pool COMPLETE32.95sec. body_execution_train_lift0_pilot_v1 PID971702
+running actualfullTRAINcontroller8routes/parent,first2TRAINfamiliesopenclosed;
+then separatefixedsmooth8cm liftteacher,not16deploymentcandidates. Firstparent
+5/8actualsuccess withcollision/path failures. Maximum184get_path/parent,
+unchanged23segments/1000steps/retry0; joint/tip/prefixtraces retained.
+This addresses measured stateful execution failure; no body learner yet.
+Do not alter frozen running source,duplicateor claim final research completion.
 Actual3seed matching-head/fresh
 confirmation/execution expansion remain required if the mechanism is promising.
 Checkpoint and full result paths indexed in results/CALIBRATED_SCREEN.json.

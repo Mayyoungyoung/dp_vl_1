@@ -1,20 +1,21 @@
-## Selective repair ACTIVE - current 2026-10-10
+## Selective repair ACTIVE - current2026-10-10
 
 Read research_selective_repair_v1/RESEARCH_STATE.md and PROTOCOL.md.
-Physical144scenes/432requests and three paired direct-repair seeds complete.
-Selective has no newDEV gain; learned-constraint global/protected/mode-global
-newU8=7.84028/7.92361/7.93056,zero damaged routes. Protection does not beat
-strongest matched optimizer;+.15 gate not met and current U8 headroom<.15.
-COMMON838transported C0words retained792/793/793,pointgeometry784,C0739.
-Actual Panda global8/16success despite16/16TipValid. Frozene5b4fcb coordinator
-session73967 continues protected/modeglobal execution. Earlier failed startup
-7b3c868 missingdynamiclibrary retained; recoveryusesexistingvalidatedsimstartup.
-Frozen e0f0918/session24122 waits for actual final executorRESULTS.json,then
-TRAIN-only4parent/960staticcanonicalbranchIK bodyprobe pilot. Unknown failures
-stayunknown,staticpose safety is not execution. No methodaccepted/finalconfirm.
-Latest sources pushednonforce. Only wzy3090 GPU1 UUID/.35memory/CPU0-3;
-local solewriter,immutableexports,actualsource/RNG/receipts,lockedTESTunread.
-No actual wall quota supplied. Historical sections below.
+No accepted method. Physical144scenes/432requests and directrepair3seeds complete.
+NewDEV constraints global/protected/modeglobalU8=7.84028/7.92361/7.93056,
+zero newdamage; protection has no advantage overstrongoptimizer. ActualPanda
+8/16,7/16,8/16respectively(alltipvalid); currentU8headroom<unchanged+.15.
+Common838transportedC0words retained792/793/793. IK/rootplanner proxyteachers
+terminal and uninformative for continuous execution; unknownsremainunknown.
+ACTIVE7668980cc2b00b381b0090126002e8a76c1dbeea/session51172:288TRAINlegal
+correctedroutes COMPLETE32.95sec; actualfullTRAIN8route teacher PID971702,
+first2TRAINfamiliesopenclosed4parents,then separate8cm smoothliftteacher.
+Sameinitials/quaternion/rankseeds/retry0,184get_pathmax/parent. Firstparent5/8.
+No bodylearner/finalconfirmation yet; continueactualpaired feedback then choose
+one focused bodyconstraint mechanism onlyif evidence supports it. FixedPanda
+and metrics maynotbe weakened to claim success. TEST_LOCKED unread/defaultsintact.
+Onlyssh wzy3090 GPU1UUID/.35memory/CPU0-3,localwriter,immutableexports.
+No wallquota supplied. Historical sections below.
 ## Feasible-space v1 CLOSED — 2026-10-09
 
 All queues are terminal; no experiment or interrupted training is pending.

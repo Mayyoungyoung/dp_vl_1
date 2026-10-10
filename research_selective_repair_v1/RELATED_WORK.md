@@ -28,3 +28,21 @@ The decisive contrasts are same-data center updates, whole residuals, global
 scaling, observed geometric triggers and finite local optimization, followed by
 frozen new-family and full-arm evidence. If ordinary methods account for gains,
 the claimed mechanism must change. No prior-art novelty is assumed in advance.
+## Closest body-feedback precedents checked2026-10-10
+
+[DiffCo](https://arxiv.org/abs/2102.07413) learns differentiable collision
+proxies and uses their gradients in trajectory optimization. Thus a learned
+body collision field plus gradient repair is already a direct precedent;
+neural feasibility + optimization is not itself an innovation claim.
+
+[Active Learning of Abstract Plan Feasibility](https://arxiv.org/abs/2107.00683)
+learns plan feasibility from robot success/failure interactions and uses an
+infeasible-subsequence property for efficient acquisition, including Franka
+Panda experiments. Predicting sequential execution likelihood or using prefix
+failures is therefore also not independently new. Our measured current gap
+is metric Cartesian route prefixes under one unchanged controller and current
+RGB-D; any narrower differentiable repair contribution must be established
+against same-feedback/same-constraint controls, not inferred from task names.
+No body method or novelty is accepted at this stage. This is a bounded primary
+source check, not a new survey project. Static IK unknowns and root-planning
+successes in BODY_DIAGNOSTICS.json cannot be substituted for full execution.
