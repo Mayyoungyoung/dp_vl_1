@@ -42,7 +42,7 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
     return [],[],False
 
 
-def collect(name,data_name='interventions_calibrated_targets_v1',family_start=0,families=2,continuation=False):
+def collect(name,data_name='interventions_calibrated_targets_v1',family_start=0,families=2,continuation=False,teacher_kind='ik'):
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
     data=ROOT/'data/selective_repair_interventions_v1';registration=read(data/'registration.json')
@@ -53,8 +53,10 @@ def collect(name,data_name='interventions_calibrated_targets_v1',family_start=0,
     with np.load(RUN/data_name/'samples.npz') as z:
         ix=z['splits']=='TRAIN';ids=z['ids'][ix];drafts=z['drafts'][ix]
     byid={str(v):i for i,v in enumerate(ids)}
-    manifest=dict(source_commit=os.environ.get('CODE_COMMIT'),source_sha256={str(f.relative_to(SOURCE)):sha(f) for d in ('scripts','configs','research_selective_repair_v1') for f in (SOURCE/d).rglob('*') if f.is_file() and f.suffix in ('.py','.json','.sh')},samples_sha256=sha(RUN/data_name/'samples.npz'),TRAIN_families=chosen,variants=['open','closed'],probes_per_parent=240,init_ik_queries=0,path_queries=0,simulation_after_probe=0,continuation=continuation,teacher_scope='Static canonical branch, unknown failures excluded from collision classifier',locked_access=False)
-    write(out/'MANIFEST.json',manifest);physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='selective_body_probe_train_v1'
+    probe_count=120 if teacher_kind=='planner' else 240
+    scope='Fixed budget get_path outcome likelihood, not an executed success or infeasibility label' if teacher_kind=='planner' else 'Static canonical branch, unknown failures excluded from collision classifier'
+    manifest=dict(source_commit=os.environ.get('CODE_COMMIT'),source_sha256={str(f.relative_to(SOURCE)):sha(f) for d in ('scripts','configs','research_selective_repair_v1') for f in (SOURCE/d).rglob('*') if f.is_file() and f.suffix in ('.py','.json','.sh')},samples_sha256=sha(RUN/data_name/'samples.npz'),TRAIN_families=chosen,variants=['open','closed'],probes_per_parent=probe_count,init_ik_queries=0,path_queries_per_parent=120 if teacher_kind=='planner' else 0,simulation_after_probe=0,continuation=continuation,teacher_kind=teacher_kind,teacher_scope=scope,locked_access=False)
+    write(out/'MANIFEST.json',manifest);physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='selective_body_planning_train_v1' if teacher_kind=='planner' else 'selective_body_probe_train_v1'
     summaries=[]
     for i,original in enumerate(plans):
         plan=copy.deepcopy(original);ident=plan['parent_id']+'_target0';assert ident in byid
@@ -62,7 +64,7 @@ def collect(name,data_name='interventions_calibrated_targets_v1',family_start=0,
         dest=out/('parent%d'%i);receipt=physical.physical_worker(registration,manifest,plan,file,dest)
         if receipt['status']=='error':raise RuntimeError('Technical probe failure retained: '+str(receipt['fatal_error']))
         summary=read(dest/'BODY_PROBES.json');summaries.append({k:v for k,v in summary.items() if k!='records'});print(summaries[-1],flush=True)
-    write(out/'SUMMARY.json',dict(parents=len(plans),probes=240*len(plans),known_safe=sum(s['known_safe'] for s in summaries),known_colliding=sum(s['known_colliding'] for s in summaries),unknown=sum(s['unknown'] for s in summaries),parents_summary=summaries,static_probes=True,actual_executions=0,locked_access=False))
+    write(out/'SUMMARY.json',dict(parents=len(plans),probes=sum(s['probes'] for s in summaries),known_safe=sum(s['known_safe'] for s in summaries),known_colliding=sum(s['known_colliding'] for s in summaries),unknown=sum(s['unknown'] for s in summaries),parents_summary=summaries,static_probes=teacher_kind=='ik',teacher_kind=teacher_kind,actual_executions=0,locked_access=False))
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--data-name',default='interventions_calibrated_targets_v1');p.add_argument('--family-start',type=int,default=0);p.add_argument('--families',type=int,default=2);p.add_argument('--continuation',action='store_true');collect(**vars(p.parse_args()))
