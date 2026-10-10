@@ -40,4 +40,14 @@ class StateTransport(unittest.TestCase):
         after=prefix_features(paths,completed)
         np.testing.assert_array_equal(before[:,:10],after[:,:10])
 
+    def test_censored_survival_is_a_product_not_a_length_average(self):
+        logits=torch.zeros(1,1,23,requires_grad=True)
+        out=dict(q=torch.zeros(1,1,23,4,7),tip=torch.zeros(1,1,23,4,3),hazard=logits,log_weights=torch.zeros(1,1))
+        q=torch.zeros(1,23,4,7);tip=torch.zeros(1,23,4,3);valid=torch.zeros(1,23,dtype=torch.bool)
+        observed=valid.clone();observed[:,:4]=True;hazard=torch.zeros(1,23);hazard[:,3]=1
+        loss=likelihood(out,q,tip,valid,hazard,observed)
+        self.assertAlmostEqual(float(loss),4*np.log(2),places=6)
+        loss.backward();torch.testing.assert_close(logits.grad[0,0,:4],torch.tensor([.5,.5,.5,-.5]))
+        self.assertEqual(float(logits.grad[0,0,4:].abs().sum()),0)
+
 if __name__=='__main__':unittest.main()

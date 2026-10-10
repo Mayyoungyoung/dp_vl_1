@@ -3,7 +3,7 @@ import argparse,datetime,json,os,subprocess,sys,time,traceback
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(name):
+def run(name,version='v1'):
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     auxiliary=RUN/'prefix_pilot_gpu.lock';fd=os.open(auxiliary,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
@@ -29,8 +29,13 @@ def run(name):
         from research_selective_repair_v1.body_prefix_forecast import fit
         from research_selective_repair_v1.body_binary_forecast import fit as binary_fit
         for kind in ('recurrent','nonrecurrent'):
-            fit('body_prefix_pilot_%s_seed0_v1'%kind,RUN/'body_prefix_pilot_fk_v1_data/samples.npz',kind=kind,threads=1)
-        binary_fit('body_binary_pilot_seed0_v1',RUN/'body_feedback_data_v1/samples.npz',threads=1)
+            fit('body_prefix_pilot_%s_seed0_%s'%(kind,version),RUN/'body_prefix_pilot_fk_v1_data/samples.npz',kind=kind,threads=1)
+        binary=RUN/'body_binary_pilot_seed0_v1'
+        if (binary/'last.pt').exists():
+            settings=read(binary/'SUMMARY.json')['settings']
+            assert settings['seed']==0 and settings['steps']==2400 and settings['threads']==1 and settings['dataset_sha256']==sha(RUN/'body_feedback_data_v1/samples.npz')
+            receipt['reused_exact_binary_checkpoint_sha256']=sha(binary/'last.pt')
+        else:binary_fit('body_binary_pilot_seed0_v1',RUN/'body_feedback_data_v1/samples.npz',threads=1)
         code=0
     except BaseException as error:
         receipt['error']=repr(error);receipt['traceback']=traceback.format_exc();print(receipt['traceback'],flush=True)
@@ -40,4 +45,4 @@ def run(name):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--version',default='v1');run(**vars(p.parse_args()))

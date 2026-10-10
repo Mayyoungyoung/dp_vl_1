@@ -79,7 +79,10 @@ def likelihood(pred,q,tip,valid,hazard,observed,event=None):
     state=((qloss+ploss)*valid[:,None]).sum(-1)/valid.sum(-1).clamp_min(1)[:,None]
     target=hazard[:,None].expand_as(pred['hazard'])
     risk=nn.functional.binary_cross_entropy_with_logits(pred['hazard'],target,reduction='none')
-    risk=(risk*observed[:,None]).sum(-1)/observed.sum(-1).clamp_min(1)[:,None]
+    # Censored first-failure likelihood: product of continuation probabilities
+    # until observed stop,then failure. Averaging by prefix length incorrectly
+    # changes that distribution while deployment still multiplies all factors.
+    risk=(risk*observed[:,None]).sum(-1)
     if event is not None:
         qevent=((pred['event_q']-event['q'][:,None])/.1).square().mean(-1)
         pevent=((pred['event_tip']-event['tip'][:,None])/.02).square().mean(-1)
@@ -88,7 +91,7 @@ def likelihood(pred,q,tip,valid,hazard,observed,event=None):
         truth=event['present'][:,None].expand_as(pred['events']).float()
         ce=nn.functional.binary_cross_entropy_with_logits(pred['events'],truth,reduction='none')
         mask=event['observed'][:,None]
-        risk+=(ce*mask).sum((-1,-2))/mask.sum((-1,-2)).clamp_min(1)
+        risk=risk+(ce*mask).sum((-1,-2))
     return -torch.logsumexp(pred['log_weights']-.5*state-risk,dim=-1).mean()
 
 def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None,threads=4):
@@ -105,6 +108,8 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
         fit_families=[str(v) for v in families[:-2]],diagnostic_TRAIN_families=[str(v) for v in held],
         source_commit=os.environ.get('CODE_COMMIT'),forcing='linear1to0infirst1200updates;free deployment',
         event_supervision='Exact first crossings from full trace; uniform4states alone alias7/85 TRAIN successes',
+        hazard_likelihood='Sum observed conditional stop/continue log factors,censored unknown suffix',
+        event_likelihood='Sum firstcross/preceding noncross log factors,censored after firstcross/stop',
         scope='Current observation/public initial q only in free forward; actual prefix/event/hazard TRAIN likelihood only')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     model=PrefixHead(load_robot(robot),kind).cuda();opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
