@@ -18,9 +18,14 @@ class StateTransport(unittest.TestCase):
         out=model(x,context,q0);self.assertEqual(out['q'].shape,(2,4,23,4,7))
         valid=torch.zeros(2,23,dtype=torch.bool);valid[:,0]=True
         obs=valid.clone();target=torch.zeros(2,23,4,7);tip=torch.zeros(2,23,4,3);hazard=torch.zeros(2,23)
-        a=likelihood(out,target,tip,valid,hazard,obs)
-        target[:,1:]=10000;tip[:,1:]=10000;hazard[:,1:]=1
-        b=likelihood(out,target,tip,valid,hazard,obs)
+        event=dict(q=torch.zeros(2,23,2,7),tip=torch.zeros(2,23,2,3),present=torch.zeros(2,23,2,dtype=torch.bool),observed=torch.zeros(2,23,2,dtype=torch.bool))
+        event['present'][:,0,0]=True;event['observed'][:,0]=True
+        a=likelihood(out,target,tip,valid,hazard,obs,event)
+        # Keep tensors saved by the first autograd graph immutable.
+        other=target.clone();other[:,1:]=10000
+        other_tip=tip.clone();other_tip[:,1:]=10000
+        other_hazard=hazard.clone();other_hazard[:,1:]=1
+        b=likelihood(out,other,other_tip,valid,other_hazard,obs,event)
         self.assertAlmostEqual(float(a),float(b),places=5)
         a.backward();self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all() for p in model.parameters()))
 
