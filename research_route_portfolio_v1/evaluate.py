@@ -92,6 +92,26 @@ def evaluate(name, checkpoint, dataset, sampling='adaptive', inference_seed=7123
                   observed_decode_calls=True, observed_encoder_decode_q_ms_mean=1000*float(np.mean(times)),
                   timing_scope='Cached Qwen features; RGB-D encoder, decoder and complete q. No uncached VLM timing.'))
     write(out/'PREDICTION_SEAL.json', seal)
+    check_saved(name)
+
+
+def check_saved(name):
+    from routeset.mode_geometry import VOCAB
+    from scripts.evaluate_paired_modes import references, check_candidates
+    from scripts.research_v3_audit import mode, coverage, average, plain
+    out = RUN/name
+    assert not (out/'RESULTS.json').exists(), 'Already completed checking'
+    seal = read(out/'PREDICTION_SEAL.json')
+    assert sha(out/'pool.npz') == seal['predictions_sha256']
+    spec = seal['data_spec']
+    data = ROOT/spec['relative_path']
+    assert sha(data/'export/observations.jsonl') == spec['observations_sha256']
+    assert sha(data/'export/supervision.jsonl') == spec['supervision_sha256']
+    rows = lines(data/'export/observations.jsonl')
+    labels = {r['id']:r for r in lines(data/'export/supervision.jsonl')}
+    with np.load(out/'pool.npz') as z:
+        pools = {k:z[k] for k in z.files}
+    assert np.array_equal(pools['ids'], [r['id'] for r in rows])
     # Oracle configuration, geometry and reference routes are first used here.
     result_rows = []
     for i, row in enumerate(rows):
@@ -106,7 +126,7 @@ def evaluate(name, checkpoint, dataset, sampling='adaptive', inference_seed=7123
         chosen = pools['selected_indices'][i]
         result_rows.append(dict(id=row['id'], family=row['parent_id'].rsplit('_',1)[0],
             variant=row['parent_id'].rsplit('_',1)[1], words=words,valid=valid.tolist(),
-            assigned_modes=assigned,selected_indices=chosen.tolist(),
+            assigned_modes=assigned,selected_indices=list(chosen),
             raw=coverage(words,valid,known,range(8)),selected=coverage(words,valid,known,chosen),
             duplicate_valid_routes=int(valid.sum()-len(set(words)-{None})),
             distinct_queries=len(set(assigned)), condition_hit=float(np.mean([v and w==m for v,w,m in zip(valid,words,assigned)]))))
@@ -117,7 +137,9 @@ def evaluate(name, checkpoint, dataset, sampling='adaptive', inference_seed=7123
         condition_hit=float(np.mean([r['condition_hit'] for r in result_rows])),
         source_commit=seal['source_commit'], predictions_sha256=seal['predictions_sha256'],
         generator_sha256=seal['generator_sha256'], head_sha256=seal['head_sha256'],
-        dataset=dataset, sampling=sampling, inference_seed=inference_seed,cost=seal['cost'],
+        dataset=seal['dataset'], sampling=seal['sampling'], inference_seed=seal['inference_seed'],cost=seal['cost'],
+        checker_source_commit=__import__('os').environ.get('CODE_COMMIT'),
+        checker_sha256=sha(SOURCE/'research_route_portfolio_v1/evaluate.py'),
         variants={v:dict(raw=average([r['raw'] for r in result_rows if r['variant']==v]),
                         selected=average([r['selected'] for r in result_rows if r['variant']==v]))
                   for v in sorted(set(r['variant'] for r in result_rows))},
@@ -130,9 +152,15 @@ def evaluate(name, checkpoint, dataset, sampling='adaptive', inference_seed=7123
 if __name__ == '__main__':
     p=argparse.ArgumentParser()
     p.add_argument('--name',required=True)
-    p.add_argument('--checkpoint',required=True,type=Path)
+    p.add_argument('--checkpoint',type=Path)
     p.add_argument('--dataset',choices=['shift'],default='shift')
     p.add_argument('--sampling',choices=['adaptive','balanced','ordinary'],default='adaptive')
     p.add_argument('--inference-seed',type=int,default=71239)
     p.add_argument('--head',type=Path)
-    evaluate(**vars(p.parse_args()))
+    p.add_argument('--check-only',action='store_true')
+    args=vars(p.parse_args())
+    if args.pop('check_only'):
+        check_saved(args['name'])
+    else:
+        if args['checkpoint'] is None:p.error('--checkpoint is required for generation')
+        evaluate(**args)
