@@ -26,6 +26,9 @@ if [[ "${1:-}" == execution ]];then
 elif [[ "${1:-}" == suite ]];then
  shift
  taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.body_execution_suite "$@"
+elif [[ "${1:-}" == amplitude_suite ]];then
+ shift
+ taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.amplitude_execution_suite "$@"
 elif [[ "${1:-}" == planner ]];then
  shift
  taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.planning_teacher "$@"
