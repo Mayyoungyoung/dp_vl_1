@@ -9,7 +9,7 @@ import numpy as np
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 from research_selective_repair_v1.execute import callback
 
-def collect(name,pool,family_start=0,families=2,lift=0.):
+def collect(name,pool,family_start=0,families=2,lift=0.,preserve_row_crossings=False):
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
     data=ROOT/'data/selective_repair_interventions_v1';registration=read(data/'registration.json')
@@ -17,19 +17,30 @@ def collect(name,pool,family_start=0,families=2,lift=0.):
     chosen=sorted({p['family_id'] for p in registration['parent_plan'] if p['role']=='TRAIN'})[family_start:family_start+families]
     plans=[p for p in registration['parent_plan'] if p['family_id'] in chosen and p['variant'] in ('open','closed')];assert len(plans)==2*families
     with np.load(pool) as z:ids=z['ids'];paths=z['paths']
+    if preserve_row_crossings:
+        with np.load(pool.parent/'sealed_predictions.npz') as z:
+            assert np.array_equal(ids,z['ids']);completed=z['completed']
     byid={str(v):i for i,v in enumerate(ids)};out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     source={str(f.relative_to(SOURCE)):sha(f) for d in ('scripts','configs','research_selective_repair_v1') for f in (SOURCE/d).rglob('*') if f.is_file() and f.suffix in ('.py','.json','.sh')}
-    write(out/'MANIFEST.json',dict(source_commit=os.environ.get('CODE_COMMIT'),pool_sha256=sha(pool),TRAIN_families=chosen,variants=['open','closed'],teacher_routes_per_parent=8,lift_m=lift,shape='sin(pi*t),fixed endpoints',retry_budget=0,executor='Unchanged pilot.execute,23segments,max1000steps/segment,collisionaware300trialget_path',maximum_get_path_per_parent=184,TRAIN_feedback_only=True,locked_access=False))
+    write(out/'MANIFEST.json',dict(source_commit=os.environ.get('CODE_COMMIT'),pool_sha256=sha(pool),TRAIN_families=chosen,variants=['open','closed'],teacher_routes_per_parent=8,lift_m=lift,shape='sin(pi*t),fixed endpoints; optional unchanged nodes around predicted row crossings',preserve_row_crossings=preserve_row_crossings,retry_budget=0,executor='Unchanged pilot.execute,23segments,max1000steps/segment,collisionaware300trialget_path',maximum_get_path_per_parent=184,TRAIN_feedback_only=True,locked_access=False))
     physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='selective_body_execution_teacher_train_v1';records=[]
     for i,original in enumerate(plans):
         ident=original['parent_id']+'_target0';p=paths[byid[ident]].copy()
         if lift:
-            factor=np.sin(np.pi*np.linspace(0,1,24));factor[[0,-1]]=0;p[:,:,2]+=lift*factor[None]
+            factor=np.broadcast_to(np.sin(np.pi*np.linspace(0,1,24)),(8,24)).copy();factor[:,[0,-1]]=0
+            if preserve_row_crossings:
+                rows=completed[byid[ident],:,0].reshape(2,2).mean(-1)
+                for j,path in enumerate(p):
+                    for row in rows:
+                        crossing=np.flatnonzero((path[:-1,0]<row)&(path[1:,0]>=row))
+                        if not len(crossing):factor[j]=0;break
+                        q=int(crossing[0]);factor[j,max(0,q-1):min(24,q+3)]=0
+            p[:,:,2]+=lift*factor
         plan=copy.deepcopy(original);plan.update(execution_id=ident,execution_target=0,execution_paths=p.tolist(),execution_selected=list(range(8)))
         file=out/('plan%d.json'%i);write(file,plan);dest=out/('parent%d'%i);r=physical.physical_worker(registration,dict(source_sha256=source),plan,file,dest)
         if r['status']=='error':raise RuntimeError('Technical TRAIN execution failed, retain: '+str(r['fatal_error']))
         result=read(dest/'EXECUTION.json');records.append(result);print(dict(id=ident,attempted=result['attempted'],success=result['success']),flush=True)
-    write(out/'SUMMARY.json',dict(TRAIN_parents=len(plans),attempted=sum(r['attempted'] for r in records),success=sum(r['success'] for r in records),lift_m=lift,records=records,actual_full_arm=True,locked_access=False,scope='TRAIN feedback on all8 teacher routes, not a deployment returned4 metric; comparison with same stored seeds/ranks/initials'))
+    write(out/'SUMMARY.json',dict(TRAIN_parents=len(plans),attempted=sum(r['attempted'] for r in records),success=sum(r['success'] for r in records),lift_m=lift,preserve_row_crossings=preserve_row_crossings,records=records,actual_full_arm=True,locked_access=False,scope='TRAIN feedback on all8 teacher routes, not a deployment returned4 metric; comparison with same stored seeds/ranks/initials'))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--family-start',type=int,default=0);p.add_argument('--families',type=int,default=2);p.add_argument('--lift',type=float,default=0.);collect(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--family-start',type=int,default=0);p.add_argument('--families',type=int,default=2);p.add_argument('--lift',type=float,default=0.);p.add_argument('--preserve-row-crossings',action='store_true');collect(**vars(p.parse_args()))
