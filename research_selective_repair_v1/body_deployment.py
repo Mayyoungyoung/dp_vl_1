@@ -18,11 +18,11 @@ from scripts.research_v3_audit import mode
 from routeset.train_v2 import atomic_checkpoint
 
 class IntegratedBody(torch.nn.Module):
-    def __init__(self,center,completion,completion_ck,outcome,outcome_ck,kind,protected=True,forecast='categorical',word_safe=False):
+    def __init__(self,center,completion,completion_ck,outcome,outcome_ck,kind,protected=True,forecast='categorical',word_safe=False,continuous=False):
         super().__init__();self.center=center;self.completion=completion;self.outcome=outcome
         self.completion_ck=completion_ck;self.outcome_ck=outcome_ck;self.kind=kind;self.protected=protected
         self.goal=None;self.query_counts=[]
-        self.forecast=forecast;self.word_safe=word_safe
+        self.forecast=forecast;self.word_safe=word_safe;self.continuous=continuous
     @property
     def mode_predictor(self):return self.center.mode_predictor
     def encode(self,**inp):
@@ -49,16 +49,24 @@ class IntegratedBody(torch.nn.Module):
             static=self.kind in ('identity','lift','preserved')
             cfg=configuration(centers[i].detach().cpu().numpy(),halves[i].detach().cpu().numpy(),settings)
             planned=None;detail={}
-            if self.kind=='planned' or self.word_safe or self.forecast in ('event','binary'):
+            if self.kind=='planned' or self.word_safe or self.forecast in ('event','crossing','binary'):
                 words=[mode(q,cfg) for q in candidate.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
+            if self.continuous:
+                from research_selective_repair_v1.body_predictive_repair import repair as predictive_repair
+                with torch.inference_mode(False),torch.enable_grad():
+                    corrected,amplitude,probability,detail=predictive_repair(self.outcome,self.outcome_ck,p[i].detach().cpu().numpy(),c,context[i].detach().cpu().numpy(),cfg,forecast=self.forecast,kind=self.kind)
+                paths.append(corrected);self.query_counts.append(dict(final_candidates=8,internal_options=24,critic_route_forwards=264,allocation_objectives=33,geometry_steps=geo['steps'],forecast_counts=detail,predicted_signature_calls=40))
+                continue
             if not static:
                 if self.forecast=='event':
                     from research_selective_repair_v1.body_event_forecast import predict as forecast_predict,compose
+                elif self.forecast=='crossing':
+                    from research_selective_repair_v1.body_crossing_measure import predict as forecast_predict,compose
                 elif self.forecast=='binary':
                     from research_selective_repair_v1.body_binary_forecast import predict as forecast_predict
                 else:forecast_predict=predict
                 prediction=forecast_predict(self.outcome,self.outcome_ck,candidate.reshape(24,24,3),np.broadcast_to(c,(24,4,3)),np.broadcast_to(context[i].detach().cpu().numpy(),(24,128)))
-                if self.forecast=='event':
+                if self.forecast in ('event','crossing'):
                     probabilities,detail=compose(prediction,candidate.reshape(24,24,3),cfg);probabilities=probabilities.reshape(8,3,17)
                 elif self.forecast=='binary':
                     success=prediction.reshape(8,3);probabilities[:,:,0]=1-success
@@ -70,9 +78,10 @@ class IntegratedBody(torch.nn.Module):
             paths.append(candidate[np.arange(8),choice]);self.query_counts.append(dict(final_candidates=8,internal_options=24,critic_route_forwards=0 if static else 24,allocation_objectives=count,geometry_steps=geo['steps'],forecast_counts=detail,predicted_signature_calls=24 if planned is not None else 0))
         return t(np.asarray(paths)),events,info
 
-def bind(name,outcome,completion,prototype,kind='actual',protected=True,forecast='categorical',word_safe=False):
+def bind(name,outcome,completion,prototype,kind='actual',protected=True,forecast='categorical',word_safe=False,continuous=False):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
-    view=dict(center_path=str(BASE),center_sha256=sha(BASE),completion_path=str(completion),completion_sha256=sha(completion),outcome_path=str(outcome),outcome_sha256=sha(outcome),prototype_path=str(prototype),prototype_sha256=sha(prototype),kind=kind,protected=protected,forecast=forecast,word_safe=word_safe,internal_options=24,final_candidates=8,geometry_steps=64)
+    if continuous:assert protected and word_safe and forecast in ('event','crossing','binary') and kind in ('actual','planned','success')
+    view=dict(center_path=str(BASE),center_sha256=sha(BASE),completion_path=str(completion),completion_sha256=sha(completion),outcome_path=str(outcome),outcome_sha256=sha(outcome),prototype_path=str(prototype),prototype_sha256=sha(prototype),kind=kind,protected=protected,forecast=forecast,word_safe=word_safe,continuous=continuous,internal_options=24,final_candidates=8,geometry_steps=64)
     atomic_checkpoint(out/'last.pt',dict(body_view=view));write(out/'VIEW.json',dict(**view,decoder_sha256=sha(out/'last.pt')))
 
 def load_view(path):
@@ -82,11 +91,13 @@ def load_view(path):
     center,_=center_model();completion,c=load_boxes(Path(v['completion_path']))
     if v.get('forecast')=='event':
         from research_selective_repair_v1.body_event_forecast import load as load_forecast
+    elif v.get('forecast')=='crossing':
+        from research_selective_repair_v1.body_crossing_measure import load as load_forecast
     elif v.get('forecast')=='binary':
         from research_selective_repair_v1.body_binary_forecast import load as load_forecast
     else:load_forecast=load_outcomes
     outcome,o=load_forecast(Path(v['outcome_path']))
-    return IntegratedBody(center,completion,c,outcome,o,v['kind'],v['protected'],v.get('forecast','categorical'),v.get('word_safe',False)).cuda().eval(),ck
+    return IntegratedBody(center,completion,c,outcome,o,v['kind'],v['protected'],v.get('forecast','categorical'),v.get('word_safe',False),v.get('continuous',False)).cuda().eval(),ck
 
 def feedback(name,checkpoint,data,limit=None,resume=False):
     from research_realized_coverage_v1 import feedback as original
@@ -94,7 +105,7 @@ def feedback(name,checkpoint,data,limit=None,resume=False):
     model=None;v=torch.load(checkpoint,map_location='cpu',weights_only=False)['body_view'];pm=read(v['prototype_path'])
     if limit is None:
         forecast=torch.load(v['outcome_path'],map_location='cpu',weights_only=False)
-        manifest=read(RUN/('body_events_data_v1' if v.get('forecast')=='event' else 'body_feedback_data_v3')/'MANIFEST.json')
+        manifest=read(RUN/('body_events_data_v1' if v.get('forecast') in ('event','crossing') else 'body_feedback_data_v3')/'MANIFEST.json')
         assert manifest['rows']==2304 and manifest['no_DEV_feedback'] and forecast['settings']['dataset_sha256']==manifest['samples_sha256'],'Formal head requires complete allgoal16family TRAIN feedback'
     def load(path):
         nonlocal model
@@ -110,6 +121,6 @@ def feedback(name,checkpoint,data,limit=None,resume=False):
     write(RUN/name/'BODY_COUNTS.json',dict(decode_counts=model.query_counts,current_observation_only=True,scope='Bounded TRAIN API check only' if limit is not None else 'Full matching TRAIN feedback for frozen allgoal body decoder',set_dependent_companion_edits_possible=True,decoder_sha256=sha(checkpoint)))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--outcome',type=Path);p.add_argument('--completion',type=Path);p.add_argument('--prototype',type=Path);p.add_argument('--kind',default='actual');p.add_argument('--unprotected',dest='protected',action='store_false');p.add_argument('--forecast',choices=['categorical','event','binary'],default='categorical');p.add_argument('--word-safe',action='store_true');p.add_argument('--feedback',action='store_true');p.add_argument('--checkpoint',type=Path);p.add_argument('--data',type=Path);p.add_argument('--limit',type=int);p.add_argument('--resume',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--outcome',type=Path);p.add_argument('--completion',type=Path);p.add_argument('--prototype',type=Path);p.add_argument('--kind',default='actual');p.add_argument('--unprotected',dest='protected',action='store_false');p.add_argument('--forecast',choices=['categorical','event','crossing','binary'],default='categorical');p.add_argument('--word-safe',action='store_true');p.add_argument('--continuous',action='store_true');p.add_argument('--feedback',action='store_true');p.add_argument('--checkpoint',type=Path);p.add_argument('--data',type=Path);p.add_argument('--limit',type=int);p.add_argument('--resume',action='store_true');a=p.parse_args()
     if a.feedback:feedback(a.name,a.checkpoint,a.data,a.limit,a.resume)
-    else:bind(a.name,a.outcome,a.completion,a.prototype,a.kind,a.protected,a.forecast,a.word_safe)
+    else:bind(a.name,a.outcome,a.completion,a.prototype,a.kind,a.protected,a.forecast,a.word_safe,a.continuous)
