@@ -31,6 +31,16 @@ def run(name,version='v1',conditioning=0,object='state'):
             from research_selective_repair_v1.body_event_forecast import fit
         else:from research_selective_repair_v1.body_prefix_forecast import fit
         from research_selective_repair_v1.body_binary_forecast import fit as binary_fit
+        if object=='event':
+            from research_selective_repair_v1.check_prefix_recovery import compare
+            import torch
+            dataset=RUN/'body_prefix_pilot_fk_v1_data/samples.npz'
+            full=name+'_recovery_full';partial=name+'_recovery_split'
+            fit(full,dataset,seed=206015,steps=120,threads=1)
+            fit(partial,dataset,seed=206015,steps=120,stop_after=60,threads=1)
+            fit(partial,dataset,seed=206015,steps=120,resume=True,threads=1)
+            compare(torch.load(RUN/full/'last.pt',map_location='cpu',weights_only=False),torch.load(RUN/partial/'last.pt',map_location='cpu',weights_only=False))
+            receipt['exact_event_checkpoint_optimizer_RNG_stream_recovery']=True
         for kind in ('recurrent','nonrecurrent'):
             kwargs={} if object=='event' else dict(conditioning=conditioning)
             prefix='event' if object=='event' else 'prefix'
