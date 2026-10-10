@@ -10,12 +10,14 @@ from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 from research_selective_repair_v1.execute import callback
 from research_selective_repair_v1.body_options import options
 
-def collect(name,pool,family_start=0,families=2,lift=0.,preserve_row_crossings=False,targets='0'):
+def collect(name,pool,family_start=0,families=2,lift=0.,preserve_row_crossings=False,targets='0',family_indices=None):
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
     data=ROOT/'data/selective_repair_interventions_v1';registration=read(data/'registration.json')
     assert read(pool.parent/'SEAL.json')['role']=='TRAIN'
-    chosen=sorted({p['family_id'] for p in registration['parent_plan'] if p['role']=='TRAIN'})[family_start:family_start+families]
+    registered=sorted({p['family_id'] for p in registration['parent_plan'] if p['role']=='TRAIN'})
+    chosen=[registered[int(i)] for i in family_indices.split(',')] if family_indices else registered[family_start:family_start+families]
+    assert len(chosen)==len(set(chosen));families=len(chosen)
     plans=[p for p in registration['parent_plan'] if p['family_id'] in chosen and p['variant'] in ('open','closed')];assert len(plans)==2*families
     target_ids=[int(v) for v in targets.split(',')];assert target_ids and set(target_ids).issubset({0,1,2})
     plans=[(p,t) for p in plans for t in target_ids]
@@ -38,4 +40,4 @@ def collect(name,pool,family_start=0,families=2,lift=0.,preserve_row_crossings=F
     write(out/'SUMMARY.json',dict(TRAIN_parents=len(plans),attempted=sum(r['attempted'] for r in records),success=sum(r['success'] for r in records),lift_m=lift,preserve_row_crossings=preserve_row_crossings,records=records,actual_full_arm=True,locked_access=False,scope='TRAIN feedback on all8 teacher routes, not a deployment returned4 metric; comparison with same stored seeds/ranks/initials'))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--family-start',type=int,default=0);p.add_argument('--families',type=int,default=2);p.add_argument('--lift',type=float,default=0.);p.add_argument('--preserve-row-crossings',action='store_true');p.add_argument('--targets',default='0');collect(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--family-start',type=int,default=0);p.add_argument('--families',type=int,default=2);p.add_argument('--family-indices');p.add_argument('--lift',type=float,default=0.);p.add_argument('--preserve-row-crossings',action='store_true');p.add_argument('--targets',default='0');collect(**vars(p.parse_args()))
