@@ -29,6 +29,9 @@ elif [[ "${1:-}" == suite ]];then
 elif [[ "${1:-}" == amplitude_suite ]];then
  shift
  taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.amplitude_execution_suite "$@"
+elif [[ "${1:-}" == witness_suite ]];then
+ shift
+ taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.witness_replay_suite "$@"
 elif [[ "${1:-}" == crossing_suite ]];then
  shift
  taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.crossing_execution_suite "$@"
