@@ -14,15 +14,15 @@ class BinaryHead(OutcomeHead):
     def __init__(self):
         super().__init__('recurrent');self.output[-1]=nn.Linear(64,1)
 
-def fit(name,dataset,seed=0,steps=2400,resume=False,stop_after=None):
-    torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
+def fit(name,dataset,seed=0,steps=2400,resume=False,stop_after=None,threads=4):
+    torch_setup();assert threads in (1,4);torch.set_num_threads(threads);out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed immutable fit')
     with np.load(dataset) as z:d={k:z[k] for k in z.files}
     assert set(d['roles'])=={'TRAIN'}
     families=sorted(set(d['families']));held=families[-2:];train=~np.isin(d['families'],held);test=~train
     x=features(d['paths'],d['completed']);mean=x[train].mean((0,1));std=x[train].std((0,1)).clip(.05)
     y=(d['labels']>0).astype(np.float32)
-    settings=dict(seed=seed,steps=steps,batch=32,lr=.0003,dataset_sha256=sha(dataset),mean=mean.tolist(),std=std.tolist(),
+    settings=dict(seed=seed,steps=steps,batch=32,lr=.0003,threads=threads,dataset_sha256=sha(dataset),mean=mean.tolist(),std=std.tolist(),
         fit_families=[str(v) for v in families[:-2]],diagnostic_TRAIN_families=[str(v) for v in held],source_commit=os.environ.get('CODE_COMMIT'),
         scope='Unweighted binary successful-clear BCE,actual same TRAIN feedback; no categorical word supervision')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
@@ -57,4 +57,4 @@ def predict(model,ck,paths,completed,context):
     return p.flatten().cpu().numpy()
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);fit(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--threads',type=int,choices=[1,4],default=4);fit(**vars(p.parse_args()))

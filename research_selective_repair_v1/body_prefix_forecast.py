@@ -91,8 +91,8 @@ def likelihood(pred,q,tip,valid,hazard,observed,event=None):
         risk+=(ce*mask).sum((-1,-2))/mask.sum((-1,-2)).clamp_min(1)
     return -torch.logsumexp(pred['log_weights']-.5*state-risk,dim=-1).mean()
 
-def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None):
-    torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
+def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None,threads=4):
+    torch_setup();assert threads in (1,4);torch.set_num_threads(threads);out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed immutable fit')
     with np.load(dataset) as z:d={k:z[k] for k in z.files}
     assert set(d['roles'])=={'TRAIN'}
@@ -100,7 +100,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
     families=sorted(set(d['families']));held=families[-2:];train=~np.isin(d['families'],held);test=~train
     x=prefix_features(d['paths'],d['completed']);mean=x[train].mean((0,1));std=x[train].std((0,1)).clip(.05)
     robot=dataset.parent/'public_robot.npz'
-    settings=dict(kind=kind,seed=seed,steps=steps,batch=32,lr=.0003,hypotheses=4,joint_sigma_rad=.1,tip_sigma_m=.02,
+    settings=dict(kind=kind,seed=seed,steps=steps,batch=32,lr=.0003,threads=threads,hypotheses=4,joint_sigma_rad=.1,tip_sigma_m=.02,
         dataset_sha256=sha(dataset),robot_sha256=sha(robot),mean=mean.tolist(),std=std.tolist(),
         fit_families=[str(v) for v in families[:-2]],diagnostic_TRAIN_families=[str(v) for v in held],
         source_commit=os.environ.get('CODE_COMMIT'),forcing='linear1to0infirst1200updates;free deployment',
@@ -166,4 +166,4 @@ def predict(model,ck,paths,completed,context,q0=None):
     return {k:v.cpu().numpy() for k,v in p.items()}
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--kind',choices=['recurrent','nonrecurrent'],default='recurrent');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);fit(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--kind',choices=['recurrent','nonrecurrent'],default='recurrent');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--threads',type=int,choices=[1,4],default=4);fit(**vars(p.parse_args()))

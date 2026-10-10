@@ -61,3 +61,4 @@ proxies:[DiffCo](https://arxiv.org/abs/2102.07413),
 Any eventual novelty must be demonstrated by selective counterfactual
 execution preservation under observation uncertainty and finite output budget,
 not by using these established ingredients.
+Before the long allgoal collection ends,a single seed0 TRAIN-only dense pilot on the already completed384labels is permitted. Same2400updates and identical feedback for recurrent/nonrecurrent state models and separate binary control. AffinityCPU3/one compute thread,GPU1/.35memory; only overlap our one-thread CPU software-rendered teacher within the existingCPU0-3 ceiling,never another GPU learner. This pilot is a diagnostic on6fit/2TRAIN-held families,no DEV launch/general allgoal claim. Full2304feedback3paired fits remain registered separately.
