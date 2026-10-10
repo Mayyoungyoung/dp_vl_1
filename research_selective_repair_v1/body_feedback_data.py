@@ -8,7 +8,7 @@ from research_selective_repair_v1.body_options import options
 WORDS=['%s|%s'%(a,b) for a in ('gap0','gap1','gap2','over') for b in ('gap0','gap1','gap2','over')]
 DEFAULT=[('body_execution_train_lift0_pilot_v1',0,'semantics_v2'),('body_execution_train_lift.08_pilot_v1',1,'semantics_v2'),('body_execution_train_preservedlift_pilot_v1',2,'semantics_v2')]+[('body_execution_train_%s_families2_7_v1'%n,j,'semantics_v1') for j,n in enumerate(('identity','lift','preserved'))]
 
-def build(name,expanded=False):
+def build(name,expanded=False,family_limit=16):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     pool=RUN/'constraints_global_interventions_TRAIN_body_v1'
     assert read(pool/'SEAL.json')['role']=='TRAIN'
@@ -19,7 +19,9 @@ def build(name,expanded=False):
     rows=[];hashes={};seen=set()
     sources=list(DEFAULT)
     if expanded:
-        sources+=[('body_execution_train_%s_%s_v3'%(n,scope),j,'semantics_v2') for scope in ('families0_7_targets12','families8_15_targets012') for j,n in enumerate(('identity','lift','preserved'))]
+        assert family_limit in (8,16)
+        scopes=('families0_7_targets12','families8_15_targets012')[:1 if family_limit==8 else 2]
+        sources+=[('body_execution_train_%s_%s_v3'%(n,scope),j,'semantics_v2') for scope in scopes for j,n in enumerate(('identity','lift','preserved'))]
     for source,option,version in sources:
         folder=RUN/source;manifest=read(folder/'MANIFEST.json');audit=RUN/(source+'_'+version)
         assert manifest['TRAIN_feedback_only'] and not manifest['locked_access']
@@ -34,9 +36,9 @@ def build(name,expanded=False):
             np.testing.assert_allclose(path,expected,atol=1e-7,rtol=0)
             w=label['successful_executable_word'];target=0 if w is None else WORDS.index(w)+1
             rows.append(dict(id=ident,slot=slot,option=option,family=family[ident],path=path,completed=p['completed'][ix],context=context[ident],label=target,trace_sha256=label['trace_sha256']))
-    assert len(rows)==(2304 if expanded else 384) and len({r['family'] for r in rows})==(16 if expanded else 8)
+    assert len(rows)==(family_limit*144 if expanded else 384) and len({r['family'] for r in rows})==(family_limit if expanded else 8)
     np.savez_compressed(out/'samples.npz',ids=np.array([r['id'] for r in rows]),families=np.array([r['family'] for r in rows]),roles=np.full(len(rows),'TRAIN'),slots=np.array([r['slot'] for r in rows]),options=np.array([r['option'] for r in rows]),paths=np.array([r['path'] for r in rows]),completed=np.array([r['completed'] for r in rows]),context=np.array([r['context'] for r in rows]),labels=np.array([r['label'] for r in rows]))
     write(out/'MANIFEST.json',dict(source_hashes=hashes,pool_sha256=sha(pool/'pool.npz'),samples_sha256=sha(out/'samples.npz'),rows=len(rows),TRAIN_families=sorted({r['family'] for r in rows}),targets=[0,1,2] if expanded else [0],labels='Actual unchanged fixed-controller outcome and actual sampled-tip operational word',no_DEV_feedback=True,locked_access=False,trace_sha256=[r['trace_sha256'] for r in rows]))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--expanded',action='store_true');build(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--expanded',action='store_true');p.add_argument('--family-limit',type=int,choices=[8,16],default=16);build(**vars(p.parse_args()))

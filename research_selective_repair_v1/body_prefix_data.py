@@ -45,15 +45,17 @@ def prefix(record,joints,tips):
     assert cursor==len(joints)-1,'Every observed simulator step must be accounted for'
     return q,p,valid,hazard,observed
 
-def build(name,dataset,model,expanded=False):
+def build(name,dataset,model,expanded=False,family_limit=16):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     with np.load(dataset) as z:d={k:z[k] for k in z.files}
     assert set(d['roles'])=={'TRAIN'}
     lookup={(str(i),int(s),int(o)):j for j,(i,s,o) in enumerate(zip(d['ids'],d['slots'],d['options']))}
     sources=list(DEFAULT)
     if expanded:
+        assert family_limit in (8,16)
+        scopes=('families0_7_targets12','families8_15_targets012')[:1 if family_limit==8 else 2]
         sources += [('body_execution_train_%s_%s_v3'%(n,scope),j,'semantics_v2')
-            for scope in ('families0_7_targets12','families8_15_targets012')
+            for scope in scopes
             for j,n in enumerate(('identity','lift','preserved'))]
     rows={};hashes={};qref,base,relative=load(model);all_errors=[]
     for source,option,_ in sources:
@@ -91,4 +93,4 @@ def build(name,dataset,model,expanded=False):
         no_DEV_feedback=True,locked_access=False))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--model',type=Path,required=True);p.add_argument('--expanded',action='store_true');build(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--model',type=Path,required=True);p.add_argument('--expanded',action='store_true');p.add_argument('--family-limit',type=int,choices=[8,16],default=16);build(**vars(p.parse_args()))
