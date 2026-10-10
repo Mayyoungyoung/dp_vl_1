@@ -1,3 +1,14 @@
+## 2026-10-10 native branch pilot ACTIVE
+
+Fit-family null/loop native feedback source8673c2f PID1269501 running128
+TRAIN attempts. Frozen new FK-free joint/event contract and matched-state
+feedback/aux-control sourcee687f93 queued after feedback completion, with
+route-GRU,binary and empirical nominal-mode/recipe controls. Three meaningful
+CPU tests pass(1.522s): hardware bounds/prefix causality, feedback-only gradient
+ablation, unknown-joint-suffix mask. No learner fit yet. Inspect native source
+jobs/stdout.log, then dependent native_branch_study_v1.stdout.log and receipts.
+Original5mmFK gate remains unchanged. No accepted method or locked access.
+
 ## Selective repair ACTIVE — current 2026-10-10 09:45 UTC
 
 No accepted method. User requests actual viable core, strong matched advantage,
