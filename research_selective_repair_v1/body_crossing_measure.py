@@ -54,7 +54,7 @@ class CrossingHead(nn.Module):
         if self.readout=='categorical_aux':p['category']=self.category(summary)
         return p
 
-def likelihood(p,d):
+def likelihood(p,d,return_components=False):
     hazard=nn.functional.binary_cross_entropy_with_logits(p['hazard'],d['prefix_hazard'][:,None].expand_as(p['hazard']),reduction='none')
     loss=(hazard*d['prefix_observed'][:,None]).sum(-1)
     known=d['event_present'].any(1)
@@ -65,6 +65,9 @@ def likelihood(p,d):
     complete=d['prefix_valid'].all(-1)
     clear=nn.functional.binary_cross_entropy_with_logits(p['clear'],(d['labels']>0)[:,None].expand_as(p['clear']).float(),reduction='none')
     loss+=clear*complete[:,None]
+    if return_components:
+        assert 'category' not in p
+        return loss
     value=-torch.logsumexp(p['log_weights']-loss,-1).mean()
     if 'category' in p:value+=nn.functional.cross_entropy(p['category'],d['labels'].long())
     return value

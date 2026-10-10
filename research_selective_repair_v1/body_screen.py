@@ -15,7 +15,7 @@ from scripts.research_v3_audit import mode
 def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='categorical',all_goals=False,role='DEV_MODEL',continuous=False,family_start=0,families=None,dataset_scope='formal',spatial=None,recipe_support='positive'):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     assert role in ('TRAIN','DEV_MODEL')
-    assert recipe_support in ('positive','signed')
+    assert recipe_support in ('positive','signed','prefix')
     if recipe_support=='signed':
         assert not continuous and not spatial and dataset_scope=='signed_pilot'
         signed_manifest=read(RUN/'body_signed_events_pilot_v1/MANIFEST.json')
@@ -45,13 +45,18 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
             from research_selective_repair_v1.body_event_forecast import load as forecast_load,predict as forecast_predict,compose
         elif forecast=='crossing':
             from research_selective_repair_v1.body_crossing_measure import load as forecast_load,predict as forecast_predict,compose
-        elif forecast=='binary':
+        elif forecast=='native':
+            from research_selective_repair_v1.body_native_branch import load as forecast_load,predict as forecast_predict,compose
+        elif forecast in ('binary','confusion'):
             from research_selective_repair_v1.body_binary_forecast import load as forecast_load,predict as forecast_predict
         else:forecast_load,forecast_predict=load,predict
         model,ck=forecast_load(checkpoint)
         if all_goals:
             dataset=ck['settings']['dataset_sha256']
-            if dataset_scope=='signed_pilot':
+            if dataset_scope=='native_pilot':
+                assert recipe_support=='prefix' and forecast in ('native','crossing','binary','confusion')
+                manifest=read(RUN/'body_native_branch_data_v1/MANIFEST.json');assert manifest['native_joint_labels'] and manifest['rows']==2496
+            elif dataset_scope=='signed_pilot':
                 assert recipe_support=='signed' and forecast in ('crossing','binary')
                 manifest=signed_manifest
             elif dataset_scope=='half':
@@ -64,14 +69,17 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
     t=lambda x:torch.tensor(x,device='cuda',dtype=torch.float32)
     paths=[];choices=[];probabilities=[];queries=[];forecast_queries=[];torch.cuda.synchronize();tic=time.monotonic()
     for i,ident in enumerate(d['ids']):
-        if recipe_support=='signed':
+        if recipe_support=='prefix':
+            from research_selective_repair_v1.prefix_conditioning import proposals
+            candidates,eligible,_=proposals(d['paths'][i],d['completed'][i],boxck['settings']['post_base'])
+        elif recipe_support=='signed':
             from research_selective_repair_v1.body_options import signed_options
             candidates=signed_options(d['paths'][i],d['completed'][i],lowering_m)
         else:candidates=options(d['paths'][i],d['completed'][i])
         prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1
         planned=None
         cfg=None
-        if kind=='planned' or word_safe or forecast in ('prefix','event','crossing','binary'):
+        if kind=='planned' or word_safe or forecast in ('prefix','event','crossing','native','binary','confusion'):
             c,h=boxes(t(d['completed'][i:i+1]),boxck['settings']);cfg=configuration(c[0].cpu().numpy(),h[0].cpu().numpy(),boxck['settings'])
             if not spatial:
                 words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
@@ -91,8 +99,13 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
             if forecast=='prefix':
                 prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
                 detail.update(computation_counts(ck['settings'],24))
-            elif forecast in ('event','crossing'):
+            elif forecast in ('event','crossing','native'):
                 prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
+            elif forecast=='confusion':
+                from research_selective_repair_v1.mode_recipe_confusion import compose as empirical_compose
+                table=read(RUN/'body_native_mode_recipe_confusion_v1/MODEL.json')
+                assert table['dataset_sha256']==ck['settings']['dataset_sha256']
+                prob=empirical_compose(prediction.reshape(8,3),planned,[0,4,5],table['conditional_mass'])
             elif forecast=='binary':
                 success=prediction.reshape(8,3);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1-success
                 for slot in range(8):
