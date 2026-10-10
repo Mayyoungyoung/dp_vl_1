@@ -1,32 +1,33 @@
-# Selective repair ACTIVE - current2026-10-10 01:50 UTC
+# Selective repair ACTIVE - current2026-10-10 02:30 UTC
 
 Read research_selective_repair_v1/RESEARCH_STATE.md,BODY_PROTOCOL.md,PROTOCOL.md.
-No accepted method. Original U8+.15 gate failed; strongest new geometryU8=7.93056
-leaves insufficient headroom. Fixed returned4Panda8/16,7/16,8/16 for box controls.
-Actual TRAIN pilot identity/lift/preserved:19/32,32/32,18/32 successes; actualwords
-4.0/2.5/3.75; finite8 original-word-preserving TRAIN opportunity bound5.75.
-ACTIVE data source0a0e202f695de2e4fe14a20ba6abaf3ccd69bd4d/session38624:
-TRAIN families2--7/openclosed/target0,three separate8route teachers. Identity
-COMPLETE96attempts64success/848.201sec; lift now running,then preserving recipe.
-Own sleeping coordinators old4f368e8/7e6e687 stopped PRELAUNCH,zero child fits,
-for weighted-CE prior correction and predicted per-slot risk floor refreeze.
-ACTIVE dependent sourcebf6fb104844ba27af72acdd48657e1e1b8c7ed39:
-forecast session41256 waits data,then384TRAIN samples,six2400update RNN/MLP fits
-(six families fitting/two TRAIN diagnostic holdout),all48target0DEV seals/fullq.
-Returned4execution suite session51882 waits screens;9controls/fixedold2DEVfamilies,
-exact-identical executor inputs reused only by full input signature. No extra q pool.
-BODY_PROTOCOL prospective E4+.30/pairedCI/success+.075/bodydamage<=1%,retains
-original failure. No finalconfirmation/allgoaltraining/matched formal heads yet.
+No accepted method. Original U8+.15 gate remains failed. Geometry strongU8=7.93056;
+actual fixed Panda geometry arms8/16,7/16,8/16. Body data source0a0e202 COMPLETE:
+8TRAIN families/openclosed,target0,384actual alternatives(3x8x16requests).
+Identity83/128success,81clear,E8=4.625; lift126/128,121clear,E8=2.8125;
+preserving83/128,79clear,E8=4.375. Finite8word-preserving pilot bound5.75,
+also holds with zero per-slot newbodydamage. These are TRAIN,not returned4.
+Sourcebf6fb104844ba27af72acdd48657e1e1b8c7ed39 forecast session41256 TERMINAL:
+4tests/data/six2400update outcome heads (6fitfamilies,2TRAIN diagnostic held).
+RNN fit97%,held51--54%; MLP held49--55%,no recurrent advantage established.
+All9target0DEV seals/fullq COMPLETE48requests. Actual/protectedU4=3.72917 versus
+identity4.0,quality guard fails. No v1 acceptance regardless of execution gain.
+ACTIVE v1 fixed returned4suite session51882/PID1012647/start02:19UTC (samebf):
+sofar identity E4=1.75/7clear; lift1.75/16clear; preserving2.0/8clear;
+success-only2.25/13clear. More controllers still executing. Do not overwrite.
+ACTIVE dependent v2 source592507dcbcf1caf811ddb5edec6e1b7ee2725330/session79948,
+scripts/run_selective_body_word_safe_v2.sh waits v1 suite terminal,then same
+checkpoint9controls share current-NN planned-word-preserving alternative mask;
+no retrain/loss/threshold search. It repairs measured planned-word aliasing.
+No v2 predictions/evaluation yet. Native planner RNG not proven controlled;
+input-identical reuse is one measured trial,not a bitwise reproducibility proof.
+Before formal acceptance: allgoal TRAIN feedback,B1/B3 matched new supervision,
+proper binary-risk baseline,all8 common C0+NNbase+M bodydamage cohort,matched
+TRAIN allocation heads,3paired actual results,repeat controller episodes and
+fresh family-isolated confirmation/fullonline latency. Raw C0 body preservation
+has not been certified by NNbase identity comparisons. Legal next steps remain.
 Onlyssh wzy3090 GPU1UUID/.35memory/CPU0-3,localwriter,immutableexports.
 No wallquota supplied. TEST_LOCKED unread/defaultsintact. Historical sections below.
-Current code includes a current-RGB-D integrated body decoder (API not yet verified),
-with an explicit guard against formal all-goal matching feedback before TRAIN goal
-coverage expands. A view hashes every frozen component. Correction count includes
-24 internal route forecasts,6561max assignments,64box optimizer steps,8committed
-finals and unchanged fullq/return4. Actual body damage still needs a separate
-common eight-slot paired executor cohort; selected-four comparisons alone cannot
-classify unexecuted original slots or silently change RNG ranks.
-
 ## Older chronological entries (superseded where stated)
 
 Sources6083e22 screen and674f53f followup are terminal. Seed0,2400step:
