@@ -3,6 +3,20 @@ import numpy as np
 
 OPTIONS=('identity','lift','crossing_preserved_lift')
 
+def signed_options(paths,completed,lowering_m):
+    """Same24 internal alternatives: replace preserved lift with TRAIN bias pull.
+
+    lowering_m is a frozen learned scalar, not an observed actual event input.
+    First/last nodes remain fixed; invalid body/geometry results stay unknown
+    until the corresponding predictor or independent evaluation observes them.
+    """
+    assert -.08<=float(lowering_m)<0
+    p=np.asarray(paths);assert p.shape[-2:]==(24,3)
+    factor=np.sin(np.pi*np.linspace(0,1,24));factor[[0,-1]]=0
+    out=np.broadcast_to(p[:,None],(len(p),3,24,3)).copy()
+    out[:,1,:,2]+=.08*factor;out[:,2,:,2]+=float(lowering_m)*factor
+    return out
+
 def options(paths,completed,lift=.08):
     """Return3 internal alternatives per slot; caller commits exactly one per slot.
 

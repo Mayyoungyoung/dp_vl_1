@@ -23,7 +23,7 @@ def allocate(prob,kind='actual',protected=True,planned=None,allowed=None):
     assert allowed.shape==(8,3) and allowed[:,0].all(),'Identity must remain feasible'
     if kind=='identity':return np.zeros(8,np.int64),0
     if kind=='lift':return np.where(allowed[:,1],1,0),0
-    if kind=='preserved':return np.where(allowed[:,2],2,0),0
+    if kind in ('preserved','lower'):return np.where(allowed[:,2],2,0),0
     if kind=='success':return np.where(allowed,1-p[...,0]-.002*np.array([0,1,1]),-np.inf).argmax(-1),24
     if kind=='planned':
         assert planned is not None and np.asarray(planned).shape==(8,3)
