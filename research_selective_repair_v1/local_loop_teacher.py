@@ -28,7 +28,7 @@ def run(name,support):
     write(out/'PROTOCOL.json',dict(source_commit=os.environ.get('CODE_COMMIT'),support_sha256=sha(support_folder/'SUMMARY.json'),
         proposal_sha256=sha(out/'SEALED_TRAIN_ORACLE_PROPOSALS.npz'),selected=selected,attempts_per_arm=len(selected)*8,
         oracle_use='TRAIN observed first failure is edit-support label/acquisition ONLY. No deployment or learned localization claim.',
-        scope='Enriched TRAIN target acquisition, not overall distribution/fresh/returned4 acceptance',native_RNG_controlled=False,locked_access=False))
+        progress_preserving=progress,scope='Enriched TRAIN target acquisition, not overall distribution/fresh/returned4 acceptance',native_RNG_controlled=False,locked_access=False))
     labels=('vertical','side_vertical') if progress else ('null','loop')
     folders={};records={label:[] for label in labels};schedule=[labels,labels[::-1],labels[::-1],labels]
     for label in records:
@@ -36,7 +36,7 @@ def run(name,support):
         write(folder/'MANIFEST.json',dict(source_commit=os.environ.get('CODE_COMMIT'),source_sha256=source_hashes,
             TRAIN_feedback_only=True,oracle_support_TRAIN_only=True,locked_access=False,recipe=label,teacher_routes_per_parent=8,
             proposal_sha256=sha(out/'SEALED_TRAIN_ORACLE_PROPOSALS.npz')))
-    physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='local_closed_loop_TRAIN_oracle_support_v1'
+    physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='local_progress_detour_TRAIN_oracle_support_v1' if progress else 'local_closed_loop_TRAIN_oracle_support_v1'
     for j,pre in enumerate(sealed):
         ident=pre['row']['id'];parent=ident.rsplit('_target',1)[0];target=int(ident.rsplit('_target',1)[1])
         for label in schedule[j%4]:
