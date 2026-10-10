@@ -1,0 +1,27 @@
+{
+  "protocol": "observed_route_portfolio_reframing_v1",
+  "registered_date": "2026-10-10",
+  "candidate_budget": 8,
+  "returned_budget": 4,
+  "training": "None. Frozen historical generator continuations and TRAIN-bound success heads.",
+  "generator_seeds": [0, 1, 2],
+  "inference_seeds": [71239, 71240, 71241],
+  "scorer_sha256": "2d87cb3c92336e224f48ec7888abb5ffa5c648eeaca86102d62780588ed0f72e",
+  "datasets": {
+    "shift": {
+      "relative_path": "data/feasible_space_generalization_v1",
+      "role": "DEV_MODEL",
+      "requests": 336,
+      "families": 16,
+      "observations_sha256": "9aafbb714f41dcad58401fd25205e54fae6614724e6568ab66bb3b0feced040a",
+      "supervision_sha256": "31b2f1846dd70bd5aa521eb0c8f027c05f8c317570c712287e6823562def6933",
+      "scope": "Different rendered families from original TRAIN; reused development evidence from feasible-space study, not untouched final test."
+    }
+  },
+  "primary_comparisons": ["C adaptive versus B0", "C adaptive versus Bset", "C adaptive versus C ordinary"],
+  "secondary": ["C0 plus five frozen success heads", "all seven variants", "fixed q returned4", "duplicate valid-route budget"],
+  "inference_repeat_policy": "Separate eight-route trials. Never pool repetitions or select favorable seeds.",
+  "interpretation": "A supported useful coverage direction plus disclosed quality tradeoffs can form a paper prototype. Historical conjunctive all-control gates stay recorded but no longer veto every scoped claim. This is a retrospective reframing, not a newly passed preregistered threshold.",
+  "locked_access": false,
+  "resources": {"ssh": "wzy3090", "gpu_uuid": "GPU-7506746b-d0ba-f6fe-44ce-8a1f97dde2ab", "memory_fraction": 0.35, "cpu_threads": 4}
+}
