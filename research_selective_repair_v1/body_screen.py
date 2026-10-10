@@ -28,7 +28,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         assert checkpoint is not None
         if forecast=='prefix':
             from research_selective_repair_v1.body_prefix_forecast import load as forecast_load,predict as forecast_predict
-            from research_selective_repair_v1.body_prefix_probabilities import compose
+            from research_selective_repair_v1.body_prefix_probabilities import compose,computation_counts
         elif forecast=='binary':
             from research_selective_repair_v1.body_binary_forecast import load as forecast_load,predict as forecast_predict
         else:forecast_load,forecast_predict=load,predict
@@ -49,7 +49,9 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         detail={}
         if not static:
             prediction=forecast_predict(model,ck,candidates.reshape(24,24,3),np.broadcast_to(d['completed'][i],(24,4,3)),np.broadcast_to(ctx[str(ident)],(24,128)))
-            if forecast=='prefix':prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
+            if forecast=='prefix':
+                prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
+                detail.update(computation_counts(ck['settings'],24))
             elif forecast=='binary':
                 success=prediction.reshape(8,3);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1-success
                 for slot in range(8):

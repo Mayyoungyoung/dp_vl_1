@@ -3,6 +3,17 @@ import numpy as np
 from research_selective_repair_v1.execution_semantics import word,tip_clear
 from research_selective_repair_v1.body_feedback_data import WORDS
 
+def computation_counts(settings,routes):
+    hypotheses=int(settings['hypotheses']);steps=int(settings.get('conditioning',0))
+    state_frames=23*(4+2)
+    conditional_frames=1+23*steps*(1+2) if steps else 0
+    return dict(internal_route_forwards=routes,trajectory_hypotheses=routes*hypotheses,
+        public_FK_chain_state_evaluations=routes*hypotheses*(state_frames+conditional_frames),
+        public_terminal_6D_linear_solves=routes*hypotheses*23*steps,
+        public_crossing_scalar_updates=routes*hypotheses*23*2*steps,
+        native_IK_planner_or_controller_queries=0,
+        scope='Internal analytic public robot computations,all counted; only8final geometric candidates reach q')
+
 def compose(prediction,paths,cfg):
     paths=np.asarray(paths);n=len(paths);tips=prediction['tip']
     assert tips.shape[:1]==(n,) and tips.shape[-3:]==(23,4,3)

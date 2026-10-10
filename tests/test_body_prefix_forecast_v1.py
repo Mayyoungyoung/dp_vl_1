@@ -66,4 +66,16 @@ class StateTransport(unittest.TestCase):
         self.assertLess(float((pose_jacobian(constrained,*robot)[0][:,0,3]-target_pose[:,0,3]).abs().max()),.002)
         (final.sum()+constrained.sum()).backward();self.assertTrue(torch.isfinite(q.grad).all())
 
+    def test_nonblocking_solver_matches_values_and_gradients(self):
+        jac=torch.randn(2,6,7,dtype=torch.float64)
+        a=(jac@jac.transpose(-1,-2)+.0001*torch.eye(6,dtype=torch.float64)).requires_grad_(True)
+        b=torch.randn(2,6,1,dtype=torch.float64,requires_grad=True)
+        first=torch.linalg.solve(a,b)
+        g1=torch.autograd.grad(first.sum(),(a,b),retain_graph=True)
+        second,info=torch.linalg.solve_ex(a,b,check_errors=False)
+        g2=torch.autograd.grad(second.sum(),(a,b))
+        self.assertEqual(int(info.abs().sum()),0)
+        torch.testing.assert_close(first,second,rtol=0,atol=0)
+        for old,new in zip(g1,g2):torch.testing.assert_close(old,new,rtol=0,atol=0)
+
 if __name__=='__main__':unittest.main()

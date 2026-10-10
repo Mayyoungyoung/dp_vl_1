@@ -21,7 +21,11 @@ def terminal(q,target,rotation,robot,steps=4):
         # .2m/rad follows the fixed .02m/.1rad state likelihood scales.
         jac=torch.cat([linear,.2*angular],-2)
         residual=torch.cat([target-frame[...,:3,3],.2*orientation],-1)
-        update=jac.transpose(-1,-2)@torch.linalg.solve(jac@jac.transpose(-1,-2)+.0001*identity,residual[...,None])
+        # Same damped linear system; solve_ex avoids one CUDA/CPU barrier per
+        # tiny system. Positive damping makes the matrix strictly positive
+        # definite; finite loss/gradient tests still check the whole model.
+        solution=torch.linalg.solve_ex(jac@jac.transpose(-1,-2)+.0001*identity,residual[...,None],check_errors=False)[0]
+        update=jac.transpose(-1,-2)@solution
         q=q+update[...,0].clamp(-.35,.35)
     return q
 
