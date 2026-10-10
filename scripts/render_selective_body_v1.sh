@@ -21,6 +21,9 @@ export DISPLAY=":$(cat "$D/displaynum")"
 if [[ "${1:-}" == execution ]];then
  shift
  taskset -c 0-3 "$P/.venv-sim/bin/python" -m research_selective_repair_v1.body_execution_teacher "$@"
+elif [[ "${1:-}" == suite ]];then
+ shift
+ taskset -c 0-3 "$P/.venv-sim/bin/python" -m research_selective_repair_v1.body_execution_suite "$@"
 elif [[ "${1:-}" == planner ]];then
  shift
  taskset -c 0-3 "$P/.venv-sim/bin/python" -m research_selective_repair_v1.planning_teacher "$@"
