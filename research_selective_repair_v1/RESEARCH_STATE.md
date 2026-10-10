@@ -1,59 +1,31 @@
-# Selective repair ACTIVE,2026-10-10 — current update supersedes older entries
+# Selective repair ACTIVE - current2026-10-10 01:50 UTC
 
-Physical144scenes/432requests complete:16TRAIN/8DEVfamilies,6physicalvariants,
-all144initializationspassed. Sourcebc22d91; render3035.272command seconds.
-Old+new TRAIN3paired seeds (sharedC0) complete under14334bb. Selective newDEV
-all7.24306(identity); residual7.43750/7.41667/7.52083. Strong same-observation
-goal+geometry64step old7.66319/new7.74306,150/75repairs,0/1damage. No method
-accepted. Completion of a screen or draft is not research completion.
-
-ce2c71f structure queue TERMINAL: old/new optimistic fixed18node prefix U8
-7.71528/7.72917,55/29irreversible prefix failures. Stable center control fixes
-preprocessor gradient instability: old7.34375/new7.43750 with2/2damages;
-do not cite earlier unstable control as strong evidence. Adapted local diffusion
-control0b861da TERMINAL: old7.15625/new7.25694 under1%damage. These are reused
-development screens with original allocation head, not formal confirmation.
-
-Constraint pivot source472c7407b1a5b0c00fd06a486c73b528b681188d TERMINAL,
-3structural checks pass; small four-post completion2400updates completed.
-Same predicted boxes/64steps: newDEV global7.84028,protected7.92361,
-mode-global7.93056 (old7.72569/7.82639/7.82986). Allzero damaged routes.
-Protected loses0oldvalidwords; mode-global loses13old/18new whileaddingmore.
-New global has V8=1.0,protected/mode-global=.99913; all V4=1.0.
-Completion95%worst-coordinate error3.91mm,under closed four-post assumptions.
-This is useful constraint learning but no selective advantage over strongest
-matched control. Even8.0 is only+.06944 above newmode-global; this current
-development8candidate metric cannot clear unchanged+.15 gate at that score.
-Actualscreen in results/CONSTRAINT_SCREEN.json. No finalconfirmation generated.
-
-Executor7b3c868 startup failedmissinglibcoppeliaSim before any planning call;
-failed receipt retained0.5138sec. Recovere5b4fcb9ce2c9e7130462dc8d7b95b85cb00003b
-through validated render startup,session73967 TERMINAL actualPanda coordinator.
-Global complete187.44sec,8/16success despite16/16tip-valid; protected7/16,
-mode-global8/16,allterminal. Transport audits
-now use COMMON838surviving C0openwords: global792,protected793,mode-global793,
-oldpointgeometry784,C0 739. Own-open versions have different denominators and
-cannot support causal comparisons. Results inTRANSPORT_COMMON.json.
-
-Body proxy diagnostics TERMINAL: canonicalIK252safe/6collision/702unknown;
-continuationIK141safe/0collision/819unknown; rootplanner474/480foundpaths,
-160liftpairs4recover/0lose,no executions. Do not train an infeasibility
-classifier from these unknowns or claim that singlepoint planning certifies
-continuous execution. Exact receipts inBODY_DIAGNOSTICS.json.
-
-ACTIVE source7668980cc2b00b381b0090126002e8a76c1dbeea/session51172,
-scripts/run_selective_body_execution_teacher_v1.sh. Legal288TRAIN corrected
-draft pool COMPLETE32.95sec. body_execution_train_lift0_pilot_v1 PID971702
-running actualfullTRAINcontroller8routes/parent,first2TRAINfamiliesopenclosed;
-then separatefixedsmooth8cm liftteacher,not16deploymentcandidates. Firstparent
-5/8actualsuccess withcollision/path failures. Maximum184get_path/parent,
-unchanged23segments/1000steps/retry0; joint/tip/prefixtraces retained.
-This addresses measured stateful execution failure; no body learner yet.
-Do not alter frozen running source,duplicateor claim final research completion.
-Actual3seed matching-head/fresh
-confirmation/execution expansion remain required if the mechanism is promising.
-Checkpoint and full result paths indexed in results/CALIBRATED_SCREEN.json.
-No TEST_LOCKED or historical defaults touched. No wall-time quota supplied.
+Read research_selective_repair_v1/RESEARCH_STATE.md,BODY_PROTOCOL.md,PROTOCOL.md.
+No accepted method. Original U8+.15 gate failed; strongest new geometryU8=7.93056
+leaves insufficient headroom. Fixed returned4Panda8/16,7/16,8/16 for box controls.
+Actual TRAIN pilot identity/lift/preserved:19/32,32/32,18/32 successes; actualwords
+4.0/2.5/3.75; finite8 original-word-preserving TRAIN opportunity bound5.75.
+ACTIVE data source0a0e202f695de2e4fe14a20ba6abaf3ccd69bd4d/session38624:
+TRAIN families2--7/openclosed/target0,three separate8route teachers. Identity
+COMPLETE96attempts64success/848.201sec; lift now running,then preserving recipe.
+Own sleeping coordinators old4f368e8/7e6e687 stopped PRELAUNCH,zero child fits,
+for weighted-CE prior correction and predicted per-slot risk floor refreeze.
+ACTIVE dependent sourcebf6fb104844ba27af72acdd48657e1e1b8c7ed39:
+forecast session41256 waits data,then384TRAIN samples,six2400update RNN/MLP fits
+(six families fitting/two TRAIN diagnostic holdout),all48target0DEV seals/fullq.
+Returned4execution suite session51882 waits screens;9controls/fixedold2DEVfamilies,
+exact-identical executor inputs reused only by full input signature. No extra q pool.
+BODY_PROTOCOL prospective E4+.30/pairedCI/success+.075/bodydamage<=1%,retains
+original failure. No finalconfirmation/allgoaltraining/matched formal heads yet.
+Onlyssh wzy3090 GPU1UUID/.35memory/CPU0-3,localwriter,immutableexports.
+No wallquota supplied. TEST_LOCKED unread/defaultsintact. Historical sections below.
+Current code includes a current-RGB-D integrated body decoder (API not yet verified),
+with an explicit guard against formal all-goal matching feedback before TRAIN goal
+coverage expands. A view hashes every frozen component. Correction count includes
+24 internal route forecasts,6561max assignments,64box optimizer steps,8committed
+finals and unchanged fullq/return4. Actual body damage still needs a separate
+common eight-slot paired executor cohort; selected-four comparisons alone cannot
+classify unexecuted original slots or silently change RNG ranks.
 
 ## Older chronological entries (superseded where stated)
 

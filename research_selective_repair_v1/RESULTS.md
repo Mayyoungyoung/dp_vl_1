@@ -1,3 +1,21 @@
+# Actual execution-word stage ACTIVE,2026-10-10
+
+First2TRAIN families/openclosed/target0,all8 teacher routes each,unchanged Panda:
+|Recipe|Body successes|Successful and sampled-tip clear|Actual words/request|
+|---|---:|---:|---:|
+|Identity|19/32|18/32|4.00|
+|Uniform8cm smooth lift|32/32|31/32|2.50|
+|Predicted-crossing preserved lift|18/32|17/32|3.75|
+
+This is TRAIN teacher feedback,not fixed returned4 development advantage.
+Exact one-option-per-slot enumeration retains all original successful words and
+has found TRAIN opportunity6/7/7/3 words,mean5.75;not an achieved learned result.
+Expanded six TRAIN family identity teacher completes64/96actual body successes;
+lift/preserved paired passes ongoing. New outcome learning/protection and E4 gate
+were declared before any model fit or body-method evaluation; original U8+.15
+failure remains failed. BODY_EXECUTION_TEACHERS.json contains actual words/slots.
+No finalconfirmation or accepted method. Remaining core execution effect remains
+unproved; no publication-positive paper draft is asserted.
 # Latest development screen,2026-10-10
 
 Learned constraint pivot is completed (source472c740,2400TRAINupdates):

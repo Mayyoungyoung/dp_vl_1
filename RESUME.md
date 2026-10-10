@@ -1,19 +1,22 @@
-## Selective repair ACTIVE - current2026-10-10
+## Selective repair ACTIVE - current2026-10-10 01:50 UTC
 
 Read research_selective_repair_v1/RESEARCH_STATE.md,BODY_PROTOCOL.md,PROTOCOL.md.
-No accepted method. Original U8+.15 gate remains failed; current geometry
-strong control U8=7.93056 leaves insufficient headroom. Actual fixed returned4
-Panda: global8/16,protected7/16,modeglobal8/16. All physical geometry/3seed
-screens and IK/rootplanner proxy teachers terminal. Actual TRAIN full-controller
-feedback first2families/openclosed,target0: identity19/32success,18clear,4.0words;
-uniformlift32/32success,31clear,2.5words; crossingpreserved18/32,17clear,3.75words.
-Finite8choice with original successful words preserved has TRAIN bound5.75.
-ACTIVE next: immutable scripts/run_selective_body_feedback_expand_v1.sh,
-TRAIN families2--7/openclosed/target0,3 separate8route teacher passes; then one
-small actual-execution-word predictor and strongest sameinput controls.
+No accepted method. Original U8+.15 gate failed; strongest new geometryU8=7.93056
+leaves insufficient headroom. Fixed returned4Panda8/16,7/16,8/16 for box controls.
+Actual TRAIN pilot identity/lift/preserved:19/32,32/32,18/32 successes; actualwords
+4.0/2.5/3.75; finite8 original-word-preserving TRAIN opportunity bound5.75.
+ACTIVE data source0a0e202f695de2e4fe14a20ba6abaf3ccd69bd4d/session38624:
+TRAIN families2--7/openclosed/target0,three separate8route teachers. Identity
+COMPLETE96attempts64success/848.201sec; lift now running,then preserving recipe.
+Own sleeping coordinators old4f368e8/7e6e687 stopped PRELAUNCH,zero child fits,
+for weighted-CE prior correction and predicted per-slot risk floor refreeze.
+ACTIVE dependent sourcebf6fb104844ba27af72acdd48657e1e1b8c7ed39:
+forecast session41256 waits data,then384TRAIN samples,six2400update RNN/MLP fits
+(six families fitting/two TRAIN diagnostic holdout),all48target0DEV seals/fullq.
+Returned4execution suite session51882 waits screens;9controls/fixedold2DEVfamilies,
+exact-identical executor inputs reused only by full input signature. No extra q pool.
 BODY_PROTOCOL prospective E4+.30/pairedCI/success+.075/bodydamage<=1%,retains
-original negative result. Exactly8committedfinals/fullfrozenq/return4.
-No finalconfirmation/bodylearner yet; useful legal next steps remain.
+original failure. No finalconfirmation/allgoaltraining/matched formal heads yet.
 Onlyssh wzy3090 GPU1UUID/.35memory/CPU0-3,localwriter,immutableexports.
 No wallquota supplied. TEST_LOCKED unread/defaultsintact. Historical sections below.
 ## Feasible-space v1 CLOSED — 2026-10-09
