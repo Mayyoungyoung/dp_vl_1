@@ -91,3 +91,16 @@ word coverage floors. Actual <=1%damage must still be tested by real fixed
 controller trials. The two own sleeping forecast/execution coordinators were
 stopped before any child experiment,then refrozen; active physical data collection
 was not changed. All training hyperparameters/data/evaluation gates stay fixed.
+
+Execution evidence boundary: Python/NumPy seeds and canonical robot state are
+explicitly controlled. Installed PyRep arm.py SHA256
+4c0d5e09aa777de145c184f05a24ac74bb770aedb534dc0c9501d726c17ebe5d
+calls native sampling/SBL without an exposed seed argument in get_path. Native
+simulator/OMPL RNG and10ms runtime decisions are not proven bitwise reproducible.
+Input-identical reuse means reusing one measured trial,not proving deterministic
+outcomes. Before final acceptance,repeat frozen controller trials and retain
+all episode variation. A separate prospective common eight-slot/seed-rank=slot
+cohort audits candidate-level new body damage; actual returned-four/rank0--3
+trials remain the primary E4 evidence. Selected-four comparisons cannot label
+unexecuted original slots. Do not change native solver/environment to improve
+one arm or silently reinterpret random finite failures as infeasibility.

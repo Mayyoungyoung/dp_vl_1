@@ -42,7 +42,7 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
     write(output/'EXECUTION.json',dict(request=plan['execution_id'],actual_returned_indices=selected,records=records,requested=len(selected),attempted=len(records),success=sum(x['success'] for x in records),full_arm_simulation=True,held_object=False,scope='Reach gripper task; actual collision-aware planner/controller and explicit arm/gripper collision monitoring. No held-object or continuous collision certificate.'))
     return witnesses,[dict(id=plan['execution_id'],accepted=sum(r['success'] for r in records),requested=len(selected))],fatal
 
-def run(name,pool,rows,data=None,limit=4):
+def run(name,pool,rows,data=None,limit=4,all_candidates=False):
     from scripts import paired_modes_data as paired
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
@@ -56,12 +56,12 @@ def run(name,pool,rows,data=None,limit=4):
     physical.collect_routes=callback;physical.validate_initial_geometry=validate_initial_geometry;physical.PROTOCOL='selective_repair_fixed_executor_v1'
     results=[]
     for j,ident in enumerate(ids):
-        parent=ident.rsplit('_target',1)[0];plan=copy.deepcopy(plans[parent]);plan.update(execution_id=ident,execution_target=0,execution_paths=arrays['paths'][index[ident]].tolist(),execution_selected=byid[ident]['selected_indices'])
+        parent=ident.rsplit('_target',1)[0];plan=copy.deepcopy(plans[parent]);plan.update(execution_id=ident,execution_target=0,execution_paths=arrays['paths'][index[ident]].tolist(),execution_selected=list(range(8)) if all_candidates else byid[ident]['selected_indices'])
         cfg=out/('plan%d.json'%j);write(cfg,plan);dest=out/('request%d'%j)
         r=physical.physical_worker(registration,dict(source_sha256=source),plan,cfg,dest)
         if r['status']=='error':raise RuntimeError('Technical execution failure, preserve and recover: '+str(r['fatal_error']))
         results.append(read(dest/'EXECUTION.json'))
-    write(out/'RESULTS.json',dict(requests=len(ids),requested_routes=4*len(ids),success=sum(r['success'] for r in results),records=results,pool_sha256=sha(pool),rows_sha256=sha(rows),source_commit=os.environ.get('CODE_COMMIT'),locked_access=False,subset='first two DEV families, open/closed target0, actual returned4; frozen before looking at execution outcomes'))
+    write(out/'RESULTS.json',dict(requests=len(ids),requested_routes=(8 if all_candidates else 4)*len(ids),success=sum(r['success'] for r in results),records=results,pool_sha256=sha(pool),rows_sha256=sha(rows),source_commit=os.environ.get('CODE_COMMIT'),locked_access=False,all_candidate_damage_cohort=all_candidates,subset='First two DEV families,open/closed,target0; fixed8slot common body-damage cohort,not returned4' if all_candidates else 'first two DEV families, open/closed target0, actual returned4; frozen before looking at execution outcomes'))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--rows',required=True,type=Path);p.add_argument('--data',type=Path);p.add_argument('--limit',type=int,default=4);run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--pool',required=True,type=Path);p.add_argument('--rows',required=True,type=Path);p.add_argument('--data',type=Path);p.add_argument('--limit',type=int,default=4);p.add_argument('--all-candidates',action='store_true');run(**vars(p.parse_args()))
