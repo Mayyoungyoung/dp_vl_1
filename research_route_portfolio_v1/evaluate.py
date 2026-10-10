@@ -82,6 +82,8 @@ def evaluate(name, checkpoint, dataset, sampling='adaptive', inference_seed=7123
     assert len(calls) == len(rows) and all(s[:2] == (1,8) for s in calls)
     np.savez_compressed(out/'pool.npz', **pools)
     seal = dict(protocol=policy['protocol'], source_commit=__import__('os').environ.get('CODE_COMMIT'),
+        source_sha256={str(f.relative_to(SOURCE)):sha(f) for f in (SOURCE/'research_route_portfolio_v1').glob('*.py')},
+        policy_sha256=sha(POLICY),
         checkpoint=str(checkpoint), generator_sha256=sha(checkpoint), scorer_sha256=sha(Q),
         head_sha256=sha(head) if head else None, dataset=dataset,
         sampling=sampling, inference_seed=inference_seed, predictions_sha256=sha(out/'pool.npz'),
