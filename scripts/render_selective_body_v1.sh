@@ -20,7 +20,10 @@ cleanup() { kill "$OWN_XVFB" 2>/dev/null || true; wait "$OWN_XVFB" 2>/dev/null |
 trap cleanup EXIT
 for attempt in {1..40}; do [[ -s "$D/displaynum" ]] && break; sleep .25; done
 export DISPLAY=":$(cat "$D/displaynum")"
-if [[ "${1:-}" == full_body_suite ]];then
+if [[ "${1:-}" == prefix_probe ]];then
+ shift
+ taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.prefix_native_probe "$@"
+elif [[ "${1:-}" == full_body_suite ]];then
  shift
  taskset -c "$CPU_SET" "$P/.venv-sim/bin/python" -m research_selective_repair_v1.full_body_pilot "$@"
 elif [[ "${1:-}" == public_contract ]];then
