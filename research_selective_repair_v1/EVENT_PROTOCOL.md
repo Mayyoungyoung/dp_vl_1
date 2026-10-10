@@ -1,5 +1,15 @@
 # First-crossing measure study,2026-10-10
 
+The next1152row allgoal half-TRAIN data audit fails the joint-model public-FK
+gate(max5.803mm vs5mm). No learner starts from that failed build; retain its
+receipt/empty output. Event-only data is independently rebuilt with actual
+measured tip positions and observed stop labels. PublicFK/q remain recorded
+audit metadata and never enter EventHead inputs,targets or probability
+composition; their failure flag is explicit. The5mm state-model gate is not
+relaxed and PrefixHead.fit still rejects these data. Same actual labels feed
+ordinary EventHead and binary controls. This is a learning-object information
+contract distinction,not a relaxed geometry/execution evaluation threshold.
+
 The conditioned recurrent joint-prefix pilot completed2400 updates. On two
 held-out TRAIN families its tipRMSE=.331745m,jointRMSE=25.7135rad,crossing
 tipRMSE=.190854m,completion-proxy Brier=.247774. It fails to identify meaningful

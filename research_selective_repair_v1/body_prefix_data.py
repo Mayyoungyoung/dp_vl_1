@@ -45,7 +45,7 @@ def prefix(record,joints,tips):
     assert cursor==len(joints)-1,'Every observed simulator step must be accounted for'
     return q,p,valid,hazard,observed
 
-def build(name,dataset,model,expanded=False,family_limit=16):
+def build(name,dataset,model,expanded=False,family_limit=16,event_only=False):
     out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     with np.load(dataset) as z:d={k:z[k] for k in z.files}
     assert set(d['roles'])=={'TRAIN'}
@@ -78,7 +78,7 @@ def build(name,dataset,model,expanded=False,family_limit=16):
     # Public robot geometry approximation checked against every observed TRAIN
     # step before any learner fit. 5mm is well below the existing2cm floor guard.
     max_error=max(v[0] for v in all_errors)
-    if max_error>.005:raise ValueError('Public FK mismatch; retain diagnostic, do not fit:'+str(max_error))
+    if max_error>.005 and not event_only:raise ValueError('Public FK mismatch; retain diagnostic, do not fit:'+str(max_error))
     keys=('initial_q','prefix_q','prefix_tip','prefix_valid','prefix_hazard','prefix_observed','event_q','event_tip','event_present','event_observed')
     for j,k in enumerate(keys):d[k]=np.asarray([rows[i][j] for i in range(len(rows))])
     np.savez_compressed(out/'samples.npz',**d)
@@ -86,6 +86,8 @@ def build(name,dataset,model,expanded=False,family_limit=16):
     write(out/'MANIFEST.json',dict(role='TRAIN',rows=len(rows),source_hashes=hashes,
         dataset_sha256=sha(dataset),samples_sha256=sha(out/'samples.npz'),
         public_robot_sha256=sha(out/'public_robot.npz'),max_FK_tip_error_m=max_error,
+        public_FK_passes_state_model_gate=bool(max_error<=.005),event_only=event_only,
+        event_only_contract='Direct measured tip events/hazards; FK/q are audit metadata,not learned or composed inputs' if event_only else None,
         mean_FK_tip_error_m=sum(a*b for _,a,b in all_errors)/sum(b for _,_,b in all_errors),
         completed_prefix_segments=int(d['prefix_valid'].sum()),observed_segments=int(d['prefix_observed'].sum()),
         labels='4actual states/completed segment; exact first-row-crossing joint/tip event from full trace; first finite-budget failure, suffix unknown',
@@ -93,4 +95,4 @@ def build(name,dataset,model,expanded=False,family_limit=16):
         no_DEV_feedback=True,locked_access=False))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--model',type=Path,required=True);p.add_argument('--expanded',action='store_true');p.add_argument('--family-limit',type=int,choices=[8,16],default=16);build(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',type=Path,required=True);p.add_argument('--model',type=Path,required=True);p.add_argument('--expanded',action='store_true');p.add_argument('--family-limit',type=int,choices=[8,16],default=16);p.add_argument('--event-only',action='store_true');build(**vars(p.parse_args()))

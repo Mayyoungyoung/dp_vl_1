@@ -36,10 +36,15 @@ def run(name,version='v1',conditioning=0,object='state',all_goal_half=False):
             assert object=='event' and version!='v1'
             from research_selective_repair_v1.body_feedback_data import build as feedback_build
             from research_selective_repair_v1.body_prefix_data import build as prefix_build
-            feedback_build('body_halfgoal_feedback_v1',expanded=True,family_limit=8)
+            existing=RUN/'body_halfgoal_feedback_v1/MANIFEST.json'
+            if existing.exists():
+                prior=read(existing);assert prior['rows']==1152 and prior['targets']==[0,1,2] and prior['no_DEV_feedback']
+                assert prior['samples_sha256']==sha(RUN/'body_halfgoal_feedback_v1/samples.npz')
+                receipt['reused_exact_halfgoal_feedback_sha256']=prior['samples_sha256']
+            else:feedback_build('body_halfgoal_feedback_v1',expanded=True,family_limit=8)
             binary_dataset=RUN/'body_halfgoal_feedback_v1/samples.npz'
-            prefix_build('body_halfgoal_prefix_v1',binary_dataset,RUN/'public_panda_canonical_v1.npz',expanded=True,family_limit=8)
-            dataset=RUN/'body_halfgoal_prefix_v1/samples.npz'
+            prefix_build('body_halfgoal_events_v2',binary_dataset,RUN/'public_panda_canonical_v1.npz',expanded=True,family_limit=8,event_only=True)
+            dataset=RUN/'body_halfgoal_events_v2/samples.npz'
             receipt['scope']='1152completed TRAIN feedback,all3goals,6fit/2held families; no DEV or16family formal claim'
             write(out/'receipt.json',receipt)
         if object=='event':
