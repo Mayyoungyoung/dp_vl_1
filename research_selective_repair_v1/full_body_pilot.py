@@ -35,10 +35,11 @@ def execute(name):
         folder=RUN/('body_full_%s_DEV_screen_seed0_v1'%label)
         execname='body_full_%s_DEV_returned4_seed0_v1'%label
         run(execname,folder/'pool.npz',folder/'ROWS.json',data=RUN.parents[1]/'data/selective_repair_interventions_v1')
-        audit(execname+'_semantics_v1',RUN/execname,folder/'pool.npz')
-        rows=read(RUN/(execname+'_semantics_v1')/'ROWS.json')
-        records.append(dict(method=label,E4=float(np.mean([r['executable_distinct_words'] for r in rows])),
-            successful_clear=sum(r['successful_clear_routes'] for r in rows),attempted=16,
+        audit(execname+'_semantics_v1',execname)
+        summary=read(RUN/(execname+'_semantics_v1')/'SUMMARY.json');rows=summary['requests_results']
+        assert summary['attempted_routes']==16 and summary['requests']==4
+        records.append(dict(method=label,E4=summary['mean_executable_distinct'],
+            successful_clear=summary['successful_clear_routes'],attempted=summary['attempted_routes'],
             source=execname+'_semantics_v1',prediction_sha256=sha(folder/'sealed_predictions.npz'),requests=rows))
         write(out/'PROGRESS.json',dict(records=records,locked_access=False))
     write(out/'SUMMARY.json',dict(records=records,scope='Actual ordered returned4,fullfeedback7armDEV pilot; initialC0head,not matched heads/fresh layouts/causal native evidence',locked_access=False))
