@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from research_selective_repair_v1.local_loop_support import proposals
+from research_selective_repair_v1.local_loop_support import proposals,progress_proposals
 
 class LocalSupportTests(unittest.TestCase):
     def test_window_changes_only_three_interior_nodes(self):
@@ -20,5 +20,12 @@ class LocalSupportTests(unittest.TestCase):
         self.assertTrue(ok.all())
         np.testing.assert_array_equal(result[:,2,:3],p[:,:3]);np.testing.assert_array_equal(result[:,2,6:],p[:,6:])
         self.assertLessEqual(float(np.linalg.norm(result[:,2]-p,axis=-1).max()),.0800001)
+    def test_terminal_approach_offsets_retain_mandatory_goal(self):
+        p=np.zeros((8,24,3),np.float32);p[:,:,0]=np.linspace(0,1,24);p[:,:,2]=.55
+        c=np.array([[.6,-.1,.4],[.6,.1,.4],[.8,-.1,.4],[.8,.1,.4]],np.float32)
+        result,ok,_=progress_proposals(p,c,.2,np.array([22]*8))
+        self.assertTrue(ok.all());np.testing.assert_array_equal(result[:,2,-1],p[:,-1])
+        np.testing.assert_array_equal(result[:,2,:21],p[:,:21])
+        self.assertLessEqual(float(np.linalg.norm(result[:,2]-p,axis=-1).max()),.045)
 
 if __name__=='__main__':unittest.main()

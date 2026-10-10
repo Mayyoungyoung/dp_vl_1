@@ -1,3 +1,39 @@
+## Selective repair ACTIVE — native branch rejected, 2026-10-10 10:40 UTC
+
+No accepted method; actual viable core/fresh-layout/3seed/matched-head evidence
+still outstanding. Full native branch pilot source7d8905c completed:
+30CPU tests(.487s),exact120/60+60 RNG/optimizer/weights recovery, four2400fit
+arms and9TRAIN36-request geometry screens, current-RGBD state/confusion API
+checks(33sets each,exact8finals/fullq4; cached encoder only). Study347.067312s,
+API8.412015s. Original v1 failed BEFORE updates on float64 initial q,8.793594s;
+fixed public-state dtype,new source/new recovery job, no native-data rerun.
+2496TRAIN rows,48602 valid endpoint q labels,333 outside-interval labels masked.
+TRAIN-held197positive/352rows: state wordacc.76142/Brier.23165,aux.77665/.22569,
+route-GRU.78680/.17971,binary Brier.18844,empiricalconfusion wordacc.75635.
+State q RMSE1.1055rad vsaux.9903,zero predicted interval violations.
+Reject necessity/advantage of predicted-joint feedback. Do not expand its seeds.
+All geometry screens remain V8=8,V4=4,U4=4 exceptstaticloop3.97222,zero damage.
+Measured all8 alternative replay on4TRAIN-held requests: state/aux/route/planned
+chooseZERO changed slots,allE8=1.75; binary changes5/confusion1,also1.75.
+Staticloop replay2.0,not new native returned4 evidence. Found-oracle gain1/4
+across supplied options is a finite TRAIN opportunity only. Frozen risk-factor
+diagnostic: region CDF lowers mass only.006..011; does NOT explain poor q-state
+forecast calibration. Do not assert a double-clearance bug or normalize blindly.
+
+First-failure LOCAL support is the current changed learning object. Active
+TRAIN oracle acquisition source d829f5a,coordinator1298904,64all8 null/loop
+attempts on4enriched fit-family requests: family642005closed target1/2,
+family642000open target1/2. 38/768identity slots geometry-eligible among285
+known native first stops; limited3-node closed-cycle support, not a deployment
+model/overall-distribution result. Inspect actual main receipt/stdout before
+next step; current teacher has no terminal result. No TEST_LOCKED access.
+Local progress-preserving two-interior-node residual representation is being
+checked to avoid consuming waypoints for backward closure; fixed+4cmZ vs
+-2cmX/+4cmZ,two last interior approach nodes for terminal failures,endpoint
+unchanged,no amplitude/window sweep. Three local geometry contract tests pass
+(.064s). Native support indices are TRAIN labels only, never deployed inputs.
+Original acceptance and5mmFK gate unchanged. No active fit queued now.
+
 ## Selective repair ACTIVE — current 2026-10-10 09:45 UTC
 
 No accepted method. User requests actual viable core, strong matched advantage,
