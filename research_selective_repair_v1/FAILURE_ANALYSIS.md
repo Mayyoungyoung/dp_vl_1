@@ -60,3 +60,6 @@ Technical failures are preserved and repaired:goal manifest missing os at final
 write after complete arrays;simulator accidentally importing Torch;NumPy testing
 triggering localized lscpu ASCII decoding. Actual recovery uses existing runtimes,
 does not install anything,does not stop other jobs,and never edits running source.
+
+
+Categorical execution forecasting overfits sixTRAIN families97% versus heldout51--54%; node MLP matches or exceeds its diagnostic. Protected actual allocation E4v1=1.0,v2=1.75 while planned-word control2.75. Coordinate solver identical: evidence does not support a special allocation effect. V2corrects measured planned-word aliasing only. Both are retained rejection evidence. New dense prefix supervision changes the learning object,not thresholds/loss searches on the rejected17-class head.

@@ -137,3 +137,22 @@ inference and observation encoder work; it cannot establish online speedups.
 Compact evidence:[INITIAL.json](results/INITIAL.json). Initial figures under
 figures/initial are labelled developmental; they will be updated after the
 registered new-data experiments. Check RESEARCH_STATE.md for current queues.
+
+
+## Actual outcome forecast falsifications (completed2026-10-10)
+
+First two reusedDEV families,open/closed,target0;16actual returned routes per arm. Single native episode; matched new heads/3seeds/fresh confirmation still outstanding.
+
+|Method|E4v1|Clear/16v1|E4word-safev2|Clear/16v2|
+|---|---:|---:|---:|---:|
+|identity|1.75|7|1.75|7|
+|lift|1.75|16|2.75|12|
+|preserved|2.00|8|2.00|8|
+|success|2.25|13|2.75|11|
+|planned|2.75|12|2.75|12|
+|actual|1.00|5|1.75|8|
+|coordinate|1.00|5|1.75|8|
+|actual_unprotected|2.00|8|2.25|9|
+|actual_nonrecurrent|1.50|6|1.75|9|
+
+V2allarms U8=7.79167,V8=V4=1,U4=4 except nonrecurrent3.97917; no planned word changes. Protection repairs the operator aliasing but not actual body prediction. The categorical mechanism is rejected; no acceptance and originalU8+.15 remains failed. Two targeted falsifications require changing the learning object. See PREFIX_PROTOCOL.md.
