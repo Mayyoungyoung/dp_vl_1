@@ -14,7 +14,8 @@ def tip_clear(path,cfg):
         for y in ys:centers.append([x,y,cfg['post_base_z']+height/2]);halves.append([.0175,.0175,height/2])
     c=np.asarray(centers);h=np.asarray(halves);margin=cfg['tip_clearance_m']
     if len(path)<2:return False
-    hit=segment_aabb_intersection(path[:-1,None],path[1:,None],c[None]-h[None]-margin,c[None]+h[None]+margin)
+    a,b,lower,upper=np.broadcast_arrays(path[:-1,None],path[1:,None],c[None]-h[None]-margin,c[None]+h[None]+margin)
+    hit=segment_aabb_intersection(a,b,lower,upper)
     return bool(not hit.any() and (path[:,2]>=cfg['post_base_z']+.02).all())
 
 def audit(name,source):
