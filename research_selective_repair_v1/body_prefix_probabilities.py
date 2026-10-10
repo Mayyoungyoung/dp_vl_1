@@ -13,15 +13,29 @@ def compose(prediction,paths,cfg):
     for i in range(n):
         for k in range(tips.shape[1]):
             trajectory=np.concatenate([paths[i,:1],tips[i,k].reshape(-1,3)])
-            signature=word(trajectory,cfg);queries+=1
             # Predicted sampled path clearance, never a body safety certificate.
             clear=tip_clear(trajectory,cfg);queries+=1
             reaches=np.linalg.norm(trajectory[-1]-paths[i,-1])<=.03
-            outcome=WORDS.index(signature)+1 if signature in WORDS and clear and reaches else 0
-            mass=weights[i,k]*survival[i,k]
-            result[i,outcome]+=mass
-            result[i,0]+=weights[i,k]*(1-survival[i,k])
+            event_probability=1/(1+np.exp(np.clip(-prediction['events'][i,k],-40,40)))
+            previous=np.concatenate([np.ones((1,2)),np.cumprod(1-event_probability,axis=0)[:-1]],0)
+            first=event_probability*previous
+            row_mass=np.zeros((2,4))
+            for row in range(2):
+                x=cfg['row_x'][row]
+                rowcfg=dict(cfg,row_x=[x],post_y=[cfg['post_y'][row]],post_heights=[cfg['post_heights'][row]])
+                for segment in range(23):
+                    point=prediction['event_tip'][i,k,segment,row]
+                    probe=np.repeat(point[None],2,axis=0);probe[:,0]=[x-1e-5,x+1e-5]
+                    category=word(probe,rowcfg);queries+=1
+                    if category not in ('gap0','gap1','gap2','over'):continue
+                    compatibility=np.exp(-.5*((point[0]-x)/.02)**2)
+                    row_mass[row,('gap0','gap1','gap2','over').index(category)]+=first[segment,row]*compatibility
+            # Residual row dependence conditional on propagated latent state is
+            # an approximation; marginal composition is not a joint certificate.
+            mass=weights[i,k]*survival[i,k]*float(clear and reaches)
+            result[i,1:]+=mass*np.outer(row_mass[0],row_mass[1]).reshape(16)
+        result[i,0]=1-result[i,1:].sum()
     np.testing.assert_allclose(result.sum(-1),1,atol=1e-5)
     return result.astype(np.float32),dict(prefix_hypotheses_per_route=tips.shape[1],
         predicted_signature_and_tip_proxy_calls=queries,actual_controller_queries=0,
-        scope='Public-FK forecast with current inferred boxes; not actual geometry/execution validation')
+        scope='Public-FK first-crossing event composition with inferred boxes; conditional row independence approximation,not execution validation')

@@ -43,7 +43,7 @@ class PrefixHead(nn.Module):
         self.initial=nn.Sequential(nn.Linear(96,64),nn.Tanh())
         if kind=='recurrent':self.cell=nn.GRUCell(94,64)
         else:self.cell=nn.Sequential(nn.Linear(94,160),nn.SiLU(),nn.Linear(160,80),nn.SiLU(),nn.Linear(80,64),nn.SiLU())
-        self.output=nn.Linear(64,29);self.weights=nn.Linear(96,hypotheses)
+        self.output=nn.Linear(64,45);self.weights=nn.Linear(96,hypotheses)
     def forward(self,x,context,q0,teacher=None,forcing=0.):
         b=len(x);k=self.hypotheses;z=self.input(x)
         # Fixed executor processes requested waypoints sequentially. Future
@@ -52,22 +52,27 @@ class PrefixHead(nn.Module):
         h=self.initial(cx)[:,None].expand(-1,k,-1).reshape(b*k,64)
         latent=self.latent(torch.arange(k,device=x.device))[None].expand(b,-1,-1).reshape(b*k,16)
         previous=q0[:,None].expand(-1,k,-1).reshape(b*k,7)
-        states=[];hazards=[]
+        states=[];hazards=[];event_states=[];event_logits=[]
         for j in range(23):
             inp=torch.cat([z[:,j+1,None].expand(-1,k,-1).reshape(b*k,64),previous.sin(),previous.cos(),latent],-1)
             h=self.cell(inp,h) if self.kind=='recurrent' else self.cell(inp)
             prediction=self.output(h)
             q=previous[:,None]+np.pi*prediction[:,:28].reshape(b*k,4,7).tanh()
             states.append(q.reshape(b,k,4,7));hazards.append(prediction[:,28].reshape(b,k))
+            event=previous[:,None]+np.pi*prediction[:,29:43].reshape(b*k,2,7).tanh()
+            event_states.append(event.reshape(b,k,2,7));event_logits.append(prediction[:,43:].reshape(b,k,2))
             previous=q[:,-1]
             if teacher is not None and forcing>0:
                 use=(torch.rand((b,1,1),device=x.device)<forcing)&teacher['valid'][:,j,None,None]
                 previous=torch.where(use,teacher['q'][:,j,-1,None].expand(-1,k,-1),previous.reshape(b,k,7)).reshape(b*k,7)
         q=torch.stack(states,2);hazard=torch.stack(hazards,2)
         tip=tip_forward(q,self.qref,self.base,self.relative)
-        return dict(q=q,tip=tip,hazard=hazard,log_weights=self.weights(cx).log_softmax(-1))
+        event_q=torch.stack(event_states,2)
+        return dict(q=q,tip=tip,hazard=hazard,event_q=event_q,
+            event_tip=tip_forward(event_q,self.qref,self.base,self.relative),
+            events=torch.stack(event_logits,2),log_weights=self.weights(cx).log_softmax(-1))
 
-def likelihood(pred,q,tip,valid,hazard,observed):
+def likelihood(pred,q,tip,valid,hazard,observed,event=None):
     # Fixed Gaussian scales .1rad and.02m; no suffix supervision or word index.
     qloss=((pred['q']-q[:,None])/.1).square().mean((-1,-2))
     ploss=((pred['tip']-tip[:,None])/.02).square().mean((-1,-2))
@@ -75,6 +80,15 @@ def likelihood(pred,q,tip,valid,hazard,observed):
     target=hazard[:,None].expand_as(pred['hazard'])
     risk=nn.functional.binary_cross_entropy_with_logits(pred['hazard'],target,reduction='none')
     risk=(risk*observed[:,None]).sum(-1)/observed.sum(-1).clamp_min(1)[:,None]
+    if event is not None:
+        qevent=((pred['event_q']-event['q'][:,None])/.1).square().mean(-1)
+        pevent=((pred['event_tip']-event['tip'][:,None])/.02).square().mean(-1)
+        mask=event['present'][:,None]
+        state+=((qevent+pevent)*mask).sum((-1,-2))/mask.sum((-1,-2)).clamp_min(1)
+        truth=event['present'][:,None].expand_as(pred['events']).float()
+        ce=nn.functional.binary_cross_entropy_with_logits(pred['events'],truth,reduction='none')
+        mask=event['observed'][:,None]
+        risk+=(ce*mask).sum((-1,-2))/mask.sum((-1,-2)).clamp_min(1)
     return -torch.logsumexp(pred['log_weights']-.5*state-risk,dim=-1).mean()
 
 def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None):
@@ -90,12 +104,14 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
         dataset_sha256=sha(dataset),robot_sha256=sha(robot),mean=mean.tolist(),std=std.tolist(),
         fit_families=[str(v) for v in families[:-2]],diagnostic_TRAIN_families=[str(v) for v in held],
         source_commit=os.environ.get('CODE_COMMIT'),forcing='linear1to0infirst1200updates;free deployment',
-        scope='Current observation/public initial q only in free forward; actual prefix/hazard TRAIN likelihood only')
+        event_supervision='Exact first crossings from full trace; uniform4states alone alias7/85 TRAIN successes',
+        scope='Current observation/public initial q only in free forward; actual prefix/event/hazard TRAIN likelihood only')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
     model=PrefixHead(load_robot(robot),kind).cuda();opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
     t=lambda v:torch.as_tensor(v,device='cuda')
     tx=t(((x-mean)/std).astype(np.float32));tc=t(d['context'].astype(np.float32));tq0=t(d['initial_q'].astype(np.float32))
     tq=t(d['prefix_q']);tp=t(d['prefix_tip']);tv=t(d['prefix_valid']);th=t(d['prefix_hazard']);to=t(d['prefix_observed'])
+    teq=t(d['event_q']);tep=t(d['event_tip']);tev=t(d['event_present']);teo=t(d['event_observed'])
     initial=tensor_state_digest(model.state_dict());history=[];stream='';start=0;tic=time.monotonic();indices=np.flatnonzero(train)
     def state(step):return dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,history=history,stream=stream,initial_sha256=initial)
     if resume:
@@ -106,7 +122,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
     for step in range(start+1,min(steps,stop_after or steps)+1):
         ix=rng.choice(indices,size=32,replace=True);stream=hashlib.sha256(stream.encode()+ix.tobytes()).hexdigest()
         model.train();pred=model(tx[ix],tc[ix],tq0[ix],dict(q=tq[ix],valid=tv[ix]),max(0,1-step/1200))
-        loss=likelihood(pred,tq[ix],tp[ix],tv[ix],th[ix],to[ix]);assert torch.isfinite(loss)
+        loss=likelihood(pred,tq[ix],tp[ix],tv[ix],th[ix],to[ix],dict(q=teq[ix],tip=tep[ix],present=tev[ix],observed=teo[ix]));assert torch.isfinite(loss)
         opt.zero_grad();loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);opt.step()
         if step%100==0:
             history.append(dict(step=step,loss=float(loss),forcing=max(0,1-step/1200)));atomic_checkpoint(out/'recovery.pt',state(step));print(history[-1],flush=True)
@@ -126,10 +142,14 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
             err=np.linalg.norm(p['tip'][ix]-d['prefix_tip'][mask,None],axis=-1).mean(-1)
             oracle=(err*valid[:,None]).sum(-1)/valid.sum(-1).clip(1)[:,None]
             success=np.sum(np.exp(p['log_weights'][mask])*np.prod(1/(1+np.exp(np.clip(p['hazard'][mask],-40,40))),-1),-1)
+            event_tip=p['event_tip'][ix,chosen];event_valid=d['event_present'][mask]
+            event_prob=np.sum(np.exp(p['log_weights'][mask,:,None,None])/(1+np.exp(np.clip(-p['events'][mask],-40,40))),1)
             report[label]=dict(MAP_prefix_tip_rmse_m=float(np.sqrt(np.square(tip-d['prefix_tip'][mask])[valid].mean())),
                 MAP_prefix_joint_rmse_rad=float(np.sqrt(np.square(joint-d['prefix_q'][mask])[valid].mean())),
+                MAP_first_crossing_tip_rmse_m=float(np.sqrt(np.square(event_tip-d['event_tip'][mask])[event_valid].mean())),
+                first_crossing_occurrence_brier=float(np.square(event_prob-d['event_present'][mask])[d['event_observed'][mask]].mean()),
                 oracle_component_mean_tip_error_m=float(oracle.min(-1).mean()),
-                successful_clear_brier=float(np.square(success-(d['labels'][mask]>0)).mean()),rows=int(mask.sum()),
+                completion_proxy_vs_successful_clear_brier=float(np.square(success-(d['labels'][mask]>0)).mean()),rows=int(mask.sum()),
                 scope='Free rollout; successful-prefix errors omit unknown suffix; oracle component is diagnostic only')
         write(out/'SUMMARY.json',dict(settings=settings,seconds=time.monotonic()-tic,checkpoint_sha256=sha(out/'last.pt'),TRAIN_diagnostics=report,stream=stream,locked_access=False))
 

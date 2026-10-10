@@ -6,6 +6,26 @@ from research_selective_repair_v1.io import RUN,read,write,sha
 from research_selective_repair_v1.body_feedback_data import DEFAULT
 from research_selective_repair_v1.public_kinematics import load,forward
 
+def crossing_events(record,joints,tips,rows):
+    """Exact first forward crossing labels from full actual TRAIN trace.
+
+    No uniform compression can preserve all operational words. Event positions
+    interpolate adjacent actual simulator samples; unexecuted suffix unknown.
+    """
+    q=np.zeros((23,2,7),np.float32);p=np.zeros((23,2,3),np.float32)
+    present=np.zeros((23,2),bool);observed=np.zeros((23,2),bool)
+    segments=record['planning_segments'];ends=np.cumsum([s['simulated_steps'] for s in segments])
+    for row,x in enumerate(rows):
+        hits=np.flatnonzero((tips[:-1,0]<x)&(tips[1:,0]>=x))
+        if len(hits):
+            k=int(hits[0]);j=int(np.searchsorted(ends,k+1,side='left'))
+            t=(x-tips[k,0])/(tips[k+1,0]-tips[k,0])
+            q[j,row]=joints[k]+t*(joints[k+1]-joints[k])
+            p[j,row]=tips[k]+t*(tips[k+1]-tips[k]);present[j,row]=True
+            observed[:j+1,row]=True
+        else:observed[:len(segments),row]=True
+    return q,p,present,observed
+
 def prefix(record,joints,tips):
     # Four normalized samples of each COMPLETED segment. A failed segment's
     # unfinished trace is not falsely labeled as its successful endpoint.
@@ -51,13 +71,13 @@ def build(name,dataset,model,expanded=False):
                 with np.load(trace) as z:q=z['arm_joint_positions'];tip=z['gripper_pose'][:,:3]
                 err=np.linalg.norm(forward(q,qref,base,relative)-tip,axis=-1)
                 all_errors.append((float(err.max()),float(err.mean()),len(q)))
-                rows[ix]=(q[0],)+prefix(record,q,tip)
+                rows[ix]=(q[0],)+prefix(record,q,tip)+crossing_events(record,q,tip,plan['config']['row_x'])
     assert set(rows)==set(range(len(d['ids'])))
     # Public robot geometry approximation checked against every observed TRAIN
     # step before any learner fit. 5mm is well below the existing2cm floor guard.
     max_error=max(v[0] for v in all_errors)
     if max_error>.005:raise ValueError('Public FK mismatch; retain diagnostic, do not fit:'+str(max_error))
-    keys=('initial_q','prefix_q','prefix_tip','prefix_valid','prefix_hazard','prefix_observed')
+    keys=('initial_q','prefix_q','prefix_tip','prefix_valid','prefix_hazard','prefix_observed','event_q','event_tip','event_present','event_observed')
     for j,k in enumerate(keys):d[k]=np.asarray([rows[i][j] for i in range(len(rows))])
     np.savez_compressed(out/'samples.npz',**d)
     with np.load(model) as z:np.savez_compressed(out/'public_robot.npz',**dict(z))
@@ -66,7 +86,7 @@ def build(name,dataset,model,expanded=False):
         public_robot_sha256=sha(out/'public_robot.npz'),max_FK_tip_error_m=max_error,
         mean_FK_tip_error_m=sum(a*b for _,a,b in all_errors)/sum(b for _,_,b in all_errors),
         completed_prefix_segments=int(d['prefix_valid'].sum()),observed_segments=int(d['prefix_observed'].sum()),
-        labels='4actual normalized-time states per completed segment; first finite-budget failure observed, suffix unknown',
+        labels='4actual states/completed segment; exact first-row-crossing joint/tip event from full trace; first finite-budget failure, suffix unknown',
         forward_information='current path/current observation/public canonical robot state only; actual q/prefix/hazard TRAIN-only labels',
         no_DEV_feedback=True,locked_access=False))
 

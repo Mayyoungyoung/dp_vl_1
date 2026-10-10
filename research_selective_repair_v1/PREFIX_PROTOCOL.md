@@ -18,7 +18,14 @@ Same current24-node draft,NN completed posts,cached current observation and
 public initial joints as inputs. The fixed public robot frame chain is recorded
 read-only at a restored TRAIN pose. No scene geometry/IK/controller observation
 enters forward. Actual q/tip traces are TRAIN-only supervision. Successful
-segments provide four actual normalized-time states. A failed segment supplies
+segments provide four actual normalized-time states. Exact first-row-crossing
+joint/tip events additionally come from the full trace,not uniform compression.
+A prefit TRAIN check85successful traces finds4/8/16samples per segment retain
+78/82/84words; even16samples alias a real crossing. This representation defect
+motivates exact event supervision before any learner fit,not a resolution/loss
+sweep. Predict crossing occurrence/public-FK state from each propagated segment
+and compose row categories with current inferred boxes. Residual row dependence
+conditional on joint-state hypotheses remains an approximation. A failed segment supplies
 its observed budget noncompletion; its unexecuted suffix is unknown,not a
 negative or fabricated state. Public FK must match every TRAIN sample within
 5mm before fit; the first266-state check gives max1.182mm,mean.549mm.
