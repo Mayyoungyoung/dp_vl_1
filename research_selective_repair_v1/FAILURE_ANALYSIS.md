@@ -63,3 +63,14 @@ does not install anything,does not stop other jobs,and never edits running sourc
 
 
 Categorical execution forecasting overfits sixTRAIN families97% versus heldout51--54%; node MLP matches or exceeds its diagnostic. Protected actual allocation E4v1=1.0,v2=1.75 while planned-word control2.75. Coordinate solver identical: evidence does not support a special allocation effect. V2corrects measured planned-word aliasing only. Both are retained rejection evidence. New dense prefix supervision changes the learning object,not thresholds/loss searches on the rejected17-class head.
+# Conditioned state transport falsification,2026-10-10
+
+The completed recurrent conditioning4 TRAIN pilot has heldprefix tipRMSE
+.331745m,jointRMSE25.7135rad,eventtipRMSE.190854m. It adds recursive joint
+drift rather than resolving the already poor unconditioned state transport.
+Completion proxy Brier.247774 alone cannot validate its spatial predictions.
+Sourcef0cd3ac,checkpoint4a89eaea02faa6247c4d450e836af9852a58ae361cd4ee6c1673d605b8965d93,
+actual2368.150652s. No DEV evaluation. No further joint-projection/loss sweep.
+The new event-measure study uses the existing exact actual crossing labels;
+see EVENT_PROTOCOL.md for frozen design and unchanged acceptance conditions.
+

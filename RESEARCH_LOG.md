@@ -1471,3 +1471,17 @@ Selective prepare_v1 completed1345.2006s: TRAIN11found/1152requests,DEV26found/2
 2026-10-10 censored likelihood unit check source9093da5:9tests pass2.357s,CPU3/one thread/noCUDA. Corrected samebudget TRAINpilot v2models running(session81211). Ownb19c0a0 waiting coordinator1045315 stopped PRELAUNCH after exactargv/sleepchildverification,0fullscope tests/builds/fits; new dependent formalqueue source9093da5 waits complete2304allgoaldata. ActiveCPUcollector unchanged. First missinggoal identity256routes complete2298.500commandsec; audits/newlift next,all receipts actual.
 2026-10-10 poseconditioned pilot f0cd3ac running(session41024),10CPUtests passed2.568s; actual imported source unchanged. New future implementation uses solve_ex(check_errors=False) for the identical damped positive-definite6x6 system; installedTorch2.4.1 linalg doc explicitly confirms solve syncs CUDA/CPU,solve_ex onlycheck_errorsTrue syncs. Add exact value/gradient equivalence test. No alteration to running export,steps/budget/modelparameter/metric/search unchanged. Count24routes96hypotheses39840publicFKstateevaluations8832terminalsolves17664scalarplaneupdates perrequest; no nativeIK/get_path queries,no extra scored candidates.
 2026-10-10 future nonblocking solver source5b4f889:11CPUtests pass3.556s,exactchecked/nonblockingvalue+gradientmatch,CUDAuninitialized. Current conditionedf0cd3ac code/weights/launcher untouched; training still2400steps permodel,actualpoint/modelmetrics pending. STATE/RESUME update04:11 describes both active data/GPUjobs and dependent2304fullscopequeue; neither negative pilots nor scripts complete research objective.
+# 2026-10-10 selective repair continuation
+
+Conditioned recurrent prefix pilot completed2400updates from immutablef0cd3ac.
+Two held TRAIN families tipRMSE.331745m,jointRMSE25.7135rad,eventtip.190854m,
+riskproxyBrier.247774;actual2368.150652sec. Method fails meaningful state
+transport; no DEV inference. Paired Markov pilot remains active. Full1920new
+TRAIN trials collector remains active,currently last8families identityallgoals.
+Implemented a distinct censored firstcross spatial measure with shared latent
+mixture and Gaussian gap integration; same2400update ordinary-node control,
+exact binary reuse,unchanged24internal→8final→fullq4 and geometry/body gates.
+EVENT_PROTOCOL.md prospectively records scope/limitations and further gates.
+No accepted method or publication-readiness claim. Latestc39ddbe push verified
+against origin; unrelated untracked files and historical results untouched.
+

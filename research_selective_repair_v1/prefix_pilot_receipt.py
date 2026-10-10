@@ -3,7 +3,7 @@ import argparse,datetime,json,os,subprocess,sys,time,traceback
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(name,version='v1',conditioning=0):
+def run(name,version='v1',conditioning=0,object='state'):
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     auxiliary=RUN/'prefix_pilot_gpu.lock';fd=os.open(auxiliary,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
@@ -26,10 +26,15 @@ def run(name,version='v1',conditioning=0):
             assert job.startswith('body_execution_train_') and active['status']=='running'
             command=active['command'];assert 'execution' in command and any('render_selective_body_v1.sh' in v for v in command)
             receipt['overlapping_CPU_teacher']=job
-        from research_selective_repair_v1.body_prefix_forecast import fit
+        if object=='event':
+            assert conditioning==0
+            from research_selective_repair_v1.body_event_forecast import fit
+        else:from research_selective_repair_v1.body_prefix_forecast import fit
         from research_selective_repair_v1.body_binary_forecast import fit as binary_fit
         for kind in ('recurrent','nonrecurrent'):
-            fit('body_prefix_pilot_%s_seed0_%s'%(kind,version),RUN/'body_prefix_pilot_fk_v1_data/samples.npz',kind=kind,threads=1,conditioning=conditioning)
+            kwargs={} if object=='event' else dict(conditioning=conditioning)
+            prefix='event' if object=='event' else 'prefix'
+            fit('body_%s_pilot_%s_seed0_%s'%(prefix,kind,version),RUN/'body_prefix_pilot_fk_v1_data/samples.npz',kind=kind,threads=1,**kwargs)
         binary=RUN/'body_binary_pilot_seed0_v1'
         if (binary/'last.pt').exists():
             settings=read(binary/'SUMMARY.json')['settings']
@@ -45,4 +50,4 @@ def run(name,version='v1',conditioning=0):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--version',default='v1');p.add_argument('--conditioning',type=int,choices=[0,4],default=0);run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--version',default='v1');p.add_argument('--conditioning',type=int,choices=[0,4],default=0);p.add_argument('--object',choices=['state','event'],default='state');run(**vars(p.parse_args()))

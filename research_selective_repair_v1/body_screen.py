@@ -29,13 +29,15 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         if forecast=='prefix':
             from research_selective_repair_v1.body_prefix_forecast import load as forecast_load,predict as forecast_predict
             from research_selective_repair_v1.body_prefix_probabilities import compose,computation_counts
+        elif forecast=='event':
+            from research_selective_repair_v1.body_event_forecast import load as forecast_load,predict as forecast_predict,compose
         elif forecast=='binary':
             from research_selective_repair_v1.body_binary_forecast import load as forecast_load,predict as forecast_predict
         else:forecast_load,forecast_predict=load,predict
         model,ck=forecast_load(checkpoint)
         if all_goals:
             dataset=ck['settings']['dataset_sha256']
-            assert dataset==read(RUN/('body_prefix_data_v1' if forecast=='prefix' else 'body_feedback_data_v3')/'MANIFEST.json')['samples_sha256'],'Allgoal screen requires frozen allgoal TRAIN supervision'
+            assert dataset==read(RUN/('body_prefix_data_v1' if forecast in ('prefix','event') else 'body_feedback_data_v3')/'MANIFEST.json')['samples_sha256'],'Allgoal screen requires frozen allgoal TRAIN supervision'
     boxck=torch.load(RUN/'constraints_seed0_v1/last.pt',map_location='cpu',weights_only=False)
     t=lambda x:torch.tensor(x,device='cuda',dtype=torch.float32)
     paths=[];choices=[];probabilities=[];queries=[];forecast_queries=[];torch.cuda.synchronize();tic=time.monotonic()
@@ -43,7 +45,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         candidates=options(d['paths'][i],d['completed'][i]);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1
         planned=None
         cfg=None
-        if kind=='planned' or word_safe or forecast in ('prefix','binary'):
+        if kind=='planned' or word_safe or forecast in ('prefix','event','binary'):
             c,h=boxes(t(d['completed'][i:i+1]),boxck['settings']);cfg=configuration(c[0].cpu().numpy(),h[0].cpu().numpy(),boxck['settings'])
             words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
         detail={}
@@ -52,6 +54,8 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
             if forecast=='prefix':
                 prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
                 detail.update(computation_counts(ck['settings'],24))
+            elif forecast=='event':
+                prob,detail=compose(prediction,candidates.reshape(24,24,3),cfg);prob=prob.reshape(8,3,17)
             elif forecast=='binary':
                 success=prediction.reshape(8,3);prob=np.zeros((8,3,17),np.float32);prob[:,:,0]=1-success
                 for slot in range(8):
@@ -61,7 +65,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         choice,count=allocate(prob,kind,protected,planned,allowed);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count);forecast_queries.append(detail)
     torch.cuda.synchronize();seconds=time.monotonic()-tic;paths=np.asarray(paths)
     np.savez_compressed(out/'sealed_predictions.npz',ids=d['ids'],paths=paths,events=d['events'],modes=d['modes'],drafts=d['paths'],completed=d['completed'],choices=choices,probabilities=probabilities)
-    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role='DEV_MODEL',current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=24 if word_safe or kind=='planned' or forecast in ('prefix','binary') else 0,internal_alternatives_per_request=24,critic_route_forwards_per_request=0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
+    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role='DEV_MODEL',current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=24 if word_safe or kind=='planned' or forecast in ('prefix','event','binary') else 0,internal_alternatives_per_request=24,critic_route_forwards_per_request=0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
     # Independent geometry labels only after all predictions and choices are sealed.
     observations={r['id']:r for r in lines(data/'export/observations.jsonl') if r['split']=='DEV_MODEL'}
     labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']=='DEV_MODEL'}
@@ -82,4 +86,4 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
     write(out/'SUMMARY.json',report);print(report,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--kind',choices=['identity','lift','preserved','success','planned','actual','coordinate'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--unprotected',dest='protected',action='store_false');p.add_argument('--word-safe',action='store_true');p.add_argument('--forecast',choices=['categorical','prefix','binary'],default='categorical');p.add_argument('--all-goals',action='store_true');screen(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--kind',choices=['identity','lift','preserved','success','planned','actual','coordinate'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--unprotected',dest='protected',action='store_false');p.add_argument('--word-safe',action='store_true');p.add_argument('--forecast',choices=['categorical','prefix','event','binary'],default='categorical');p.add_argument('--all-goals',action='store_true');screen(**vars(p.parse_args()))
