@@ -21,8 +21,8 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
             arm=task._robot.arm;model_file=folder/'public_arm_model.npz'
             if not model_file.exists():
                 np.savez_compressed(model_file,q0=trace[0][2],
-                    joint_world=np.asarray([joint.get_matrix() for joint in arm.joints]).reshape(7,3,4),
-                    tip_world=np.asarray(arm.get_tip().get_matrix()).reshape(3,4))
+                    joint_world=np.asarray([joint.get_matrix() for joint in arm.joints]).reshape(7,4,4),
+                    tip_world=np.asarray(arm.get_tip().get_matrix()).reshape(4,4))
             record['public_arm_model']=dict(file=model_file.name,sha256=sha(model_file),
                 scope='Public fixed robot kinematics at restored canonical pose; read-only frame snapshot, no scene geometry, IK or controller intervention')
             if not np.allclose(trace[0][0][:3],paths[slot,0],atol=.005,rtol=0):

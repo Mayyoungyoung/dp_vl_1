@@ -19,7 +19,7 @@ def build(name,expanded=False):
     rows=[];hashes={};seen=set()
     sources=list(DEFAULT)
     if expanded:
-        sources+=[('body_execution_train_%s_%s_v2'%(n,scope),j,'semantics_v2') for scope in ('families0_7_targets12','families8_15_targets012') for j,n in enumerate(('identity','lift','preserved'))]
+        sources+=[('body_execution_train_%s_%s_v3'%(n,scope),j,'semantics_v2') for scope in ('families0_7_targets12','families8_15_targets012') for j,n in enumerate(('identity','lift','preserved'))]
     for source,option,version in sources:
         folder=RUN/source;manifest=read(folder/'MANIFEST.json');audit=RUN/(source+'_'+version)
         assert manifest['TRAIN_feedback_only'] and not manifest['locked_access']

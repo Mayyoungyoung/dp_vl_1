@@ -16,7 +16,7 @@ for scope in families0_7_targets12 families8_15_targets012;do
  start=0;targets=1,2
  [[ "$scope" == families8_15_targets012 ]] && start=8 && targets=0,1,2
  for option in identity lift preserved;do
-  name=body_execution_train_${option}_${scope}_v2
+  name=body_execution_train_${option}_${scope}_v3
   args=(--lift 0)
   [[ "$option" != identity ]] && args=(--lift .08)
   [[ "$option" == preserved ]] && args+=(--preserve-row-crossings)
@@ -24,4 +24,4 @@ for scope in families0_7_targets12 families8_15_targets012;do
   bash "$L" --id ${name}_semantics_v2 -- "$P/.venv/bin/python" -m research_selective_repair_v1.execution_semantics --name ${name}_semantics_v2 --source "$name"
  done
 done
-bash "$L" --id body_feedback_data_v2 -- "$P/.venv/bin/python" -m research_selective_repair_v1.body_feedback_data --name body_feedback_data_v2 --expanded
+bash "$L" --id body_feedback_data_v3 -- "$P/.venv/bin/python" -m research_selective_repair_v1.body_feedback_data --name body_feedback_data_v3 --expanded
