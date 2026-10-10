@@ -16,10 +16,15 @@ def run(name,build_prefix=False):
     torch.set_num_threads(1)
     # Tests instantiate CPU models only; no CUDA tensor or context is needed.
     assert not torch.cuda.is_initialized()
+    failure=None
     if build_prefix:
         from research_selective_repair_v1.body_prefix_data import build
         r=root/'runs/selective_repair_v1'
-        build(name+'_data',r/'body_feedback_data_v1/samples.npz',r/'public_panda_canonical_v1.npz')
+        try:build(name+'_data',r/'body_feedback_data_v1/samples.npz',r/'public_panda_canonical_v1.npz')
+        except Exception as error:
+            import traceback
+            failure=repr(error);(out/'stdout.log').write_text(traceback.format_exc())
+        receipt.update(scope='Completed384TRAIN actual traces/prefix data and public FK audit; no fitting or controller evaluation',dataset_output=name+'_data')
         result=None
     else:
         suite=unittest.TestSuite()
@@ -34,11 +39,11 @@ def run(name,build_prefix=False):
         try:key=str(p.relative_to(source))
         except ValueError:continue
         if p.is_file():imported[key]=hashlib.sha256(p.read_bytes()).hexdigest()
-    passed=result is None or result.wasSuccessful()
+    passed=failure is None and (result is None or result.wasSuccessful())
     receipt.update(status='completed' if passed else 'failed',tests=0 if result is None else result.testsRun,
         failures=0 if result is None else len(result.failures),errors=0 if result is None else len(result.errors),source_sha256=imported,
         torch_version=torch.__version__,cuda_initialized=torch.cuda.is_initialized(),elapsed_seconds=time.monotonic()-tic,
-        end_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),locked_access=False)
+        end_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),error=failure,locked_access=False)
     (out/'receipt.json').write_text(json.dumps(receipt,indent=2));print(receipt,flush=True)
     raise SystemExit(0 if passed else 1)
 
