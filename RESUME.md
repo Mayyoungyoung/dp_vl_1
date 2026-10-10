@@ -1,3 +1,45 @@
+## Route portfolio paper prototype delivered — 2026-10-10
+
+Current user authorizes a focused useful advantage within an established area;
+vacant-topic novelty and universal metric/control superiority are not required.
+Historical failed gates remain failed. Select semantic conditional generation
+plus finite-budget allocation as the retrospectively chosen paper core; retain
+native-joint and local repairs as extension diagnostics. No submission-ready or
+general robot-execution claim. Read research_route_portfolio_v1/IDEA_BRIEF_ZH.md,
+PAPER_DRAFT.md, RESULTS.md, PROTOCOL.md and REPRODUCE.md.
+
+New frozen comparison: all336DEV_MODEL requests /16different rendered families,
+previously reused in feasible-space study (not untouched final TEST). Three B0,
+Bset,C continuations; each C has3 independent categorical inference repeats;
+five success heads on fixedC0, never five generator seeds. Exactly8routes/fullq4.
+C U8=6.29464 vsB0=5.69544 (delta+.59921, crossed95CI[.33829,.87004]);
+V4=.91468 vs.88839. BsetU8=5.66468; randomC=4.32804; C0success=6.60476.
+Earlier separately trained center control6.83234 remains stronger rawcoverage.
+No new fitting, checkpoint/seed selection or pooled candidates.
+
+New requester-supplied symbolic preference API caches observation encodings.
+All3C seeds /all336requests /3fixed predicates. Over-any compliantvalid@4
+.24901 -> .47644 (delta+.22743,CI[.16344,.28671]); distinctcompliantreturned
++ .19742. Any compliant request drops.68948 -> .64782; firstgap0 any
+.91270 -> .79960. Disclose these reliability tradeoffs; no preference-language
+grounding or guaranteed realized-mode compliance. Full tables and actual figures.
+
+All30new server jobs terminal:29success,1 preserved checker failure after
+sealing all336 B0 predictions; check-only recovery, no repeated generation.
+410.734010 command seconds.14CPU contract tests pass; actual336stochastic
+paths/events/q/modes/indices exact replay,32 all-allowed preferences exact,
+qmaxerror0. Actualbefore/afterCPU/CUDA RNG stored.26pools and receipts mirrored,
+SHA checked against actual immutable exports; canonicalGit differs onlyEOL.
+No queues/locks remain for this study. Onlyssh wzy3090/GPU1 UUID7506746b/.35,
+CPU0-3/fourthreads. TEST_LOCKED unopened, historicald0d97eb/runs/main/defaults
+preserved. Branch returned to requiredcodex/multiroute-v2 by fast-forward.
+
+Prior local oracle teachers now terminal, superseding pending entries below:
+nullE8=2.50 vsloop2.25; progressvertical3.25 vssidevertical2.75. TRAIN-only,
+different samples and uncontrolled native RNG; no new execution advantage claim.
+Submission work next: matched whole-route diffusion/conditional-latent baseline,
+frozen independent layouts, richer passage structure and scoped execution.
+
 ## Selective repair ACTIVE — native branch rejected, 2026-10-10 10:40 UTC
 
 No accepted method; actual viable core/fresh-layout/3seed/matched-head evidence
