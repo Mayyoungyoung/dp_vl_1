@@ -18,6 +18,12 @@ Primary outcomes are actual distinct valid modes@8 and validity@8. Report duplic
 
 Historical +0.15 coverage and conjunctive quality gates remain recorded as failed in their original studies. The current scope replaces the demand for universal superiority; it does not turn those failures into passes. Any supported effect is a retrospectively selected research direction, requiring future frozen confirmation.
 
+## Late preference experiment
+
+Freeze a separate appendix experiment before its outcomes are read: all three C continuations, all336requests, and exactly three requester predicates, ground_only (neither row is over), over_any (at least one row is over), and first_gap0 (first row is gap0). These are symbolic desired words supplied by the caller, not geometric truth or learned language parsing. Allocate inside the mask using the existing proposal score; retain the original positive-score repetition rule and highest legal fallback. Decode eight and return four with original full q. Cache observation encodings across independent preference calls; each call still spends eight routes.
+
+The control decodes the ordinary adaptive eight-route portfolio before receiving the preference. Then it prioritizes compatible *nominal query metadata* with the same q selector, filling to four when fewer are compatible. No oracle mode labels enter selection. Evaluate actual valid compatible modes and fraction under the independent checker, including misrealized modes and all failures. Store all preference predictions before checking truth. This measures an additional capability; it neither assumes an advantage nor upgrades ordinary mode masking to an independently novel algorithm.
+
 ## Deliverables and remaining evidence
 
 Deliver a method description, accurate related-work distinctions, a complete English paper draft, tables with tradeoffs, reproducible code, source/prediction hashes and actual terminal receipts. A paper prototype is distinct from a ready-to-submit claim. Independent frozen confirmation, modern diffusion or conditional-latent baselines, less restrictive passage topologies, and controlled controller or real-robot validation remain concrete work to justify a robotics submission.
