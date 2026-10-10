@@ -3,7 +3,7 @@ import argparse,datetime,os,sys,time,traceback,subprocess
 from pathlib import Path
 from research_selective_repair_v1.io import ROOT,SOURCE,RUN,read,write,sha
 
-def run(name):
+def run(name,api=False):
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     lock=RUN/'prefix_pilot_gpu.lock';fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(command=sys.argv,start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
@@ -22,6 +22,14 @@ def run(name):
             receipt['overlapping_CPU_teacher']=job
         import torch
         torch.set_num_threads(1)
+        if api:
+            from research_selective_repair_v1.body_deployment import bind,feedback
+            decoder='body_event_halfgoal_api_decoder_v1'
+            bind(decoder,RUN/'body_event_pilot_recurrent_seed0_v2/last.pt',RUN/'constraints_seed0_v1/last.pt',RUN/'calibrated_prototype_v1/PROTOTYPES.json',forecast='event',word_safe=True)
+            feedback('body_event_halfgoal_API_feedback_v1',RUN/decoder/'last.pt',ROOT/'data/selective_repair_interventions_v1',limit=1)
+            receipt['scope']='Bounded one TRAIN observation integrated RGB-D API feedback;33query sets,8finals each; not formal heads or actual execution'
+            code=0
+            return
         from research_selective_repair_v1.body_screen import screen
         rnn=RUN/'body_event_pilot_recurrent_seed0_v1/last.pt';mlp=RUN/'body_event_pilot_nonrecurrent_seed0_v1/last.pt';binary=RUN/'body_binary_pilot_seed0_v1/last.pt'
         arms=[('actual','actual','event',rnn),('coordinate','coordinate','event',rnn),('actual_nonrecurrent','actual','event',mlp),
@@ -36,4 +44,4 @@ def run(name):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--api',action='store_true');run(**vars(p.parse_args()))
