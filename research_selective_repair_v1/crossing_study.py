@@ -19,8 +19,8 @@ def diagnostics(folder,dataset):
     report=dict(fit=metrics(prob,d['labels'],~held),held_TRAIN=metrics(prob,d['labels'],held),scope='TRAIN-held families only,full composition and same-feedback category readout',locked_access=False)
     write(RUN/folder/'COMPOSED_DIAGNOSTICS.json',report);print(dict(folder=folder,**report),flush=True)
 
-def run(name,full=False,screen=False,api=False):
-    assert sum((full,screen,api))<=1
+def run(name,full=False,screen=False,api=False,spatial=False):
+    assert sum((full,screen,api,spatial))<=1
     out=RUN/'jobs'/name;out.mkdir(parents=True,exist_ok=False)
     lock=RUN/'prefix_pilot_gpu.lock';fd=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY);os.write(fd,str(os.getpid()).encode());os.close(fd)
     receipt=dict(command=sys.argv,start_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_commit=SOURCE.name,
@@ -48,7 +48,14 @@ def run(name,full=False,screen=False,api=False):
         dataset=RUN/('body_events_data_v1' if full else 'body_halfgoal_events_v2')/'samples.npz'
         manifest=read(dataset.parent/'MANIFEST.json');assert manifest['rows']==(2304 if full else 1152) and manifest['no_DEV_feedback'] and manifest['samples_sha256']==sha(dataset)
         receipt['dataset_sha256']=sha(dataset);receipt['dataset_rows']=manifest['rows'];write(out/'receipt.json',receipt)
-        if api:
+        if spatial:
+            from research_selective_repair_v1.body_screen import screen as generate
+            analytic=RUN/'body_crossing_nonrecurrent_analytic_seed0_pilot_v1/last.pt';category=RUN/'body_crossing_nonrecurrent_categorical_aux_seed0_pilot_v1/last.pt';binary=RUN/'body_binary_pilot_seed0_v2/last.pt'
+            arms=[('local','local','actual','crossing',analytic),('global','global','actual','crossing',analytic),('planned','global','planned','crossing',analytic),('categorical','global','actual','crossing',category),('binary','global','planned','binary',binary)]
+            for label,support,kind,forecast,ck in arms:
+                generate('body_spatial_%s_TRAIN_screen_seed0_v1'%label,kind,ck,word_safe=True,forecast=forecast,role='TRAIN',all_goals=True,family_start=6,families=2,dataset_scope='half',spatial=support)
+            receipt['scope']='Five common32step spatial-span/support TRAIN diagnostics; no DEV or physical execution claim'
+        elif api:
             from research_selective_repair_v1.body_deployment import bind,feedback
             decoder='body_crossing_pilot_api_decoder_v1'
             bind(decoder,RUN/'body_crossing_nonrecurrent_analytic_seed0_pilot_v1/last.pt',RUN/'constraints_seed0_v1/last.pt',RUN/'calibrated_prototype_v1/PROTOTYPES.json',forecast='crossing',word_safe=True,continuous=True)
@@ -80,4 +87,4 @@ def run(name,full=False,screen=False,api=False):
     print({k:v for k,v in receipt.items() if k!='source_sha256'},flush=True);raise SystemExit(code)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--full',action='store_true');p.add_argument('--screen',action='store_true');p.add_argument('--api',action='store_true');run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--full',action='store_true');p.add_argument('--screen',action='store_true');p.add_argument('--api',action='store_true');p.add_argument('--spatial',action='store_true');run(**vars(p.parse_args()))

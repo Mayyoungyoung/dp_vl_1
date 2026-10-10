@@ -12,10 +12,11 @@ from research_selective_repair_v1.constraint_operator import configuration
 from routeset.observed_probability import load_scored_planner,route_observation_features
 from scripts.research_v3_audit import mode
 
-def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='categorical',all_goals=False,role='DEV_MODEL',continuous=False,family_start=0,families=None,dataset_scope='formal'):
+def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='categorical',all_goals=False,role='DEV_MODEL',continuous=False,family_start=0,families=None,dataset_scope='formal',spatial=None):
     torch_setup();out=RUN/name;out.mkdir(parents=True,exist_ok=False)
     assert role in ('TRAIN','DEV_MODEL')
     if continuous:assert protected and word_safe and forecast in ('event','crossing','binary') and kind in ('actual','planned','success')
+    if spatial:assert not continuous and protected and word_safe and forecast in ('crossing','binary') and kind in ('actual','planned')
     source=RUN/('constraints_global_interventions_TRAIN_body_v1' if role=='TRAIN' else 'constraints_global_interventions_v1');data=ROOT/'data/selective_repair_interventions_v1'
     receipt=read(source/'SEAL.json')
     assert receipt['current_observation_only'] and sha(source/'sealed_predictions.npz')==receipt['prediction_sha256']
@@ -59,8 +60,14 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         cfg=None
         if kind=='planned' or word_safe or forecast in ('prefix','event','crossing','binary'):
             c,h=boxes(t(d['completed'][i:i+1]),boxck['settings']);cfg=configuration(c[0].cpu().numpy(),h[0].cpu().numpy(),boxck['settings'])
-            words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
+            if not spatial:
+                words=[mode(p,cfg) for p in candidates.reshape(24,24,3)];planned=np.array([WORDS.index(w)+1 if w in WORDS else 0 for w in words]).reshape(8,3)
         detail={}
+        if spatial:
+            from research_selective_repair_v1.body_spatial_repair import repair as spatial_repair
+            repaired,choice,prob,detail=spatial_repair(model,ck,d['paths'][i],d['completed'][i],ctx[str(ident)],cfg,scope=spatial,forecast=forecast,kind=kind)
+            paths.append(repaired);choices.append(choice);probabilities.append(prob);queries.append(33);forecast_queries.append(detail)
+            continue
         if continuous:
             from research_selective_repair_v1.body_predictive_repair import repair as predictive_repair
             repaired,choice,prob,detail=predictive_repair(model,ck,d['paths'][i],d['completed'][i],ctx[str(ident)],cfg,forecast=forecast,kind=kind)
@@ -82,7 +89,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
         choice,count=allocate(prob,kind,protected,planned,allowed);paths.append(candidates[np.arange(8),choice]);choices.append(choice);probabilities.append(prob);queries.append(count);forecast_queries.append(detail)
     torch.cuda.synchronize();seconds=time.monotonic()-tic;paths=np.asarray(paths)
     np.savez_compressed(out/'sealed_predictions.npz',ids=d['ids'],paths=paths,events=d['events'],modes=d['modes'],drafts=d['paths'],completed=d['completed'],choices=choices,probabilities=probabilities)
-    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role=role,current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,dataset_scope=dataset_scope,continuous=continuous,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=40 if continuous else 24 if word_safe or kind=='planned' or forecast in ('prefix','event','crossing','binary') else 0,internal_alternatives_per_request=24,critic_route_forwards_per_request=264 if continuous else 0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
+    seal=sha(out/'sealed_predictions.npz');write(out/'SEAL.json',dict(prediction_sha256=seal,source_pool_sha256=sha(source/'pool.npz'),checkpoint_sha256=sha(checkpoint) if checkpoint else None,role=role,current_observation_only=True,kind=kind,forecast=forecast,all_goals=all_goals,dataset_scope=dataset_scope,continuous=continuous,spatial=spatial,protected=protected,word_safe=word_safe,predicted_signature_calls_per_request=272 if spatial else 40 if continuous else 24 if word_safe or kind=='planned' or forecast in ('prefix','event','crossing','binary') else 0,internal_alternatives_per_request=0 if spatial else 24,critic_route_forwards_per_request=272 if spatial else 264 if continuous else 0 if static else 24,final_candidates_per_request=8,allocation_objective_queries=queries,forecast_query_counts=forecast_queries,cached_correction_seconds=seconds,latency_scope='Correction only; common64step box geometry and original observation encoders/scorer excluded. Full online latency still required.'))
     # Independent geometry labels only after all predictions and choices are sealed.
     observations={r['id']:r for r in lines(data/'export/observations.jsonl') if r['split']==role}
     labels={r['id']:r for r in lines(data/'export/supervision.jsonl') if r['split']==role}
@@ -99,7 +106,7 @@ def screen(name,kind,checkpoint=None,protected=True,word_safe=False,forecast='ca
     assert sha(out/'sealed_predictions.npz')==seal
     np.savez_compressed(out/'pool.npz',ids=d['ids'],paths=paths,events=d['events'],drafts=d['paths'],modes=d['modes'],q=qs,valid=valids,selected=selected)
     write(out/'ROWS.json',rows);write(out/'rows.json',rows)
-    report=dict(kind=kind,forecast=forecast,role=role,continuous=continuous,dataset_scope=dataset_scope,protected=protected,word_safe=word_safe,mean_utility=np.mean([r['utility'] for r in rows],0).tolist(),requests=len(rows),damaged=sum(r['damaged'] for r in rows),raw_mode_changed=sum(r['raw_mode_changed'] for r in rows),correction_seconds=seconds,head_scope='Initial C0 allocation head screen; own matched TRAIN heads required before formal acceptance',learned_task_scope='all3goals,registered role variants;8family pilot' if all_goals and dataset_scope=='half' else 'all3goals,registered role variants' if all_goals else 'target0 pilot only',actual_body_execution='Not run by this geometry screen',locked_access=False)
+    report=dict(kind=kind,forecast=forecast,role=role,continuous=continuous,spatial=spatial,dataset_scope=dataset_scope,protected=protected,word_safe=word_safe,mean_utility=np.mean([r['utility'] for r in rows],0).tolist(),requests=len(rows),damaged=sum(r['damaged'] for r in rows),raw_mode_changed=sum(r['raw_mode_changed'] for r in rows),correction_seconds=seconds,head_scope='Initial C0 allocation head screen; own matched TRAIN heads required before formal acceptance',learned_task_scope='all3goals,registered role variants;8family pilot' if all_goals and dataset_scope=='half' else 'all3goals,registered role variants' if all_goals else 'target0 pilot only',actual_body_execution='Not run by this geometry screen',locked_access=False)
     write(out/'SUMMARY.json',report);print(report,flush=True)
 
 if __name__=='__main__':
