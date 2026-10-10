@@ -75,7 +75,7 @@ def repair(model,*args,**kwargs):
     with input_gradient_mode(model):return _repair(model,*args,**kwargs)
 
 def _repair(model,ck,paths,completed,context,cfg,forecast='event',kind='actual',steps=32):
-    assert forecast in ('event','binary') and kind in ('actual','planned','success')
+    assert forecast in ('event','crossing','binary') and kind in ('actual','planned','success')
     assert steps==32,'Frozen pilot budget; no optimizer sweep'
     basis,cap,planned=amplitude_caps(paths,completed,cfg)
     device=next(model.parameters()).device;dtype=next(model.parameters()).dtype
@@ -87,8 +87,11 @@ def _repair(model,ck,paths,completed,context,cfg,forecast='event',kind='actual',
     amplitudes=torch.zeros((8,2),device=device,dtype=dtype,requires_grad=True)
     opt=torch.optim.Adam([amplitudes],lr=.05);original=None;best_score=None;best=amplitudes.detach().clone();best_prob=None;feasible_states=0
     def probability(path):
-        x=(tensor_features(path,completed,prefix=forecast=='event')-mean)/std
+        x=(tensor_features(path,completed,prefix=forecast in ('event','crossing'))-mean)/std
         if forecast=='event':p=compose_tensor(model(x,context,path),cfg)
+        elif forecast=='crossing':
+            from research_selective_repair_v1.body_crossing_measure import compose_tensor as crossing_compose
+            p=crossing_compose(model(x,context,path,completed),cfg)
         else:
             success=model(x,context).flatten().sigmoid();p=success[:,None]*onehot
             p=torch.cat([p[:,:1]+1-success[:,None],p[:,1:]],-1)
@@ -122,5 +125,5 @@ def _repair(model,ck,paths,completed,context,cfg,forecast='event',kind='actual',
         internal_recipe_basis_curves=24,final_candidates=8,feasible_evaluated_states=feasible_states,
         current_NN_signature_calls=16,
         original_predicted_feasible_included=True,actual_controller_queries=0,
-        Gaussian_CDF_evaluations=8*(steps+1)*4*23*2*7 if forecast=='event' else 0,
+        Gaussian_CDF_evaluations=8*(steps+1)*4*23*2*7 if forecast=='event' else 8*(steps+1)*4*2*7 if forecast=='crossing' and ck['settings']['readout']=='analytic' else 0,
         scope='Predicted nondegradation only; current NN geometry caps; convex interpolation of same TRAIN recipes,not physical certificate')
