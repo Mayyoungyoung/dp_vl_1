@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from research_selective_repair_v1.body_prefix_forecast import PrefixHead,tip_forward,likelihood,prefix_features
 from research_selective_repair_v1.public_kinematics import forward
+from research_selective_repair_v1.kinematic_conditioning import pose_jacobian,terminal,crossing
 
 class StateTransport(unittest.TestCase):
     def setUp(self):
@@ -49,5 +50,20 @@ class StateTransport(unittest.TestCase):
         self.assertAlmostEqual(float(loss),4*np.log(2),places=6)
         loss.backward();torch.testing.assert_close(logits.grad[0,0,:4],torch.tensor([.5,.5,.5,-.5]))
         self.assertEqual(float(logits.grad[0,0,4:].abs().sum()),0)
+
+    def test_public_pose_jacobian_and_bounded_conditioning(self):
+        robot=tuple(torch.tensor(v,dtype=torch.float64) for v in self.robot)
+        q=torch.linspace(.03,.09,7,dtype=torch.float64)[None].requires_grad_(True)
+        pose,jac,_=pose_jacobian(q,*robot)
+        for coordinate in range(3):
+            derivative=torch.autograd.grad(pose[0,coordinate,3],q,retain_graph=True)[0]
+            torch.testing.assert_close(derivative[0],jac[0,coordinate],atol=1e-10,rtol=1e-10)
+        target_pose=pose_jacobian((q.detach()+.02),*robot)[0]
+        result=terminal(q,target_pose[:,:3,3],target_pose[:,:3,:3],robot)
+        final=pose_jacobian(result,*robot)[0]
+        self.assertLess(float(torch.linalg.norm(final[:,:3,3]-target_pose[:,:3,3])),.002)
+        constrained=crossing(q,target_pose[:,0,3],robot)
+        self.assertLess(float((pose_jacobian(constrained,*robot)[0][:,0,3]-target_pose[:,0,3]).abs().max()),.002)
+        (final.sum()+constrained.sum()).backward();self.assertTrue(torch.isfinite(q.grad).all())
 
 if __name__=='__main__':unittest.main()

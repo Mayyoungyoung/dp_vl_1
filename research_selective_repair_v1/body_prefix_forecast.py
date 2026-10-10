@@ -11,6 +11,7 @@ from torch import nn
 from research_selective_repair_v1.io import RUN,read,write,sha
 from research_selective_repair_v1.body_forecast import features
 from research_selective_repair_v1.public_kinematics import load as load_robot
+from research_selective_repair_v1.kinematic_conditioning import pose_jacobian,terminal,crossing
 from scripts.run_observed_probability import torch_setup
 from routeset.train_v2 import atomic_checkpoint,rng_state,restore_rng
 from routeset.observed_training_audit import tensor_state_digest
@@ -32,8 +33,9 @@ def tip_forward(q,qref,base,relative):
     return result[...,:3,3]
 
 class PrefixHead(nn.Module):
-    def __init__(self,robot,kind='recurrent',hypotheses=4):
+    def __init__(self,robot,kind='recurrent',hypotheses=4,conditioning=0):
         super().__init__();assert kind in ('recurrent','nonrecurrent');self.kind=kind;self.hypotheses=hypotheses
+        self.conditioning=conditioning
         q,b,r=robot
         for name,value in zip(('qref','base','relative'),(q,b,r)):
             self.register_buffer(name,torch.as_tensor(value,dtype=torch.float32))
@@ -44,7 +46,7 @@ class PrefixHead(nn.Module):
         if kind=='recurrent':self.cell=nn.GRUCell(94,64)
         else:self.cell=nn.Sequential(nn.Linear(94,160),nn.SiLU(),nn.Linear(160,80),nn.SiLU(),nn.Linear(80,64),nn.SiLU())
         self.output=nn.Linear(64,45);self.weights=nn.Linear(96,hypotheses)
-    def forward(self,x,context,q0,teacher=None,forcing=0.):
+    def forward(self,x,context,q0,teacher=None,forcing=0.,paths=None,completed=None):
         b=len(x);k=self.hypotheses;z=self.input(x)
         # Fixed executor processes requested waypoints sequentially. Future
         # route nodes cannot change a predicted already executed prefix.
@@ -52,14 +54,26 @@ class PrefixHead(nn.Module):
         h=self.initial(cx)[:,None].expand(-1,k,-1).reshape(b*k,64)
         latent=self.latent(torch.arange(k,device=x.device))[None].expand(b,-1,-1).reshape(b*k,16)
         previous=q0[:,None].expand(-1,k,-1).reshape(b*k,7)
+        robot=(self.qref,self.base,self.relative);rotation=None;rows=None
+        if self.conditioning:
+            assert paths is not None and completed is not None
+            rotation=pose_jacobian(previous,*robot)[0][...,:3,:3]
+            rows=completed.reshape(b,2,2,3)[...,0].mean(-1)
         states=[];hazards=[];event_states=[];event_logits=[]
         for j in range(23):
             inp=torch.cat([z[:,j+1,None].expand(-1,k,-1).reshape(b*k,64),previous.sin(),previous.cos(),latent],-1)
             h=self.cell(inp,h) if self.kind=='recurrent' else self.cell(inp)
             prediction=self.output(h)
             q=previous[:,None]+np.pi*prediction[:,:28].reshape(b*k,4,7).tanh()
+            if self.conditioning:
+                goal=paths[:,j+1,None].expand(-1,k,-1).reshape(b*k,3)
+                endpoint=terminal(q[:,-1],goal,rotation,robot,self.conditioning)
+                q=torch.cat([q[:,:-1],endpoint[:,None]],1)
             states.append(q.reshape(b,k,4,7));hazards.append(prediction[:,28].reshape(b,k))
             event=previous[:,None]+np.pi*prediction[:,29:43].reshape(b*k,2,7).tanh()
+            if self.conditioning:
+                row=rows[:,None].expand(-1,k,-1).reshape(b*k,2)
+                event=crossing(event,row,robot,self.conditioning)
             event_states.append(event.reshape(b,k,2,7));event_logits.append(prediction[:,43:].reshape(b,k,2))
             previous=q[:,-1]
             if teacher is not None and forcing>0:
@@ -94,7 +108,7 @@ def likelihood(pred,q,tip,valid,hazard,observed,event=None):
         risk=risk+(ce*mask).sum((-1,-2))
     return -torch.logsumexp(pred['log_weights']-.5*state-risk,dim=-1).mean()
 
-def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None,threads=4):
+def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=None,threads=4,conditioning=0):
     torch_setup();assert threads in (1,4);torch.set_num_threads(threads);out=RUN/name;out.mkdir(parents=True,exist_ok=resume)
     if (out/'last.pt').exists():raise FileExistsError('Completed immutable fit')
     with np.load(dataset) as z:d={k:z[k] for k in z.files}
@@ -103,7 +117,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
     families=sorted(set(d['families']));held=families[-2:];train=~np.isin(d['families'],held);test=~train
     x=prefix_features(d['paths'],d['completed']);mean=x[train].mean((0,1));std=x[train].std((0,1)).clip(.05)
     robot=dataset.parent/'public_robot.npz'
-    settings=dict(kind=kind,seed=seed,steps=steps,batch=32,lr=.0003,threads=threads,hypotheses=4,joint_sigma_rad=.1,tip_sigma_m=.02,
+    settings=dict(kind=kind,seed=seed,steps=steps,batch=32,lr=.0003,threads=threads,conditioning=conditioning,hypotheses=4,joint_sigma_rad=.1,tip_sigma_m=.02,
         dataset_sha256=sha(dataset),robot_sha256=sha(robot),mean=mean.tolist(),std=std.tolist(),
         fit_families=[str(v) for v in families[:-2]],diagnostic_TRAIN_families=[str(v) for v in held],
         source_commit=os.environ.get('CODE_COMMIT'),forcing='linear1to0infirst1200updates;free deployment',
@@ -112,11 +126,12 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
         event_likelihood='Sum firstcross/preceding noncross log factors,censored after firstcross/stop',
         scope='Current observation/public initial q only in free forward; actual prefix/event/hazard TRAIN likelihood only')
     torch.manual_seed(seed);np.random.seed(seed);random.seed(seed);rng=np.random.default_rng(seed)
-    model=PrefixHead(load_robot(robot),kind).cuda();opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
+    model=PrefixHead(load_robot(robot),kind,conditioning=conditioning).cuda();opt=torch.optim.AdamW(model.parameters(),lr=.0003,weight_decay=.0001)
     t=lambda v:torch.as_tensor(v,device='cuda')
     tx=t(((x-mean)/std).astype(np.float32));tc=t(d['context'].astype(np.float32));tq0=t(d['initial_q'].astype(np.float32))
     tq=t(d['prefix_q']);tp=t(d['prefix_tip']);tv=t(d['prefix_valid']);th=t(d['prefix_hazard']);to=t(d['prefix_observed'])
     teq=t(d['event_q']);tep=t(d['event_tip']);tev=t(d['event_present']);teo=t(d['event_observed'])
+    requested=t(d['paths']);completed=t(d['completed'])
     initial=tensor_state_digest(model.state_dict());history=[];stream='';start=0;tic=time.monotonic();indices=np.flatnonzero(train)
     def state(step):return dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(rng),step=step,settings=settings,history=history,stream=stream,initial_sha256=initial)
     if resume:
@@ -126,7 +141,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
     step=start
     for step in range(start+1,min(steps,stop_after or steps)+1):
         ix=rng.choice(indices,size=32,replace=True);stream=hashlib.sha256(stream.encode()+ix.tobytes()).hexdigest()
-        model.train();pred=model(tx[ix],tc[ix],tq0[ix],dict(q=tq[ix],valid=tv[ix]),max(0,1-step/1200))
+        model.train();pred=model(tx[ix],tc[ix],tq0[ix],dict(q=tq[ix],valid=tv[ix]),max(0,1-step/1200),paths=requested[ix],completed=completed[ix])
         loss=likelihood(pred,tq[ix],tp[ix],tv[ix],th[ix],to[ix],dict(q=teq[ix],tip=tep[ix],present=tev[ix],observed=teo[ix]));assert torch.isfinite(loss)
         opt.zero_grad();loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1);opt.step()
         if step%100==0:
@@ -136,7 +151,7 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
         atomic_checkpoint(out/'last.pt',state(step));model.eval();predictions=[]
         with torch.no_grad():
             for start in range(0,len(x),32):
-                sl=slice(start,start+32);p=model(tx[sl],tc[sl],tq0[sl]);predictions.append({k:v.cpu().numpy() for k,v in p.items()})
+                sl=slice(start,start+32);p=model(tx[sl],tc[sl],tq0[sl],paths=requested[sl],completed=completed[sl]);predictions.append({k:v.cpu().numpy() for k,v in p.items()})
         p={k:np.concatenate([v[k] for v in predictions]) for k in predictions[0]}
         np.savez_compressed(out/'TRAIN_diagnostic_predictions.npz',**p,ids=d['ids'],slots=d['slots'],options=d['options'],families=d['families'],heldout=test)
         report={}
@@ -161,14 +176,14 @@ def fit(name,dataset,kind='recurrent',seed=0,steps=2400,resume=False,stop_after=
 def load(path):
     ck=torch.load(path,map_location='cpu',weights_only=False);s=ck['settings'];m=ck['model']
     robot=tuple(m[k].numpy() for k in ('qref','base','relative'))
-    model=PrefixHead(robot,s['kind'],s['hypotheses']).cuda().eval().requires_grad_(False);model.load_state_dict(m)
+    model=PrefixHead(robot,s['kind'],s['hypotheses'],s.get('conditioning',0)).cuda().eval().requires_grad_(False);model.load_state_dict(m)
     return model,ck
 
 def predict(model,ck,paths,completed,context,q0=None):
     x=prefix_features(paths,completed);s=ck['settings'];t=lambda v:torch.tensor(v,device='cuda',dtype=torch.float32)
     q0=np.broadcast_to(model.qref.cpu().numpy(),(len(x),7)) if q0 is None else q0
-    with torch.no_grad():p=model(t((x-np.asarray(s['mean']))/np.asarray(s['std'])),t(context),t(q0))
+    with torch.no_grad():p=model(t((x-np.asarray(s['mean']))/np.asarray(s['std'])),t(context),t(q0),paths=t(paths),completed=t(completed))
     return {k:v.cpu().numpy() for k,v in p.items()}
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--kind',choices=['recurrent','nonrecurrent'],default='recurrent');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--threads',type=int,choices=[1,4],default=4);fit(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--dataset',required=True,type=Path);p.add_argument('--kind',choices=['recurrent','nonrecurrent'],default='recurrent');p.add_argument('--seed',type=int,default=0);p.add_argument('--steps',type=int,default=2400);p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int);p.add_argument('--threads',type=int,choices=[1,4],default=4);p.add_argument('--conditioning',type=int,choices=[0,4],default=0);fit(**vars(p.parse_args()))
