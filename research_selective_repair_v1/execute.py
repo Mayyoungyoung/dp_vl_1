@@ -16,6 +16,15 @@ def callback(task,posts,targets,saved,plan,output,phase,counts,gripper_shapes,ex
         try:
             phase['name']='restore';check,_,obs=physical.physical.restore_check(task,posts,saved,gripper_shapes,external_shapes);record['restore']=check;counts['strict_route_restores']+=1
             trace.append(pilot.state_sample(task))
+            # Read-only public robot model, not scene obstacles or execution
+            # feedback in forward. No planning call or simulator step is added.
+            arm=task._robot.arm;model_file=folder/'public_arm_model.npz'
+            if not model_file.exists():
+                np.savez_compressed(model_file,q0=trace[0][2],
+                    joint_world=np.asarray([joint.get_matrix() for joint in arm.joints]).reshape(7,3,4),
+                    tip_world=np.asarray(arm.get_tip().get_matrix()).reshape(3,4))
+            record['public_arm_model']=dict(file=model_file.name,sha256=sha(model_file),
+                scope='Public fixed robot kinematics at restored canonical pose; read-only frame snapshot, no scene geometry, IK or controller intervention')
             if not np.allclose(trace[0][0][:3],paths[slot,0],atol=.005,rtol=0):
                 raise ValueError('Route start does not match restored public gripper state')
             # Equal RNG per request/rank for every method; no method-specific retry.
