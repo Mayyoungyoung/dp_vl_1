@@ -46,3 +46,5 @@ against same-feedback/same-constraint controls, not inferred from task names.
 No body method or novelty is accepted at this stage. This is a bounded primary
 source check, not a new survey project. Static IK unknowns and root-planning
 successes in BODY_DIAGNOSTICS.json cannot be substituted for full execution.
+
+[Optimizing Sequences of Probabilistic Manipulation Skills Learned from Demonstration](https://proceedings.mlr.press/v100/schwenkel20a.html) learns probabilistic skills/confidence and optimizes continuous parameters in 7DoF manipulation. Probability forecasting plus continuous parameter repair is established prior art; any proposed contribution must come from measured cross-scene mode preservation and actual execution distribution, with same-feedback controls.

@@ -1485,3 +1485,46 @@ EVENT_PROTOCOL.md prospectively records scope/limitations and further gates.
 No accepted method or publication-readiness claim. Latestc39ddbe push verified
 against origin; unrelated untracked files and historical results untouched.
 
+
+2026-10-10 06:40UTC: No accepted method; continue toward an actual viable paper core, not scripts alone.
+Original geometric U8 gate remains failed; prospective body E4+.30/family95%CI,
+clear fraction+.075, common successful-original damage<=1%, geometry guards,
+three paired seeds/fresh confirmation/full online timing remain required.
+Conditioned state RNN/MLP both fail (held tip .332/.345m, joints25+rad).
+Changed learning object to censored firstcross event measures. Two2400-update
+1152 TRAIN pilots completed; held composed risk Brier .16391/.18371, word
+accuracy .7540/.7433. Oracle TRAIN timing raises accuracy to .9251 and reduces
+Brier to .1015/.0974; oracle geometry alone changes neither word accuracy.
+Thus temporal aliasing/unobserved segment positions dominate composition error.
+Next object: directly supervised crossing-position measure plus matched
+same-feedback categorical auxiliary control, not another timing/loss sweep.
+Event reused DEV actual E4=2.75/11clear ties strongplanned2.75/12, no advantage.
+Continuous all8 TRAIN actualRNN E8=4.25/20clear vsplanned6.25/25,
+MLP5.5/25,binary5.5/25, historicalidentity4.25/19. All four TRAIN requests,
+not returned4/new-layout evidence. Raw common damage4/19 for actualRNN includes
+three exactly unchanged paths with differing native outcomes. No causal damage
+claim; zero-edit native repeats active with unchanged controller/Python seeds.
+19 CPU unit checks passed, exact event optimizer/RNG recovery passed. Integrated
+current-observation API pilot31query sets/248curves completed, not full uncached
+VLM timing or acceptance. Amplitude CUDA eval-GRU gradient technical failure
+preserved; frozen zero-dropout GRU reserve-mode fix passed unit and GPU screen.
+
+ACTIVE main recovery source6fb750be82570cf0ab3074192693272db3ff7c41 PID1106284,
+nohup allgoal_coordinator_recovery_v4.stdout.log. Last8identity384 routes complete
+3386.050s/audit .820s; last8lift384 active, thenpreserved384, audit/build2304.
+Original coordinator vanished after completed identity; cause not established,
+no completed collection repeated. Main CPUteacher1thread within CPU0-3.
+ACTIVE zero-edit TRAIN repeat source61d3c68, receipt wrapperPID1120110,
+body_zero_edit_TRAIN_repeat_suite_v1: two32route all8 repeats, CPU2/one thread,
+separate body_aux_cpu.lock/display. Amplitude suite complete; no duplicate job.
+ACTIVE dependent fullevent queue source3271e227da4fe0cdf58ae827ae23ea1482d6b437
+PID1102221 waits full2304 TRAIN dataset/all locks, then6event+3binary2400fits.
+Old unconditioned state queue1051933 stopped PRELAUNCH after exactsleep-only
+verification, zero fits; failed5mm publicFK gate remains intact (5.803mm max).
+Event-only labels use measured tip positions, not learned q/FK, explicitly audited.
+GPU1UUID7506746b/.35memory only, CPU0-3/fourthreads, onlyssh wzy3090.
+Local solecode writer, immutable export/source hashes/receipts. TEST_LOCKED unread,
+historical d0d97eb/runs/main/defaults and unrelated untracked files preserved.
+No user wallquota supplied. All material JSONs now in results and registry.
+
+
