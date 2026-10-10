@@ -1,3 +1,32 @@
+## Selective repair ACTIVE — current 2026-10-10 09:45 UTC
+
+No accepted method. User requests actual viable core, strong matched advantage,
+fresh family-isolated confirmation and draft; these are NOT achieved.
+Full TRAIN 2304 actual route attempts and 21 paired seeded head fits completed.
+Full-feedback DEV four-request returned4 pilot E4: identity1.25,lift2.25,
+preserved2.0,learnedactual2.5,planned2.75,categorical2.0,binary2.75.
+Continuous forecast does not beat strong controls. Native variation and small
+sample preclude significance. All keep original full q; own matched heads pending.
+Relaxing nominal-word guard gives actual U4=3.92361 vs4, failing -.03 gate;
+no native expansion of that version. Signed TRAIN bias compensation adds96
+attempts but only7/96 successful-clear; signed learner chooses zero downward
+repairs on36 TRAIN-held requests. Reject uniform negative residual mainline.
+
+Prefix native probe6878632 completed64attempts/690.424741s. NullE8=1.75/9clear,
+loopE8=2.0/11clear, two TRAIN families14/15,target0,not fresh/DEV/returned4.
+Only8/32 slots changed. All8 eligible prefixes completed in both arms; null
+q delta .002224rad / root error .112mm; loop q delta .239..6.140rad / root
+error .161..819mm. Eligible full-success3/8 vs4/8; unchanged24 slots also
+vary. Evidence supports task-space-loop joint-state effect, NOT reliable
+execution advantage. Next gather identical train-family loop/null feedback
+before learned bounded native joint/event representation; no FK oracle inputs.
+Original publicFK5mm state gate and acceptance thresholds remain unchanged.
+
+Immutable sources/receipts preserved. Archive full_training_20261010_0835_v2
+121490181bytes SHA31971635265395913c62feb4215eda58f7b82644634ce09fb13b0800104a2a77.
+No TEST_LOCKED access, no shared environment change, GPU1/.35, CPU0..3 only.
+See results JSONs and experiments/registry.jsonl for exact evidence.
+
 ## 2026-10-09 — Realized coverage research starts under new authorization
 
 User removes old time cap and fixed repair-count stops; existing hardware only.

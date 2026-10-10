@@ -10,14 +10,16 @@ from research_selective_repair_v1.prefix_conditioning import proposals
 from research_selective_repair_v1.execute import callback
 from research_selective_repair_v1.execution_semantics import audit
 
-def run(name):
+def run(name,family_indices=None):
     from scripts import collect_observed_layout_variation as physical
     from scripts.collect_observed_layout_hash_recovery import validate_initial_geometry
     out=RUN/name;out.mkdir(parents=True,exist_ok=False);tic=time.monotonic()
     registration=read(ROOT/'data/selective_repair_interventions_v1/registration.json')
-    families=sorted({p['family_id'] for p in registration['parent_plan'] if p['role']=='TRAIN'})[-2:]
+    all_families=sorted({p['family_id'] for p in registration['parent_plan'] if p['role']=='TRAIN'})
+    families=all_families[-2:] if family_indices is None else [all_families[j] for j in family_indices]
+    assert len(families)==len(set(families))
     plans=sorted([p for p in registration['parent_plan'] if p['family_id'] in families and p['variant'] in ('open','closed')],key=lambda p:p['parent_id'])
-    assert len(plans)==4
+    assert len(plans)==2*len(families)
     source=RUN/'constraints_global_interventions_TRAIN_body_v1';seal=read(source/'SEAL.json')
     assert seal['role']=='TRAIN' and seal['current_observation_only'] and sha(source/'sealed_predictions.npz')==seal['prediction_sha256']
     with np.load(source/'sealed_predictions.npz') as z:data={k:z[k] for k in ('ids','paths','completed')}
@@ -29,15 +31,17 @@ def run(name):
         sealed.append(dict(id=ident,candidates=candidates,eligible=eligible,reasons=reasons))
     np.savez_compressed(out/'SEALED_NN_PROPOSALS.npz',ids=[r['id'] for r in sealed],paths=[r['candidates'] for r in sealed],eligible=[r['eligible'] for r in sealed])
     source_hashes={str(p.relative_to(SOURCE)):sha(p) for directory in ('scripts','research_selective_repair_v1') for p in (SOURCE/directory).rglob('*') if p.suffix in ('.py','.sh')}
-    schedule=[('null','loop'),('loop','null'),('loop','null'),('null','loop')]
-    write(out/'PROTOCOL.json',dict(source_commit=os.environ.get('CODE_COMMIT'),families=families,requests=4,
-        schedule=schedule,attempts_per_arm=32,proposal_sha256=sha(out/'SEALED_NN_PROPOSALS.npz'),
+    orders=[('null','loop'),('loop','null'),('loop','null'),('null','loop')]
+    schedule=[orders[j%4] for j in range(len(plans))]
+    attempts=len(plans)*8
+    write(out/'PROTOCOL.json',dict(source_commit=os.environ.get('CODE_COMMIT'),families=families,requests=len(plans),
+        schedule=schedule,attempts_per_arm=attempts,proposal_sha256=sha(out/'SEALED_NN_PROPOSALS.npz'),
         current_observation_only_proposals=True,eligible_slots=int(sum(r['eligible'].sum() for r in sealed)),
-        task='TwoTRAINheld families,open/closed,target0,all8; no DEV/returned4/new-layout claim',
+        task='Explicit TRAIN families,open/closed,target0,all8; no DEV/returned4/new-layout claim',
         controller='Unchanged pilot.execute/SBL/native budgets,23segments,retries0',native_RNG_controlled=False,locked_access=False))
     folders={};records={label:[] for label in ('null','loop')}
     for label in records:
-        folder=RUN/('body_prefix_%s_TRAIN_teacher_probe_v1'%label);folder.mkdir(parents=True,exist_ok=False);folders[label]=folder
+        folder=RUN/('body_prefix_%s_TRAIN_teacher_probe_v1'%label if family_indices is None else name+'_'+label);folder.mkdir(parents=True,exist_ok=False);folders[label]=folder
         write(folder/'MANIFEST.json',dict(source_commit=os.environ.get('CODE_COMMIT'),source_sha256=source_hashes,
             pool_sha256=sha(source/'pool.npz'),proposal_sha256=sha(out/'SEALED_NN_PROPOSALS.npz'),
             TRAIN_feedback_only=True,locked_access=False,recipe=label,teacher_routes_per_parent=8))
@@ -53,9 +57,9 @@ def run(name):
             print(dict(id=pre['id'],recipe=label,success=records[label][-1]['success'],eligible=int(pre['eligible'].sum())),flush=True)
     summaries=[];prefix_rows=[]
     for label,folder in folders.items():
-        write(folder/'SUMMARY.json',dict(attempted=32,success=sum(r['success'] for r in records[label]),records=records[label],TRAIN_feedback_only=True,locked_access=False))
+        write(folder/'SUMMARY.json',dict(attempted=attempts,success=sum(r['success'] for r in records[label]),records=records[label],TRAIN_feedback_only=True,locked_access=False))
         audit(folder.name+'_semantics_v1',folder.name);s=read(RUN/(folder.name+'_semantics_v1')/'SUMMARY.json')
-        summaries.append(dict(recipe=label,E8=s['mean_executable_distinct'],successful_clear=s['successful_clear_routes'],attempted=32,requests=s['requests_results']))
+        summaries.append(dict(recipe=label,E8=s['mean_executable_distinct'],successful_clear=s['successful_clear_routes'],attempted=attempts,requests=s['requests_results']))
         for j,(original,pre) in enumerate(zip(plans,sealed)):
             child=folder/('parent%d'%j)
             for record in read(child/'EXECUTION.json')['records']:
@@ -71,4 +75,4 @@ def run(name):
         scope='Counterbalanced TRAIN all8 mechanism probe; source proposals sealed before native/truth; public root/state future labels only. Native timing/randomness and two-family sample do not establish causal generalization',locked_access=False))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);run(**vars(p.parse_args()))
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--family-indices',nargs='+',type=int);run(**vars(p.parse_args()))
