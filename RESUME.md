@@ -10,6 +10,13 @@ Categorical mechanism rejected. New prospective object: dense joint-prefix
 state transport and conditional finite-budget hazard; no new threshold sweep.
 First public FK check266TRAIN states max1.182mm; full-data verification pending.
 Local prefix data/model/binary baseline implemented,not yet fit or scored.
+Exact firstcrossing state/events added before fits: uniform4/8/16 compression
+retains78/82/84of85TRAIN successful words. Pure event extraction/composition
+tests pass; server Torch tests/complete FK audit pending. Ownsleeping5e278ed
+waiter1037871 stopped PRELAUNCH; active collector untouched.
+ACTIVE dependent prefix queue source206b5b9/session3831 waits allgoal data,
+then tests/builds exact-event prefixes/recovery/sixstate+threebinary fits.
+No automatic DEV screen before inspecting free TRAIN-held family transport.
 ACTIVE immutable TRAIN allgoal collector sourcea1c4d78 (fullSHAsee jobs),
 scripts/run_selective_body_allgoal_feedback_v2.sh session72874,all v3names:
 first8families missingtargets1,2,last8families alltargets0,1,2;3separate recipes.
