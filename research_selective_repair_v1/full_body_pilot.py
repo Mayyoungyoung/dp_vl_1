@@ -34,7 +34,13 @@ def execute(name):
     for label,_,_,_ in ARMS:
         folder=RUN/('body_full_%s_DEV_screen_seed0_v1'%label)
         execname='body_full_%s_DEV_returned4_seed0_v1'%label
-        run(execname,folder/'pool.npz',folder/'ROWS.json',data=RUN.parents[1]/'data/selective_repair_interventions_v1')
+        if (RUN/execname).exists():
+            previous=read(RUN/execname/'RESULTS.json')
+            assert previous['pool_sha256']==sha(folder/'pool.npz') and previous['rows_sha256']==sha(folder/'ROWS.json')
+            assert previous['requests']==4 and previous['requested_routes']==16
+            assert all(r['attempted']==4 for r in previous['records'])
+        else:
+            run(execname,folder/'pool.npz',folder/'ROWS.json',data=RUN.parents[1]/'data/selective_repair_interventions_v1')
         audit(execname+'_semantics_v1',execname)
         summary=read(RUN/(execname+'_semantics_v1')/'SUMMARY.json');rows=summary['requests_results']
         assert summary['attempted_routes']==16 and summary['requests']==4
